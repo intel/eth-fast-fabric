@@ -5,9 +5,9 @@ Intel Ethernet tools and Fast Fabric
 
   1. mkdir -p $HOME/rpmbuild/{SOURCES,RPMS,SRPMS}
   2. cp eth-tools.spec.in eth-tools.spec
-  2. ./update_opa_spec.sh
-  3. tar czf $HOME/rpmbuild/SOURCES/eth-tools.tgz --exclude-vcs .
-  4. rpmbuild -ba ./eth-tools.spec
+  3. ./update_opa_spec.sh
+  4. tar czf $HOME/rpmbuild/SOURCES/eth-tools.tgz --exclude-vcs .
+  5. rpmbuild -ba ./eth-tools.spec
 
   This will build the eth-tools-basic and eth-tools-fastfabric RPMS
   in $HOME/rpmbuild/RPMS/(architecture)/
