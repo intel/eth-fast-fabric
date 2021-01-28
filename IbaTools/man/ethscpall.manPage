@@ -1,0 +1,136 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethscpall 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethscpall
+
+
+.PP
+Copies files or directories from the current system to multiple hosts in the fabric. When copying large directory trees, use the -t option to improve performance. This option tars and compresses the tree, transfers the resulting compressed tarball to each node, and untars it on each node.
+.PP
+Use this tool for copying data files, operating system files, or applications to all the hosts (or a subset of hosts) within the fabric.
+.PP
+
+.B NOTE:
+
+.IP \(bu
+This tool can only copy from this system to a group of systems in the cluster. To copy from hosts in the cluster to this host, use ethuploadall.
+.IP \(bu
+user@ style syntax cannot be used when specifying filenames.
+
+.SH Syntax
+
+.PP
+
+.br
+ethscpall [-p] [-r] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR]
+.br
+source\(ulfile ... dest\(ulfile
+
+.br
+
+.PP
+
+.br
+ethscpall [-t] [-p] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR]
+.br
+[ \fIsource\(uldir\fR [ \fIdest\(uldir\fR]]
+
+.br
+
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+.TP 10
+-p
+
+Performs copy in parallel on all hosts.
+.TP 10
+-r
+
+Performs recursive copy of directories.
+.TP 10
+-t
+
+Performs optimized recursive copy of directories using tar. \fIdest\(uldir\fR is optional. If \fIdest\(uldir\fR is not specified, it defaults to the current directory name. If both \fIsource\(uldir\fR and \fIdest\(uldir\fR are omitted, they both default to the current directory name.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts to copy to.
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts in cluster. Default is /etc/eth-tools/hosts file.
+.TP 10
+-u \fIuser\fR
+
+Specifies the user to perform copy to. Default is current user code.
+.TP 10
+\fIsource\(ulfile\fR
+
+Specifies the file or list of source files to copy.
+
+.TP 10
+\fIsource\(uldir\fR
+
+Specifies the name of the source directory to copy. If omitted. is used.
+
+.TP 10
+\fIdest\(ulfile\fR or \fIdest\(uldir\fR
+
+Specifies the name of the destination file or directory to copy to. If more than one source file, this must be a directory. If omitted current directory name is used.
+
+.SH Example
+# efficiently copy an entire directory tree
+.br
+
+ethscpall -t -p /usr/src/eth/mpi\(ulapps /usr/src/eth/mpi\(ulapps
+.br
+
+
+.br
+
+# copy a group of files
+.br
+
+ethscpall a b c /root/tools/
+.br
+
+
+.br
+
+# copy to an explitly specified set of hosts
+.br
+
+ethscpall -h \[aq]arwen elrond\[aq] a b c /root/tools
+.br
+
+HOSTS=\[aq]arwen elrond\[aq] ethscpall a b c /root/tools
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts; used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts; used in absence of -f and -h.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+When the -p option is used, maximum concurrent operations are performed.

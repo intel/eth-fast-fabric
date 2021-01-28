@@ -1,0 +1,114 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethsetupssh 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethsetupssh
+
+
+.PP
+Creates SSH keys and configures them on all hosts so the system can use SSH and SCP into all other hosts without a password prompt. Typically, during cluster setup this tool enables the root user on the Management Node to log into the other hosts (as root) using password-less SSH.
+.SH Syntax
+ethsetupssh [-p|U] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR] [-S] [-R|P]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-p
+
+Performs operation against all hosts in parallel.
+
+.TP 10
+-U
+
+Performs connect only (to enter in local hosts, known hosts). When run in this mode, the -S option is ignored.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts in cluster.
+.br
+Default is /etc/eth-tools/hosts file.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts to set up.
+
+.TP 10
+-u \fIuser\fR
+
+Specifies the user on remote system to allow this user to SSH to. Default is current user code for host(s).
+
+.TP 10
+-S
+
+Securely prompts for password for user on remote system.
+
+.TP 10
+-R
+
+Skips setup of SSH to local host.
+
+.TP 10
+-P
+
+Skips ping of host (for SSH to devices on Internet with ping
+.br
+firewalled).
+
+.SH Examples
+ethsetupssh -S
+.br
+
+ethsetupssh -U
+.br
+
+ethsetupssh -h \[aq]arwen elrond\[aq] -U
+.br
+
+HOSTS=\[aq]arwen elrond\[aq] ethsetupssh -U
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+When -p option is used, maximum concurrent operations.
+
+.SH Description
+
+.PP
+ethsetupssh provides an easy way to create SSH keys and distribute them to the hosts in the cluster. Many of the FastFabric tools (as well as many versions of MPI) require that SSH is set up for password-less operation. Therefore, ethsetupssh is an important setup step.
+.PP
+This tool also sets up SSH to the local host. This capability is required by selected FastFabric Toolset commands and may be used by some applications (such as MPI).
+.PP
+ethsetupssh has two modes of operation. The mode is selected by the presence or absence of the -U option. Typically, ethsetupssh is first run without the -U option, then it may later be run with the -U option.
+.SH Host Initial Key Exchange
+
+.PP
+When run without the -U option, ethsetupssh performs the initial key exchange and enables password-less SSH and SCP. The preferred way to use ethsetupssh for initial key exchange is with the -S option. This requires that all hosts are configured with the same password for the specified "user" (typically root). In this mode, the password is prompted for once and then SSH and SCP are used in conjunction with that password to complete the setup for the hosts. This mode also avoids the need to set up rsh/rcp/rlogin (which can be a security risk).
+.SH Refreshing Local Systems Known Hosts
+
+.PP
+If aspects of the host have changed, such as IP addresses, MAC addresses, software installation, or server OS reinstallation, you can refresh the local host\[aq]s SSH known\(ulhosts file by running ethsetupssh with the -U option. This option does not transfer the keys, but instead connects to each host to refresh the SSH keys. Existing entries for the specified hosts are replaced within the local known\(ulhosts file. When run in this mode, the -S option is ignored. This mode assumes SSH has previously been set up for the hosts, as such no files are transferred to the specified hosts and no passwords should be required.

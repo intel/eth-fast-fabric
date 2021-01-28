@@ -1,0 +1,53 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethxmlfilter 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethxmlfilter
+
+
+.PP
+Processes an XML file and removes all specified XML tags. The remaining tags are output and indentation can also be reformatted. ethxmlfilter is the opposite of ethxmlextract.
+.SH Syntax
+ethxmlfilter [-t|-k] [-l] [-i  \fIindent\fR] [-s  \fIelement\fR]  \fI[input\(ulfile]\fR
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-t
+
+Trims leading and trailing whitespace in tag contents.
+
+.TP 10
+-k
+
+In tags with purely whitespace that contain newlines, keeps newlines as-is. Default is to format as an empty list.
+
+.TP 10
+-l
+
+Adds comments with line numbers after each end tag. This can make comparison of resulting files easier since original line numbers are available.
+
+.TP 10
+-i \fIindent\fR
+
+Sets indentation to use per level. Default is 4.
+
+.TP 10
+-s \fIelement\fR
+
+Specifies the name of the XML element to suppress. Can be used multiple times (maximum of 100) in any order.
+
+.TP 10
+\fIinput\(ulfile\fR
+
+Specifies the XML file to read. Default is stdin.

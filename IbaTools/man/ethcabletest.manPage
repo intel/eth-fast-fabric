@@ -1,0 +1,72 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethcabletest 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethcabletest
+
+
+.PP
+Initiates or stops Cable Bit Error Rate stress tests for Network Interface Card (NIC)-to-switch links.
+.SH Syntax
+ethcabletest [-f  \fIhostfile\fR] [-h  \fI\[aq]hosts\[aq]\fR] [-n  \fInumprocs\fR] [start|stop] ...
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts to include in NIC-to-SW test. Default is /etc/eth-tools/hosts file.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts to include in NIC-SW test.
+
+.TP 10
+start
+
+Starts the NIC-SW.
+
+.TP 10
+stop
+
+Stops the NIC-SW.
+
+.PP
+The NIC-SW cable test requires that the \fBFF\(ulMPI\(ulAPPS\(ulDIR\fR is set, and it contains a pre-built copy of the Intel(R)   mpi\(ulapps for an appropriate message passing interface (MPI).
+.SH Examples
+ethcabletest -f good
+.br
+
+ethcabletest -h \[aq]arwen elrond\[aq] start
+.br
+
+HOSTS=\[aq]arwen elrond\[aq] ethcabletest stop
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+Maximum concurrent operations.

@@ -1,0 +1,17 @@
+CommonInstall
+IbAccess
+IbaTools
+IbPrint
+Makerules
+MakeTools
+MakeTemplates
+MpiApps/apps
+MpiApps/Makefile
+OpenIb_Host
+TestTools
+Topology
+Xml
+Fd/buildFeatureDefs
+Fd/buildFeatureDefs.base
+OpenIb_Host/debian
+Fd/buildFeatureDefs.base

@@ -1,0 +1,71 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethshowallports 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethshowallports
+
+
+.PP
+Displays basic port state and statistics for all host nodes.
+.PP
+
+.B NOTE:
+ethreport is more powerful Intel(R) Ethernet Fabric Suite FastFabric commands. For general fabric analysis, use ethreport with options such as -o errors and -o slowlinks to perform an efficient analysis of link speeds and errors.
+
+.SH Syntax
+ethshowallports [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
+.br
+[-S]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file containing the list of hosts in cluster. Default is /etc/eth-tools/hosts file.
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts for which to show ports.
+.TP 10
+-S
+
+Securely prompts for password for admin on chassis.
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.SH Example
+ethshowallports
+.br
+
+ethshowallports -h \[aq]elrond arwen\[aq]
+.br
+
+HOSTS=\[aq]elrond arwen\[aq] ethshowallports
+.br
+
+
+.SH Notes
+
+.PP
+When performing ethshowallports against hosts, internally SSH is used. The command ethshowallports requires that password-less SSH be set up between the host running the Intel(R) Ethernet Fabric Suite FastFabric Toolset and the hosts ethshowallports is operating against. The ethsetupssh FastFabric tool can aid in setting up password-less SSH.

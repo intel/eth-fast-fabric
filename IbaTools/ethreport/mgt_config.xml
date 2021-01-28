@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Configuration parameters needed to use SNMP API -->
+<Config>
+	<!-- Common configuration that applies on all Fabric planes -->
+	<Common>
+		<ConfigDir>/etc/eth-tools</ConfigDir>
+		<SnmpPort>161</SnmpPort>
+
+		<!-- Supported: SNMP_VERSION_2c or SNMP_VERSION_3  -->
+		<!-- <SnmpVersion>SNMP_VERSION_3</SnmpVersion>     -->
+		<SnmpVersion>SNMP_VERSION_2c</SnmpVersion>
+
+		<!-- Community string used when running SNMP_VERSION_2c -->
+		<SnmpCommunityString>public</SnmpCommunityString>
+
+		<!-- Identifies user name for SNMP session  -->
+		<SnmpSecurityName>EthFastFabricUser</SnmpSecurityName>
+
+		<!-- Supported: NOAUTH, AUTHNOPRIV, AUTHPRIV                       -->
+		<!-- NOAUTH:  no authentication or encryption                      -->
+		<!-- AUTHNOPRIV: authentication but no encryption                  -->
+		<!-- AUTHPRIV: both authentication and encryption will be enforced -->
+		<SnmpSecurityLevel>NOAUTH</SnmpSecurityLevel>
+
+		<!-- Supported: MD5 or SHA -->
+		<SnmpAuthenticationProtocol>MD5</SnmpAuthenticationProtocol>
+
+		<!-- Supported: AES or DES -->
+		<SnmpEncryptionProtocol>DES</SnmpEncryptionProtocol>
+
+		<!-- Assumes all hosts that will be used for SNMP queries will     -->
+		<!-- be configured to use the same passphrases.  Passphrases for   -->
+		<!-- authentication and encryption can be different, but all hosts -->
+		<!-- should use this same authentication passphrase on all hosts   -->
+		<!-- that is specified in this file -->
+
+		<SnmpAuthPassphrase>DefaultPassphrase</SnmpAuthPassphrase>
+		<SnmpEncrypPassphrase>DefaultPassphrase</SnmpEncrypPassphrase>
+	</Common>
+	<!-- Default plane -->
+	<Plane>
+		<!-- Note: value 'ALL' (case sensitive) is reserved to present all enabled planes -->
+		<Name>plane</Name>
+		<!-- When disabled (0), this plane is ignored -->
+		<Enable>1</Enable>
+		<HostsFile>allhosts</HostsFile>
+		<SwitchesFile>switches</SwitchesFile>
+		<!-- input file to augment and verify fabric information -->
+		<!-- <TopologyFile>topology.xml</TopologyFile> -->
+	</Plane>
+	<!-- Example of second plane that is disabled -->
+	<Plane>
+		<Name>plane2</Name>
+		<Enable>0</Enable>
+		<HostsFile>allhosts2</HostsFile>
+		<SwitchesFile>switches2</SwitchesFile>
+		<!-- example of overwriting an attribute defined in Common -->
+		<SnmpPort>1234</SnmpPort>
+	</Plane>
+</Config>

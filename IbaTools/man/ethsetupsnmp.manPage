@@ -1,0 +1,198 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethsetupsnmp 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethsetupsnmp
+
+
+.PP
+Sets up SNMP on hosts to allow ethreport to query fabric data through SNMP.
+.SH Syntax
+ethsetupsnmp [-p] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-a  \fIadmin\fR]
+.br
+
+[-c  \fIcommunity\fR] [-m  \fImibs\fR]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-p
+
+Performs operation against all hosts in parallel.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts in cluster.
+.br
+Default is /etc/eth-tools/hosts.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts in cluster.
+
+.TP 10
+-a \fIadmin\fR
+
+Specifies the list of admin hosts that can issue SNMP query. Default is the current host.
+
+.TP 10
+-c \fIcommunity\fR
+
+Specifies the community string used for SNMP query. Default is public.
+
+.TP 10
+-m \fImibs\fR
+
+Specifies the list of MIBs that are readable in SNMP queries. Default is all MIBs required by FastFabric.
+
+.SH Examples
+ethsetupssh -h \[aq]elrond arwen\[aq] -a \[aq]elrond\[aq]
+.br
+
+HOSTS=\[aq]elrond arwen\[aq] ethsetupsnmp -a \[aq]elrond\[aq]
+.br
+
+ethsetupsnmp -a \[aq]elrond\[aq] -c \[aq]public\[aq] -m \[aq]1.3.6.1.2.1.1 1.3.6.1.2.1.2\[aq]
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+When -p option is used, maximum concurrent operations.
+
+
+.SH Description
+
+.PP
+ethreport collects fabric data through issuing SNMP queries to hosts and switches. Intel recommends that you set up SNMP using ethsetupsnmp to ensure ethreport has proper permission to query each host; each host can provide desired data; and, all hosts have consistent SNMP configuration. ethsetupsnmp accepts the following parameters to configure SNMP. These parameters can be specified as command line arguments or collected during user interaction. ethsetupsnmp works under user interaction mode when one or more of the required parameters are not specified in command line.
+.IP \(bu
+\fIadmin\fR: Space separated management node names. ethsetupsnmp will configure each host to allow SNMP query from these nodes.
+.IP \(bu
+\fIcommunity\fR: The community string for SNMP v2 query. The default is public. If set to a different string, ensure update hpnmgmt\(ulconfig.xml with the string.
+.IP \(bu
+\fImibs\fR: The MIBs allow SNMP query. FastFabric requires the following MIBs. You can provide extra MIBs if they are required by other applications.1.3.6.1.2.1.1 (SNMPv2-MIB:system)
+.br
+
+1.3.6.1.2.1.2 (IF-MIB:interfaces)
+.br
+
+1.3.6.1.2.1.4 (IP-MIB:ip)
+.br
+
+1.3.6.1.2.1.10.7 (EtherLike-MIB:dot3)
+.br
+
+1.3.6.1.2.1.31.1 (IP-MIB:ifMIBObjects)
+.PP
+When working under interactive mode, follow the prompts to complete the operation.Configuring SNMP...
+.br
+
+Enter space separated list of admin hosts (mindy1):
+.br
+
+Enter SNMP community string (public):
+.br
+
+Fast Fabric requires the following MIBs:
+.br
+
+       1.3.6.1.2.1.1 (SNMPv2-MIB:system)
+.br
+
+       1.3.6.1.2.1.2 (IF-MIB:interfaces)
+.br
+
+       1.3.6.1.2.1.4 (IP-MIB:ip)
+.br
+
+       1.3.6.1.2.1.10.7 (EtherLike-MIB:dot3)
+.br
+
+       1.3.6.1.2.1.31.1 (IP-MIB:ifMIBObjects)
+.br
+
+Do you accept these MIBs [y/n] (y):
+.br
+
+Enter space separated list of extra MIBs to support (NONE):
+.br
+
+Will config SNMP with the following settings:
+.br
+
+admin hosts: mindy1
+.br
+
+community: public
+.br
+
+MIBs: 1.3.6.1.2.1.1 1.3.6.1.2.1.2 1.3.6.1.2.1.4 1.3.6.1.2.1.10.7
+.br
+
+1.3.6.1.2.1.31.1
+.br
+
+Do you accept these settings [y/n] (y):
+.br
+
+scp -q /usr/sbin/ethsetupsnmp root@[mindy1]:/tmp/ethsetupsnmp
+.br
+
+scp -q /usr/sbin/ethsetupsnmp root@[mindy2]:/tmp/ethsetupsnmp
+.br
+
+[root@phwfstl005]# /tmp/ethsetupsnmp -l -a \[aq]mindy1\[aq] -c \[aq]public\[aq] -m
+.br
+
+\[aq]1.3.6.1.2.1.1 1.3.6.1.2.1.2 1.3.6.1.2.1.4 1.3.6.1.2.1.10.7 1.3.6.1.2.1.31.1
+.br
+
+\[aq];rm -f /tmp/ethsetupsnmp
+.br
+
+Configuring SNMP...
+.br
+
+SNMP configuration completed
+.br
+
+[root@phwfstl006]# /tmp/ethsetupsnmp -l -a \[aq]mindy1\[aq] -c \[aq]public\[aq] -m
+.br
+
+\[aq]1.3.6.1.2.1.1 1.3.6.1.2.1.2 1.3.6.1.2.1.4 1.3.6.1.2.1.10.7 1.3.6.1.2.1.31.1
+.br
+
+\[aq];rm -f /tmp/ethsetupsnmp
+.br
+
+Configuring SNMP...
+.br
+
+SNMP configuration completed
+.br
+
+SNMP configuration completed

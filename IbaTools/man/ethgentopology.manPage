@@ -1,0 +1,349 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethgentopology 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethgentopology
+
+
+.PP
+Provides a simple sample of how to generate the topology XML file used for topology verification. Customers who wish to integrate topology XML file generation into their cluster design process can create their own script to take information available in other formats and tools and produce the topology XML file directly. The alternative is to use ethxlattopology and have tools generate the input files it expects.
+.PP
+This tool uses CSV input files ethtopology\(ullinks.txt, ethtopology\(ulNICs.txt, and ethtopology\(ulSWs.txt to generate LinkSummary, Node NICs, and Node SWs information, respectively. These files are samples of what might be produced as part of translating a user custom file format into temporary intermediate CSV files.
+.PP
+LinkSummary information includes Link, Cable, and Port information. Note that ethgentopology (not ethxmlgenerate) generates the XML version string as well as the <Topology> and <LinkSummary> lines. Also note that the indent level is at the default value of zero (0). The portions of the script that call ethxmlgenerate follow:
+.PP
+
+.br
+ethxmlgenerate -X /usr/share/eth-tools/samples/ethtopology\(ul1.txt -d \\; -h Link \\
+.br
+
+-g Rate -g MTU -g Internal -g LinkDetails -h Cable -g CableLength -g CableLabel \\
+.br
+
+-g CableDetails -e Cable -h Port -g IfAddr -g PortNum -g NodeDesc -g MgmtIfAddr \\
+.br
+
+-g NodeType -g PortDetails -e Port  -h Port -g IfAddr -g PortNum -g NodeDesc \\
+.br
+
+-g MgmtIfAddr -g NodeType -g PortDetails -e Port -e Link
+
+
+.br
+
+.br
+ethxmlgenerate -X /usr/share/eth-tools/samples/ethtopology\(ul2.txt -d \\; \\
+.br
+
+-h Node -g IfAddr -g NodeDesc -g NodeDetails -e Node
+
+.SH Syntax
+/usr/share/eth-tools/samples/ethgentopology [--help]
+.PP
+
+.B NOTE:
+You must use the full path to access this command.
+
+
+.SH Options
+
+.TP 10
+No option
+
+Produces sample output. See
+\fIExample\fR
+.
+.TP 10
+--help
+
+Produces full help text.
+
+.SH ethtopology\(ullinks.txt
+
+.PP
+This file can be found in /usr/share/eth-tools/samples/. For brevity, this sample shows only two links. The second link shows an example of omitting some information. In the second line, the MTU, LinkDetails, and other fields are not present, which is indicated by an empty value for the field (no entry between the semicolon delimiters).
+.PP
+
+.B NOTE:
+The following example exceeds the available width of the page. For readability, a blank line is shown between lines to make it clear where the line ends. In an actual link file, no blank lines are used.
+
+.PP
+
+.br
+25g;2048;0;IO Server Link;11m;S4567;cable
+.br
+model 456;0x0002c9020020e004;1;bender-eth2;0x0002c9020020e004;NIC;
+.br
+Some info about port;0x0011750007000df6;7;Switch 1234 Leaf 4;;SW;
+.br
+
+
+
+.br
+
+.br
+25g;;0;;;;;0x0002c9020025a678;1;mindy2-eth2;;NIC;;
+.br
+0x0011750007000e6d;4;Switch 2345 Leaf 5;;SW;
+
+.SH ethtopology\(ulNICs.txt
+
+.PP
+This file can be found in /usr/share/eth-tools/samples/. For brevity, this sample shows only two nodes.
+.PP
+
+.br
+0x0002c9020020e004;bender-eth2;More details about node
+.br
+
+0x0002c9020025a678;mindy2-eth2;Node details
+
+.br
+
+
+.SH ethtopology\(ulSWs.txt
+
+.PP
+This file can be found in /usr/share/eth-tools/samples/. For brevity, this sample shows only two nodes.
+.PP
+
+.br
+0x0011750007000df6;Switch 1234 Leaf 4;
+.br
+
+0x0011750007000e6d;Switch
+.br
+2345 Leaf 5;
+
+.br
+
+
+.SH Example
+
+.PP
+When run against the supplied topology input files, /usr/share/eth-tools/samples/ethgentopology produces:
+.PP
+
+.br
+<?xml version="1.0" encoding="utf-8" ?>
+.br
+
+<Topology>
+.br
+
+<LinkSummary>
+.br
+
+<Link>
+.br
+
+<Rate>25g</Rate>
+.br
+
+<MTU>2048</MTU>
+.br
+
+<Internal>0</Internal>
+.br
+
+<LinkDetails>IO Server Link</LinkDetails>
+.br
+
+<Cable>
+.br
+
+<CableLength>11m</CableLength>
+.br
+
+<CableLabel>S4567</CableLabel>
+.br
+
+<CableDetails>cable model 456</CableDetails>
+.br
+
+</Cable>
+.br
+
+<Port>
+.br
+
+<IfAddr>0x001175010020e004</IfAddr>
+.br
+
+<PortNum>1</PortNum>
+.br
+
+<NodeDesc>bender-eth2</NodeDesc>
+.br
+
+<MgmtIfAddr>0x001175010020e004</MgmtIfAddr>
+.br
+
+<NodeType>NIC</NodeType>
+.br
+
+<PortDetails>Some info about port</PortDetails>
+.br
+
+</Port>
+.br
+
+<Port>
+.br
+
+<IfAddr>0x0011750107000df6</IfAddr>
+.br
+
+<PortNum>7</PortNum>
+.br
+
+<NodeDesc>Switch 1234 Leaf 4</NodeDesc>
+.br
+
+<NodeType>SW</NodeType>
+.br
+
+</Port>
+.br
+
+</Link>
+.br
+
+<Link>
+.br
+
+<Rate>25g</Rate>
+.br
+
+<Internal>0</Internal>
+.br
+
+<Cable>
+.br
+
+</Cable>
+.br
+
+<Port>
+.br
+
+<IfAddr>0x001175010025a678</IfAddr>
+.br
+
+<PortNum>1</PortNum>
+.br
+
+<NodeDesc>mindy2-eth2</NodeDesc>
+.br
+
+<NodeType>NIC</NodeType>
+.br
+
+</Port>
+.br
+
+<Port>
+.br
+
+<IfAddr>0x0011750107000e6d</IfAddr>
+.br
+
+<PortNum>4</PortNum>
+.br
+
+<NodeDesc>Switch 2345 Leaf 5</NodeDesc>
+.br
+
+<NodeType>SW</NodeType>
+.br
+
+</Port>
+.br
+
+</Link>
+.br
+
+</LinkSummary>
+.br
+
+<Nodes>
+.br
+
+<NICs>
+.br
+
+<Node>
+.br
+
+<IfAddr>0x0002c9020020e004</IfAddr>
+.br
+
+<NodeDesc>bender-eth2</NodeDesc>
+.br
+
+<NodeDetails>More details about node</NodeDetails>
+.br
+
+</Node>
+.br
+
+<Node>
+.br
+
+<IfAddr>0x0002c9020025a678</IfAddr>
+.br
+
+<NodeDesc>mindy2-eth2</NodeDesc>
+.br
+
+<NodeDetails>Node details</NodeDetails>
+.br
+
+</Node>
+.br
+
+</NICs>
+.br
+
+<Switches>
+.br
+
+<Node>
+.br
+
+<IfAddr>0x0011750107000df6</IfAddr>
+.br
+
+<NodeDesc>Switch 1234 Leaf 4</NodeDesc>
+.br
+
+</Node>
+.br
+
+<Node>
+.br
+
+<IfAddr>0x0011750107000e6d</IfAddr>
+.br
+
+<NodeDesc>Switch 2345 Leaf 5</NodeDesc>
+.br
+
+</Node>
+.br
+
+</Switches>
+.br
+
+</Nodes>
+.br
+
+</Topology>
+
+.br

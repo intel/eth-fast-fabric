@@ -1,0 +1,44 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethfabricinfo 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethfabricinfo
+
+
+.PP
+Provides a brief summary of the components in the fabric.
+.PP
+ethfabricinfo can be very useful as a quick assessment of the fabric state. It can be run against a known good fabric to identify its components and then later run to see if anything has changed about the fabric configuration or state.
+.PP
+For more extensive fabric analysis, use ethreport. These tools can be found in the
+\fIIntel(R) Ethernet Fabric Suite FastFabric User Guide\fR
+
+.
+.SH Syntax
+ethfabricinfo [-E  \fIfile\fR] [-X  \fIsnapshot\(ulinput\fR]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+.TP 10
+-E \fIfile\fR
+
+Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml.
+.TP 10
+-X \fIsnapshot\(ulinput\fR
+
+Generates a report using data in \fIsnapshot\(ulinput\fR file.
+
+.SH Example
+ethfabricinfo
+.br
+
+ethfabricinfo -X snapshot.xml

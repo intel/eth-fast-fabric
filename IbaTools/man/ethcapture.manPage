@@ -1,0 +1,82 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethcapture 1 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethcapture
+
+
+.PP
+Captures critical system information into a zipped tar file. The resulting tar file should be sent to Customer Support along with any Intel(R) Ethernet Fabric problem report regarding this system.
+.PP
+
+.B NOTE:
+The resulting host capture file can require significant amounts of space on the host. The actual size varies, but sizes can be multiple megabytes. Intel recommends ensuring that adequate disk space is available on the host system.
+
+.SH Syntax
+ethcapture [-d  \fIdetail\fR]  \fIoutput\(ultgz\(ulfile\fR
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-d \fIdetail\fR
+
+Captures level of detail:
+.RS
+.TP 10
+
+.sp
+1 (Local)
+Obtains local information from host. This is the default if no options are entered.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+2 (Fabric)
+In addition to \fILocal\fR, also obtains basic fabric information by queries to the SM and fabric error analysis using \fBethreport\fR.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+3 (Analysis)
+In addition to \fIFabric\fR, also obtains ethallanalysis results. If ethallanalysis has not yet been run, it is run as part of the capture.
+
+.RE
+
+
+.TP 10
+.BR
+
+.PP
+
+.B NOTE:
+Detail levels 2 - 3 can be used when fabric operational problems occur. If the problem is node-specific, detail level 1 should be sufficient. Detail levels 2 - 3 require an operational Fabric. Typically your support representative requests a given detail level. If a given detail level takes excessively long or fails to be gathered, try a lower detail level.
+
+.PP
+For detail levels 2 - 3, the additional information is only available on a node with Intel(R) Ethernet Fabric Suite FastFabric Toolset installed.
+
+.TP 10
+\fIoutput\(ultgz\(ulfile\fR
+
+Specifies the name of a file to be created by ethcapture. The file name specified is overwritten if it already exists. Intel recommends using the .tgz suffix in the file name supplied. If the filename given does not have a .tgz suffix, the .tgz suffix is added.
+
+.SH Examples
+ethcapture mycapture.tgz
+.br
+
+ethcapture -d 3 030127capture.tgz

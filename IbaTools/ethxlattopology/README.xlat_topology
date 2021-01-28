@@ -1,0 +1,34 @@
+[ICS VERSION STRING: unknown]
+
+Script ethxlattopology and accompanying sample spreadsheet minimal_topology.xlsx
+and detailed_topology.xlsx (named as topology.xlsx hence forth)
+provide the capability to document the topology of a customer cluster,
+and generate a topology XML file based on that topology ("translate"
+the spread sheet to a topology file).  The topology file can be used
+to bring up and verify the cluster.  The exact steps to be used in
+the verification process are beyond the scope of this description.
+
+topology.xlsx provides a standard format for representing each
+external link in a cluster.  Each link contains source, destination
+and cable fields with one link per line (row) of the spread sheet.  Link
+fields must not contain commas.  Source and destination fields each are:
+Rack Group ("rack row"), Rack, Name (primary name), Name-2 (secondary name),
+Port Number and Port Type.  Cable fields are: Label, Length and Details.
+
+ethxlattopology takes as inputs the CSV (Comma-Separated-Values) form of
+the topology.xlsx cluster tab, and CSV files for (internal) core switch
+links.  The CSV spread sheet cluster tab is named topology.csv; the core
+switch links files are linksum_swd06.csv and linksum_swd24.csv respectively.
+topology.csv is created from topology.xlsx by saving/exporting the tab as
+'CSV' to topology.csv.  (topology.csv should be inspected to ensure that
+output rows contain the correct number of link fields; extraneous entries
+on the spread sheet can cause excel to output extra fields.). The
+linksum_swd06.csv and linksum_swd24.csv are created by saving/exporting
+from the 'linksum_swd06' and 'linksum_swd24' tab respectively.
+ethxlattopology produces as output one or more topology files 'topology.xml'.
+Output at the top-level as well as (optionally) Group, Rack, and Switch
+level can be produced.  Input files must be present in the directory from
+which the script operates.
+
+See release notes for more information on using ethxlattopology and
+topology.xlsx.

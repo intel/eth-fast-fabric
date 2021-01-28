@@ -1,0 +1,49 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethfastfabric 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethfastfabric
+
+
+.PP
+Starts the top-level Intel(R) Ethernet Fabric Suite FastFabric Text-based User Interface (TUI) menu to enable setup and configuration.
+.PP
+Refer to the
+\fIIntel(R) Ethernet Fabric Suite FastFabric User Guide\fR
+
+for details on this tool.
+.SH Syntax
+ethfastfabric
+.SH Options
+
+.PP
+None.
+.SH Example
+#ethfastfabric
+.br
+
+ Intel Ethernet FastFabric Tools
+.br
+
+ Version:  \fIX.X.X.X.X\fR
+.br
+
+
+.br
+
+     1) Host Setup
+.br
+
+     2) Host Verification/Admin
+.br
+
+
+.br
+
+     X) Exit (or Q)

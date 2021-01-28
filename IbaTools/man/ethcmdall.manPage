@@ -1,0 +1,120 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethcmdall 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethcmdall
+
+
+.PP
+
+\fB(Linux)\fR
+Executes a command on all hosts. This powerful command can be used for configuring servers, verifying that they are running, starting and stopping host processes, and other tasks.
+.PP
+
+.B NOTE:
+ethcmdall depends on the Linux* convention that utilities return 0 for success and >0 for failure. If ethcmdall is used to execute a non-standard utility like diff or a program that uses custom exit codes, then ethcmdall may erroneously report "Command execution FAILED" when it encounters a non-zero exit code. However, command output is still returned normally and the error may be safely ignored.
+
+.SH Syntax
+ethcmdall [-pqP] [-f  \fIhostfile\fR] [-h  \fIhosts\fR] [-u  \fIuser\fR]
+.br
+
+[-T  \fItimelimit\fR]  \fIcmd\fR
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-p
+
+Runs command in parallel on all hosts.
+
+.TP 10
+-q
+
+Quiet mode, do not show command to execute.
+
+.TP 10
+-P
+
+Outputs the hostname as prefix to each output line. This can make script processing of output easier.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts in cluster. Default is /etc/eth-tools/hosts file.
+
+.TP 10
+-h \fIhost\fR
+
+Specifies the list of hosts to execute command on.
+
+.TP 10
+-u \fIuser\fR
+
+Specifies the user to perform the command as:
+.RS
+
+.IP \(bu
+For hosts, the default is current user code.
+
+.RE
+
+
+.TP 10
+-T \fItimelimit\fR
+
+Specifies the time limit in seconds when running host commands. Default is -1 (infinite).
+
+.SH Examples
+
+
+.SH Operations on Host
+ethcmdall date
+.br
+
+ethcmdall \[aq]uname -a\[aq]
+.br
+
+ethcmdall -h \[aq]elrond arwen\[aq] date
+.br
+
+HOSTS=\[aq]elrond arwen\[aq] ethcmdall date
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+When -p option is used, maximum concurrent operations are performed.
+
+.TP 10
+\fBFF\(ulSERIALIZE\(ulOUTPUT\fR
+
+Serialize output of parallel operations (yes or no).
+
+.SH Notes
+
+.PP
+All commands performed with ethcmdall must be non-interactive in nature. ethcmdall waits for the command to complete before proceeding. For example, when running host commands such as rm, the -i option (interactively prompt before removal) should not be used. (Note that this option is sometimes part of a standard bash alias list.) For further information about Linux* operating system commands, consult the man pages.
+.PP
+When performing ethcmdall against hosts, internally SSH is used. The command ethcmdall requires that password-less SSH be set up between the host running the Intel(R) Ethernet Fabric Suite FastFabric Toolset and the hosts ethcmdall is operating against. The ethsetupssh FastFabric tool can aid in setting up password-less SSH.

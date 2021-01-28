@@ -1,0 +1,204 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethlinkanalysis 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethlinkanalysis
+
+
+.PP
+Encapsulates the capabilities for link analysis. Additionally, this tool includes cable and fabric topology verification capabilities. This tool is built on top of ethreport (and its analysis capabilities), and accepts the same syntax for input topology and snapshot files.
+.PP
+In addition to being able to run assorted ethreport link analysis reports, and generate human-readable output, this tool additionally analyzes the results and appends a concise summary of issues found to the FF\(ulRESULT\(ulDIR/punchlist.csv file.
+.SH Syntax
+ethlinkanalysis [-U] [-T  \fItopology\(ulinputs\fR] [-X  \fIsnapshot\(ulinput\fR] [-x  \fIsnapshot\(ulsuffix\fR]
+.br
+
+[-c  \fIfile\fR] [-E file] [-p planes] reports ...
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-U
+
+Omits unexpected devices and links in punchlist file from verify reports.
+
+.TP 10
+-T \fItopology\(ulinputs\fR
+
+Specifies the name of topology input filenames separated by space. See
+\fIethreport\fR
+for more information on topology\(ulinput files.
+
+.TP 10
+-X \fIsnapshot\(ulinput\fR
+
+Performs analysis using data in  \fIsnapshot\(ulinput\fR.  \fIsnapshot\(ulinput\fR must have been generated via a previous ethreport -o snapshot run.
+
+.TP 10
+-x \fIsnapshot\(ulsuffix\fR
+
+Creates a snapshot file. The files are created in FF\(ulRESULT\(ulDIR with names of the form: snapshotSUFFIX.xml.
+
+.TP 10
+-c \fIfile\fR
+
+Specifies the error thresholds configuration file. The default is /etc/eth-tools/ethmon.si.conf.
+
+.TP 10
+-E \fIfile\fR
+
+Ethernet Mgt configuration file. The default is /etc/eth-tools/mgt\(ulconfig.xml.
+
+.TP 10
+-p \fIplanes\fR
+
+Fabric planes separated by space.. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
+
+.TP 10
+\fIreports\fR
+
+Supports the following reports:
+.RS
+.TP 10
+
+.sp
+errors
+Specifies link error analysis.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+slowlinks
+Specifies links running slower than expected.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+misconfiglinks
+Specifies links configured to run slower than supported.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+misconnlinks
+Specifies links connected with mismatched speed potential.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+all
+Includes all reports above. (errors, slowlinks, misconfiglinks, and misconnlinks)
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifylinks
+Verifies links against topology input.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifyextlinks
+Verifies links against topology input. Limits analysis to links external to systems.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifyniclinks
+Verifies links against topology input. Limits analysis to NIC links.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifyislinks
+Verifies links against topology input. Limits analysis to inter-switch links.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifyextislinks
+Verifies links against topology input. Limits analysis to inter-switch links external to systems.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifynics
+Verifies NICs against topology input.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifysws
+Verifies switches against topology input.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifynodes
+Verifies NICs and switches against topology input.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+verifyall
+Verifies links, NICs, and switches against topology input.
+
+.RE
+
+
+.PP
+A punchlist of bad links is also appended to the file: FF\(ulRESULT\(ulDIR/punchlist.csv
+.SH Examples
+ethlinkanalysis errors
+.br
+
+ethlinkanalysis slowlinks

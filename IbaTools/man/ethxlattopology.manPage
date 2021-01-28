@@ -1,0 +1,238 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethxlattopology 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethxlattopology
+
+
+.PP
+Generates a topology XML file of a cluster using your customized <topologyfile>.csv and core switch linksum files, e.g. linksum\(ulswd06.csv, and linksum\(ulswd24.csv as input. The output topology XML file can be used to bring up and verify the cluster.
+.SH Syntax
+ethxlattopology [-d  \fIlevel\fR] [-v  \fIlevel\fR] [-i  \fIlevel\fR] [-K] [-f  \fIlinkfiles\fR]
+.br
+
+[-o  \fIreport\fR] [source [dest]]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-d \fIlevel\fR
+
+Specifies the output detail level. Default is 0. Levels are additive.
+
+.IP
+By default, the top level is always produced. Switch, rack, and rack group topology files can be added to the output by choosing the appropriate level. If the output at the group or rack level is specified, then group or rack names must be provided in the spreadsheet. Detailed output can be specified in any combination. A directory for each topology XML file is created hierarchically, with group directories (if specified) at the highest level, followed by rack and switch directories (if specified).
+.RS
+.TP 10
+
+.sp
+1
+Core switch topology files.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+2
+Rack topology files.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+4
+Rack group topology files.
+
+.RE
+
+.TP 10
+-v \fIlevel\fR
+
+Specifies the verbose level. Range is 0 - 8. Default is 2.
+
+.RS
+.TP 10
+
+.sp
+0
+No output.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+1
+Progress output.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+2
+Reserved.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+4
+Time stamps.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+8
+Reserved.
+
+.RE
+
+.TP 10
+-i \fIlevel\fR
+
+Specifies the output indent level. Default is 4.
+
+.TP 10
+-K
+
+Specifies DO NOT clean temporary files.
+
+.IP
+Prevents temporary files in each topology directory from being removed. Temporary files contain CSV formatted lists of links, NICs, and switches used to create a topology XML file. Temporary files are not typically needed after a topology file is created, or can be retained for subsequent inspection or processing.
+.TP 10
+-f \fIlinkfiles\fR
+
+Specifies the space separated core switch linksum files.
+
+.TP 10
+-o report
+
+Specifies the report type for output. By default, all the sections are generated.
+
+.IP
+Report Types:
+.RS
+.TP 10
+
+.sp
+brnodes
+Creates the <Node> section xml for the csv input.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+links
+Creates the <LinkSummary> section xml for the csv input.
+
+.RE
+
+.TP 10
+source
+
+Specifies the source csv file. Default is topology.csv.
+
+.TP 10
+dest
+
+Specifies the output xml file. Default is topology.xml
+
+.IP
+The default output file name can be used to specify destination folder.
+.SH Description
+
+.PP
+The ethxlattopology script reads your customized <topologyfile>.csv file from the local directory, and reads the core switch linksum files specified by -f argument. Two sample topology XLSX files, detailed\(ultopology.xlsx and minimal\(ultopology.xlsx, are located in the /usr/share/eth-tools/samples/ directory. You must create your <topologyfile>.csv file by editing one of the sample spreadsheets and saving the Fabric Links tab as a CSV file. Inspect your <topologyfile>.csv file to ensure that each row contains the correct and same number of comma separators. Any extraneous entries in the spreadsheet can cause the CSV output to have extra fields. Do the same thing on the "Internal xxx Links" tab to create your own internal core switch linksum csv files.
+.SH Example
+ethxlattopology -f "/usr/share/eth-tools/samples/linksum\(ulswd06.csv /usr/share/eth-tools/samples/linksum\(ulswd24.csv" /tmp/detailed\(ultopology.csv
+.br
+
+Parsing linksum file: /usr/share/eth-tools/samples/linksum\(ulswd06.csv
+.br
+
+Parsing linksum file: /usr/share/eth-tools/samples/linksum\(ulswd24.csv
+.br
+
+Parsing /tmp/detailed\(ultopology.csv
+.br
+
+Generating links for Core:core1
+.br
+
+Generating links for Core:core2
+.br
+
+Processing Leaves of partially populated Core:core2
+.br
+
+Processing spines of partially populated Core:core2
+.br
+
+Generating topology.xml file(s)
+.br
+
+Done
+.PP
+Both sample files contain examples of links between NIC and Edge SW (rows 4-7), NIC and Core SW (rows 8-11), and Edge SW and Core SW (rows 12-15).
+.SH Environment Variables
+
+.PP
+The following environment variables allow user-specified MTU.
+.TP 10
+\fBMTU\(ulSW\(ulSW\fR
+
+If set, it overrides default MTU on switch-to-switch links. Default is 10240
+
+.TP 10
+\fBMTU\(ulSW\(ulNIC\fR
+
+If set, it overrides default MTU on switch-to-NIC links. Default is 10240
+
+.SH Multi-Rail and Multi-Plane Fabrics
+
+.PP
+For Multi-Rail/Multi-Plane fabrics, you have the following options:
+.IP \(bu
+For Multi-Rail fabrics or for a Single Plane fabric with some multi-ported hosts, you can create multiple rows for a host with different Port names, and then follow the standard procedure to generate <topologyfile>.xml.
+.IP \(bu
+For a Multi-Plane fabric with identical planes, the tool can be run multiple times on the same <topologyfile>.csv modified with different port names.
+For example, if there are two identical fabrics (fabric\(ul1 and fabric\(ul2) connected to a single host with two NICs (eth2 and eth3), the tool can be run twice like this:
+
+.IP \(bu
+For fabric\(ul1:
+.br
+
+In <topologyfile>.csv, set port name to be eth2 for hosts.
+
+.IP \(bu
+For fabric\(ul2:
+.br
+
+In <topologyfile>.csv, set port name to be eth3 for hosts.
+
+.IP \(bu
+For a fabric with both Multi-Rail and Multi-Plane segments, you can use a combination of the above techniques to generate the desired <topologyfile>.xml file.

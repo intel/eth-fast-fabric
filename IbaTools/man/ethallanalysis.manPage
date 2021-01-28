@@ -1,0 +1,81 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethallanalysis 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethallanalysis
+
+
+.PP
+ethallanalysis command performs the set of analysis specified in FF\(ulALL\(ulANALYSIS and can be specified for fabric or hosts.
+.SH Syntax
+ethallanalysis [-b|-e] [-s] [-d  \fIdir\fR] [-c  \fIfile\fR] [-T  \fItopology\(ulinput\fR]
+[-E  \fIfile\fR] [-p  \fIplanes\fR]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+.TP 10
+-b
+
+Sets the baseline mode. Default is compare/check mode.
+.TP 10
+-e
+
+Evaluates health only. Default is compare/check mode.
+.TP 10
+-s
+
+Saves history of failures (errors/differences).
+.TP 10
+-d \fIdir\fR
+
+Identifies the top-level directory for saving baseline and history of failed checks. Default is /var/usr/lib/eth-tools/analysis
+.TP 10
+-c \fIfile\fR
+
+Specifies the error thresholds configuration file. Default is /etc/eth-tools/ethmon.conf
+.TP 10
+-E \fIfile\fR
+
+Ethernet Mgt configuration file. The default is /etc/eth-tools/mgt\(ulconfig.xml.
+
+.TP 10
+-p \fIplanes\fR
+
+Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
+
+.TP 10
+-T \fItopology\(ulinputs\fR
+
+Specifies the name of topology input filenames separated by space. See
+\fIethreport\fR
+for more information on topology\(ulinput files.
+
+.SH Example
+ethallanalysis
+.br
+
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBFF\(ulANALYSIS\(ulDIR\fR
+
+Top-level directory for baselines and failed health checks.
+.SH Details
+
+.PP
+The ethallanalysis command performs the set of analysis specified in \fBFF\(ulALL\(ulANALYSIS\fR, which must be a space-separated list. This can be provided by the environment or using /etc/eth-tools/ethfastfabric.conf. The analysis set includes the options: fabric.
+.PP
+Note that the ethallanalysis command has options which are a super-set of the options for all other analysis commands. The options are passed along to the respective tools as needed. For example, the -c file option is passed on to ethfabricanalysis if it is specified in \fBFF\(ulALL\(ulANALYSIS\fR.
+.PP
+The output files are all the output files for the \fBFF\(ulALL\(ulANALYSIS\fR selected set of analysis. See the previous sections for the specific output files.

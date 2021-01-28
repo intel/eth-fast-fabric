@@ -1,0 +1,93 @@
+Name: eth-tools
+Version: 11.0.0.0
+Release: 156%{?dist}
+Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management.
+
+Group: System Environment/Libraries
+License: BSD 
+Url: https://github.com/intel/eth-fast-fabric
+# tarball created by:
+# git clone https://github.com/intel/eth-fast-fabric.git
+# cd eth-fast-fabric
+# tar czf eth-tools.tgz --exclude-vcs .
+Source: eth-tools.tgz
+ExclusiveArch: x86_64
+# The Intel(R) Ethernet Fabric Suite product line is only available on x86_64 platforms at this time.
+
+__RPM_DEBUG_PKG
+
+%description
+This package contains the tools necessary to manage an Intel(R) Ethernet fabric.
+IFSComponent: Tools_FF __RPM_VERSION.__RPM_RELEASE
+
+%package basic
+Summary: Managment level tools and scripts.
+Group: System Environment/Libraries
+
+Requires: rdma bc
+
+Requires: __RPM_REQ_BASIC1
+Requires: __RPM_REQ_BASIC2
+BuildRequires: __RPM_BLDREQ1
+BuildRequires: __RPM_BLDREQ2
+__RPM_EPOCH_BASIC
+
+%description basic
+Contains basic tools for fabric managment necessary on all compute nodes.
+IFSComponent: Tools_FF __RPM_VERSION.__RPM_RELEASE
+
+%package fastfabric
+Summary: Management level tools and scripts.
+Group: System Environment/Libraries
+Requires: eth-tools-basic cronie
+
+__RPM_EPOCH_FF
+
+%description fastfabric
+Contains tools for managing fabric on a managment node.
+IFSComponent: Tools_FF __RPM_VERSION.__RPM_RELEASE
+
+%prep
+#rm -rf %{_builddir}/*
+#tar xzf %_sourcedir/%name.tgz
+
+%setup -q -c
+
+%build
+cd OpenIb_Host
+__RPM_FS ./ff_build.sh %{_builddir} $BUILD_ARGS
+
+%install
+BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=/usr/lib DSAP_LIBDIR=%{_libdir} ./OpenIb_Host/ff_install.sh
+
+%preun fastfabric
+cd /usr/src/eth/mpi_apps >/dev/null 2>&1
+make -k clean >/dev/null 2>&1 || : # suppress all errors and return codes from the make clean.
+
+%files basic
+__RPM_BASIC_FILES
+%config(noreplace) %{_sysconfdir}/eth-tools/mgt_config.xml
+
+%files fastfabric
+__RPM_FF_FILES
+%{_sysconfdir}/eth-tools/ethmon.si.conf
+# Replace ethmon.si.conf, as it's a template config file.
+%config(noreplace) %{_sysconfdir}/eth-tools/ethfastfabric.conf
+%config(noreplace) %{_sysconfdir}/eth-tools/ethmon.conf
+%config(noreplace) %{_sysconfdir}/eth-tools/allhosts
+%config(noreplace) %{_sysconfdir}/eth-tools/chassis
+%config(noreplace) %{_sysconfdir}/eth-tools/hosts
+#%%config(noreplace) %%{_sysconfdir}/eth-tools/ports
+%config(noreplace) %{_sysconfdir}/eth-tools/switches
+#%%config(noreplace) %%{_sysconfdir}/cron.d/eth-tools-cablehealth
+%config(noreplace) /usr/lib/eth-tools/osid_wrapper
+
+
+%changelog
+* Mon Feb 26 2018 Jijun Wang <jijun.wang@intel.com> - 10.8.0.0
+- Added epoch for RHEL address-resolution, basic and fastfabric
+- Added component information in description for all rpms
+* Thu Apr 13 2017 Scott Breyer <scott.j.breyer@intel.com> - 10.5.0.0
+- Updates for spec file cleanup
+* Fri Oct 10 2014 Erik E. Kahn <erik.kahn@intel.com> - 1.0.0-ifs
+- Initial version

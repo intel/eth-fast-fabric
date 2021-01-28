@@ -1,0 +1,43 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethxmlindent 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethxmlindent
+
+
+.PP
+Takes well-formed XML as input, filters out comments, and generates a uniformly-indented equivalent XML file. Use ethxmlindent to reformat files for easier reading and review, also to reformat a file for easy comparison with diff.
+.SH Syntax
+ethxmlindent [-t|-k] [-i  \fIindent\fR] [ \fIinput\(ulfile\fR]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-t
+
+Trims leading and trailing whitespace in tag contents.
+
+.TP 10
+-k
+
+In tags with purely whitespace that contain newlines, keeps newlines as-is. Default is to format as an empty list.
+
+.TP 10
+-i \fIindent\fR
+
+Sets indentation to use per level. Default is 4.
+
+.TP 10
+\fIinput\(ulfile\fR
+
+Specifies the XML file to read. Default is stdin.

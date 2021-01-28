@@ -1,0 +1,82 @@
+# BEGIN_ICS_COPYRIGHT8 ****************************************
+#
+# Copyright (c) 2015-2020, Intel Corporation
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#     * Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Intel Corporation nor the names of its contributors
+#       may be used to endorse or promote products derived from this software
+#       without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# END_ICS_COPYRIGHT8   ****************************************
+# Makefile for Mpi apps
+
+# Include Make Control Settings
+include $(TL_DIR)/$(PROJ_FILE_DIR)/Makesettings.project
+
+DS_SUBPROJECTS	= 
+DSP_SOURCES = Makefile
+
+DIRS			= 
+
+include $(TL_DIR)/$(PROJ_FILE_DIR)/Makerules.project
+
+
+# files used to create mpi_apps.tgz
+INSTALL_TEST_APPS_SRC =	mpi_apps.tgz
+
+CLOBBER_EXTRA = \
+	.ICSBOOTROMVERSIONSTRING \
+	mpi_apps.tgz \
+	# add additional files here
+
+.PHONEY: appl
+
+appl mpi_apps.tgz:
+	tar cvfz mpi_apps.tgz --exclude CVS \
+		Makefile mpi_hosts.sample README prepare_run select_mpi run_bw \
+		get_selected_mpi.sh get_mpi_blas.sh *.params gen_group_hosts gen_mpi_hosts \
+		mpi_cleanup stop_daemons hpl_dat_gen config_hpl2 run_hpl2 run_lat run_imb \
+		run_app runmyapp mpicheck run_mpicheck run_deviation \
+		run_multibw run_mpi_stress run_osu5 run_cabletest run_allniclatency \
+		run_alltoall5 run_bcast5 run_bibw5 run_bw5 run_lat5 run_mbw_mr5 run_multi_lat5 \
+		run_batch_script run_batch_cabletest hpl-count.diff \
+		groupstress deviation \
+		hpl-config/HPL.dat-* hpl-config/README mpicc mpif77 mpicxx;
+# above is a copy from mpi_apps_files in OpenIb_Host/ff_filegroups.sh
+
+cleandepend clean:: clobber
+clobber:: CLOBBER
+CLOBBER::
+	rm -rf $(CLOBBER_EXTRA)
+depend::
+force::
+ALL:: INCLUDES LIBS CMDS
+INCLUDES::
+LIBS::
+# do the real work during CMDS
+CMDS:: $(INSTALL_TEST_APPS_SRC)
+STAGE::
+INSTALL::
+RUNTEST::
+build_dsfiles::
+clobber_dsfiles::
+lint::
+cflow::

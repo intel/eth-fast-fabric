@@ -1,0 +1,91 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethsorthosts 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethsorthosts
+
+
+.PP
+Sorts its standard input in a typical host name order and sorts to standard output. Hosts are sorted alphabetically (case-insensitively) by any alpha-numeric prefix, and then sorted numerically by any numeric suffix. Host names may end in a numeric field which may optionally have leading zeros. Unlike a pure alphabetic sort, this command results in intuitive sequencing of host names such as: host1, host2, host10.
+.PP
+This command does not remove duplicates; any duplicates are listed in adjacent lines.
+.PP
+Use this command to build mpi\(ulhosts input files for applications that place hosts in order by name.
+.SH Syntax
+ethsorthosts < \fIhostlist\fR>  \fIoutput\(ulfile\fR
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+\fIhostlist\fR
+
+Specifies the list of host names.
+
+.TP 10
+\fIoutput\(ulfile\fR
+
+Specifies the sorted list output.
+
+.SH Examples
+ethsorthosts < host.xml > Sorted\(ulhost
+.TP 10
+\fBStandard Input\fR
+
+
+.br
+ethsorthosts
+.br
+
+osd04
+.br
+
+osd1
+.br
+
+compute20
+.br
+
+compute3
+.br
+
+mgmt1
+.br
+
+mgmt2
+.br
+
+login
+.TP 10
+\fBStandard Output\fR
+
+
+.br
+compute3
+.br
+
+compute20
+.br
+
+login
+.br
+
+mgmt1
+.br
+
+mgmt2
+.br
+
+osd1
+.br
+
+osd04

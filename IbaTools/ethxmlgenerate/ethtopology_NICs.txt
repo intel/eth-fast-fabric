@@ -1,0 +1,2 @@
+0x0002c9020020e004;bender-eth2;More details about node
+0x0002c9020025a678;mindy2-eth2;Node details

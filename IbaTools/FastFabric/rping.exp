@@ -1,0 +1,230 @@
+# BEGIN_ICS_COPYRIGHT8 ****************************************
+# 
+# Copyright (c) 2015-2017, Intel Corporation
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+#     * Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Intel Corporation nor the names of its contributors
+#       may be used to endorse or promote products derived from this software
+#       without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# END_ICS_COPYRIGHT8   ****************************************
+
+# [ICS VERSION STRING: unknown]
+
+source /usr/lib/eth-tools/ibtools.exp
+source "/usr/lib/eth-tools/ff_function.exp"
+
+#=============================================================================#
+# Test Suite Description:
+#-----------------------------------------------------------------------------#
+## rping
+## -------
+## RDMA ping test to each host
+#=============================================================================#
+
+# manditory setup
+log_user 0;	# disable detailed logging to stdout
+
+# uncomment the following to debug the test
+#strace 20
+#log_user 1
+#exp_internal 1
+#cmd_trace on
+#strace 4
+
+proc suite_setup {} {
+	# example of conditional setup
+	#test_execute {load populate} {
+		#do some installation or configuration stuff
+	#}
+}
+
+proc case_setup {} {
+# setup to do at start of each test case
+# Usage:
+#	pass as argument to start_suite
+# Arguments:
+#	None
+# This procedure will be run at the start of every test case
+# It provides an opportunity for uniform cleanup/setup for each test case
+
+	#upvar 2 host host
+
+	#host_save_log $host
+}
+
+proc case_cleanup { failed } {
+# cleanup to do after each test case
+# Usage:
+#	pass as argument to start_suite
+# Arguments:
+#	failed - set to 1 if test case failed in which case additional
+#		information/files may be desired in test_tmp
+#		set to 0 if test case passed
+# This procedure will be run at the end of every test case
+# It provides an opportunity for uniform cleanup after each test case
+	global env
+
+	test_execute {} {
+		if { $failed || [ test_save_temp ] } {
+			# save any logs/results from system(s) under test
+			#upvar host host
+			#host_check_log $host "qipoib"
+		}
+	}
+}
+
+proc run_rdma_ping {server_host server_port client ping_count} {
+	global env
+
+	target_root_sh $server_host
+	unix_cmd 30 "" "killall rping"
+	send_unix_cmd "ip a show dev $server_port"
+	set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
+	if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy ip_addr]} {
+		fail_test "Couldn't find ip address for $server_host:$server_port"
+	}
+	check_exit_status 30 0
+	target_root_sh_exit
+
+	init_subprocesses
+
+	subprocess {
+		target_root_sh $server_host
+		send_unix_cmd "rping -svda $ip_addr"
+		expect_list 60 {"rdma_listen"} {"rping -s [-vVd]" "Cannot assign requested address" "Bad file descriptor"}
+		check_exit_status 60 0
+		target_root_sh_exit
+	}
+
+	subprocess {
+		after 5000
+		target_root_sh $client
+		send_unix_cmd "echo TX: \$(rping -cva $ip_addr -C $ping_count | grep 'ping data: rdma-ping' | wc -l)"
+		set out [expect_list 20 {"(?n)^TX:.*"} {"error"}]
+		if {![regexp {: ([0-9]+)} $out dummy tx_count] || "$tx_count" == "0" } {
+			fail_test "rping from $client to $server_host failed"
+		}
+		if {"$tx_count" != "$ping_count"} {
+			fail_test "Only $tx_count/$ping_count rpings successed"
+		}
+		target_root_sh_exit
+	}
+
+	wait_subprocesses
+}
+
+proc test_case_rping {server server_ports client {ping_count 5} {punchlist 0}} {
+##
+## test_case_rping
+## -------------------
+## test_case to verify all other hosts can rping to this host
+##
+## Usage:
+##	test_case_rping host ports [ping_count]
+## Arguments:
+##	server - host to run as rping server
+##	server_ports - the network interfaces for the rping server
+##	client - host to run as rping client
+##	ping_count - number of messages to transfer in rping test, default is 5
+##	punchlist - should punchlist be updated on failure (default=0=no)
+## Returns:
+##	None
+## Additional Information:
+##	must be used within a test_suite's body, performs test_case calls
+##	uses case_setup and case_cleanup provided by caller
+##	no item_setup nor item_cleanup used
+	global env
+
+	test_case "$server" "$server rping" "test rping of $server
+confirm all other hosts can communicate to it
+File: /usr/lib/eth-tools/rping.exp" case_setup case_cleanup {
+		upvar server server
+		upvar server_ports server_ports
+		upvar client client
+		upvar ping_count ping_count
+		upvar punchlist punchlist
+
+		set driver "ice"
+		target_root_sh $server
+		unix_cmd 10 0 "type rping"
+
+		if {"$server_ports" == ""} {
+			send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
+			set out [expect_list 20 {"(?n)^PORTS:.*"}]
+			if {![regexp {: ([\w ]+)} $out dummy server_ports]} {
+				fail_test "No $driver interfaces found"
+			}
+			check_exit_status 30 0
+		}
+		target_root_sh_exit
+		foreach port $server_ports {
+			if { [ catch { set res [
+				test_item "$port-$client" "$client to $server:$port" "RDMA ping from $client to $server" noop cleanup_all_children {
+					run_rdma_ping $server $port $client $ping_count
+			} ] } err_str2 ] != 0  || $res != 0 } {
+				if { $punchlist } {
+					append_punchlist "$client" "unable to rping $server:$port via RDMA"
+				}
+			}
+		}
+	}
+}
+
+test_suite "rping" "rdma ping" "Ping test to each host via RDMA
+File: /usr/lib/eth-tools/rping.exp" suite_setup noop {
+	# Global Initializations for Test Suite:
+	# --------------------------------------
+
+	# ADD ANY GLOBAL INITIALIZATION HERE, SUCH AS:
+	# set env(MY_ENV_VAR) value
+	# also validate the environment
+	# if the environment is bad call fail_suite "information" abort_now
+	# abort_now should be 0 if it is safe to proceed and simply ignore all
+	# test_case calls.  it should be 1 if that is not possible.
+
+	# Procedures used to support Test Suite:
+	# --------------------------------------
+
+	# The actual test cases:
+	# ----------------------
+
+	set hrange {}
+	set hindex -1
+	foreach hp [split $env(CFG_HOST_PORTS) ";"] {
+		incr hindex
+		set key_value [split $hp ":"]
+		set HOST_PORTS([lindex $key_value 0]) [lindex $key_value 1]
+		lappend hrange $hindex
+	}
+	# test rping between one host and the next host in host list to ensure each host
+	# can run rping server and client correctly. E.g. for host1,...,hostN, we test
+	# (host1, host2), (host2, host3), ..., (hostN-1, hostN) and (hostN, host1)
+	parallel hindex $hrange {
+		set next [expr $hindex + 1]
+		if { $next == [llength $hrange] } {
+			set next 0
+		}
+		set shost [lindex [array names HOST_PORTS] $hindex]
+		set chost [lindex [array names HOST_PORTS] $next]
+		test_case_rping $shost $HOST_PORTS($shost) $chost 5 1
+	}
+}

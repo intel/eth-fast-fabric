@@ -1,0 +1,186 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH eth2rm 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+eth2rm
+
+
+.PP
+Permits the generation of configuration files for FastFabric or resource managers from a topology xml file.
+.PP
+When using a topology spreadsheet and ethxlattopology to design and prepare for deployment verification of a fabric, eth2rm may be used to generate resource manager configuration from the planned cluster design. Using this approach will allow the resulting configuration files to be complete, even if some nodes in the fabric have not yet been installed or made operational. Alternatively, ethreport -o topology can be used to generate a topology XML file for input to eth2rm. In this case, only the currently present nodes will be included.
+.PP
+When working with SLURM, the eth2rm -o slurm option should typically be used. This option will generate a SLURM configuration file that lists the hosts directly connected to each switch in a syntax that can be used by SLURM\[aq]s topology/tree plugin. It also generates a single "fake" switch shown as connecting all the other switches together. This approach allows for SLURM job placement to be improved while avoiding undo overhead in SLURM. This option also allows for topologies that are not a pure fat-tree.
+.PP
+When the configuration is a pure fat tree or oversubscribed fat tree, the eth2rm -o slurmfull option may be used to generate the full description of the fabric, including all intermediate and core switches in the fat tree topology. This option may permit better job placement optimization than the output from the eth2rm -o slurm option. However for larger fabrics, it may also increase the overhead within SLURM.
+.SH Syntax
+eth2rm [-v] [-q] -o  \fIoutput\fR [-g|-u|-t] [-F  \fIpoint\fR] [-p  \fIprefix\fR] [-s  \fIsuffix\fR] topology\(ulinput
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-v/--verbose
+
+Specifies verbose output.
+
+.TP 10
+-q/--quiet
+
+Disables progress reports.
+
+.TP 10
+-o/--output \fIoutput\fR
+
+Specifies the output type:
+
+.RS
+.TP 10
+
+.sp
+slurm
+SLURM tree nodes. Supports a variety of topologies.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+slurmfull
+SLURM fat tree nodes and ISLs. Only supports pure trees.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+hosts
+FastFabric hosts file omitting this host
+
+.RE
+
+.TP 10
+-g/--guid
+
+Specifies the output switch GUIDs instead of names.
+
+.TP 10
+-u/--underscore
+
+Changes spaces in switch names to underscores.
+
+.TP 10
+-t/--trunc
+
+Truncates switch names at first space.
+
+.IP
+This will treat large director switches as a single, big switch.
+.IP
+If -g, -u or -t are not specified, the switch name\[aq]s suffix, after the first space, will be placed at the start of the name. For example, \[aq]core5 Leaf 101\[aq] becomes \[aq]Leaf101\(ulcore5\[aq].
+.TP 10
+-p/--prefix \fIprefix\fR
+
+Specifies the prefix to prepend to all NIC hostnames.
+
+.TP 10
+-s/--suffix \fIsuffix\fR
+
+Specifies the suffix to append to all NIC hostnames.
+
+.TP 10
+-F/--focus \fIpoint\fR
+
+Specifies the focus area for output. Limits the scope of output to links that match any of the given focus points. May be specified up to 10 times.
+
+.TP 10
+-C/--check
+
+Performs more topology file validation. Requires all links to resolve against nodes, all nodes connected to same fabric, and treats any resolution errors as fatal.
+
+.TP 10
+-S/--strict
+
+Performs strict topology file validation. Performs all checks in -C, and requires all nodes to list PortNum and all node list ports used.
+
+.TP 10
+topology\(ulinput
+
+Specifies the topology\(ulinput file to use. \[aq]-\[aq] may be used to specify stdin.
+
+.SH Point Syntax
+
+.TP 10
+node:\fIvalue\fR
+
+\fIvalue\fR is node description (node name).
+
+.TP 10
+node:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is node description (node name); \fIvalue2\fR is port number.
+
+.TP 10
+nodepat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for node description (node name).
+
+.TP 10
+nodepat:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is glob pattern for node description (node name); \fIvalue2\fR is port number.
+
+.TP 10
+nodetype:\fIvalue\fR
+
+\fIvalue\fR is node type (SW or NIC).
+
+.TP 10
+nodetype:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is node type (SW or NIC); \fIvalue2\fR is port number.
+
+.TP 10
+rate:\fIvalue\fR
+
+\fIvalue\fR is string for rate (25g, 50g, 75g, 100g).
+
+.TP 10
+mtucap:\fIvalue\fR
+
+\fIvalue\fR is MTU size (2048, 4096, 8192, 10240); omits switch mgmt port 0.
+
+.TP 10
+linkdetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for link details.
+
+.TP 10
+portdetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for port details to value.
+
+.SH Examples
+eth2rm -o slurm topology.xml
+.br
+
+eth2rm -o slurm -F \[aq]nodepat:compute*\[aq] -F \[aq]nodepat:ethcore1 *\[aq]
+.br
+topology.xml
+.br
+
+eth2rm -o nodes -F \[aq]nodedetpat:compute*\[aq] topology.xml
+.br
+
+eth2rm -o hosts topology.xml

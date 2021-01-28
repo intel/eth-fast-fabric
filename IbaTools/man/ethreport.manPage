@@ -1,0 +1,484 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethreport 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethreport
+
+
+.PP
+Provides powerful fabric analysis and reporting capabilities. Must be run on a host connected to the Intel(R) Ethernet Fabric with the Intel(R) Ethernet Fabric Suite FastFabric Toolset installed.
+.SH Syntax
+ethreport  [-v][-q] [--timeout] [-o  \fIreport\fR]
+.br
+[-d  \fIdetail\fR]
+[-N] [-x] [-X  \fIsnapshot\(ulinput\fR] [-T  \fItopology\(ulinput\fR]
+.br
+[-A] [-c  \fIfile\fR] [-L] [-F  \fIpoint\fR]
+[-Q] [-E  \fIfile\fR]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-v/--verbose
+
+Returns verbose output.
+
+.TP 10
+-q/--quiet
+
+Disables progress reports.
+
+.TP 10
+--timeout
+
+Specifies the timeout (wait time for response) in ms. Default is 1000 ms.
+
+.TP 10
+-o/--output \fIreport\fR
+
+Specifies the report type for output. Refer to
+\fIReport Types\fR
+for details.
+
+.TP 10
+-d/--detail \fIlevel\fR
+
+Specifies the level of detail 0-n for output. Default is 2.
+
+.TP 10
+-N/--noname
+
+Omits node.
+
+.TP 10
+-x/--xml
+
+Produces output in XML.
+
+.TP 10
+-X/--infile \fIsnapshot\(ulinput\fR
+
+Generates a report using the data in the snapshot\(ulinput file. snapshot\(ulinput must have been generated during a previous -o \fIsnapshot\fR run. \[aq]-\[aq] may be used as the snapshot\(ulinput to specify stdin.
+
+.TP 10
+-T/--topology \fItopology\(ulinput\fR
+
+Uses topology\(ulinput file to augment and verify fabric information. When used, various reports can be augmented with information not available electronically. \[aq]-\[aq] may be used to specify stdin.
+
+.TP 10
+-A/--allports
+
+Gets PortInfo for down switch ports.
+
+.TP 10
+-c/--config \fIfile\fR
+
+Specifies the error thresholds configuration file. Default is /etc/eth-tools/ethmon.conf file.
+
+.TP 10
+-E/--ethconfig \fIfile\fR
+
+Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+
+.TP 10
+-L/--limit
+
+Limits operation to exact specified focus with -F for port error counters check (-o \fIerrors\fR). Normally, the neighbor of each selected port is also checked. Does not affect other reports.
+
+.TP 10
+-F/--focus \fIpoint\fR
+
+Specifies the focus area for report.
+
+.IP
+Limits output to reflect a subsection of the fabric. May not work with all reports. (For example, the verify* reports may ignore the option or not generate useful results.)
+.TP 10
+-Q/--quietfocus
+
+Excludes focus description from report.
+
+
+.SH Report Types
+
+.TP 10
+comps
+
+Summary of all systems in fabric.
+
+.TP 10
+brcomps
+
+Brief summary of all systems in fabric.
+
+.TP 10
+nodes
+
+Summary of all node types in fabric.
+
+.TP 10
+brnodes
+
+Brief summary of all node types in fabric.
+
+.TP 10
+ifids
+
+Summary of all ifids in the fabric.
+
+.TP 10
+linkinfo
+
+Summary of all links with ifids in the fabric.
+
+.TP 10
+links
+
+Summary of all links.
+
+.TP 10
+extlinks
+
+Summary of links external to systems.
+
+.TP 10
+niclinks
+
+Summary of links to NICs.
+
+.TP 10
+islinks
+
+Summary of inter-switch links.
+
+.TP 10
+extislinks
+
+Summary of inter-switch links external to systems.
+
+.TP 10
+slowlinks
+
+Summary of links running slower than expected.
+
+.TP 10
+slowconfiglinks
+
+Summary of links configured to run slower than supported, includes slowlinks.
+
+.TP 10
+slowconnlinks
+
+Summary of links connected with mismatched speed potential, includes slowconfiglinks.
+
+.TP 10
+misconfiglinks
+
+Summary of links configured to run slower than supported.
+
+.TP 10
+misconnlinks
+
+Summary of links connected with mismatched speed potential.
+
+.TP 10
+errors
+
+Summary of links whose errors exceed counts in the configuration file.
+
+.TP 10
+otherports
+
+Summary of ports not connected to the fabric.
+
+.TP 10
+verifynics
+
+Compares fabric (or snapshot) NICs to supplied topology and identifies differences and omissions.
+
+.TP 10
+verifysws
+
+Compares fabric (or snapshot) switches to supplied topology and identifies differences and omissions.
+
+.TP 10
+verifynodes
+
+Returns verifynics and verifysws reports.
+
+.TP 10
+verifylinks
+
+Compares fabric (or snapshot) links to supplied topology and identifies differences and omissions.
+
+.TP 10
+verifyextlinks
+
+Compares fabric (or snapshot) links to supplied topology and identifies differences and omissions. Limits analysis to links external to systems.
+
+.TP 10
+verifyniclinks
+
+Compares fabric (or snapshot) links to supplied topology and identify differences and omissions. Limits analysis to links to NICs.
+
+.TP 10
+verifyislinks
+
+Compares fabric (or snapshot) links to supplied topology and identify differences and omissions. Limits analysis to inter-switch links.
+
+.TP 10
+verifyextislinks
+
+Compares fabric (or snapshot) links to supplied topology and identify differences and omissions. Limits analysis to inter-switch links external to systems.
+
+.TP 10
+verifyall
+
+Returns verifynics, verifysws, and verifylinks reports.
+
+.TP 10
+all
+
+Returns comps, nodes, links, extlinks, slowconnlinks, and errors reports.
+
+.TP 10
+snapshot
+
+Outputs snapshot of the fabric state for later use as \fIsnapshot\(ulinput\fR. This implies -x. May not be combined with other reports. When selected, -F and -N options are ignored.
+
+.TP 10
+topology
+
+Outputs the topology of the fabric for later use as \fItopology\(ulinput\fR. This implies -x. May not be combined with other reports. Use with detail level 3 or more to get Port element under Node in output xml.
+
+.TP 10
+fabricinfo
+
+Fabric information.
+
+.TP 10
+none
+
+No report.
+
+
+.SH Point Syntax
+
+.TP 10
+ifid:\fIvalue\fR
+
+\fIvalue\fR is numeric ifid.
+
+.TP 10
+ifid:\fIvalue\fR:node
+
+\fIvalue\fR is numeric ifid, selects node with given ifid.
+
+.TP 10
+ifid:\fIvalue\fR:port:\fIvalue2\fR
+
+\fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port number.
+
+.TP 10
+mgmtifaddr:\fIvalue\fR
+
+\fIvalue\fR is numeric port mgmtifaddr.
+
+.TP 10
+ifaddr:\fIvalue\fR
+
+\fIvalue\fR is numeric node ifaddr.
+
+.TP 10
+ifaddr:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port number.
+
+.TP 10
+chassisid:\fIvalue\fR
+
+\fIvalue\fR is numeric chassisid.
+
+.TP 10
+chassisid:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port number.
+
+.TP 10
+node:\fIvalue\fR
+
+\fIvalue\fR is node description (node name).
+
+.TP 10
+node:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is node description (node name), \fIvalue2\fR is port number.
+
+.TP 10
+nodepat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for node description (node name).
+
+.TP 10
+nodepat:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port number.
+
+.TP 10
+nodedetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for node details.
+
+.TP 10
+nodedetpat:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port number.
+
+.TP 10
+nodetype:\fIvalue\fR
+
+\fIvalue\fR is node type (SW or NIC).
+
+.TP 10
+nodetype:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port number.
+
+.TP 10
+rate:\fIvalue\fR
+
+\fIvalue\fR is string for rate (25g, 50g, 75g, 100g), omits switch mgmt port 0.
+
+.TP 10
+portstate:\fIvalue\fR
+
+\fIvalue\fR is a string for state (up, down, testing, unknown, dormant, notactive).
+
+.TP 10
+portphysstate:\fIvalue\fR
+
+\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset)
+
+.TP 10
+mtucap:\fIvalue\fR
+
+\fIvalue\fR is MTU size (maximum size 65535), omits switch mgmt port 0.
+
+.TP 10
+linkdetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for link details.
+
+.TP 10
+portdetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for port details.
+
+.TP 10
+nodepatfile:\fIFILENAME\fR
+
+Specifies the name of file with the list of nodepats or node descriptions.
+
+.TP 10
+nodepairpatfile:\fIFILENAME\fR
+
+Specifies the name of file with the list of node pairs, separated by a colon.
+
+.TP 10
+ldr
+
+Specifies the ports with a non-zero link down reason or neighbor link down reason.
+
+.TP 10
+ldr:\fIvalue\fR
+
+Specifies the ports with a link down reason or neighbor link down reason equal to \fIvalue\fR.
+
+.SH Examples
+
+.PP
+ethreport can generate hundreds of different reports. Commonly generated reports include the following:   ethreport -o comps -d 3
+.br
+
+  ethreport -o errors -o slowlinks
+.br
+
+  ethreport -o nodes -F mgmtifaddr:0x00066a00a000447b
+.br
+
+  ethreport -o nodes -F ifaddr:0x001175019800447b:port:1
+.br
+
+  ethreport -o nodes -F ifaddr:0x001175019800447b
+.br
+
+  ethreport -o nodes -F \[aq]node:duster-eth2\[aq]
+.br
+
+  ethreport -o nodes -F \[aq]node:duster-eth2:port:1\[aq]
+.br
+
+  ethreport -o nodes -F \[aq]nodepat:d*\[aq]
+.br
+
+  ethreport -o nodes -F \[aq]nodepat:d*:port:1\[aq]
+.br
+
+  ethreport -o nodes -F \[aq]nodedetpat:compute*\[aq]
+.br
+
+  ethreport -o nodes -F \[aq]nodedetpat:compute*:port:1\[aq]
+.br
+
+  ethreport -o nodes -F nodetype:NIC
+.br
+
+  ethreport -o nodes -F nodetype:NIC:port:1
+.br
+
+  ethreport -o nodes -F ifid:1
+.br
+
+  ethreport -o nodes -F ifid:1:node
+.br
+
+  ethreport -o nodes -F ifid:1:port:2
+.br
+
+  ethreport -o nodes -F chassisid:0x001175019800447b
+.br
+
+  ethreport -o nodes -F chassisid:0x001175019800447b:port:1
+.br
+
+  ethreport -o extlinks -F rate:100g
+.br
+
+  ethreport -o extlinks -F portstate:up
+.br
+
+  ethreport -o extlinks -F portphysstate:operational
+.br
+
+  ethreport -o extlinks -F \[aq]portdetpat:*mgmt*\[aq]
+.br
+
+  ethreport -o links -F mtucap:2048
+.br
+
+  ethreport -o snapshot > file
+.br
+
+  ethreport -o topology > topology.xml
+.br
+
+  ethreport -o errors -X file

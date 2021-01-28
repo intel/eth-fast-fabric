@@ -1,0 +1,90 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethcheckload 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethcheckload
+
+
+.PP
+Returns load information on hosts in the fabric.
+.SH Syntax
+ethcheckload [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-r] [-a|-n numprocs]
+.br
+[-d uploaddir] [-H]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts to check. Default is /etc/eth-tools/hosts.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts to check.
+
+.TP 10
+-r
+
+Reverses output to show the least busy hosts. Default is busiest hosts.
+.TP 10
+-n \fInumprocs\fR
+
+Shows the specified number of top \fInumprocs\fR hosts. Default is 10.
+.TP 10
+-a
+
+Shows all hosts. Default is 10.
+
+.TP 10
+-d \fIupload\(uldir\fR
+
+Specifies the target directory to upload loadavg. Default is uploads.
+
+.TP 10
+-H
+
+Suppresses headers for script parsing.
+
+.SH Examples
+ethcheckload
+.br
+
+ethcheckload -h \[aq]arwen elrond\[aq]
+.br
+
+HOSTS=\[aq]arwen elrond\[aq] ethcheckload
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBUPLOADS\(ulDIR\fR
+
+Directory to upload loadavg, used in absence of -d.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+Maximum concurrent operations.

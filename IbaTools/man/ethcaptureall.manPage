@@ -1,0 +1,165 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethcaptureall 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethcaptureall
+
+
+.PP
+Captures supporting information for a problem report from all hosts and uploads to this system.
+.PP
+When a host ethcaptureall is performed, ethcapture is run to create the specified capture file within ~root on each host (with the .tgz suffix added as needed). The files are uploaded and unpacked into a matching directory name within upload\(uldir/\fIhostname\fR/ on the local system. The default file name is hostcapture.
+.PP
+The uploaded captures are combined into a .tgz file with the file name specified and the suffix .all.tgz added.
+.SH Syntax
+ethcaptureall [-p] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-d  \fIupload\(uldir\fR]
+.br
+
+[-S] [-D  \fIdetail\(ullevel\fR] [ \fIfile\fR]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-p
+
+Performs capture upload in parallel on all hosts.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with hosts in cluster. Default is /etc/eth-tools/hosts file.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts on which to perform a capture.
+
+.TP 10
+-d \fIupload\(uldir\fR
+
+Specifies the directory to upload to. Default is uploads. If not specified, the environment variable \fBUPLOADS\(ulDIR\fR is used.
+
+.TP 10
+-S
+
+Securely prompts for password for administrator.
+
+.TP 10
+-D \fIdetail\(ullevel\fR
+
+Specifies the level of detail of the capture passed to host ethcapture.
+.RS
+.TP 10
+
+.sp
+1 (Local)
+Obtains local information from each host.
+.RE
+
+.RS
+.TP 10
+
+.sp
+2 (Fabric)
+In addition to \fILocal\fR, also obtains basic fabric information by queries to the fabric and fabric error analysis using ethreport.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+3 (Analysis)
+In addition to \fIFabric\fR, also obtains ethallanalysis results. If ethallanalysis has not yet been run, it is run as part of the capture.
+
+.RE
+
+
+.TP 10
+.BR
+
+.PP
+
+.B NOTE:
+Detail levels 2-3 can be used when fabric operational problems occur. If the problem is node-specific, detail level 1 should be sufficient. Detail levels 2-3 require an operational fabric. Typically, your support representative requests a given detail level. If a given detail level takes excessively long or fails to be gathered, try a lower detail level.For detail levels 2-3, the additional information is only gathered on the node running the ethcaptureall command.
+
+
+.TP 10
+\fIfile\fR
+
+Specifies the name for capture file. The suffix .tgz is appended if it is not specified in the name.
+
+.SH Examples
+ethcaptureall
+.br
+
+# Creates a hostcapture directory in upload\(uldir/hostname/ for each host
+.br
+in
+/etc/eth-tools/hosts file, then creates hostcapture.all.tgz.
+.br
+
+
+.br
+
+ethcaptureall mycapture
+.br
+
+# Creates a mycapture directory in upload\(uldir/hostname/ for each host
+.br
+in
+/etc/eth-tools/hosts file, then creates mycapture.all.tgz.
+.br
+
+
+.br
+
+ethcaptureall -h \[aq]arwen elrond\[aq] 030127capture
+.br
+
+# Gets the list of hosts from arwen elrond file and creates
+.br
+030127capture.tgz file.
+
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing a list of hosts, used in the absence of -f and -h.
+
+.TP 10
+\fBUPLOADS\(ulDIR\fR
+
+Directory to upload to, used in the absence of -d.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+When -p option is used, maximum concurrent operations are performed.
+
+.SH More Information
+
+.PP
+When performing ethcaptureall against hosts, internally SSH is used. The command ethcaptureall requires that password-less SSH be set up between the host running Intel(R) Ethernet Fabric Suite FastFabric Toolset and the hosts ethcaptureall is operating against. The ethsetupssh command can aid in setting up password-less SSH.
+.PP
+
+.B NOTE:
+The resulting host capture files can require significant amounts of space on the Intel(R) Ethernet Fabric Suite FastFabric Toolset host. Actual size varies, but sizes can be multiple megabytes per host. Intel recommends that you ensure adequate space is available on the Intel(R) Ethernet Fabric Suite FastFabric Toolset system. In many cases, it may not be necessary to run ethcaptureall against all hosts; instead, a representative subset may be sufficient. Consult with your support representative for further information.

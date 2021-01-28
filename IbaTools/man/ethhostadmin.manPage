@@ -1,0 +1,479 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethhostadmin 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethhostadmin
+
+
+.PP
+Performs a number of multi-step host initialization and verification operations, including upgrading software, rebooting hosts, and other operations. In general, operations performed by ethhostadmin involve a login to one or more host systems.
+.SH Syntax
+ethhostadmin [-c] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
+.br
+[-r  \fIrelease\fR]
+[-I  \fIinstall\(uloptions\fR] [-U  \fIupgrade\(uloptions\fR] [-d  \fIdir\fR]
+.br
+[-T  \fIproduct\fR]
+[-P  \fIpackages\fR] [-S]  \fIoperation\fR ...
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-c
+
+Overwrites the result files from any previous run before starting this run.
+
+.TP 10
+-f \fIhostfile\fR
+
+Specifies the file with the names of hosts in a cluster. Default is /etc/eth-tools/hosts file.
+
+.TP 10
+-h \fIhosts\fR
+
+Specifies the list of hosts to execute the operation against.
+
+.TP 10
+-r \fIrelease\fR
+
+Specifies the software version to load/upgrade to. Default is the version of Intel(R) Ethernet Fabric Suite Software presently being run on the server.
+
+.TP 10
+-d \fIdir\fR
+
+Specifies the directory to retrieve  \fIproduct\fR. \fIrelease\fR.tgz for load or upgrade.
+
+.TP 10
+-I \fIinstall\(uloptions\fR
+
+Specifies the software install options.
+
+.TP 10
+-U \fIupgrade\(uloptions\fR
+
+Specifies the software upgrade options.
+
+.TP 10
+-T \fIproduct\fR
+
+Specifies the product type to install. Options include:
+
+.RS
+
+.IP \(bu
+IntelEth-Basic. \fI<distro>\fR (default)
+.IP \(bu
+IntelEth-FS. \fI<distro>\fR
+
+.RE
+
+.IP
+where \fI<distro>\fR is the distribution and CPU, such as RHEL81-x86\(ul64.
+.TP 10
+-P \fIpackages\fR
+
+Specifies the packages to install. Default is eth\(ultools eth\(ulrdma mpi. Refer to INSTALL -C for compete list of packages.
+
+.TP 10
+-S
+
+Securely prompts for user password on remote system.
+
+.TP 10
+\fIoperation\fR
+
+Performs the specified \fIoperation\fR, which can be one or more of the following:
+
+.RS
+.TP 10
+
+.sp
+load
+Starts initial installation of all hosts.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+upgrade
+Upgrades installation of all hosts.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+reboot
+Reboots hosts, ensures they go down and come back.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+rping
+Verifies this host can ping each host through RDMA.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+mpiperf
+Verifies latency and bandwidth for each host.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+mpiperfdeviation
+Verifies latency and bandwidth for each host against a defined threshold (or relative to average host performance).
+
+.RE
+
+.SH Example
+ethhostadmin -c reboot
+.br
+
+ethhostadmin upgrade
+.br
+
+ethhostadmin -h \[aq]elrond arwen\[aq] reboot
+.br
+
+HOSTS=\[aq]elrond arwen\[aq] ethhostadmin reboot
+.SH Details
+
+.PP
+ethhostadmin provides detailed logging of its results. During each run, the following files are produced:
+.IP \(bu
+test.res : Appended with summary results of run.
+.IP \(bu
+test.log : Appended with detailed results of run.
+.IP \(bu
+save\(ultmp/ : Contains a directory per failed test with detailed logs.
+.IP \(bu
+test\(ultmp*/ : Intermediate result files while test is running.
+.PP
+The -c option removes all log files.
+.PP
+Results from ethhostadmin are grouped into test suites, test cases, and test items. A given run of ethhostadmin represents a single test suite. Within a test suite, multiple test cases occur; typically one test case per host being operated on. Some of the more complex operations may have multiple test items per test case. Each test item represents a major step in the overall test case.
+.PP
+Each ethhostadmin run appends to test.res and test.log, and creates temporary files in test\(ultmp$PID in the current directory. test.res provides an overall summary of operations performed and their results. The same information is also displayed while ethhostadmin is executing. test.log contains detailed information about what was performed, including the specific commands executed and the resulting output. The test\(ultmp directories contain temporary files which reflect tests in progress (or killed). The logs for any failures are logged in the save\(ultemp directory with a directory per failed test case. If the same test case fails more than once, save\(ultemp retains the information from the first failure. Subsequent runs of ethhostadmin are appended to test.log. Intel recommends reviewing failures and using the -c option to remove old logs before subsequent runs of ethhostadmin.
+.PP
+ethhostadmin implicitly performs its operations in parallel. However, as for the other tools, \fBFF\(ulMAX\(ulPARALLEL\fR can be exported to change the degree of parallelism. 1000 parallel operations is the default.
+.SH Environment Variables
+
+.PP
+The following environment variables are also used by this command:
+.TP 10
+\fBHOSTS\fR
+
+List of hosts, used if -h option not supplied.
+
+.TP 10
+\fBHOSTS\(ulFILE\fR
+
+File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBFF\(ulMAX\(ulPARALLEL\fR
+
+Maximum concurrent operations are performed.
+
+.TP 10
+\fBFF\(ulSERIALIZE\(ulOUTPUT\fR
+
+Serialize output of parallel operations (yes or no).
+
+.TP 10
+\fBFF\(ulTIMEOUT\(ulMULT\fR
+
+Multiplier for all timeouts associated with this command. Used if the systems are slow for some reason.
+
+
+.SH ethhostadmin Operation Details
+
+.PP
+
+\fB(Host)\fR
+Intel recommends that you set up password SSH or SCP for use during this operation. Alternatively, the -S option can be used to securely prompt for a password, in which case the same password is used for all hosts. Alternately, the password may be put in the environment or the ethfastfabric.conf file using \fBFF\(ulPASSWORD\fR and \fBFF\(ulROOTPASS\fR.
+.TP 10
+load
+
+Performs an initial installation of Intel(R) Ethernet Fabric Suite Software on a group of hosts. Any existing installation is uninstalled and existing configuration files are removed. Subsequently, the hosts are installed with a default Intel(R) Ethernet Fabric Suite Software configuration. The -I option can be used to select different install packages. Default is eth\(ultools eth\(ulrdma mpi The -r option can be used to specify a release to install other than the one that this host is presently running. The  \fIFF\(ulPRODUCT\fR. \fIFF\(ulPRODUCT\(ulVERSION\fR.tgz file (for example, IntelEth-Basic. \fIversion\fR.tgz) is expected to exist in the directory specified by -d. Default is the current working directory. The specified software is copied to all the selected hosts and installed.
+
+.TP 10
+upgrade
+
+Upgrades all selected hosts without modifying existing configurations. This operation is comparable to the -U option when running ./INSTALL manually. The -r option can be used to upgrade to a release different from this host. The default is to upgrade to the same release as this host. The  \fIFF\(ulPRODUCT\fR. \fIFF\(ulPRODUCT\(ulVERSION\fR.tgz file (for example, IntelEth-Basic. \fIversion\fR.tgz) is expected to exist in the directory specified by -d. The default is the current working directory. The specified software is copied to all the end nodes and installed.
+.TP 10
+.BR
+
+.PP
+
+.B NOTE:
+Only components that are currently installed are upgraded. This operation fails for hosts that do not have Intel(R) Ethernet Fabric Suite Software installed.
+
+
+.TP 10
+reboot
+
+Reboots the given hosts and ensures they go down and come back up by pinging them during the reboot process. The ping rate is slow (5 seconds), so if the servers boot faster than this, false failures may be seen.
+
+.TP 10
+rping
+
+Verifies RDMA basic operation by ensuring that the nodes can ping each other through RDMA. To run this command, Intel(R) Ethernet Fabric software must be installed, RDMA must be configured and running on the host, and the given hosts, and switches must be up.
+
+.TP 10
+mpiperf
+
+Verifies that MPI is operational and checks MPI end-to-end latency and bandwidth between pairs of nodes (for example, 1-2, 3-4, 5-6). Use this to verify switch latency/hops, PCI bandwidth, and overall MPI performance. The test.res file contains the results of each pair of nodes tested.
+
+.TP 10
+.BR
+
+.PP
+
+.B NOTE:
+This option is available for the Intel(R) Ethernet Host Software OFA Delta packaging, but is not presently available for other packagings of OFED.
+
+
+.IP
+To obtain accurate results, this test should be run at a time when no other stressful applications (for example, MPI jobs or high stress file system operations) are running on the given hosts.
+.IP
+Bandwidth issues typically indicate server configuration issues (for example, incorrect slot used, incorrect BIOS settings, or incorrect NIC model), or fabric issues (for example, symbol errors, incorrect link width, or speed). Assuming ethreport has previously been used to check for link errors and link speed issues, the server configuration should be verified.
+.IP
+Note that BIOS settings and differences between server models can account for 10-20% differences in bandwidth. For more details about BIOS settings, consult the documentation from the server supplier and/or the server PCI chipset manufacturer.
+.TP 10
+mpiperfdeviation
+
+Specifies the enhanced version of mpiperf that verifies MPI performance. Can be used to verify switch latency/hops, PCI bandwidth, and overall MPI performance. It performs assorted pair-wise bandwidth and latency tests, and reports pairs outside an acceptable tolerance range. The tool identifies specific nodes that have problems and provides a concise summary of results. The test.res file contains the results of each pair of nodes tested.
+
+.IP
+By default, concurrent mode is used to quickly analyze the fabric and host performance. Pairs that have 20% less bandwidth or 50% more latency than the average pair are reported as failures.
+.IP
+The tool can be run in a sequential or a concurrent mode. Sequential mode runs each host against a reference host. By default, the reference host is selected based on the best performance from a quick test of the first 40 hosts. In concurrent mode, hosts are paired up and all pairs are run concurrently. Since there may be fabric contention during such a run, any poor performing pairs are then rerun sequentially against the reference host.
+.IP
+Concurrent mode runs the tests in the shortest amount of time, however, the results could be slightly less accurate due to switch contention. In heavily oversubscribed fabric designs, if concurrent mode is producing unexpectedly low performance, try sequential mode.
+.TP 10
+.BR
+
+.PP
+
+.B NOTE:
+This option is available for the Intel(R) Ethernet Host Software OFA Delta packaging, but is not presently available for other packagings of OFED.
+
+
+.IP
+To obtain accurate results, this test should be run at a time when no other stressful applications (for example, MPI jobs, high stress file system operations) are running on the given hosts.
+.IP
+Bandwidth issues typically indicate server configuration issues (for example, incorrect slot used, incorrect BIOS settings, or incorrect NIC model), or fabric issues (for example, symbol errors, incorrect link width, or speed). Assuming ethreport has previously been used to check for link errors and link speed issues, the server configuration should be verified.
+.IP
+Note that BIOS settings and differences between server models can account for 10-20% differences in bandwidth. A result 5-10% below the average is typically not cause for serious alarm, but may reflect limitations in the server design or the chosen BIOS settings.
+.IP
+For more details about BIOS settings, consult the documentation from the server supplier and/or the server PCI chipset manufacturer.
+.IP
+The deviation application supports a number of parameters which allow for more precise control over the mode, benchmark and pass/fail criteria. The parameters to use can be selected using the \fBFF\(ulDEVIATION\(ulARGS\fR configuration parameter in ethfastfabric.conf
+.IP
+Available parameters for deviation application:
+.IP
+
+.br
+[-bwtol bwtol] [-bwdelta MBs] [-bwthres MBs]
+.br
+
+[-bwloop count] [-bwsize size] [-lattol latol]
+.br
+
+[-latdelta usec] [-latthres usec] [-latloop count]
+.br
+
+[-latsize size][-c] [-b] [-v] [-vv]
+.br
+
+[-h reference\(ulhost]
+
+.br
+
+.RS
+.TP 10
+
+.sp
+-bwtol
+Specifies the percent of bandwidth degradation allowed below average value.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-bwbidir
+Performs a bidirectional bandwidth test.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-bwunidir
+Performs a unidirectional bandwidth test (Default).
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-bwdelta
+Specifies the limit in MB/s of bandwidth degradation allowed below average value.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-bwthres
+Specifies the lower limit in MB/s of bandwidth allowed.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-bwloop
+Specifies the number of loops to execute each bandwidth test.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-bwsize
+Specifies the size of message to use for bandwidth test.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-lattol
+Specifies the percent of latency degradation allowed above average value.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-latdelta
+Specifies the imit in &#181;sec of latency degradation allowed above average value.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-latthres
+Specifies the lower limit in &#181;sec of latency allowed.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-latloop
+Specifies the number of loops to execute each latency test.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-latsize
+Specifies the size of message to use for latency test.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-c
+Runs test pairs concurrently instead of the default of sequential.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-b
+When comparing results against tolerance and delta, uses best instead of average.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-v
+Specifies the verbose output.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-vv
+Specifies the very verbose output.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-h
+Specifies the reference host to use for sequential pairing.
+
+.RE
+
+.IP
+Both bwtol and bwdelta must be exceeded to fail bandwidth test.
+.IP
+When bwthres is supplied, bwtol and bwdelta are ignored.
+.IP
+Both lattol and latdelta must be exceeded to fail latency test.
+.IP
+When latthres is supplied, lattol and latdelta are ignored.
+.IP
+For consistency with OSU benchmarks, MB/s is defined as 1000000 bytes/s.
