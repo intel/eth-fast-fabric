@@ -1,0 +1,22 @@
+Intel Ethernet tools and Fast Fabric
+-------------------------
+
+* To build the RPM and SRPM:
+
+  1. mkdir -p $HOME/rpmbuild/{SOURCES,RPMS,SRPMS}
+  2. cp eth-tools.spec.in eth-tools.spec
+  2. ./update_opa_spec.sh
+  3. tar czf $HOME/rpmbuild/SOURCES/eth-tools.tgz --exclude-vcs .
+  4. rpmbuild -ba ./eth-tools.spec
+
+  This will build the eth-tools-basic and eth-tools-fastfabric RPMS
+  in $HOME/rpmbuild/RPMS/(architecture)/
+
+  This will also create a eth-tools-debuginfo RPM, which by default contains basic symbol
+  information - see below on how to build with full debugging information.
+
+* How to include debugging symbols:
+
+  export BUILD_CONFIG=debug
+
+  prior to the aforementioned build procedure.
