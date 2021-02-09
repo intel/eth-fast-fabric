@@ -4441,6 +4441,10 @@ int main(int argc, char ** argv)
 		setTopologySnmpVerbose(stderr, g_verbose);
 	}
 
+	if (g_quiet) {
+		setTopologySnmpQuiet(g_quiet);
+	}
+
 	// get thresholds config file
 	if (report & REPORT_ERRORS) {
 		if (0 != parse(config_file)) {

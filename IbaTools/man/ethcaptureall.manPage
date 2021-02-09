@@ -21,7 +21,7 @@ The uploaded captures are combined into a .tgz file with the file name specified
 ethcaptureall [-p] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-d  \fIupload\(uldir\fR]
 .br
 
-[-S] [-D  \fIdetail\(ullevel\fR] [ \fIfile\fR]
+[-D  \fIdetail\(ullevel\fR] [ \fIfile\fR]
 .SH Options
 
 .TP 10
@@ -48,11 +48,6 @@ Specifies the list of hosts on which to perform a capture.
 -d \fIupload\(uldir\fR
 
 Specifies the directory to upload to. Default is uploads. If not specified, the environment variable \fBUPLOADS\(ulDIR\fR is used.
-
-.TP 10
--S
-
-Securely prompts for password for administrator.
 
 .TP 10
 -D \fIdetail\(ullevel\fR

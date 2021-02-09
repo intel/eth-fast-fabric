@@ -73,6 +73,7 @@ if [ -z ${CMD} ]; then
 fi
 
 APP="$1"
+shift
 LOGFILE=
 . ./prepare_run
 
@@ -81,7 +82,7 @@ LOGFILE=
 	echo " Running $CMD ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD
+	$MPI_RUN_CMD $CMD "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 echo "########################################### " >> $LOGFILE

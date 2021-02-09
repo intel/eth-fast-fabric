@@ -1539,7 +1539,7 @@ sub fabricadmin_singlehost
 	if (index($verifyhosts_tests,"hpl") != -1) {
 		$timelimit=GetNumericValue("Timelimit in minutes:", 5, 1, 100) * 60;
 	} else {
-		$timelimit=GetNumericValue("Timelimit in minutes:", 1, 1, 100) * 60;
+		$timelimit=GetNumericValue("Timelimit in minutes:", 2, 1, 100) * 60;
 	}
 
 

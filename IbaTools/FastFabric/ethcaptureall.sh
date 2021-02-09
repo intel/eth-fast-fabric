@@ -49,13 +49,15 @@ Usage_full()
 {
 #	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F chassisfile]" >&2
 #	echo "                  [ -h 'hosts'] [-H 'chassis'] [-t portsfile]" >&2
+#	echo "                  [-S] [-D detail_level] [file]" >&2
 	echo "Usage: $BASENAME [-p] [-f hostfile] [ -h 'hosts'] [-d upload_dir] " >&2
-    echo "                  [-S] [-D detail_level] [file]" >&2
+	echo "                  [-D detail_level] [file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 #	echo "   -C - perform capture against chassis, default is hosts" >&2
-	echo "   -p - perform capture upload in parallel on all hosts/chassis" >&2
+#	echo "   -p - perform capture upload in parallel on all hosts/chassis" >&2
+	echo "   -p - perform capture upload in parallel on all hosts" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
 #	echo "   -F chassisfile - file with chassis in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
@@ -64,7 +66,7 @@ Usage_full()
 #	echo "   -t portsfile - file with list of local HFI ports used to access" >&2
 #	echo "           fabric(s) for switch access, default is /etc/$FF_PRD_NAME/ports" >&2
 	echo "   -d upload_dir - directory to upload to, default is uploads" >&2
-	echo "   -S - securely prompt for password for admin on chassis" >&2
+#	echo "   -S - securely prompt for password for admin on chassis" >&2
 	echo "   -D detail_level - level of detail passed to host ethcapture" >&2
 	echo "           1-Local 2-Fabric 3-Analysis" >&2
 	echo "   file - name for capture file [.tgz will be appended]" >&2
@@ -105,16 +107,17 @@ Usage()
 {
 #	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F chassisfile] [-S]" >&2
 #	echo "                  [-D detail_level] [file]" >&2
-	echo "Usage: $BASENAME [-p] [-f hostfile] [-S] [-D detail_level] [file]" >&2
+	echo "Usage: $BASENAME [-p] [-f hostfile] [-D detail_level] [file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 #	echo "   -C - perform capture against chassis, default is hosts" >&2
-	echo "   -p - perform capture upload in parallel on all hosts/chassis" >&2
+#	echo "   -p - perform capture upload in parallel on all hosts/chassis" >&2
+	echo "   -p - perform capture upload in parallel on all hosts" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
 #	echo "   -F chassisfile - file with chassis in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
-	echo "   -S - securely prompt for password for admin on chassis or switch" >&2
+#	echo "   -S - securely prompt for password for admin on chassis or switch" >&2
 	echo "   -D detail_level - level of detail passed to host ethcapture" >&2
 	echo "   file - name for capture file [.tgz will be appended]" >&2
 	echo "example:">&2
@@ -150,7 +153,7 @@ host=0
 Sopt=n
 Dopt=
 #while getopts Cf:F:h:H:t:d:pD:S param
-while getopts f:h:d:pD:S param
+while getopts f:h:d:pD: param
 do
 	case $param in
 #	C)

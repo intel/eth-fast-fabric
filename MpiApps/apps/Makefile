@@ -130,7 +130,8 @@ OSU563: SHOWMPI
 	@echo "Building OSU 5.6.3 benchmarks..."
 	cd osu-micro-benchmarks-5.6.3; \
 		find . -name aclocal.m4 |xargs -r touch; \
-		find . -name Makefile.in |xargs -r touch
+		find . -name Makefile.in |xargs -r touch; \
+		find . -name configure |xargs -r touch
 	cd osu-micro-benchmarks-5.6.3; \
 	if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" || "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
 		# intel compiler \

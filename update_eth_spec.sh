@@ -44,7 +44,7 @@ then
 	GE_7_5=$(echo "$versionid >= 7.5" | bc)
 
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, openssl%{?_isa}, expat%{?_isa}, libibumad%{?_isa}, libibverbs%{?_isa}, net-snmp%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, openssl%{?_isa}, expat%{?_isa}, libibumad%{?_isa}, libibverbs%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
 	# __RPM_BLDREQ - different for RHEL 7.5, RHEL7.4, or earlier
@@ -97,7 +97,7 @@ then
 elif [ "$id" = "fedora" ]
 then
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, openssl%{?_isa}, expat%{?_isa}, libibumad%{?_isa}, libibverbs%{?_isa}, net-snmp%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, openssl%{?_isa}, expat%{?_isa}, libibumad%{?_isa}, libibverbs%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
 	# __RPM_BLDREQ - different for RHEL 7.5, RHEL7.4, or earlier

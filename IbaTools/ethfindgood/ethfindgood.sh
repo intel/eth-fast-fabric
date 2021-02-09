@@ -169,7 +169,7 @@ function to_canon()
 {
 	while read line
 	do
-		canon=$(echo $line|ff_to_lc)
+		canon=$(echo ${line%%.*}|ff_to_lc)
 		echo "$canon $line"
 	done|sort --ignore-case -t ' ' -k1,1
 }

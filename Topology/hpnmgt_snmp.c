@@ -63,14 +63,15 @@ typedef struct {
 boolean TRACE = FALSE;
 uint8 verbose_level = 0;
 FILE *verbose_file = NULL;	// file for verbose output
+uint8 g_quite = 0;
 
 #define DBGPRINT(format, args...) if (verbose_file) { fprintf(verbose_file, format, ##args); }
 #define TRACEPRINT(format, args...) if (TRACE) { fprintf(verbose_file?verbose_file:stderr, format, ##args); }
 #define PRINT_NOSUCHOBJECT(oid, host) \
-	if (verbose_level || TRACE) \
+	if (!g_quite) \
 		fprintf(stderr, "No OID: %s available on %s\n", oid, host);
 #define PRINT_NOSUCHINSTANCE(oid, host) \
-	if (verbose_level || TRACE) \
+	if (!g_quite) \
 		fprintf(stderr, "No Such Instance currently exists on %s at OID: %s\n", host, oid);
 
 void setTopologySnmpVerbose(FILE* file, uint8 level) {
@@ -79,6 +80,10 @@ void setTopologySnmpVerbose(FILE* file, uint8 level) {
 	if (! TRACE) {
 		TRACE = verbose_file && verbose_level>=4;
 	}
+}
+
+void setTopologySnmpQuiet(uint8 quiet) {
+	g_quite = quiet;
 }
 
 //--------- utility functions ------------------//
@@ -846,7 +851,7 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 		} else if (is_oid(rp, entPhysicalVendorType)) {
 			TRACEPRINT("..entPhysicalVendorType\n");
 			int phyId = get_oid_num(rp, entPhysicalVendorType.oidLen);
-			if (phyId == modulePhyId) {
+			if (phyId == modulePhyId && rp->val.objid[0]) {
 				node->NodeInfo.u1.s.VendorID = (uint16) *(rp->val.objid + 6);
 			}
 		} else if (is_oid(rp, entPhysicalHardwareRev)) {

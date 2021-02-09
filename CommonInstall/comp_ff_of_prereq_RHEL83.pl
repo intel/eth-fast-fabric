@@ -49,6 +49,7 @@ my @eth_tools_prereq = (
     "libibumad",
     "libibverbs",
     "net-snmp",
+    "net-snmp-utils",
     "openssl",
     "openssl-libs",
     "perl",

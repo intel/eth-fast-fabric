@@ -86,7 +86,7 @@ then
 fi
 
 opts=""
-mgt_file=$CONFIG_DIR/$FF_PRD_NAME/mgt_config.conf
+mgt_file=$CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml
 planes=
 snapshot=
 while getopts vqE:p:X: param
