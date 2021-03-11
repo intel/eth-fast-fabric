@@ -33,11 +33,11 @@
 id=$(./get_id_and_versionid.sh | cut -f1 -d' ')
 versionid=$(./get_id_and_versionid.sh | cut -f2 -d' ')
 
-if [ "$id" = "sles" ]
+if [ "$id" = "fedora" ]
 then
-	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET/g" eth-tools.spec
-else
 	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET CLOCAL='%build_cflags' CCLOCAL='%build_cxxflags' LDLOCAL='%build_ldflags'/g" eth-tools.spec
+else
+	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET/g" eth-tools.spec
 fi
 
 source ./ff_filegroups.sh
