@@ -30,11 +30,12 @@ BuildRequires: __RPM_BLDREQ2
 __RPM_EPOCH_BASIC
 
 %description basic
-Contains basic tools for fabric managment necessary on all compute nodes.
+Contains basic tools for fabric management necessary on all compute nodes.
 
 %package fastfabric
 Summary: Management level tools and scripts
-Requires: eth-tools-basic%{?_isa} >= %{version}-%{release} cronie
+Requires: eth-tools-basic%{?_isa} >= %{version}-%{release}
+Requires: cronie
 
 __RPM_EPOCH_FF
 
@@ -42,17 +43,14 @@ __RPM_EPOCH_FF
 Contains tools for managing fabric on a management node.
 
 %prep
-#rm -rf %{_builddir}/*
-#tar xzf %_sourcedir/%name.tgz
-
-%setup -q
+%autosetup -n eth-tools-%{version}
 
 %build
 cd OpenIb_Host
-__RPM_FS ./ff_build.sh %{_builddir} $BUILD_ARGS
+__RPM_FS ./ff_build.sh %{_builddir}
 
 %install
-BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=/usr/lib DSAP_LIBDIR=%{_libdir} ./OpenIb_Host/ff_install.sh
+BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_libdir} ./OpenIb_Host/ff_install.sh
 
 %preun fastfabric
 cd /usr/src/eth/mpi_apps >/dev/null 2>&1
@@ -60,6 +58,7 @@ make -k clean >/dev/null 2>&1 || : # suppress all errors and return codes from t
 
 %files basic
 __RPM_BASIC_FILES
+%dir %{_sysconfdir}/eth-tools/
 %config(noreplace) %{_sysconfdir}/eth-tools/mgt_config.xml
 
 %files fastfabric
@@ -76,12 +75,15 @@ __RPM_FF_FILES
 
 
 %changelog
-* Fri Feb 05 2021 Jijun Wang <jijun.wang@intel.com> - 11.0.0.0
+* Fri Feb 05 2021 Jijun Wang <jijun.wang@intel.com> - 11.0.0.0-163
 - Cleaned up for upstream
-* Mon Feb 26 2018 Jijun Wang <jijun.wang@intel.com> - 10.8.0.0
+
+* Mon Feb 26 2018 Jijun Wang <jijun.wang@intel.com> - 10.8.0.0-1
 - Added epoch for RHEL address-resolution, basic and fastfabric
 - Added component information in description for all rpms
-* Thu Apr 13 2017 Scott Breyer <scott.j.breyer@intel.com> - 10.5.0.0
+
+* Thu Apr 13 2017 Scott Breyer <scott.j.breyer@intel.com> - 10.5.0.0-1
 - Updates for spec file cleanup
-* Fri Oct 10 2014 Erik E. Kahn <erik.kahn@intel.com> - 1.0.0-ifs
+
+* Fri Oct 10 2014 Erik E. Kahn <erik.kahn@intel.com> - 1.0.0-ifs-1
 - Initial version

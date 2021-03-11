@@ -33,8 +33,12 @@
 id=$(./get_id_and_versionid.sh | cut -f1 -d' ')
 versionid=$(./get_id_and_versionid.sh | cut -f2 -d' ')
 
-sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET/g" eth-tools.spec
-
+if [ "$id" = "sles" ]
+then
+	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET/g" eth-tools.spec
+else
+	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET CLOCAL='%build_cflags' CCLOCAL='%build_cxxflags' LDLOCAL='%build_ldflags'/g" eth-tools.spec
+fi
 
 source ./OpenIb_Host/ff_filegroups.sh
 
@@ -44,15 +48,15 @@ then
 	GE_7_5=$(echo "$versionid >= 7.5" | bc)
 
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, openssl%{?_isa}, expat%{?_isa}, libibumad%{?_isa}, libibverbs%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
 	# __RPM_BLDREQ - different for RHEL 7.5, RHEL7.4, or earlier
 	if [ $GE_7_4 = 1 ]
 	then
-		sed -i "s/__RPM_BLDREQ1/expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
+		sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
 	else
-		sed -i "s/__RPM_BLDREQ1/expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, libibumad-devel, libibverbs-devel, ibacm-devel/g" eth-tools.spec
+		sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, libibumad-devel, libibverbs-devel, ibacm-devel/g" eth-tools.spec
 	fi
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
 
@@ -81,11 +85,11 @@ then
 	# __RPM_REQ_BASIC and __RPM_BLDREQ different for SLES 12.3 and greater
 	if [ $GE_12_3 = 1 ]
 	then
-		sed -i "s/__RPM_REQ_BASIC1/libexpat1, libibmad5, libibumad3, libibverbs1, openssl, expect, tcl, net-snmp/g" eth-tools.spec
-		sed -i "s/__RPM_BLDREQ1/libexpat-devel, gcc-c++, libopenssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
+		sed -i "s/__RPM_REQ_BASIC1/expect, tcl/g" eth-tools.spec
+		sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, libopenssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
 	else
-		sed -i "s/__RPM_REQ_BASIC1/libexpat1, libibmad5, libibumad3, libibverbs1, openssl, expect, tcl, net-snmp/g" eth-tools.spec
-		sed -i "s/__RPM_BLDREQ1/libexpat-devel, gcc-c++, libopenssl-devel, ncurses-devel, tcl-devel, zlib-devel, libibumad-devel, libibverbs-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
+		sed -i "s/__RPM_REQ_BASIC1/expect, tcl/g" eth-tools.spec
+		sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, libopenssl-devel, ncurses-devel, tcl-devel, zlib-devel, libibumad-devel, libibverbs-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
 	fi
 
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
@@ -97,11 +101,21 @@ then
 elif [ "$id" = "fedora" ]
 then
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, openssl%{?_isa}, expat%{?_isa}, libibumad%{?_isa}, libibverbs%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
+	buildreqs="BuildRequires: make\n\
+BuildRequires: expat-devel\n\
+BuildRequires: gcc-c++\n\
+BuildRequires: openssl-devel\n\
+BuildRequires: ncurses-devel\n\
+BuildRequires: tcl-devel\n\
+BuildRequires: zlib-devel\n\
+BuildRequires: rdma-core-devel\n\
+BuildRequires: ibacm-devel\n\
+BuildRequires: net-snmp-devel\n"
 	# __RPM_BLDREQ - different for RHEL 7.5, RHEL7.4, or earlier
-	sed -i "s/__RPM_BLDREQ1/expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
+	sed -i "s/^BuildRequires: __RPM_BLDREQ1/${buildreqs}/g" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
 
 	# __RPM_DEBUG same for all RHEL versions
@@ -127,15 +141,15 @@ do
 		done
 		for i in $basic_tools_opt
 		do
-			echo "/usr/lib/eth-tools/$i" >> .tmpspec
+			echo "%{_prefix}/lib/eth-tools/$i" >> .tmpspec
 		done
 		for i in $basic_mans
 		do
-			echo "%{_mandir}/man1/${i}.gz" >> .tmpspec
+			echo "%{_mandir}/man1/${i}*" >> .tmpspec
 		done
 		for i in $basic_samples
 		do
-			echo "/usr/share/eth-tools/samples/$i" >> .tmpspec
+			echo "%{_datadir}/eth-tools/samples/$i" >> .tmpspec
 		done
 	else
 		echo "$line" >> .tmpspec
@@ -148,34 +162,23 @@ while read line
 do
 	if [ "$line" = "__RPM_FF_FILES" ]
 	then
-		for i in $ff_tools_sbin
+		echo "%{_sbindir}/*" >> .tmpspec
+		for i in $basic_tools_sbin $basic_tools_sbin_sym
 		do
-			echo "%{_sbindir}/$i" >> .tmpspec
+			echo "%exclude %{_sbindir}/$i" >> .tmpspec
 		done
-		for i in $ff_tools_opt $ff_tools_misc $ff_tools_exp $ff_libs_misc
+		echo "%{_prefix}/lib/eth-tools/*" >> .tmpspec
+		for i in $basic_tools_opt
 		do
-			echo "/usr/lib/eth-tools/$i" >> .tmpspec
+			echo "%exclude %{_prefix}/lib/eth-tools/$i" >> .tmpspec
 		done
-		for i in $help_doc
+		echo "%{_datadir}/eth-tools/*" >> .tmpspec
+		for i in $basic_samples
 		do
-			echo "/usr/share/eth-tools/help/$i" >> .tmpspec
+			echo "%exclude %{_datadir}/eth-tools/samples/$i" >> .tmpspec
 		done
-		for i in $ff_tools_fm
-		do
-			echo "/usr/lib/eth-tools/fm_tools/$i" >> .tmpspec
-		done
-		for i in $ff_iba_samples
-		do
-			echo "/usr/share/eth-tools/samples/$i" >> .tmpspec
-		done
-		for i in $ff_mans
-		do
-			echo "%{_mandir}/man8/${i}.gz" >> .tmpspec
-		done
-		for i in $mpi_apps_files
-		do
-			echo "/usr/src/eth/mpi_apps/$i" >> .tmpspec
-		done
+		echo "%{_mandir}/man8/eth*.8*" >> .tmpspec
+		echo "%{_usrsrc}/eth/*" >> .tmpspec
 	else
 		echo "$line" >> .tmpspec
 	fi
