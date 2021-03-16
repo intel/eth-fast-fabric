@@ -1,15 +1,11 @@
 Name: eth-tools
-Version: 11.0.0.0
+Version: 11.0.0.0~pre
 Release: 163%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
 Url: https://github.com/intel/eth-fast-fabric
-# tarball created by:
-# git clone -b <tagname> https://github.com/intel/eth-fast-fabric.git
-# cd eth-fast-fabric
-# tar czf <workspace>/eth-tools.tgz --exclude-vcs --transform "s,^,eth-tools-$(grep '^Version:' eth-tools.spec.in | cut -d' ' -f2)/," .
-Source: eth-tools.tgz
+Source: %url/archive/%{version_no_tilde}/eth-fast-fabric-%{version_no_tilde}.tar.gz
 ExclusiveArch: x86_64
 # The Intel(R) Ethernet Fabric Suite product line is only available on x86_64 platforms at this time.
 
@@ -43,7 +39,7 @@ __RPM_EPOCH_FF
 Contains tools for managing fabric on a management node.
 
 %prep
-%autosetup -n eth-tools-%{version}
+%autosetup -n eth-fast-fabric-%{version_no_tilde}
 
 %build
 cd OpenIb_Host
@@ -51,10 +47,6 @@ __RPM_FS ./ff_build.sh %{_builddir}
 
 %install
 BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_libdir} ./OpenIb_Host/ff_install.sh
-
-%preun fastfabric
-cd /usr/src/eth/mpi_apps >/dev/null 2>&1
-make -k clean >/dev/null 2>&1 || : # suppress all errors and return codes from the make clean.
 
 %files basic
 __RPM_BASIC_FILES

@@ -33,11 +33,17 @@
 id=$(./get_id_and_versionid.sh | cut -f1 -d' ')
 versionid=$(./get_id_and_versionid.sh | cut -f2 -d' ')
 
-if [ "$id" = "fedora" ]
+if [ "$(rpm --eval "%build_cflags")" = "%build_cflags" ]
 then
-	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET CLOCAL='%build_cflags' CCLOCAL='%build_cxxflags' LDLOCAL='%build_ldflags'/g" eth-tools.spec
-else
 	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET/g" eth-tools.spec
+else
+	sed -i "s/__RPM_FS/OPA_FEATURE_SET=$OPA_FEATURE_SET CLOCAL='%build_cflags' CCLOCAL='%build_cxxflags' LDLOCAL='%build_ldflags'/g" eth-tools.spec
+fi
+
+if [ "$(rpm --eval "%{version_no_tilde}")" = "%{version_no_tilde}" ]
+then
+	version=$(grep '^Version:' eth-tools.spec |cut -d' ' -f2 |sed 's/~/-/g')
+	sed -i "s/%{version_no_tilde}/$version/g" eth-tools.spec
 fi
 
 source ./OpenIb_Host/ff_filegroups.sh
