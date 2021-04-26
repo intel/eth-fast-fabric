@@ -167,6 +167,9 @@ tclIndex: $(TCL_SOURCES)
 	echo '# [ICS VERSION STRING: unknown]' >> tclIndex
 	cat qlgc_fork.pkgIndex >> tclIndex
 
+front:
+	cp front.exp front
+
 # install for includes, libs and cmds phases
 include $(TL_DIR)/Makerules/Maketargets.install
 

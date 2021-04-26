@@ -70,8 +70,7 @@ then
 	sed -i "/__RPM_DEBUG_PKG/,+1d" eth-tools.spec
 
 	#Setup Epoch tags for RHEL rpms
-	sed -i "s/__RPM_EPOCH_BASIC/Epoch: 1/g" eth-tools.spec
-	sed -i "s/__RPM_EPOCH_FF/Epoch: 1/g" eth-tools.spec
+	sed -i "s/__RPM_EPOCH/Epoch: 1/g" eth-tools.spec
 
 
 elif [ "$id" = "sles" ]
@@ -103,7 +102,7 @@ then
 
 	#Cleanup EPOCH macros from sles spec.
 	#Note that SUSE discourages and does not use epochs
-	sed -i "/__RPM_EPOCH_*/d" eth-tools.spec
+	sed -i "/__RPM_EPOCH/d" eth-tools.spec
 elif [ "$id" = "fedora" ]
 then
 	# __RPM_REQ_BASIC -
@@ -128,8 +127,7 @@ BuildRequires: net-snmp-devel\n"
 	sed -i "/__RPM_DEBUG_PKG/,+1d" eth-tools.spec
 
 	#Setup Epoch tags for RHEL rpms
-	sed -i "s/__RPM_EPOCH_BASIC/Epoch: 1/g" eth-tools.spec
-	sed -i "s/__RPM_EPOCH_FF/Epoch: 1/g" eth-tools.spec
+	sed -i "s/__RPM_EPOCH/Epoch: 1/g" eth-tools.spec
 
 else
 	echo ERROR: Unsupported distribution: $id $versionid

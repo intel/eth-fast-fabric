@@ -14,6 +14,8 @@ __RPM_DEBUG_PKG
 %description
 This package contains the tools necessary to manage an Intel Ethernet fabric.
 
+__RPM_EPOCH
+
 %package basic
 Summary: Management level tools and scripts
 
@@ -23,7 +25,6 @@ Requires: __RPM_REQ_BASIC1
 Requires: __RPM_REQ_BASIC2
 BuildRequires: __RPM_BLDREQ1
 BuildRequires: __RPM_BLDREQ2
-__RPM_EPOCH_BASIC
 
 %description basic
 Contains basic tools for fabric management necessary on all compute nodes.
@@ -32,8 +33,6 @@ Contains basic tools for fabric management necessary on all compute nodes.
 Summary: Management level tools and scripts
 Requires: eth-tools-basic%{?_isa} >= %{version}-%{release}
 Requires: cronie
-
-__RPM_EPOCH_FF
 
 %description fastfabric
 Contains tools for managing fabric on a management node.
