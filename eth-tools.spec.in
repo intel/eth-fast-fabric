@@ -11,10 +11,10 @@ ExclusiveArch: x86_64
 
 __RPM_DEBUG_PKG
 
+__RPM_EPOCH
+
 %description
 This package contains the tools necessary to manage an Intel Ethernet fabric.
-
-__RPM_EPOCH
 
 %package basic
 Summary: Management level tools and scripts
