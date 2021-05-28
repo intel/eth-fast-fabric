@@ -51,7 +51,6 @@ EXECUTABLE		= # OPENIB_FF_TESTS$(EXE_SUFFIX)
 DIRS			= \
 				$(TL_DIR)/Makerules \
 				$(TL_DIR)/IbAccess \
-				$(TL_DIR)/opamgt \
 				$(TL_DIR)/Xml \
 				$(TL_DIR)/Topology \
 				$(TL_DIR)/SrpTools \

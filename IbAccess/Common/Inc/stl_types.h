@@ -596,6 +596,10 @@ typedef struct { IB_BITFIELD2( uint8,
 		} PACK_SUFFIX name
 #endif
 
+#ifndef IB_MAX_UCAST_LID
+#define IB_MAX_UCAST_LID 0xBFFF
+#endif
+
 #include "iba/public/ipackoff.h"
 
 #ifdef __cplusplus

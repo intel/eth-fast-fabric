@@ -33,8 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __STL_PRINT_H__
 
 #include "iba/stl_mad_priv.h"
-#include "iba/stl_sm_priv.h"
-#include "iba/stl_sa_priv.h"
 #include "iba/stl_sd.h"
 #include "iba/stl_pm.h"
 #include "ibprint.h"

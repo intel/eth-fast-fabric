@@ -35,8 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <iba/public/idebug_osd.h>
 #include <iba/ibt.h>
-#include <iba/stl_sm_priv.h>
-#include <iba/stl_pm.h>
 
 typedef enum {
 	PL_NONE = 0,	// no output

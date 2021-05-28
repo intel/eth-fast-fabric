@@ -44,20 +44,11 @@ source ./ff_filegroups.sh
 
 if [ "$id" = "rhel" -o "$id" = "centos" ]
 then
-	GE_7_4=$(echo "$versionid >= 7.4" | bc)
-	GE_7_5=$(echo "$versionid >= 7.5" | bc)
-
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
-	# __RPM_BLDREQ - different for RHEL 7.5, RHEL7.4, or earlier
-	if [ $GE_7_4 = 1 ]
-	then
-		sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
-	else
-		sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, openssl-devel, ncurses-devel, tcl-devel, zlib-devel, libibumad-devel, libibverbs-devel, ibacm-devel/g" eth-tools.spec
-	fi
+	sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, tcl-devel, net-snmp-devel/g" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
 
 	# __RPM_DEBUG same for all RHEL versions
@@ -70,27 +61,10 @@ then
 
 elif [ "$id" = "sles" ]
 then
-	GE_11_1=$(echo "$versionid >= 11.1" | bc)
-	GE_12_2=$(echo "$versionid >= 12.2" | bc)
-	GE_12_3=$(echo "$versionid >= 12.3" | bc)
+	sed -i "s/__RPM_DEBUG_PKG/%debug_package/g" eth-tools.spec
 
-	# __RPM_DEBUG_PKG - needed for SLES 11.1 and greater
-	if [ $GE_11_1 = 1 ]
-	then
-		sed -i "s/__RPM_DEBUG_PKG/%debug_package/g" eth-tools.spec
-	else
-		sed -i "/__RPM_DEBUG_PKG/,+1d" eth-tools.spec
-	fi
-
-	# __RPM_REQ_BASIC and __RPM_BLDREQ different for SLES 12.3 and greater
-	if [ $GE_12_3 = 1 ]
-	then
-		sed -i "s/__RPM_REQ_BASIC1/expect, tcl/g" eth-tools.spec
-		sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, libopenssl-devel, ncurses-devel, tcl-devel, zlib-devel, rdma-core-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
-	else
-		sed -i "s/__RPM_REQ_BASIC1/expect, tcl/g" eth-tools.spec
-		sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, libopenssl-devel, ncurses-devel, tcl-devel, zlib-devel, libibumad-devel, libibverbs-devel, ibacm-devel, net-snmp-devel/g" eth-tools.spec
-	fi
+	sed -i "s/__RPM_REQ_BASIC1/libibverbs-utils, librdmacm-utils, expect, tcl/g" eth-tools.spec
+	sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, tcl-devel, net-snmp-devel/g" eth-tools.spec
 
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
@@ -107,14 +81,8 @@ then
 	buildreqs="BuildRequires: make\n\
 BuildRequires: expat-devel\n\
 BuildRequires: gcc-c++\n\
-BuildRequires: openssl-devel\n\
-BuildRequires: ncurses-devel\n\
 BuildRequires: tcl-devel\n\
-BuildRequires: zlib-devel\n\
-BuildRequires: rdma-core-devel\n\
-BuildRequires: ibacm-devel\n\
 BuildRequires: net-snmp-devel\n"
-	# __RPM_BLDREQ - different for RHEL 7.5, RHEL7.4, or earlier
 	sed -i "s/^BuildRequires: __RPM_BLDREQ1/${buildreqs}/g" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
 

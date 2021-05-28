@@ -83,10 +83,7 @@ INCLUDE_TARGETS	= \
 				$(COMMON_SRCDIR)/stl_pa_priv.h \
 				$(COMMON_SRCDIR)/stl_pa_types.h \
 				$(COMMON_SRCDIR)/stl_pkt.h \
-				$(COMMON_SRCDIR)/stl_pm.h \
-				$(COMMON_SRCDIR)/stl_sm_priv.h \
 				$(COMMON_SRCDIR)/stl_sm_types.h \
-				$(COMMON_SRCDIR)/stl_sa_priv.h \
 				$(COMMON_SRCDIR)/stl_sa_types.h \
 				$(COMMON_SRCDIR)/stl_sd.h \
 				$(COMMON_SRCDIR)/stl_t.h \
@@ -99,6 +96,9 @@ INCLUDE_TARGETS	= \
 				ib_debug_osd.h \
 				# Add more h hpp files here
 				# bldver_osd.h \
+				# $(COMMON_SRCDIR)/stl_pm.h \
+				# $(COMMON_SRCDIR)/stl_sa_priv.h \
+				# $(COMMON_SRCDIR)/stl_sm_priv.h \
 				# $(COMMON_SRCDIR)/bldver.h \
 				# $(COMMON_SRCDIR)/cm_params.h \
 				# $(COMMON_SRCDIR)/gsi_params.h \

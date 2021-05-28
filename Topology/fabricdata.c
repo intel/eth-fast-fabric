@@ -1849,10 +1849,8 @@ SnmpNodeConfigParamData_t* snmpDataAddNodeConfig(FabricData_t *fabricp, SnmpNode
 	}
 	MemoryFill(snmpNodeConfp, 0, sizeof(snmpNodeConfigData_t));
 
-	size_t len = strlen(nodeConfParmp->NodeDesc);
 	strncpy((char *)snmpNodeConfp->NodeDesc.NodeString, nodeConfParmp->NodeDesc,
-			len < sizeof(snmpNodeConfp->NodeDesc.NodeString)-1 ?
-					len : sizeof(snmpNodeConfp->NodeDesc.NodeString)-1);
+		sizeof(snmpNodeConfp->NodeDesc.NodeString)-1);
 
 	//cl_qmap_init(&snmpNodeConfp->map_dlid_to_route, NULL);
 	mi = cl_qmap_insert(&fabricp->map_snmp_desc_to_node, convertNodeName2Guid(nodeConfParmp->NodeDesc, strlen(nodeConfParmp->NodeDesc)), &snmpNodeConfp->AllSnmpNodesEntry);

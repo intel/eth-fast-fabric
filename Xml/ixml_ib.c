@@ -34,8 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #include <iba/ib_sm_priv.h>
 #include <iba/ib_sa_records_priv.h>
-#include "iba/stl_sa_priv.h"
-#include "iba/stl_pm.h"
+#include "iba/stl_sa_types.h"
 #if defined(USE_NETF1_IP_STACK)
 /* add this to avoid implicit declaration warning in mips/netf1 build */
 extern int snprintf (char *str, size_t count, const char *fmt, ...);

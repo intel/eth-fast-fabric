@@ -33,13 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 #include "iba/stl_sa_types.h"
 #include "iba/stl_sd.h"
-#include "iba/stl_sa_priv.h"
-#include "ib_mad.h"
-#include "ib_sm_priv.h"
-#include "ib_generalServices.h"
 #include "hpnmgt_snmp_priv.h"
 #include "hpnmgt_snmp.h"
-//#include <infiniband/umad.h>
 
 // turn on DISPLAY_TIMESTAMP to trace time spent on tasks
 #define DISPLAY_TIMESTAMP 0
@@ -436,7 +431,7 @@ SNMPResult * create_snmp_result() {
  */
 SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *varLst,
 		boolean fillFirst) {
-	SNMPResult *curRes, *newRes;
+	SNMPResult *curRes, *newRes = NULL;
 	struct variable_list *vp = varLst;
 	char buf[1024];
 	curRes = res;

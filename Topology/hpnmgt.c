@@ -39,12 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <limits.h>
 
 #include "iba/stl_sd.h"
-#include "iba/stl_sa_priv.h"
-#include "ib_mad.h"
-#include "ib_sm_priv.h"
-#include "ib_generalServices.h"
 #include "hpnmgt_snmp_priv.h"
-//#include <infiniband/umad.h>
 #include "topology_internal.h"
 
 #define INCLUDE "include"

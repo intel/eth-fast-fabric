@@ -45,18 +45,7 @@ DIRS			=
 # C files (.c)
 CFILES			= \
 				ibprint.c \
-				stl_mad.c \
-				stl_sma.c \
-				stl_sa.c \
-				stl_pm.c \
-				stl_pa.c \
 				types.c \
-				sma.c \
-				sa.c \
-				sd.c \
-				mad.c \
-				stl_ea.c \
-				stl_ema.c \
 				# Add more c files here
 
 # C++ files (.cpp)
@@ -76,7 +65,7 @@ DEFFILE			=
 # targets to build during INCLUDES phase (add public includes here)
 INCLUDE_TARGETS	= \
 				ibprint.h \
-				stl_print.h \
+#				stl_print.h \
 				# Add more h hpp files here
 # Non-compiled files
 MISC_FILES		= 

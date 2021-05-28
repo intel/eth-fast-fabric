@@ -38,10 +38,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if !defined(VXWORKS) || defined(BUILD_DMC)
 #include <iba/ib_dm.h>
 #endif
-#include <iba/stl_sm_priv.h>
-#include <iba/stl_sa_priv.h>
-#include <iba/stl_sd.h>
-#include <iba/stl_pm.h>
 #include <iba/stl_types.h>
 
 
@@ -1064,60 +1060,6 @@ extern FSTATUS FindLinkQualityPoint(FabricData_t *fabricp, uint16 quality, LinkQ
 extern FSTATUS FindLinkDownReasonPoint(FabricData_t *fabricp, uint8 ldr, Point *pPoint, uint8 find_flag);
 extern FSTATUS FindExpectedSMByPortGuid(FabricData_t *fabricp, EUI64 portGuid);
 extern FSTATUS FindExpectedSMByNodeGuid(FabricData_t *fabricp, EUI64 nodeGuid);
-
-extern void setTopologyMadVerboseFile(FILE* verbose_file);
-extern void setTopologyMadRetryCount(int retries);
-// mad queries to SMA (from Topology/mad.c)
-extern FSTATUS SmaGetNodeDesc(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_NODE_DESCRIPTION *pNodeDesc);
-extern FSTATUS SmaGetNodeInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_NODE_INFO *pNodeInfo);
-extern FSTATUS SmaGetSwitchInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_SWITCH_INFO *pSwitchInfo);
-extern FSTATUS SmaGetPortInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, uint8_t smConfigStarted, STL_PORT_INFO *pPortInfo);
-extern FSTATUS SmaGetPartTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, uint16_t block, STL_PARTITION_TABLE *pPartTable);
-extern FSTATUS SmaGetVLArbTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, uint8_t part, STL_VLARB_TABLE *pVLArbTable);
-extern FSTATUS SmaGetSLSCMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_SLSCMAP *pSLSCMap);
-extern FSTATUS SmaGetSCSLMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_SCSLMAP *pSCSLMap);
-extern FSTATUS SmaGetSCSCMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t in_port, uint8_t out_port, STL_SCSCMAP *pSCSCMap);
-extern FSTATUS SmaGetSCVLMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t port_num, STL_SCVLMAP *pSCVLMap, uint16_t attr);
-extern FSTATUS SmaGetLinearFDBTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint16_t block, STL_LINEAR_FORWARDING_TABLE *pFDB);
-extern FSTATUS SmaGetMulticastFDBTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint32_t block, uint8_t position, STL_MULTICAST_FORWARDING_TABLE *pFDB);
-extern FSTATUS SmaGetPortGroupFDBTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint16 block, STL_PORT_GROUP_FORWARDING_TABLE *pFDB);
-extern FSTATUS SmaGetPortGroupTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint16 block, STL_PORT_GROUP_TABLE *pPGT);
-
-extern FSTATUS SmaGetBufferControlTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t startPort, uint8_t endPort, STL_BUFFER_CONTROL_TABLE pBCT[]);
-extern FSTATUS SmaGetCableInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, uint16_t addr, uint8_t len, uint8_t *data);
-
-extern FSTATUS SmaSetSwitchInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_SWITCH_INFO *pSwitchInfo);
-extern FSTATUS SmaSetPortInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, STL_PORT_INFO *pPortInfo);
-extern FSTATUS SmaSetPartTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, uint16_t block, STL_PARTITION_TABLE *pPartTable);
-extern FSTATUS SmaSetVLArbTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t portNum, uint8_t part, STL_VLARB_TABLE *pVLArbTable);
-extern FSTATUS SmaSetSLSCMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_SLSCMAP *pSLSCMap);
-extern FSTATUS SmaSetSCSLMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_SCSLMAP *pSCSLMap);
-extern FSTATUS SmaSetSCSCMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t in_port, uint8_t out_port, STL_SCSCMAP *pSCSCMap);
-extern FSTATUS SmaSetSCVLMappingTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, boolean asyncUpdate, boolean allPorts, uint8_t portNum, STL_SCVLMAP *pSCVLMap, uint16_t attr);
-extern FSTATUS SmaSetBufferControlTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint8_t startPort, uint8_t endPort, STL_BUFFER_CONTROL_TABLE pBCT[]);
-extern FSTATUS SmaSetLinearFDBTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint16_t block, STL_LINEAR_FORWARDING_TABLE *pFDB);
-extern FSTATUS SmaSetMulticastFDBTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint32_t block, uint8_t position, STL_MULTICAST_FORWARDING_TABLE *pFDB);
-
-extern FSTATUS SmaGetCongestionInfo(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, STL_CONGESTION_INFO *pCongestionInfo);
-extern FSTATUS SmaGetHFICongestionControlTable(struct omgt_port *port, STL_LID dlid, STL_LID slid, uint8_t* path, uint16_t block, uint16_t numBlocks, STL_HFI_CONGESTION_CONTROL_TABLE *pHfiCongestionControl);
-
-// mad queries to PMA and DMA (from Topology/mad.c)
-extern FSTATUS InitMad(EUI64 portguid, FILE *verbose_file);
-extern void DestroyMad(void);
-extern FSTATUS InitSmaMkey(uint64 mkey);
-extern boolean NodeHasPma(NodeData *nodep);
-extern boolean PortHasPma(PortData *portp);
-extern void UpdateNodePmaCapabilities(NodeData *nodep, boolean ProcessHFICounters);
-extern FSTATUS STLPmGetClassPortInfo(struct omgt_port *port, PortData *portp);
-extern FSTATUS STLPmGetPortStatus(struct omgt_port *port, PortData *portp, uint8 portNum, STL_PORT_STATUS_RSP *pPortStatus);
-extern FSTATUS STLPmClearPortCounters(struct omgt_port *port, PortData *portp, uint8 lastPortIndex, uint32 counterselect);
-#if !defined(VXWORKS) || defined(BUILD_DMC)
-extern FSTATUS DmGetIouInfo(struct omgt_port *port, IB_PATH_RECORD *pathp, IOUnitInfo *pIouInfo);
-extern FSTATUS DmGetIocProfile(struct omgt_port *port, IB_PATH_RECORD *pathp, uint8 slot,
-						IOC_PROFILE *pIocProfile);
-extern FSTATUS DmGetServiceEntries(struct omgt_port *port, IB_PATH_RECORD *pathp, uint8 slot,
-							uint8 first, uint8 last, IOC_SERVICE *pIocServices);
-#endif
 
 // POINT routines (from Topology/point.c)
 extern void PointInit(Point *point);

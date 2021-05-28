@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include <umad.h>
 #include <time.h>
 #include <string.h>
-#include "stl_print.h"
+//#include "stl_print.h"
 
 // Used for expanding various enumarations into text equivalents
 #define SHOW_BUF_SIZE 81
@@ -4262,7 +4262,7 @@ int main(int argc, char ** argv)
 				break;
                         case 'v':
 				g_verbose++;
-				if (g_verbose > 3) umad_debug(g_verbose-2);
+				//if (g_verbose > 3) umad_debug(g_verbose-2);
 				break;
 			case 'q':
 				g_quiet = 1;
