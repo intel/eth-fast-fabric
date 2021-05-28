@@ -2162,9 +2162,6 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 		if (strcmp(fabric->SnmpEncryptionProtocol, "AES") == 0) {
 				encrypProtocol = usmAESPrivProtocol;
 				DBGPRINT("Running AES encryption\n");
-		} else if (strcmp(fabric->SnmpEncryptionProtocol, "DES") == 0) {
-				encrypProtocol = usmDESPrivProtocol;
-				DBGPRINT("Running DES encryption\n");
 		} else {
 				DBGPRINT("Error parsing SnmpEncryptionProtocol\n");
 				configParseError = 1;
