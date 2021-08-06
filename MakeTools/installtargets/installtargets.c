@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <stdlib.h>
 #include <libgen.h>
+#include <errno.h>
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
@@ -156,7 +157,7 @@ int Mkdir(const char* dir)
             *(pDir-1) != ':' )
         {
             *pNewDir = '\0';
-            if( access(newDir, 0) == -1 && mkdir(newDir, 0755) == -1 )
+            if( mkdir(newDir, 0755) == -1 && errno != EEXIST )
             {
                 result = -1;
                 break;
@@ -286,7 +287,7 @@ boolean CopyFile( const char* targetFileName, const char* srcFileName, struct st
 		utb.modtime = srcStat.st_mtime;
 #endif
 		if ((rval=utime(targetFileName,&utb))) {
-			printf("Could not set utime: %d/%s..",rval,strerror(rval));
+			printf("Could not set utime: %d/%s..",rval,strerror(errno));
 		} 
 	}
 

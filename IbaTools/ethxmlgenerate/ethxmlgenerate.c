@@ -192,7 +192,7 @@ IXmlOutputState_t state;
 char  bfDelimit[MAX_DELIMIT_CHARS + 1] = ";";
 
 // Input buffer
-char  bfInput[MAX_INPUT_BUF];
+char  bfInput[MAX_INPUT_BUF + 1];
 
 
 /*******************************************************************************
@@ -599,6 +599,8 @@ int main(int argc, char ** argv)
 	int		ctCharInput = 0;			// Input file char count
 	char	*pValue = NULL;				// Pointer to current input value
 	char	*pValueNext = bfInput + MAX_INPUT_BUF;  // Ptr to next input value
+	int	len, old_len;
+	int	need_more_data = 1;
 
 	// Initialize for generation
 	hFileInput = stdin;
@@ -632,8 +634,7 @@ int main(int argc, char ** argv)
 		if (tbElements[ix].flags & ELEM_GENERATE)
 		{
 			// Check for end of bfInput
-			if ( ((pValueNext - bfInput) > (MAX_INPUT_BUF >> 1)) &&
-					!feof(hFileInput) )
+			if ( need_more_data && !feof(hFileInput) )
 			{
 				// Shift bfInput[] and read input file
 				memmove(bfInput, pValueNext, MAX_INPUT_BUF + bfInput - pValueNext);
@@ -642,9 +643,11 @@ int main(int argc, char ** argv)
 					fprintf( stderr, NAME_PROG ": Reading Input File: %s\n",
 						nameFileInput );
 
-				ctCharInput = MAX_INPUT_BUF + bfInput - pValueNext +
-                    (int)fread( bfInput + MAX_INPUT_BUF - pValueNext + bfInput,
-                    1, pValueNext - bfInput, hFileInput );
+				len = fread( bfInput + MAX_INPUT_BUF - pValueNext + bfInput,
+                                             1, pValueNext - bfInput, hFileInput );
+				bfInput[MAX_INPUT_BUF + bfInput - pValueNext + len] = '\0';
+
+				ctCharInput = MAX_INPUT_BUF + bfInput - pValueNext + len;
 				pValueNext = bfInput;
 
 				if (ferror(hFileInput))
@@ -670,6 +673,7 @@ int main(int argc, char ** argv)
 			*/
 			if (!strchr(bfDelimit, *pValueNext))
 			{
+				old_len = strlen(pValueNext);
 				pValue = strtok(pValueNext, bfDelimit);
 				if (!pValue) 
 				{
@@ -678,14 +682,30 @@ int main(int argc, char ** argv)
 						nameFileInput);
 					break;
 				}
+				len = strlen(pValue);
+				if (len == MAX_INPUT_BUF)
+				{
+					fprintf( stderr,
+						NAME_PROG ": WARNING Malformed Input file (%s) element (%s) length >= %d.\n",
+						nameFileInput, tbElements[ix].pName, MAX_INPUT_BUF);
+					break;
+				}
+				if (len == old_len)
+				{
+					// uncompleted element
+					need_more_data = 1;
+					continue;
+				}
 				dispElementRecord(&tbElements[ix++], pValue);
-				pValueNext = pValue + strlen(pValue) + 1;
+				pValueNext = pValue + len + 1;
+				need_more_data = *pValueNext ? 0 : 1;
 			}
 
 			else
 			{
 				dispElementRecord(&tbElements[ix++], NULL);
 				pValueNext += 1;
+				need_more_data = *pValueNext ? 0 : 1;
 			}
 		}
 

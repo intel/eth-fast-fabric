@@ -702,6 +702,7 @@ void QOSDataAddSCSCMap(PortData *portp, uint8_t outport, int extended, const STL
 		if (!pSC2SC2->SC2SCMap) {
 			// memory error
 			fprintf(stderr, "%s: Unable to allocate memory\n", g_Top_cmdname);
+			MemoryDeallocate(pSC2SC2);
 			return;
 		}
 		QListInsertTail(&pQOS->SC2SCMapList[extended], &pSC2SC2->SC2SCMapListEntry);
@@ -1019,6 +1020,7 @@ PortData* NodeDataAddPort(FabricData_t *fabricp, NodeData *nodep, EUI64 guid, ST
 		IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 	if (! portp->pPortCounters) {
 		fprintf(stderr, "%s: Unable to allocate memory for Port Counters\n", g_Top_cmdname);
+		MemoryDeallocate(portp);
 		goto fail;
 	}
 
@@ -1863,13 +1865,15 @@ SnmpNodeConfigParamData_t* snmpDataAddNodeConfig(FabricData_t *fabricp, SnmpNode
 		return NULL;
 	} else {
 		QListInitState(&snmpNodeConfp->InterfaceNames);
-		QListInit(&snmpNodeConfp->InterfaceNames);
+		if (!QListInit(&snmpNodeConfp->InterfaceNames)) {
+			fprintf(stderr, "%s: Unable to initialize list\n", g_Top_cmdname);
+			goto fail;
+		}
 		if (nodeConfParmp->InterfaceDesc) {
 			char* org_if_desc = strdup(nodeConfParmp->InterfaceDesc);
 			if (org_if_desc == NULL) {
 				fprintf(stderr, "%s: Unable to allocate memory\n", g_Top_cmdname);
-				MemoryDeallocate(snmpNodeConfp);
-				return NULL;
+				goto fail;
 			}
 			int org_if_len = strlen(org_if_desc);
 			char* interface = strtok(nodeConfParmp->InterfaceDesc, " ,\t\r\n");
@@ -1879,8 +1883,8 @@ SnmpNodeConfigParamData_t* snmpDataAddNodeConfig(FabricData_t *fabricp, SnmpNode
 						sizeof(LIST_ITEM), IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 				if (item == NULL) {
 					fprintf(stderr, "%s: Unable to allocate memory\n", g_Top_cmdname);
-					MemoryDeallocate(snmpNodeConfp);
-					return NULL;
+					free(org_if_desc);
+					goto fail;
 				}
 				if (if_len)
 					if_len += 1; // count ','
@@ -1888,9 +1892,9 @@ SnmpNodeConfigParamData_t* snmpDataAddNodeConfig(FabricData_t *fabricp, SnmpNode
 				char *dupInterface = strdup(interface);
 				if (dupInterface == NULL) {
 					fprintf(stderr, "%s: Unable to allocate memory\n", g_Top_cmdname);
+					free(org_if_desc);
 					MemoryDeallocate(item);
-					MemoryDeallocate(snmpNodeConfp);
-					return NULL;
+					goto fail;
 				}
 				QListSetObj(item, dupInterface);
 				QListInsertTail(&snmpNodeConfp->InterfaceNames, item);
@@ -1925,4 +1929,8 @@ SnmpNodeConfigParamData_t* snmpDataAddNodeConfig(FabricData_t *fabricp, SnmpNode
 		}
 	}
 	return nodeConfParmp;
+fail:
+	cl_qmap_remove_item(&fabricp->map_snmp_desc_to_node, mi);
+	MemoryDeallocate(snmpNodeConfp);
+	return NULL;
 }

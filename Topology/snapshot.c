@@ -951,7 +951,7 @@ static void SnapshotInfoXmlFormatAttr(IXmlOutputState_t *state, void *data)
 
 	Top_formattime(datestr, sizeof(datestr), info->fabricp->time);
 	IXmlOutputPrint( state, " plane=\"%s\" date=\"%s\" unixtime=\"%ld\" stats=\"%d\""
-		" routes=\"%d\" qosdata=\"%d\" bfrctrl=\"%d\" downports=\"%d\" options=\"",
+		" downports=\"%d\" options=\"",
 		info->fabricp->name, datestr, info->fabricp->time, (info->fabricp->flags & FF_STATS) ? 1:0,
 		(info->fabricp->flags & FF_DOWNPORTINFO) ? 1:0 );
 	for (i=1; i<info->argc; i++)

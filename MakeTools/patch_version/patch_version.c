@@ -400,6 +400,11 @@ boolean PerformPatch(FILE* fp, long offset, const char* version, size_t verlen)
 	if (fp)
 	{
 		long current=ftell(fp);
+		if (current < 0)
+		{
+			fprintf(stderr,"\nGet current position failed\n");
+			return(B_FALSE);
+		}
 		if (!fseek(fp,offset,SEEK_SET))
 		{
 			if (fwrite(version,sizeof(char),verlen,fp)==verlen)

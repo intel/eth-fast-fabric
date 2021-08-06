@@ -1407,7 +1407,7 @@ IXmlParserRawStart(void *data, const char *el, const char **attr) {
 				break;
 			}
 		}
-		if (! (p && p->tag)) {
+		if (!p->tag) {
 			/* unknown tag, skip it and child tags */
 			if (state->flags & IXML_PARSER_FLAG_STRICT) {
 				IXmlParserPrintWarning(state, "Unexpected tag ignored: %s", el);

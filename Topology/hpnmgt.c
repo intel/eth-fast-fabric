@@ -145,9 +145,15 @@ static boolean is_valid_file(const char* filename)
 	char buffer[PATH_MAX];
 	char *p;
 
-	if (stat(filename, &res)) {
-		fprintf(stderr, "%s: ERROR - failed to get stat of '%s': %s\n",
+	if (!realpath(filename, buffer)) {
+		fprintf(stderr, "%s: ERROR - failed to get real path '%s': %s\n",
 		                g_Top_cmdname, filename, strerror(errno));
+		return FALSE;
+	}
+
+	if (lstat(buffer, &res)) {
+		fprintf(stderr, "%s: ERROR - failed to get stat of '%s': %s\n",
+		                g_Top_cmdname, buffer, strerror(errno));
 		return FALSE;
 	}
 
@@ -158,11 +164,6 @@ static boolean is_valid_file(const char* filename)
 
 	if ((res.st_mode & S_IWGRP) | (res.st_mode & S_IWOTH)) {
 		fprintf(stderr, "%s: ERROR - '%s' is writable by group or other\n", g_Top_cmdname, filename);
-		return FALSE;
-	}
-
-	if (!realpath(filename, buffer)) {
-		// shouldn't happen
 		return FALSE;
 	}
 
@@ -360,6 +361,9 @@ HMGT_STATUS_T hmgt_open_port_by_guid(struct hmgt_port **port, uint64_t port_guid
 /** ========================================================================= */
 void hmgt_close_port(struct hmgt_port *port)
 {
+	if (port) {
+		free(port);
+	}
 }
 
 /**

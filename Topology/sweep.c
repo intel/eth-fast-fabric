@@ -225,8 +225,8 @@ FSTATUS Sweep(EUI64 portGuid, FabricData_t *fabricp, FabricFlags_t fflags,  Swee
 
 	// get the data from the fabric
 	fstatus = SweepInternal(hmgt_port_session, portGuid, fabricp, flags, quiet);
+	hmgt_close_port(hmgt_port_session);
 
 done:
-	hmgt_close_port(hmgt_port_session);
 	return fstatus;
 }

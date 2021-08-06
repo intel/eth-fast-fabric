@@ -612,17 +612,18 @@ static FSTATUS ParseNodePairPatFilePoint(FabricData_t *fabricp, char *arg, Point
 	//There are no further focus to evaluate for node pair list
 	*pp = arg + strlen(arg);
 
-	// Check if file is present
-	if (stat(nodePatFileName, &fileStat) < 0) {
-		fprintf(stderr, "Error taking stat of file {%s}: %s\n",
-			nodePatFileName, strerror(errno));
-			return FINVALID_PARAMETER;
-	}
-
 	//Open file
 	if ((fp = fopen(nodePatFileName, "r")) == NULL) {
 		fprintf(stderr, "Error opening file %s for input: %s\n", nodePatFileName, strerror(errno));
 		return FINVALID_PARAMETER;
+	}
+
+	// Check if file is present
+	if (fstat(fileno(fp), &fileStat) < 0) {
+		fprintf(stderr, "Error taking stat of file {%s}: %s\n",
+			nodePatFileName, strerror(errno));
+		status = FINVALID_PARAMETER;
+		goto fail;
 	}
 
 	memset(patternLine, 0, sizeof(patternLine));

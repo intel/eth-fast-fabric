@@ -420,6 +420,25 @@ SNMPResult * create_snmp_result() {
 }
 
 /*
+ * @brief Trace the SNMPResult chain and free each element
+ * @param res	the SNMPResult to free
+ * @return void
+ */
+void free_snmp_result(SNMPResult *res) {
+	if (res) {
+		if (res->oid)
+			MemoryDeallocate(res->oid);
+		// just pick one of the union, so the compiler will not complain
+		if (res->val.string)
+			MemoryDeallocate(res->val.string);
+		if (res->next) {
+			free_snmp_result(res->next);
+		}
+		MemoryDeallocate(res);
+	}
+}
+
+/*
  * @brief Make a SNMPResult object from the content in variable_list. And then
  *        either fill in or attach to the provided current SNMPResult based on
  *        indicator, fillFirst. This function also returns this created object.
@@ -450,6 +469,9 @@ SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *varLst,
 		newRes->oid = MemoryAllocate2AndClear(size, IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
 		if (!newRes->oid) {
 			fprintf(stderr, "ERROR - couldn't allocate memory.\n");
+			if (!fillFirst) {
+				free_snmp_result(newRes);
+			}
 			return NULL;
 		}
 		memcpy(newRes->oid, vp->name, size);
@@ -458,6 +480,9 @@ SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *varLst,
 		void * val = MemoryAllocate2AndClear(vp->val_len, IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
 		if (!val) {
 			fprintf(stderr, "ERROR - couldn't allocate memory.\n");
+			if (!fillFirst) {
+				free_snmp_result(newRes);
+			}
 			return NULL;
 		}
 		memcpy(val, vp->val.string, vp->val_len);
@@ -477,25 +502,6 @@ SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *varLst,
 		curRes = newRes;
 	}
 	return newRes;
-}
-
-/*
- * @brief Trace the SNMPResult chain and free each element
- * @param res	the SNMPResult to free
- * @return void
- */
-void free_snmp_result(SNMPResult *res) {
-	if (res) {
-		if (res->oid)
-			MemoryDeallocate(res->oid);
-		// just pick one of the union, so the compiler will not complain
-		if (res->val.string)
-			MemoryDeallocate(res->val.string);
-		if (res->next) {
-			free_snmp_result(res->next);
-		}
-		MemoryDeallocate(res);
-	}
 }
 
 //-------- End of utility functions -------------//
@@ -2115,7 +2121,6 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 	oid *authProtocol = NULL;
 	oid *encrypProtocol = NULL;
 	int configParseError = 0;
-	int numHostsQueried = 0;
 
 	HMGT_STATUS_T fstatus = HMGT_STATUS_SUCCESS;
 
@@ -2359,10 +2364,10 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 
 	HMGT_STATUS_T fstatus3 = HMGT_STATUS_SUCCESS;
 
-        for (i=0; i < numHostsQueried; i++) {
+        for (i=0; i < numHosts; i++) {
 		if (contexts[i].populated_data) {
 			HMGT_STATUS_T tmp_status = dev_cleanup_processor(
-					intermediate_data[i]);
+					contexts[i].populated_data);
 			if (tmp_status != HMGT_STATUS_SUCCESS) {
 				fstatus3 = tmp_status;
 			}
@@ -2680,9 +2685,9 @@ HMGT_STATUS_T process_fab_data(QUICK_LIST **allNodes, int numHosts,
 							STL_NEIGH_NODE_TYPE_SW;;
 					nbrPortData->PortInfo.NeighborNodeGUID =
 							nodeData->NodeInfo.NodeGUID;
-					strncpy((char *)nbrPortData->PortInfo.NeighborPortId,
-							(char *)portData->PortInfo.LocalPortId,
-							TINY_STR_ARRAY_SIZE);
+					snprintf((char *)nbrPortData->PortInfo.NeighborPortId,
+							TINY_STR_ARRAY_SIZE, "%s",
+							(char *)portData->PortInfo.LocalPortId);
 					nbrPortData->PortInfo.NeighborPortNum = portData->PortNum;
 				}
 				portData->PortInfo.NeighborPortNum = nbrPortData->PortNum;

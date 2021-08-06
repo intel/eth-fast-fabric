@@ -121,10 +121,10 @@ main(int cnt, char **args)
 	//printf("Pausing\n"); pause();
 
 	return 0; // OLSON, stack is separate
-	printf("recursing to grow stack 16K at a time\n");
-	a(zfirst);
-
-	return 0;
+//	printf("recursing to grow stack 16K at a time\n");
+//	a(zfirst);
+//
+//	return 0;
 }
 
 

@@ -52,7 +52,7 @@ pgmname(char *name, size_t max)
 
 	use_syslog = 1;
 	sprintf(procname,"/proc/%d/exe", getpid());
-	len = readlink(procname, buf, sizeof(buf));
+	len = readlink(procname, buf, sizeof(buf)-1);
 	if (len > 0)
 	{
 		buf[len] = '\0';
@@ -81,7 +81,7 @@ void IbLogPrintf(uint32 level, const char* format, ...)
 
 		if (level & _DBG_LVL_FATAL)
 			priority = LOG_CRIT;
-		if (level & _DBG_LVL_ERROR)
+		else if (level & _DBG_LVL_ERROR)
 			priority = LOG_ERR;
 		else if (level & (_DBG_LVL_WARN))
 			priority = LOG_WARNING;

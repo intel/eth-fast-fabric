@@ -93,11 +93,13 @@ int fix_file(char* filename)
 	char buffer[MAXBUF];	/* holding area for scan */
 	int offset;	/* current offset from end for scan */
 
-	if (stat(filename, &statbuf) == -1
-	    || (fd = open(filename, O_RDWR)) == -1)
+	if ((fd = open(filename, O_RDWR)) == -1 || fstat(fd, &statbuf) == -1)
 	{
 		fprintf(stderr, "rm_version: Can't open: ");
 		perror(filename);
+		if (fd >= 0) {
+			close(fd);
+		}
 		return(1);
 	}
 	if (statbuf.st_size < MAXBUF)

@@ -451,7 +451,7 @@ boolean SequentialNames(const NameData_t *name1p, const NameData_t *name2p)
 		return FALSE;	// not in sequence
 	if (name1p->leadzero && name1p->numlen == name2p->numlen) {
 		// ok, leading zeros in the lower numbered namep and constant length
-	} else if (!name2p->leadzero && ! name2p->leadzero) {
+	} else if (!name1p->leadzero && !name2p->leadzero) {
 		// ok, no leading zeros, all good
 	} else {
 		return FALSE;   // number representation inconsistent
