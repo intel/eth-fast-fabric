@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.0.0.0
-Release: 163%{?dist}
+Release: 166%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -32,7 +32,7 @@ Contains basic tools for fabric management necessary on all compute nodes.
 %package fastfabric
 Summary: Management level tools and scripts
 Requires: eth-tools-basic%{?_isa} >= %{version}-%{release}
-Requires: cronie
+Requires: perl cronie
 
 %description fastfabric
 Contains tools for managing fabric on a management node.
@@ -66,6 +66,9 @@ __RPM_FF_FILES
 
 
 %changelog
+* Thu Aug 12 2021 Jijun Wang <jijun.wang@intel.com> - 11.0.0.0-166
+- Added perl as Requires for fastfabric package
+
 * Fri Feb 05 2021 Jijun Wang <jijun.wang@intel.com> - 11.0.0.0-163
 - Cleaned up for upstream
 
