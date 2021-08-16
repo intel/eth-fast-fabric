@@ -33,7 +33,12 @@
 # This is a bash sourced file for support functions
 
 FF_PRD_NAME=eth-tools
-declare -A NODE_PORTS
+
+# A map between lower case node name and its ports. Please do not directly
+# use this map because you need to ensure your node name is in lower case.
+# Instead, suggest use function get_node_ports to get the ports for a node,
+# or function get_nodes_ports to get nodes associated with ports info.
+declare -A LC_NODE_PORTS
 
 if [ "$CONFIG_DIR" = "" ]
 then
@@ -110,6 +115,31 @@ trim_string()
 	echo "$str" | sed -e "s/^[[:space:]]*//" -e "s/[[:space:]]*$//"
 }
 
+# Given a list of nodes, return nodes associated with ports in format
+#   <node>:<port1,port2...>
+# If no ports, the returned line will be node name only, i.e. <node>
+get_nodes_ports()
+{
+	nodes=$1
+	for node in $nodes
+	do
+		ports="${LC_NODE_PORTS[${node,,}]}"
+		if [[ -z $ports ]]; then
+			echo "$node"
+		else
+			echo "$node:${ports// /,}"
+		fi
+	done
+}
+
+# Find the ports for a given node. Return empty string if not found or
+# no ports info
+get_node_ports()
+{
+	node=$1
+	echo "${LC_NODE_PORTS[${node,,}]}"
+}
+
 extract_node_ports()
 {
 	content=$1
@@ -118,11 +148,11 @@ extract_node_ports()
 		raw_node="${line%%:*}"
 		node="$(trim_string $raw_node)"
 		if [[ "$raw_node" = "$line" ]]; then
-			NODE_PORTS[$node]=""
+			LC_NODE_PORTS[${node,,}]=""
 		else
 			ports="$(echo "${line#*:}" | sed -e 's/,/ /g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 			ports="$(trim_string "$ports")"
-			NODE_PORTS[$node]="$ports"
+			LC_NODE_PORTS[${node,,}]="$ports"
 		fi
 	done
 }

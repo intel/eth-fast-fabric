@@ -487,10 +487,10 @@ fi
 export CFG_HOSTS="$HOSTS"
 cfg_host_ports=""
 for host in $HOSTS; do
-	if [ -z $cfg_host_ports ]; then
-		cfg_host_ports="${host}:${NODE_PORTS[$host]}"
+	if [ -z "$cfg_host_ports" ]; then
+		cfg_host_ports="${host}:$(get_node_ports "$host")"
 	else
-		cfg_host_ports="${cfg_host_ports};${host}:${NODE_PORTS[$host]}"
+		cfg_host_ports="${cfg_host_ports};${host}:$(get_node_ports "$host")"
 	fi
 done
 export CFG_HOST_PORTS="${cfg_host_ports}"

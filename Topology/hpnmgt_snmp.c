@@ -58,16 +58,14 @@ typedef struct {
 boolean TRACE = FALSE;
 uint8 verbose_level = 0;
 FILE *verbose_file = NULL;	// file for verbose output
-uint8 g_quite = 0;
+uint8 snmp_quiet = 0;
 
 #define DBGPRINT(format, args...) if (verbose_file) { fprintf(verbose_file, format, ##args); }
 #define TRACEPRINT(format, args...) if (TRACE) { fprintf(verbose_file?verbose_file:stderr, format, ##args); }
 #define PRINT_NOSUCHOBJECT(oid, host) \
-	if (!g_quite) \
-		fprintf(stderr, "No OID: %s available on %s\n", oid, host);
+	fprintf(stderr, "No OID: %s available on %s\n", oid, host);
 #define PRINT_NOSUCHINSTANCE(oid, host) \
-	if (!g_quite) \
-		fprintf(stderr, "No Such Instance currently exists on %s at OID: %s\n", host, oid);
+	fprintf(stderr, "No Such Instance currently exists on %s at OID: %s\n", host, oid);
 
 void setTopologySnmpVerbose(FILE* file, uint8 level) {
 	verbose_file = file;
@@ -78,7 +76,7 @@ void setTopologySnmpVerbose(FILE* file, uint8 level) {
 }
 
 void setTopologySnmpQuiet(uint8 quiet) {
-	g_quite = quiet;
+	snmp_quiet = quiet;
 }
 
 //--------- utility functions ------------------//

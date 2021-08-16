@@ -358,10 +358,10 @@ check_pcispeed()
 			then
 				device=$(echo "$cfgline"|cut -f1 -d ' ')
 			else
-				result=$(echo "$cfgline"|sed -e 's/.*\(Speed .*, Width [^,]*\).*/\1'/)
-
-				expect="Speed $PCI_SPEED, Width $PCI_WIDTH"
-				 [ "$result" = "$expect" ] ||  { fail_msg "NIC $device: Incorrect Speed or Width: Expect: $expect  Got: $result"; failure=1; }
+				speed=$(echo "${cfgline#*Speed }"|cut -d' ' -f1|tr -d ',')
+				[ "$speed" = "$PCI_SPEED" ] ||  { fail_msg "NIC $device: Incorrect Speed: Expect: $PCI_SPEED  Got: $speed"; failure=1; }
+				width=$(echo "${cfgline#*Width }"|cut -d' ' -f1|tr -d ',')
+				[ "$width" = "$PCI_WIDTH" ] ||  { fail_msg "NIC $device: Incorrect Width: Expect: $PCI_WIDTH  Got: $width"; failure=1; }
 				device="Unknown"
 			fi
 		done

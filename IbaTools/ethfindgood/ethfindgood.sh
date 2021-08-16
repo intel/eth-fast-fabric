@@ -162,14 +162,14 @@ append_punchlist()
 	done >> $punchlist
 }
 
-# read stdin and convert hostnames to canonical lower case
+# read stdin and convert to canonical lower case
 # in field 1 of output, field2 is unmodified input
 # fields are separated by a space
 function to_canon()
 {
 	while read line
 	do
-		canon=$(echo ${line%%.*}|ff_to_lc)
+		canon=$(echo ${line}|ff_to_lc)
 		echo "$canon $line"
 	done|sort --ignore-case -t ' ' -k1,1
 }
@@ -179,32 +179,70 @@ function mycomm12()
 	/usr/lib/$FF_PRD_NAME/comm12 $1 $2
 }
 
-echo "$(ff_var_filter_dups_to_stdout "$HOSTS"|wc -l) hosts will be checked"
+function to_nodes_ports()
+{
+	src="$1"
+	dst="$2"
+	get_nodes_ports "$(cat "$src")" > "$dst"
+}
 
 good_meaning=	# indicates which tests a good host has passed
 good_file=		# file (other than good) holding most recent good list
+# cleanup generated host files. If we run this tool multiple times with
+# different arguments, such as skipping different tests, hosts files generated
+# in previous run may mislead a user.
+alive_hostonly=$(mktemp)
+running_hostonly=$(mktemp)
+bak_files=""
+for file in alive running active good bad
+do
+	if [ -f "$dir/$file" ]
+	then
+		mv -f "$dir/$file" "$dir/$file.bak"
+		if [[ -z "$bak_files" ]]
+		then
+			bak_files="$file"
+		else
+			bak_files="$bak_files,$file"
+		fi
+	fi
+done
+if [[ -n "$bak_files" ]]
+then
+	echo "Warning: backed up existing $dir/{$bak_files} as *.bak files." >&2
+fi
+
+echo "$(ff_var_filter_dups_to_stdout "$HOSTS"|wc -l) hosts will be checked"
 
 # ------------------------------------------------------------------------------
 # ping test
-ethpingall -p|grep 'is alive'|sed -e 's/:.*//'|ff_filter_dups|ethsorthosts > $dir/alive
-append_punchlist <(ff_var_filter_dups_to_stdout "$HOSTS") $dir/alive "Doesn't ping"
+# This test applies at host level. It uses alive_hostonly file that contains hostname only.
+ethpingall -p|grep 'is alive'|sed -e 's/:.*//'|ff_filter_dups|ethsorthosts > $alive_hostonly
+append_punchlist <(ff_var_filter_dups_to_stdout "$HOSTS") $alive_hostonly "Doesn't ping"
 good_meaning="alive"
+good_file_hostonly=$alive_hostonly
+to_nodes_ports $alive_hostonly $dir/alive
 good_file=$dir/alive
 echo "$(cat $dir/alive|wc -l) hosts are pingable (alive)"
 
 # ------------------------------------------------------------------------------
 # ssh test
+# This test applies at host level. It uses running_hostonly file that contains hostname only.
 if [ "$skip_ssh" = n ]
 then
 	# -h '' to override HOSTS env var so -f is used (HOSTS would override -f)
 	# use comm command to filter out hosts with unexpected hostnames
 	# put in alphabetic order for "comm" command
-	mycomm12 <(to_canon < $good_file) <(ethcmdall -h '' -f $good_file -p -T $timelimit 'hostname -s' |grep -v 'hostname -s'|ff_filter_dups|to_canon) | ethsorthosts > $dir/running
-	append_punchlist $good_file $dir/running "Can't ssh"
+	mycomm12 <(to_canon < $good_file_hostonly) <(ethcmdall -h '' -f $good_file_hostonly -P -p -T $timelimit 'echo 123' |grep ': 123'|sed 's/:.*//'|ff_filter_dups|to_canon) | ethsorthosts > $running_hostonly
+	append_punchlist $good_file_hostonly $running_hostonly "Can't ssh"
+	to_nodes_ports $running_hostonly $dir/running
 	good_meaning="$good_meaning, running"
 	good_file=$dir/running
 	echo "$(cat $dir/running|wc -l) hosts are ssh'able (running)"
+	rm -f $running_hostonly
 fi
+
+rm -f $alive_hostonly
 
 # ------------------------------------------------------------------------------
 # rdma port active test
@@ -212,8 +250,9 @@ if [ "$skip_active" = n ]
 then
 	# don't waste time reporting hosts which don't ping or can't ssh
 	# they are probably down so no use double reporting them
-	for host in $(cat $good_file); do
-		ports="${NODE_PORTS[$host]}"
+	for line in $(cat $good_file); do
+		host=${line%%:*}
+		ports="$(get_node_ports "$host")"
 		if [[ -z $ports ]]; then
 			cmds="
 				ports=\"\$(ls -l /sys/class/net/*/device/driver | grep 'ice$' | awk '{print \$9}' | cut -d '/' -f5)\"
@@ -234,13 +273,13 @@ then
 				ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 || exit 1
 			done
 		"
-		ssh $host "$cmds" && echo $host
+		ssh $host "$cmds" && echo $line
 	done | ff_filter_dups|ethsorthosts > $dir/active
-	append_punchlist $good_file $dir/active "Has inactive RMDA port(s)"
+	append_punchlist $good_file $dir/active "Has inactive RDMA port(s)"
 	# put in alphabetic order for "comm" command
 	mycomm12 <(to_canon < $good_file)  <(to_canon < $dir/active) | ethsorthosts > $dir/good
 	good_meaning="$good_meaning, active"
-	echo "$(cat $dir/active|wc -l) total hosts have RMDA active ports on one or more fabrics (active)"
+	echo "$(cat $dir/active|wc -l) total hosts have RDMA active ports on one or more fabrics (active)"
 else
 	cat $good_file > $dir/good
 fi
@@ -248,7 +287,7 @@ fi
 # ------------------------------------------------------------------------------
 # final output
 echo "$(cat $dir/good|wc -l) hosts are $good_meaning (good)"
-comm -23 <(ff_var_filter_dups_to_stdout "$HOSTS") <(sort $dir/good)| ethsorthosts > $dir/bad
+comm -23 <(ff_var_filter_dups_to_stdout "$(get_nodes_ports "$HOSTS")") <(sort $dir/good)| ethsorthosts > $dir/bad
 echo "$(cat $dir/bad|wc -l) hosts are bad (bad)"
 echo "Bad hosts have been added to $punchlist"
 

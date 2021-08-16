@@ -35,8 +35,9 @@ readonly BASENAME="$(basename $0)"
 
 Usage()
 {
-	echo "Usage: ${TOOL_DIR}/${BASENAME} [--help]" >&2
+	echo "Usage: ${TOOL_DIR}/${BASENAME} [--help] [plane]" >&2
 	echo "    --help - produce full help text" >&2
+	echo "    plane - plane name. Default is 'plane'" >&2
 	echo "    ${BASENAME} should be invoked using the full path - ${TOOL_DIR}/${BASENAME} " >&2
 
 	exit 2
@@ -44,8 +45,9 @@ Usage()
 
 Usage_full()
 {
-	echo "Usage: ${TOOL_DIR}/${BASENAME} [--help]" >&2
+	echo "Usage: ${TOOL_DIR}/${BASENAME} [--help] [plane]" >&2
 	echo "    --help - produce full help text" >&2
+	echo "    plane - plane name. Default is 'plane'" >&2
 	echo >&2
 	echo "    should be invoked using the full path - ${TOOL_DIR}/${BASENAME}." >&2
 	echo "    generates (to stdout) sample topology XML with subsections:" >&2
@@ -63,13 +65,18 @@ then
 	Usage_full
 fi
 
-if [ $# -ge 1 ]
+plane="plane"
+argnunm=$#
+if [ $argnunm -gt 1 ]
 then
 	Usage
+elif [ $argnunm -eq 1 ]
+then
+	plane="$1"
 fi
 
 echo '<?xml version="1.0" encoding="utf-8" ?>'
-echo '<Topology>'
+echo "<Report plane=\"$plane\">"
 echo '<LinkSummary>'
 /usr/sbin/ethxmlgenerate -X ${TOOL_DIR}/ethtopology_links.txt -d \; -h Link -g Rate -g MTU -g Internal -g LinkDetails -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g IfAddr -g PortNum -g NodeDesc -g MgmtIfAddr -g NodeType -g PortDetails -e Port -h Port -g IfAddr -g PortNum -g NodeDesc -g MgmtIfAddr -g NodeType -g PortDetails -e Port -e Link
 echo '</LinkSummary>'
@@ -81,6 +88,6 @@ echo '<Switches>'
 /usr/sbin/ethxmlgenerate -X ${TOOL_DIR}/ethtopology_SWs.txt -d \; -h Node -g IfAddr -g NodeDesc -g NodeDetails -e Node
 echo '</Switches>'
 echo '</Nodes>'
-echo '</Topology>'
+echo '</Report>'
 
 exit 0

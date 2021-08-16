@@ -1369,7 +1369,8 @@ static void *TopologyPlaneXmlParserStart(IXmlParserState_t *state, void *parent,
 }
 
 static IXML_FIELD TopLevelOnlyFields[] = {
-	{ tag:"Report", format:'K', subfields:DummyFields, start_func:TopologyPlaneXmlParserStart, end_func:DummyParserEnd }, // structure
+	{ tag:"Report", format:'k', subfields:DummyFields, start_func:TopologyPlaneXmlParserStart, end_func:DummyParserEnd }, // structure
+	{ tag:"Topology", format:'k', subfields:DummyFields, start_func:TopologyPlaneXmlParserStart, end_func:DummyParserEnd }, // structure
 	{ NULL }
 };
 

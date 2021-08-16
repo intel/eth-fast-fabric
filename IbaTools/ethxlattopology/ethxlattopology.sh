@@ -42,15 +42,16 @@
 #   FILE_LINKSUM_NOCORE  - No Edge-to-Core or Host-to-Core links;
 #                           includes cable data
 #   FILE_LINKSUM_NOCABLE - Leaf-to-Spine links, no cable data
-#   FILE_NODEFIS         - Host NICs, includes NodeDetails
+#   FILE_NODENICS         - Host NICs, includes NodeDetails
 #   FILE_NODESWITCHES    - Edge, Leaf and Spine switches
 #   FILE_NODECHASSIS     - Core switches
 #   FILE_NODELEAVES      - Leaf switches
+#   FILE_NODEEDGES       - Edge switches
 #   FILE_TOPOLOGY_OUT    - Topology: FILE_LINKSUM + FILE_LINKSUM_NOCABLE +
-#                           FILE_NODEFIS + FILE_NODESWITCHES
+#                           FILE_NODENICS + FILE_NODESWITCHES
 #   OUT_FOLDER           - Folder to redirect the topology files
 #   FILE_HOSTS           - 'hosts' file
-#   FILE_CHASSIS         - 'chassis' file
+#   FILE_SWITCHES         - 'switches' file
 
 # User topology CSV format:
 #  Lines 1 - x    ignored
@@ -102,11 +103,12 @@ FILE_TOPOLOGY_LINKS="topology.csv"
 FILE_LINKSUM="linksum.csv"
 FILE_LINKSUM_NOCORE="linksum_nocore.csv"
 FILE_LINKSUM_NOCABLE="linksum_nocable.csv"
-FILE_NODEFIS="nodefis.csv"
+FILE_NODENICS="nodenics.csv"
 FILE_NODESWITCHES="nodeswitches.csv"
 FILE_NODELEAVES="nodeleaves.csv"
+FILE_NODEEDGES="nodeedges.csv"
 FILE_NODECHASSIS="nodechassis.csv"
-FILE_CHASSIS="chassis"
+FILE_SWITCHES="switches"
 FILE_HOSTS="hosts"
 FILE_TOPOLOGY_OUT="topology.xml"
 OUT_FOLDER=""
@@ -139,9 +141,9 @@ CORE_NAME="Core Name:"
 CORE_MODE="Core Mode:"
 CORE_FULL="Core Full:"
 CAT_CHAR_CORE=" "
-HFI_SUFFIX_REGEX="hfi[1-9]_[0-9]+$"
 HOST_NIC_REGEX="^[a-zA-Z0-9_-]+-[a-zA-Z0-9_-]+$"
 CAT_CHAR=" "
+CAT_CHAR_NIC="-"
 
 MTU_SW_SW_DEFAULT=${MTU_SW_SW:-9000}
 MTU_SW_NIC_DEFAULT=${MTU_SW_NIC:-9000}
@@ -211,6 +213,7 @@ portnum_field=0
 ix_line=0
 group_cnt=1
 rack_cnt=1
+plane="plane"
 
 # Check Bash Version for hash tables
 if (( "${BASH_VERSINFO[0]}" < 4 ))
@@ -281,10 +284,11 @@ clean_tempfiles() {
     remove_file "$FILE_LINKSUM"
     remove_file "$FILE_LINKSUM_NOCORE"
     remove_file "$FILE_LINKSUM_NOCABLE"
-    remove_file "$FILE_NODEFIS"
+    remove_file "$FILE_NODENICS"
     remove_file "$FILE_NODESWITCHES"
     remove_file "$FILE_NODELEAVES"
     remove_file "$FILE_NODECHASSIS"
+    remove_file "$FILE_NODEEDGES"
     rm -rf "$DIR_TEMP"
   fi
 }
@@ -305,7 +309,7 @@ functout=
 usage_full()
 {
   echo "Usage: ${BASENAME} [-d level] [-v level] [-i level] [-K] [-f linkfiles] " >&2
-  echo "                      [-o report] [source [dest]]" >&2
+  echo "                      [-o report] [-p plane] [source [dest]]" >&2
   echo "           or" >&2
   echo "       ${BASENAME} --help" >&2
   echo "       --help        -  produce full help text" >&2
@@ -331,6 +335,7 @@ usage_full()
   echo "                        Report Types:" >&2
   echo "                        brnodes  - Creates <Node> section xml for the csv input" >&2
   echo "                        links    - Creates <LinkSummary> section xml for the csv input" >&2
+  echo "       -p plane      -  plane name (default 'plane')" >&2
   echo "       source        -  source csv file; default is topology.csv" >&2
   echo "       dest          -  output xml file; default is topology.xml" >&2
   echo "                        It can also be used to specify destination folder" >&2
@@ -409,14 +414,14 @@ display_progress()
 #   FILE_LINKSUM
 #   FILE_LINKSUM_NOCORE (optional)
 #   FILE_LINKSUM_NOCABLE (optional)
-#   FILE_NODEFIS
+#   FILE_NODENICS
 #   FILE_NODESWITCHES
 #   FILE_NODECHASSIS
 #
 # Outputs:
 #   FILE_TOPOLOGY_OUT
 #   FILE_HOSTS
-#   FILE_CHASSIS
+#   FILE_SWITCHES
 gen_topology()
 {
   local args=""
@@ -439,12 +444,12 @@ gen_topology()
     sort -u $FILE_TEMP > $FILE_LINKSUM_NOCABLE
   fi
 
-  if [ -f $FILE_NODEFIS ]
+  if [ -f $FILE_NODENICS ]
     then
     remove_file "$FILE_HOSTS"
     remove_file "$FILE_TEMP"
     remove_file "$FILE_TEMP2"
-    mv $FILE_NODEFIS $FILE_TEMP
+    mv $FILE_NODENICS $FILE_TEMP
     sort -u $FILE_TEMP > $FILE_TEMP2
 
     # Read list of NIC node data
@@ -460,12 +465,12 @@ gen_topology()
       lookup_misc_table_entry "$node" "$NODETYPE_NIC" args
       # ethxmlgenerate is pedantic about the exact number of delimiters ';'
       if [ "$args" == "" ]; then
-        echo "$node;$details" >> $FILE_NODEFIS
+        echo "$node;$details" >> $FILE_NODENICS
       else
-        echo "$node;$details;$args" >> $FILE_NODEFIS
+        echo "$node;$details;$args" >> $FILE_NODENICS
       fi
     done < $FILE_TEMP2
-    cut -d ';' -f 1 $FILE_NODEFIS | sed -e "s/$CAT_CHAR$HFI_SUFFIX_REGEX//" > $FILE_HOSTS
+    cut -d ';' -f 1 $FILE_NODENICS | sed -e "s/${CAT_CHAR_NIC}/:/" > $FILE_HOSTS
   fi
 
   if [ -f $FILE_NODESWITCHES ]
@@ -494,18 +499,24 @@ gen_topology()
       fi
     done < $FILE_TEMP2
   fi
+  remove_file "$FILE_SWITCHES"
+  remove_file "$FILE_TEMP"
   if [ -f $FILE_NODECHASSIS ]
     then
-    remove_file "$FILE_CHASSIS"
-    remove_file "$FILE_TEMP"
     mv $FILE_NODECHASSIS $FILE_TEMP
     sort -u $FILE_TEMP > $FILE_NODECHASSIS
-    cp -p $FILE_NODECHASSIS $FILE_CHASSIS
+    cp -p $FILE_NODECHASSIS $FILE_SWITCHES
+  fi
+  if [ -f $FILE_NODEEDGES ]
+    then
+    mv $FILE_NODEEDGES $FILE_TEMP
+    sort -u $FILE_TEMP > $FILE_NODEEDGES
+    cat $FILE_NODEEDGES >> $FILE_SWITCHES
   fi
 
   remove_file "$FILE_TOPOLOGY_TEMP"
   echo '<?xml version="1.0" encoding="utf-8" ?>' >> $FILE_TOPOLOGY_TEMP
-  echo "<Report>" >> $FILE_TOPOLOGY_TEMP
+  echo "<Report plane=\"$plane\">" >> $FILE_TOPOLOGY_TEMP
 
   if [ "$output_section" == "all"  ] || [ "$output_section" == "links" ] ; then
     # Generate LinkSummary section
@@ -530,9 +541,9 @@ gen_topology()
     # Generate Nodes/NICs section
     echo "<Nodes>" >> $FILE_TOPOLOGY_TEMP
     echo "<NICs>" >> $FILE_TOPOLOGY_TEMP
-    if [ -s $FILE_NODEFIS ]
+    if [ -s $FILE_NODENICS ]
       then
-      $XML_GENERATE -X $FILE_NODEFIS -d \; -i 2 -h Node -g NodeDesc -g NodeDetails $misc_params -e Node >> $FILE_TOPOLOGY_TEMP
+      $XML_GENERATE -X $FILE_NODENICS -d \; -i 2 -h Node -g NodeDesc -g NodeDetails $misc_params -e Node >> $FILE_TOPOLOGY_TEMP
     fi
     echo "</NICs>" >> $FILE_TOPOLOGY_TEMP
 
@@ -1262,7 +1273,7 @@ lookup_misc_table_entry()
 ## Main function:
 
 # Get options
-while getopts d:i:Kf:v:o: option
+while getopts d:i:Kf:v:o:p: option
 do
   case $option in
   d)
@@ -1299,6 +1310,10 @@ do
       usage_full "2"
       exit 1
     fi
+    ;;
+
+  p)
+    plane=$OPTARG
     ;;
 
   *)
@@ -1355,10 +1370,11 @@ display_progress "Parsing $FILE_TOPOLOGY_LINKS"
 remove_file "$FILE_LINKSUM"
 remove_file "$FILE_LINKSUM_NOCORE"
 remove_file "$FILE_LINKSUM_NOCABLE"
-remove_file "$FILE_NODEFIS"
+remove_file "$FILE_NODENICS"
 remove_file "$FILE_NODESWITCHES"
 remove_file "$FILE_NODELEAVES"
 remove_file "$FILE_NODECHASSIS"
+remove_file "$FILE_NODEEDGES"
 
 while IFS="," read -a t
 do
@@ -1518,7 +1534,7 @@ do
       if [ "$t_srctype" == "$NODETYPE_NIC" ]
         then
         if ! [[ "$nodedesc1" =~ $HOST_NIC_REGEX ]]; then
-          nodedesc1="${nodedesc1}-${t_srcport}"
+          nodedesc1="${nodedesc1}${CAT_CHAR_NIC}${t_srcport}"
         fi
         nodedetails1="${t_srcname2}"
       else
@@ -1551,7 +1567,7 @@ do
 
       # Validate sources and destinations
       if [ "$t_dsttype" == "$NODETYPE_NIC" ]; then
-        echo "Error: HFIs cannot be destination nodes (line:$ix_line)" >&2
+        echo "Error: NICs cannot be destination nodes (line:$ix_line)" >&2
         usage_full "2"
       fi
 
@@ -1671,15 +1687,15 @@ do
       # Output CSV nodedesc1
       if [ "$t_srctype" == "$NODETYPE_NIC" ]
         then
-        echo "${nodedesc1};${nodedetails1}" >> ${FILE_NODEFIS}
+        echo "${nodedesc1};${nodedetails1}" >> ${FILE_NODENICS}
         if [ $((n_detail & OUTPUT_GROUPS)) != 0 ]
           then
-          echo "${nodedesc1};${nodedetails1}" >> ${tb_group[$ix_srcgroup]}${FILE_NODEFIS}
+          echo "${nodedesc1};${nodedetails1}" >> ${tb_group[$ix_srcgroup]}${FILE_NODENICS}
         fi
 
         if [ $((n_detail & OUTPUT_RACKS)) != 0 ]
           then
-          echo "${nodedesc1};${nodedetails1}" >> ${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}${FILE_NODEFIS}
+          echo "${nodedesc1};${nodedetails1}" >> ${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}${FILE_NODENICS}
         fi
 
         if [ $((n_detail & OUTPUT_SWITCHES)) != 0 ]
@@ -1688,25 +1704,41 @@ do
             then
             if [ "x${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}" == "x${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}" ]
               then
-              echo "${nodedesc1};${nodedetails1}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${tb_switch[$ix_dstswitch]}${FILE_NODEFIS}
+              echo "${nodedesc1};${nodedetails1}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${tb_switch[$ix_dstswitch]}${FILE_NODENICS}
             fi
           fi
         fi
       else
         echo "${nodedesc1}" >> ${FILE_NODESWITCHES}
+        if [ "$t_srctype" == "$NODETYPE_EDGE" ]
+        then
+        	echo "${nodedesc1}" >> ${FILE_NODEEDGES}
+        fi
         if [ $((n_detail & OUTPUT_GROUPS)) != 0 ]
           then
           echo "${nodedesc1}" >> ${tb_group[$ix_srcgroup]}${FILE_NODESWITCHES}
+          if [ "$t_srctype" == "$NODETYPE_EDGE" ]
+          then
+            echo "${nodedesc1}" >> ${tb_group[$ix_srcgroup]}${FILE_NODEEDGES}
+          fi
         fi
 
         if [ $((n_detail & OUTPUT_RACKS)) != 0 ]
           then
           echo "${nodedesc1}" >> ${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}${FILE_NODESWITCHES}
+          if [ "$t_srctype" == "$NODETYPE_EDGE" ]
+          then
+            echo "${nodedesc1}" >> ${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}${FILE_NODEEDGES}
+          fi
         fi
 
         if [ $((n_detail & OUTPUT_SWITCHES)) != 0 ]
           then
           echo "${nodedesc1}" >> ${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}${tb_switch[$ix_srcswitch]}${FILE_NODESWITCHES}
+          if [ "$t_srctype" == "$NODETYPE_EDGE" ]
+          then
+            echo "${nodedesc1}" >> ${tb_group[$ix_srcgroup]}${tb_rack[$ix_srcrack]}${tb_switch[$ix_srcswitch]}${FILE_NODEEDGES}
+          fi
         fi
       fi
 
@@ -1719,6 +1751,9 @@ do
         echo "${nodedesc2}" >> ${FILE_NODELEAVES}
         echo "${t_dstname}" >> ${FILE_NODECHASSIS}
         external_leaves+=("${nodedesc2}")
+      elif [ "$t_dsttype" == "$NODETYPE_EDGE" ]
+        then
+        echo "${nodedesc2}" >> ${FILE_NODEEDGES}
       fi
       if [ $((n_detail & OUTPUT_GROUPS)) != 0 ] && [ "$nodetype2" != "$NODETYPE_ENDPOINT" ]
         then
@@ -1727,6 +1762,9 @@ do
           then
           echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${FILE_NODELEAVES}
           echo "${t_dstname}" >> ${tb_group[$ix_dstgroup]}${FILE_NODECHASSIS}
+        elif [ "$t_dsttype" == "$NODETYPE_EDGE" ]
+          then
+          echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${FILE_NODEEDGES}
         fi
       fi
 
@@ -1737,6 +1775,9 @@ do
           then
           echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${FILE_NODELEAVES}
           echo "${t_dstname}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${FILE_NODECHASSIS}
+        elif [ "$t_dsttype" == "$NODETYPE_EDGE" ]
+          then
+          echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${FILE_NODEEDGES}
         fi
       fi
 
@@ -1745,6 +1786,7 @@ do
         if [ "$t_dsttype" == "$NODETYPE_EDGE" ]
           then
           echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${tb_switch[$ix_dstswitch]}${FILE_NODESWITCHES}
+          echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${tb_switch[$ix_dstswitch]}${FILE_NODEEDGES}
         elif [ "$t_dsttype" == "$NODETYPE_LEAF" ]
           then
           echo "${nodedesc2}" >> ${tb_group[$ix_dstgroup]}${tb_rack[$ix_dstrack]}${tb_switch[$ix_dstswitch]}${FILE_NODELEAVES}

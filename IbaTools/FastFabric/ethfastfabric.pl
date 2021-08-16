@@ -1073,10 +1073,10 @@ sub fabricsetup_install
 
 sub fabricsetup_configsnmp
 {
-	if (! valid_config_file("Host File", $FabricAdminHostsFile) ) {
+	if (! valid_config_file("Host File", $FabricSetupHostsFile) ) {
 		return 1;
 	}
-	return run_fabric_cmd("$BIN_DIR/ethsetupsnmp -p -f $FabricAdminHostsFile");
+	return run_fabric_cmd("$BIN_DIR/ethsetupsnmp -p -L -f $FabricSetupHostsFile");
 }
 sub fabricsetup_buildmpi
 {

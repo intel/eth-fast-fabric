@@ -142,8 +142,8 @@ do
 	echo "$fw" >> /$dir/fw_info
 done
 
-type ethtool > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+if type ethtool > /dev/null 2>&1
+then
 	for dev in $(ls /sys/class/net)
 	do
 		echo "============== $dev ==============" >> /$dir/fw_details
@@ -163,6 +163,8 @@ if [ $? -eq 0 ]; then
 		ethtool -e $dev >> /$dir/fw_details 2>&1
 		echo "" >> /$dir/fw_details
 	done
+else
+	echo "Warning: Skipped NIC dev info collection because no ethtool found"
 fi
 
 echo "Obtaining OS configuration ..."
@@ -227,8 +229,8 @@ ls -d /dev/shm >> /$dir/shm 2>&1
 ls -lR /dev/shm >> /$dir/shm 2>&1
 
 echo "Obtaining device statistics"
-type ethtool > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+if type ethtool > /dev/null 2>&1
+then
 	for dev in $(ls /sys/class/net)
 	do
 		echo "============== $dev ==============" >> /$dir/fw_stats
@@ -239,14 +241,18 @@ if [ $? -eq 0 ]; then
 		ethtool --phy-statistics $dev >> /$dir/fw_stats 2>&1
 		echo "" >> /$dir/fw_stats
 	done
+else
+	echo "Warning: Skipped because no ethtool found."
 fi
 
 echo "Obtaining MPI configuration ..."
-if type mpi-selector >/dev/null 2>/dev/null
+if type mpi-selector >/dev/null 2>&1
 then
 	mpi-selector --list > /$dir/mpi-selector-list
 	mpi-selector --system --query > /$dir/mpi-selector-system
 	mpi-selector --user --query > /$dir/mpi-selector-user
+else
+	echo "Warning: Skipped because no mpi-selector found."
 fi
 
 mkdir /$dir/proc
@@ -268,7 +274,12 @@ do
 done
 
 echo "Obtaining additional CPU info..."
-cpupower frequency-info > /$dir/cpupower-freq-info
+if type cpupower >/dev/null 2>&1
+then
+	cpupower frequency-info > /$dir/cpupower-freq-info
+else
+	echo "Warning: Skipped because no cpupower found."
+fi
 
 # Check if ice driver debug data dir) is present; log only if present
 ICE_DEBUGDIR="/sys/kernel/debug/ice"

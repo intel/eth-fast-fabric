@@ -31,14 +31,6 @@
 # [ICS VERSION STRING: unknown]
 # run a command on all hosts or chassis
 set -eo pipefail
-if [ -f /etc/eth-tools/ethfastfabric.conf ]
-then
-	. /etc/eth-tools/ethfastfabric.conf
-fi
-
-. /usr/lib/eth-tools/ethfastfabric.conf.def
-
-. /usr/lib/eth-tools/ff_funcs
 
 readonly BASENAME="$(basename $0)"
 readonly SNMP_CONF="/etc/snmp/snmpd.conf"
@@ -62,6 +54,7 @@ readonly ETHFF_TAIL="### End of Intel Eth FS conf ###"
 
 p_opt=n
 l_opt=n
+L_opt=n
 f_opt=""
 h_opt=""
 a_opt=n
@@ -72,7 +65,7 @@ community="public"
 mibs=""
 
 Usage_full() {
-	echo "Usage: $BASENAME [-p] [-f hostfile] [-h 'hosts'] [-a 'admin']" >&2
+	echo "Usage: $BASENAME [-p] [-L] [-f hostfile] [-h 'hosts'] [-a 'admin']" >&2
 	echo "                    [-c 'community'] [-m 'mibs']" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
@@ -80,6 +73,7 @@ Usage_full() {
 	echo "   -p - run command in parallel on all hosts" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
 	echo "   -h hosts - list of hosts in cluster" >&2
+	echo "   -L - include localhost (the current node) in setup" >&2
 	echo "   -a admins - list of admin hosts that can issue SNMP query" >&2
 	echo "               Default is the current host" >&2
 	echo "   -c community - community string used for SNMP query, default is 'public'" >&2
@@ -173,12 +167,14 @@ function merge_snmp_conf() {
 }
 
 function process_arguments() {
-	while getopts "plf:h:a:c:m:" opt; do
+	while getopts "plLf:h:a:c:m:" opt; do
 		case ${opt} in
 			p)
 				p_opt=y;;
 			l)
 				l_opt=y;;
+			L)
+				L_opt=y;;
 			f)
 				f_opt="$OPTARG";;
 			h)
@@ -280,6 +276,7 @@ function main() {
 		get_arguments
 	fi
 	if [[ "${l_opt}" = "y" ]]; then
+		# internal option -l that performs local ONLY setup
 		config_local_host
 	else
 		p_arg=""
@@ -288,13 +285,20 @@ function main() {
 		if [[ "${p_opt}" = "y" ]]; then
 			p_arg="-p"
 		fi
+
+		if [[ "${L_opt}" = "y" ]]; then
+			# option -L that performs local setup as well
+			config_local_host
+		fi
 		if [[ -n ${f_opt} ]]; then
 			fh_arg="-f"
 			fh_param="${f_opt}"
 		elif [[ -n ${h_opt} ]]; then
 			fh_arg="-h"
 			fh_param="${h_opt}"
-		else
+		elif [[ "${L_opt}" = "n" ]]; then
+			# if no -f, -h, we do a default setup that will use /etc/eth-tools/hosts
+			# file plus current node. Below sets up current node (localhost)
 			config_local_host
 		fi
 		local_name="/tmp/${BASENAME}"

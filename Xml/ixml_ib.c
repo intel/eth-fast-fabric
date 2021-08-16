@@ -644,7 +644,7 @@ void IXmlParserEndEthMtu(IXmlParserState_t *state, const IXML_FIELD *field, void
 	uint16 value;
 	
 	if (IXmlParseUint16(state, content, len, &value)) {
-		ASSERT(field->size == 1);
+		ASSERT(field->size == 2);
 		*(uint8 *)IXmlParserGetField(field, object) = value;
 	}
 }
