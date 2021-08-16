@@ -3790,7 +3790,7 @@ struct option options[] = {
 		{ "infile", required_argument, NULL, 'X' },
 		{ "topology", required_argument, NULL, 'T' },
 		{ "quietfocus", no_argument, NULL, 'Q' },
-		{ "allports", no_argument, NULL, 'A' },
+//		{ "allports", no_argument, NULL, 'A' },
 		{ "rc", required_argument, NULL, 'z' },
 		{ "timeout", required_argument, NULL, '!' },
 		{ "ethconfig", required_argument, NULL, 'E' },
@@ -3804,8 +3804,7 @@ void Usage_full(void)
 {
 	fprintf(stderr, "Usage: ethreport [-v][-q] [-o report] [-d detail]\n"
 	                "                    [-N] [-x] [-X snapshot_input] [-T topology_input]\n"
-	                "                    [-A] [-c file] [-L] [-F point]\n"
-	                "                    [-Q] [-E file] [-p plane]\n");
+	                "                    [-c file] [-L] [-F point] [-Q] [-E file] [-p plane]\n");
 	fprintf(stderr, "              or\n");
 	fprintf(stderr, "       ethreport --help\n");
 	fprintf(stderr, "    --help - produce full help text\n");
@@ -3827,7 +3826,7 @@ void Usage_full(void)
 	fprintf(stderr, "                                reports can be augmented with information\n");
 	fprintf(stderr, "                                not available electronically.\n");
 	fprintf(stderr, "                                '-' may be used to specify stdin\n");
-	fprintf(stderr, "    -A/--allports             - also get PortInfo for down switch ports.\n");
+//	fprintf(stderr, "    -A/--allports             - also get PortInfo for down switch ports.\n");
 	fprintf(stderr, "    -c/--config file          - error thresholds config file, default is\n");
 	fprintf(stderr, "                                %s\n", CONFIG_FILE);
 	fprintf(stderr, "    -E/--ethconfig file       - Ethernet Mgt config file, default is\n");
@@ -3869,7 +3868,7 @@ void Usage_full(void)
 	fprintf(stderr, "    misconnlinks              - summary of links connected with mismatched speed\n");
 	fprintf(stderr, "                                potential\n");
 	fprintf(stderr, "    errors                    - summary of links whose errors exceed counts in\n");
-    fprintf(stderr, "                                config file\n");
+	fprintf(stderr, "                                config file\n");
 	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
 	fprintf(stderr, "    verifynics                 - compare fabric (or snapshot) NICs to supplied\n");
 	fprintf(stderr, "                                topology and identify differences and omissions\n");
@@ -3913,10 +3912,10 @@ void Usage_full(void)
 	fprintf(stderr, "   mgmtifaddr:value           - value is numeric port mgmtifaddr\n");
 	fprintf(stderr, "   ifaddr:value               - value is numeric node ifaddr\n");
 	fprintf(stderr, "   ifaddr:value1:port:value2\n");
-    fprintf(stderr, "                              - value1 is numeric node ifaddr, value2 is port #\n");
+	fprintf(stderr, "                              - value1 is numeric node ifaddr, value2 is port #\n");
 	fprintf(stderr, "   chassisid:value            - value is numeric chassisid\n");
 	fprintf(stderr, "   chassisid:value1:port:value2\n");
-    fprintf(stderr, "                              - value1 is numeric chassisid value2 is port #\n");
+	fprintf(stderr, "                              - value1 is numeric chassisid value2 is port #\n");
 	fprintf(stderr, "   node:value                 - value is node description (node name)\n");
 	fprintf(stderr, "   node:value1:port:value2    - value1 is node description (node name) value2 is port #\n");
 	fprintf(stderr, "   nodepat:value              - value is glob pattern for node description (node name)\n");
@@ -3924,11 +3923,11 @@ void Usage_full(void)
 	fprintf(stderr, "                                (node name), value2 is port #\n");
 	fprintf(stderr, "   nodedetpat:value           - value is glob pattern for node details\n");
 	fprintf(stderr, "   nodedetpat:value1:port:value2\n");
-    fprintf(stderr, "                              - value1 is glob pattern for node details,\n");
+	fprintf(stderr, "                              - value1 is glob pattern for node details,\n");
 	fprintf(stderr, "                                value2 is port #\n");
 	fprintf(stderr, "   nodetype:value             - value is node type (SW or NIC)\n");
 	fprintf(stderr, "   nodetype:value1:port:value2\n");
-    fprintf(stderr, "                              - value1 is node type (SW or NIC) value2 is port #\n");
+	fprintf(stderr, "                              - value1 is node type (SW or NIC) value2 is port #\n");
 	fprintf(stderr, "   rate:value                 - value is string for rate (25g, 50g, 75g, 100g, 150g, 200g)\n");
 	fprintf(stderr, "                                omits switch mgmt port 0\n");
 	fprintf(stderr, "   portstate:value            - value is string for state (up, down, testing, unknown,\n");
@@ -4293,9 +4292,9 @@ int main(int argc, char ** argv)
 			case 'N':	// omit names
 				g_noname = 1;
 				break;
-			case 'A':	// get PortInfo for all switch ports, including down ones
-				sweepFlags |= FF_DOWNPORTINFO;
-				break;
+//			case 'A':	// get PortInfo for all switch ports, including down ones
+//				sweepFlags |= FF_DOWNPORTINFO;
+//				break;
 			case 'L':	// limit to specific ports
 				g_limitstats = 1;
 				break;
@@ -4397,7 +4396,8 @@ int main(int argc, char ** argv)
 	}
 
 	if ((report & REPORT_FABRICINFO) && (g_limitstats || g_noname || (sweepFlags & FF_DOWNPORTINFO))) {
-		fprintf(stderr, "ethreport: -L, -N, -A ignored for -o fabricinfo\n");
+//		fprintf(stderr, "ethreport: -L, -N, -A ignored for -o fabricinfo\n");
+		fprintf(stderr, "ethreport: -L, -N ignored for -o fabricinfo\n");
 		g_noname = 0;
 	}
 
@@ -4439,10 +4439,6 @@ int main(int argc, char ** argv)
 
 	if (g_verbose) {
 		setTopologySnmpVerbose(stderr, g_verbose);
-	}
-
-	if (g_quiet) {
-		setTopologySnmpQuiet(g_quiet);
 	}
 
 	// get thresholds config file

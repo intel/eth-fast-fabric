@@ -49,8 +49,6 @@ DIRS			= \
 				$(shell ls -d ethxmlfilter 2>/dev/null) \
 				$(shell ls -d ethxmlgenerate 2>/dev/null) \
 				$(shell ls -d ethxlattopology 2>/dev/null) \
-				$(shell ls -d chassis_setup 2>/dev/null) \
-				$(shell ls -d switch_setup 2>/dev/null) \
 				$(shell ls -d ethfindgood 2>/dev/null) \
 				$(shell ls -d ethlinkanalysis 2>/dev/null) \
 				$(shell ls -d ethcabletest 2>/dev/null) \
@@ -58,6 +56,8 @@ DIRS			= \
 				$(shell ls -d nodeverify 2>/dev/null) \
 				$(shell ls -d usemem 2>/dev/null) \
 				$(shell ls -d man 2>/dev/null)
+# 				$(shell ls -d chassis_setup 2>/dev/null) \
+# 				$(shell ls -d switch_setup 2>/dev/null) \
 # ifeq "$(IB_STACK)" "OPENIB"
 # DIRS			+= \
 # 				$(shell ls -d opafirmware 2>/dev/null)  \

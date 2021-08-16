@@ -198,10 +198,10 @@ my $PrevFabricAdminHostsFile="$OPA_CONFIG_DIR/allhosts";
 if ( "$ENV{HOSTS_FILE}" ne "" ) {
 	$FabricAdminHostsFile="$ENV{HOSTS_FILE}";
 }
-my $FabricChassisFile="$OPA_CONFIG_DIR/chassis";
-# CHASSIS_FILE overrides default
-if ( "$ENV{CHASSIS_FILE}" ne "" ) {
-	$FabricChassisFile="$ENV{CHASSIS_FILE}";
+my $FabricSwitchesFile="$OPA_CONFIG_DIR/switches";
+# SWITCHES_FILE overrides default
+if ( "$ENV{SWITCHES_FILE}" ne "" ) {
+	$FabricSwitchesFile="$ENV{SWITCHES_FILE}";
 }
 my $Editor="$ENV{EDITOR}";
 if ( "$Editor" eq "" ) {
@@ -762,7 +762,7 @@ sub run_fabric_cmd
 sub run_fabric_ethcmdall
 {
 	my $DestFile       = "$_[0]";
-	my $chassis       = "$_[1]";
+	my $switches       = "$_[1]";
 	my $Sopt          = "$_[2]";
 	my $other_opts    = "$_[3]";
 	my $cmd;
@@ -770,16 +770,16 @@ sub run_fabric_ethcmdall
 
 	# valid_config_file has already been called by caller
 	do {
-		if ($chassis == 0) {
+		if ($switches == 0) {
 			print "Enter Command to run on all hosts (or none):";
 		} else {
-			print "Enter Command to run on all chassis (or none):";
+			print "Enter Command to run on all switches (or none):";
 		}
 		chomp($cmd = <STDIN>);
 		$cmd=remove_whitespace($cmd);
 	} until ( length($cmd) != 0 );
 	if ( "$cmd" ne "none" ) {
-		if ($chassis == 0) {
+		if ($switches == 0) {
 			my $timelimit=GetNumericValue("Timelimit in minutes (0=unlimited):", 1, 0, 24*60) * 60;
 			if ( $timelimit ) {
 				$other_opts="$other_opts -T $timelimit";
@@ -790,7 +790,7 @@ sub run_fabric_ethcmdall
 				$fabric_cmd="$BIN_DIR/ethcmdall $other_opts -f $DestFile '$cmd'";
 			}
 		} else {
-			if (GetYesNo("Run in parallel on all chassis?", "y") ) {
+			if (GetYesNo("Run in parallel on all switches?", "y") ) {
 				$fabric_cmd="$BIN_DIR/ethcmdall -C $Sopt -p $other_opts -F $DestFile '$cmd'";
 			} else {
 				$fabric_cmd="$BIN_DIR/ethcmdall -C $Sopt $other_opts -F $DestFile '$cmd'";
@@ -1717,7 +1717,7 @@ sub fabricadmin_mpiperf
 }
 sub fabricadmin_health
 {
-	# TBD - esm_chassis and chassis file
+	# TBD -switches file
 	if (GetYesNo("Baseline present configuration?", "n") ) {
 		return run_fabric_cmd("$BIN_DIR/ethallanalysis -b");
 	} else {
@@ -1945,7 +1945,7 @@ sub fabricmonitor_opatop
 #	goto DO_SETUP;
 #}
 #
-#sub chassis_config
+#sub switches_config
 #{
 #	my $inp;
 #	my $file;
@@ -1961,14 +1961,14 @@ sub fabricmonitor_opatop
 #		do 
 #		{
 #			print "The FastFabric operations which follow will require a file\n";
-#			print "listing the chassis to operate on\n";
-#			print "Select Chassis File to Use/Edit [$FabricChassisFile]: ";
+#			print "listing the switches to operate on\n";
+#			print "Select Switches File to Use/Edit [$FabricSwitchesFile]: ";
 #			chomp($inp = <STDIN>);
 #			$inp=remove_whitespace($inp);
 #
 #			if ( length($inp) == 0 ) 
 #			{
-#				$file = $FabricChassisFile;
+#				$file = $FabricSwitchesFile;
 #			} else {
 #				$file = $inp;
 #			}
@@ -1978,14 +1978,14 @@ sub fabricmonitor_opatop
 #			}
 #			system("$Editor '$file'");
 #			if ( ! -e "$file" ) {
-#				print "You must create a Chassis File to proceed\n\n";
+#				print "You must create a Switches File to proceed\n\n";
 #			} else {
-#				$FabricChassisFile=$file;
+#				$FabricSwitchesFile=$file;
 #			}
 #		} until ( -e "$file");
-#		print "Selected Chassis File: $FabricChassisFile\n";
+#		print "Selected Switches File: $FabricSwitchesFile\n";
 #	} until (! GetYesNo("Do you want to edit/review/change the files?", "y") );
-#	print LOG_FD "Selected Chassis File -> $FabricChassisFile\n";
+#	print LOG_FD "Selected Switches File -> $FabricSwitchesFile\n";
 #	return 0;
 #}
 
@@ -2012,7 +2012,7 @@ sub expand_pathnames
 }
 
 # expand package list, returns "" if "none" or has invalid entries
-sub chassis_expand_fwpackages
+sub switches_expand_fwpackages
 {
 	my $packages = $_[0];
 	my $all_packages="";
@@ -2032,7 +2032,7 @@ sub chassis_expand_fwpackages
 	return "$all_packages";
 }
 
-sub chassis_showallports
+sub switches_showallports
 {
 	my $linkanalysis=0;
 	my $linkanalysis_opts="";
@@ -2080,13 +2080,13 @@ sub chassis_showallports
 			return 1;
 		}
 	} else  {
-		if (! valid_config_file("Chassis File", $FabricChassisFile) ) {
+		if (! valid_config_file("Switches File", $FabricSwitchesFile) ) {
 			return 1;
 		}
-		if (GetYesNo("Would you like to be prompted for chassis' password?", "n") ) {
+		if (GetYesNo("Would you like to be prompted for switches' password?", "n") ) {
 			$Sopt="-S";
 		}
-		if ( run_fabric_cmd("$BIN_DIR/ethshowallports -C $Sopt -F $FabricChassisFile > $linkanalysis_file 2>&1", "skip_prompt") ) {
+		if ( run_fabric_cmd("$BIN_DIR/ethshowallports -C $Sopt -F $FabricSwitchesFile > $linkanalysis_file 2>&1", "skip_prompt") ) {
 			return 1;
 		}
 	}

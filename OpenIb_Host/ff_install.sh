@@ -64,7 +64,7 @@ cd ../fastfabric/tools
 [ -n "$ff_tools_exp" ] && cp -t ${DESTDIR}/usr/lib/eth-tools/ $ff_tools_exp
 [ -n "$ff_libs_misc" ] && cp -t ${DESTDIR}/usr/lib/eth-tools/ $ff_libs_misc
 cp -t ${DESTDIR}/usr/lib/eth-tools/ osid_wrapper
-cp -t ${DESTDIR}/etc/eth-tools allhosts chassis hosts switches
+cp -t ${DESTDIR}/etc/eth-tools allhosts hosts switches
 cd ..
 
 cd ../man/man1

@@ -29,7 +29,7 @@
 # END_ICS_COPYRIGHT8   ****************************************
 
 # [ICS VERSION STRING: unknown]
-# run a command on all hosts or chassis
+# run a command on all hosts
 set -eo pipefail
 
 readonly BASENAME="$(basename $0)"

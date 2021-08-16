@@ -30,7 +30,7 @@
 
 # [ICS VERSION STRING: unknown]
 
-# expand a hosts, chassis or switches file by following includes and
+# expand a hosts, or switches file by following includes and
 # removing comments
 
 # optional override of defaults
@@ -52,7 +52,7 @@ Usage()
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-	echo "   file - FastFabric hosts, chassis or opaswitches file to expand by following" >&2
+	echo "   file - FastFabric hosts or switches file to expand by following" >&2
 	echo "          includes and removing comments" >&2
 	echo "example:">&2
 	echo "   $BASENAME allhosts" >&2

@@ -1610,7 +1610,6 @@ extern PortData *FIPortIteratorHead(FIPortIterator *pFIPortIterator, Point *pFoc
 extern PortData *FIPortIteratorNext(FIPortIterator *pFIPortIterator);
 
 extern void setTopologySnmpVerbose(FILE* file, uint8 level);
-extern void setTopologySnmpQuiet(uint8 quiet);
 
 #ifdef __cplusplus
 };

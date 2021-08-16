@@ -1335,7 +1335,7 @@ do{
 		}
 		elsif ($INSTALL_CHOICE == 5)
 		{
-			# FastFabric (Host/Chassis/Switch Setup/Admin)
+			# FastFabric (Host/Switch Setup/Admin)
 			run_fastfabric($ComponentInfo{'fastfabric'}{'Name'});
 		}
 	}

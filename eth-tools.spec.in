@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.1.0.0
-Release: 35%{?dist}
+Release: 37%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -59,7 +59,6 @@ __RPM_FF_FILES
 %config(noreplace) %{_sysconfdir}/eth-tools/ethfastfabric.conf
 %config(noreplace) %{_sysconfdir}/eth-tools/ethmon.conf
 %config(noreplace) %{_sysconfdir}/eth-tools/allhosts
-%config(noreplace) %{_sysconfdir}/eth-tools/chassis
 %config(noreplace) %{_sysconfdir}/eth-tools/hosts
 %config(noreplace) %{_sysconfdir}/eth-tools/switches
 %config(noreplace) /usr/lib/eth-tools/osid_wrapper

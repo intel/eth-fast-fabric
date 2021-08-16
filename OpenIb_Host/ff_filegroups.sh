@@ -46,7 +46,7 @@ ff_mans="ethallanalysis.8 ethcabletest.8 ethcaptureall.8
 
 ff_iba_samples="hostverify.sh ethtopology_NICs.txt ethtopology_links.txt
 	ethtopology_SWs.txt linksum_swd06.csv linksum_swd24.csv README.topology
-	README.xlat_topology minimal_topology.xlsx detailed_topology.xlsx allhosts-sample chassis-sample
+	README.xlat_topology minimal_topology.xlsx detailed_topology.xlsx allhosts-sample
 	hosts-sample switches-sample mac_to_dhcp
 	ethmon.conf-sample ethmon.si.conf-sample ethfastfabric.conf-sample
 	ethgentopology"

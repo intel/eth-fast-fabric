@@ -29,7 +29,7 @@
 # END_ICS_COPYRIGHT8   ****************************************
 
 # [ICS VERSION STRING: unknown]
-# Analyze chassis for errors and/or changes relative to baseline
+# Analyze switches for errors and/or changes relative to baseline
 
 # optional override of defaults
 if [ -f /etc/eth-tools/ethfastfabric.conf ]
@@ -45,7 +45,7 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 
 Usage_full()
 {
-	echo "Usage: opachassisanalysis [-b|-e] [-s] [-d dir] [-F chassisfile] [-H 'chassis']" >&2
+	echo "Usage: opachassisanalysis [-b|-e] [-s] [-d dir] [-F switchesfile] [-H 'switches']" >&2
 	echo "              or" >&2
 	echo "       opachassisanalysis --help" >&2
 	echo "Check configuration and health for the Intel Omni-Path Fabric Chassis" >&2
@@ -55,17 +55,17 @@ Usage_full()
 	echo "   -s - save history of failures (errors/differences)" >&2
 	echo "   -d dir - top level directory for saving baseline and history of failed checks" >&2
 	echo "                  default is /var/usr/lib/eth-tools/analysis" >&2
-	echo "   -F chassisfile - file with chassis in cluster" >&2
-	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
-	echo "   -H chassis - list of chassis to analyze" >&2
+	echo "   -F switchesfile - file with switches in cluster" >&2
+	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
+	echo "   -H switches - list of switches to analyze" >&2
 	echo " Environment:" >&2
-	echo "   CHASSIS - list of chassis, used if -F and -H options not supplied" >&2
-	echo "   CHASSIS_FILE - file containing list of chassis, used if -F and -H options">&2
+	echo "   SWITCHES - list of switches, used if -F and -H options not supplied" >&2
+	echo "   SWITCHES_FILE - file containing list of switches, used if -F and -H options">&2
 	echo "                   not supplied" >&2
 	echo "   FF_ANALYSIS_DIR - top level directory for baselines and failed health checks" >&2
-	echo "   FF_CHASSIS_CMDS - list of commands to issue during analysis," >&2
+	echo "   FF_SWITCH_CMDS - list of commands to issue during analysis," >&2
 	echo "                      unused if -e option supplied" >&2
-	echo "   FF_CHASSIS_HEALTH - single command to issue to check overall health during">&2
+	echo "   FF_SWITCH_HEALTH - single command to issue to check overall health during">&2
 	echo "                        analysis, unused if -b option supplied" >&2
 	echo "for example:" >&2
 	echo "   opachassisanalysis" >&2
@@ -74,15 +74,15 @@ Usage_full()
 
 Usage()
 {
-	echo "Usage: opachassisanalysis [-b|-e] [-s] [-F chassisfile]" >&2
+	echo "Usage: opachassisanalysis [-b|-e] [-s] [-F switchesfile]" >&2
 	echo "              or" >&2
 	echo "       opachassisanalysis --help" >&2
 	echo "   --help - produce full help text" >&2
 	echo "   -b - baseline mode, default is compare/check mode" >&2
 	echo "   -e - evaluate health only, default is compare/check mode" >&2
 	echo "   -s - save history of failures (errors/differences)" >&2
-	echo "   -F chassisfile - file with chassis in cluster" >&2
-	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+	echo "   -F switchesfile - file with switches in cluster" >&2
+	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "for example:" >&2
 	echo "   opachassisanalysis" >&2
 	exit 2
@@ -104,8 +104,8 @@ do
 	e)	healthonly=y;;
 	s)	savehistory=y;;
 	d)	export FF_ANALYSIS_DIR="$OPTARG";;
-	H)	export CHASSIS="$OPTARG";;
-	F)	export CHASSIS_FILE="$OPTARG";;
+	H)	export SWITCHES="$OPTARG";;
+	F)	export SWITCHES_FILE="$OPTARG";;
 	?)	Usage;;
 	esac
 done
@@ -119,7 +119,7 @@ then
 	Usage
 fi
 
-check_chassis_args opachassisanalysis
+check_switches_args opachassisanalysis
 
 #-----------------------------------------------------------------
 # Set up file paths
@@ -140,15 +140,15 @@ save_failures()
 	fi
 }
 
-baseline=$baseline_dir/chassis
-latest=$latest_dir/chassis
+baseline=$baseline_dir/switches
+latest=$latest_dir/switches
 
 # fake loop so we can use break/continue to skip to end of script
 for loop in 1
 do
 	if [[ $getbaseline == n  && $healthonly == n ]]
 	then
-		for cmd in $FF_CHASSIS_CMDS
+		for cmd in $FF_SWITCH_CMDS
 		do
 			if [ ! -f $baseline.$cmd ]
 			then
@@ -170,17 +170,17 @@ do
 
 		rm -rf $latest.*
 
-		for cmd in $FF_CHASSIS_CMDS
+		for cmd in $FF_SWITCH_CMDS
 		do
 			/usr/sbin/ethcmdall -C $cmd > $latest.$cmd 2>&1
 			if [ $? != 0 ]
 			then
-				echo "opachassisanalysis: Error: Unable to issue chassis command. See $latest.$cmd" >&2
+				echo "opachassisanalysis: Error: Unable to issue switch command. See $latest.$cmd" >&2
 				status=bad
 				break
 			elif grep FAILED < $latest.$cmd > /dev/null
 			then
-				echo "opachassisanalysis: Warning: $cmd command failed for 1 or more chassis. See $latest.$cmd" >&2
+				echo "opachassisanalysis: Warning: $cmd command failed for 1 or more switch. See $latest.$cmd" >&2
 				continue
 			fi
 		done
@@ -194,7 +194,7 @@ do
 			mkdir -p $baseline_dir
 			rm -rf $baseline.*
 
-			for cmd in $FF_CHASSIS_CMDS
+			for cmd in $FF_SWITCH_CMDS
 			do
 				cp $latest.$cmd $baseline_dir
 			done
@@ -203,27 +203,27 @@ do
 
 	if [[ $getbaseline == n ]]
 	then
-		# check chassis health/running
+		# check switch health/running
 		mkdir -p $latest_dir
 
-		/usr/sbin/ethcmdall -C "$FF_CHASSIS_HEALTH" > $latest.$FF_CHASSIS_HEALTH 2>&1
+		/usr/sbin/ethcmdall -C "$FF_SWITCH_HEALTH" > $latest.$FF_SWITCH_HEALTH 2>&1
 		if [ $? != 0 ]
 		then
-			echo "opachassisanalysis: Error: Unable to issue chassis command: $FF_CHASSIS_HEALTH. See $latest.$FF_CHASSIS_HEALTH" >&2
+			echo "opachassisanalysis: Error: Unable to issue switch command: $FF_SWITCH_HEALTH. See $latest.$FF_SWITCH_HEALTH" >&2
 			status=bad
-			save_failures $latest.$FF_CHASSIS_HEALTH
-		elif grep FAILED < $latest.$FF_CHASSIS_HEALTH > /dev/null
+			save_failures $latest.$FF_SWITCH_HEALTH
+		elif grep FAILED < $latest.$FF_SWITCH_HEALTH > /dev/null
 		then
-			echo "opachassisanalysis: Error: Chassis error. See $latest.$FF_CHASSIS_HEALTH" >&2
+			echo "opachassisanalysis: Error: Chassis error. See $latest.$FF_SWITCH_HEALTH" >&2
 			status=bad
-			save_failures $latest.$FF_CHASSIS_HEALTH
+			save_failures $latest.$FF_SWITCH_HEALTH
 		fi
 	fi
 
 	if [[ $getbaseline == n  && $healthonly == n ]]
 	then
 		# compare to baseline
-		for cmd in $FF_CHASSIS_CMDS
+		for cmd in $FF_SWITCH_CMDS
 		do
 			$FF_DIFF_CMD $baseline.$cmd $latest.$cmd > $latest.$cmd.diff 2>&1
 			if [ -s $latest.$cmd.diff ]

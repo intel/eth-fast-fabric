@@ -29,7 +29,7 @@
 # END_ICS_COPYRIGHT8   ****************************************
 
 # [ICS VERSION STRING: unknown]
-# run a command on all hosts or chassis
+# run a command on all hosts or switches
 
 # optional override of defaults
 if [ -f /etc/eth-tools/ethfastfabric.conf ]
@@ -50,86 +50,86 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-#	echo "Usage: $BASENAME [-CpqPS] [-f hostfile] [-F chassisfile] [-h 'hosts']" >&2
-#	echo "                    [-H 'chassis'] [-u user] [-m 'marker'] [-T timelimit]" >&2
+#	echo "Usage: $BASENAME [-CpqPS] [-f hostfile] [-F switchesfile] [-h 'hosts']" >&2
+#	echo "                    [-H 'switches'] [-u user] [-m 'marker'] [-T timelimit]" >&2
 #	echo "                    'cmd'" >&2
 	echo "Usage: $BASENAME [-pqP] [-f hostfile] [-h 'hosts'] [-u user] "  >&2
 	echo "                    [-T timelimit] 'cmd'" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-#	echo "   -C - perform command against chassis, default is hosts" >&2
-#	echo "   -p - run command in parallel on all hosts/chassis" >&2
+#	echo "   -C - perform command against switches, default is hosts" >&2
+#	echo "   -p - run command in parallel on all hosts/switches" >&2
 	echo "   -p - run command in parallel on all hosts" >&2
 	echo "   -q - quiet mode, don't show command to execute" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "   -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -h hosts - list of hosts to execute command on" >&2
-#	echo "   -H chassis - list of chassis to execute command on" >&2
+#	echo "   -H switches - list of switches to execute command on" >&2
 	echo "   -u user - user to perform cmd as" >&2
 	echo "           for hosts default is current user code" >&2
-#	echo "           for chassis default is admin" >&2
-#	echo "   -S - securely prompt for password for user on chassis" >&2
-#	echo "   -m 'marker' - marker for end of chassis command output" >&2
-#	echo "           if omitted defaults to chassis command prompt" >&2
+#	echo "           for switches default is admin" >&2
+#	echo "   -S - securely prompt for password for user on switches" >&2
+#	echo "   -m 'marker' - marker for end of switch command output" >&2
+#	echo "           if omitted defaults to switch command prompt" >&2
 #	echo "           this may be a regular expression" >&2
 	echo "   -T timelimit - timelimit in seconds when running host commands" >&2
 	echo "           default is -1 (infinite)" >&2
-#	echo "   -P      output hostname/chassis name as prefix to each output line" >&2
+#	echo "   -P      output hostname/switch name as prefix to each output line" >&2
 	echo "   -P      output hostname as prefix to each output line" >&2
 	echo "           this can make script processing of output easier" >&2
 	echo " Environment:" >&2
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-#	echo "   CHASSIS - list of chassis, used if -C used and -H and -F options not supplied" >&2
+#	echo "   SWITCHES - list of switches, used if -C used and -H and -F options not supplied" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-#	echo "   CHASSIS_FILE - file containing list of chassis, used in absence of -F and -H" >&2
+#	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
 	echo "   FF_SERIALIZE_OUTPUT - serialize output of parallel operations (yes or no)" >&2
-#	echo "   FF_CHASSIS_LOGIN_METHOD - how to login to chassis: telnet or ssh" >&2
-#	echo "   FF_CHASSIS_ADMIN_PASSWORD - password for chassis, used in absence of -S" >&2
+#	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switch: telnet or ssh" >&2
+#	echo "   FF_SWITCH_ADMIN_PASSWORD - password for switch, used in absence of -S" >&2
 	echo "for example:" >&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME date" >&2
 	echo "   $BASENAME 'uname -a'" >&2
 	echo "   $BASENAME -h 'elrond arwen' date" >&2
 	echo "   HOSTS='elrond arwen' $BASENAME date" >&2
-#	echo "  Operations on chassis" >&2
+#	echo "  Operations on switches" >&2
 #	echo "   $BASENAME -C 'ismPortStats -noprompt'" >&2
-#	echo "   $BASENAME -C -H 'chassis1 chassis2' 'ismPortStats -noprompt'" >&2
-#	echo "   CHASSIS='chassis1 chassis2' $BASENAME -C 'ismPortStats -noprompt'" >&2
+#	echo "   $BASENAME -C -H 'switch1 switch2' 'ismPortStats -noprompt'" >&2
+#	echo "   SWITCHES='switch1 switch2' $BASENAME -C 'ismPortStats -noprompt'" >&2
 	exit 0
 }
 
 Usage()
 {
-#	echo "Usage: $BASENAME [-Cpq] [-f hostfile] [-F chassisfile] [-u user] [-S]" >&2
+#	echo "Usage: $BASENAME [-Cpq] [-f hostfile] [-F switchesfile] [-u user] [-S]" >&2
 #	echo "              [-T timelimit] [-P] 'cmd'" >&2
 	echo "Usage: $BASENAME [-pq] [-f hostfile] [-u user] [-T timelimit] [-P] 'cmd'" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-#	echo "   -C - perform command against chassis, default is hosts" >&2
-#	echo "   -p - run command in parallel on all hosts/chassis" >&2
+#	echo "   -C - perform command against switches, default is hosts" >&2
+#	echo "   -p - run command in parallel on all hosts/switches" >&2
 	echo "   -p - run command in parallel on all hosts" >&2
 	echo "   -q - quiet mode, don't show command to execute" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "   -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -u user - user to perform cmd as" >&2
 	echo "           for hosts default is current user code" >&2
-#	echo "           for chassis default is admin, this is ignored" >&2
-#	echo "   -S - securely prompt for password for user on chassis" >&2
+#	echo "           for switches default is admin, this is ignored" >&2
+#	echo "   -S - securely prompt for password for user on switches" >&2
 	echo "   -T timelimit - timelimit in seconds when running host commands" >&2
 	echo "           default is -1 (infinite)" >&2
-#	echo "   -P - output hostname/chassis name as prefix to each output line" >&2
+#	echo "   -P - output hostname/switch name as prefix to each output line" >&2
 	echo "   -P - output hostname as prefix to each output line" >&2
 	echo "           this can make script processing of output easier" >&2
 	echo "for example:" >&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME date" >&2
 	echo "   $BASENAME 'uname -a'" >&2
-#	echo "  Operations on chassis" >&2
+#	echo "  Operations on switches" >&2
 #	echo "   $BASENAME -C 'ismPortStats -noprompt'" >&2
 	exit 2
 }
@@ -143,7 +143,7 @@ user=`id -u -n`
 uopt=n
 quiet=0
 host=0
-chassis=0
+switches=0
 parallel=0
 Sopt=n
 marker=""
@@ -154,7 +154,7 @@ while getopts qph:f:u:m:T:P param
 do
 	case $param in
 	C)
-		chassis=1;;
+		switches=1;;
 	q)
 		quiet=1;;
 	p)
@@ -163,14 +163,14 @@ do
 		host=1
 		HOSTS="$OPTARG";;
 	H)
-		chassis=1
-		CHASSIS="$OPTARG";;
+		switches=1
+		SWITCHES="$OPTARG";;
 	f)
 		host=1
 		HOSTS_FILE="$OPTARG";;
 	F)
-		chassis=1
-		CHASSIS_FILE="$OPTARG";;
+		switches=1
+		SWITCHES_FILE="$OPTARG";;
 	u)
 		uopt=y
 		user="$OPTARG";;
@@ -188,22 +188,22 @@ do
 done
 shift $((OPTIND -1))
 
-if [ $# -ne 1 ] 
+if [ $# -ne 1 ]
 then
 	Usage
 fi
-if [[ $(($chassis+$host)) -gt 1 ]]
+if [[ $(($switches+$host)) -gt 1 ]]
 then
-	echo "$BASENAME: conflicting arguments, host and chassis both specified" >&2
+	echo "$BASENAME: conflicting arguments, hosts and switches both specified" >&2
 	Usage
 fi
-if [[ $(($chassis+$host)) -eq 0 ]]
+if [[ $(($switches+$host)) -eq 0 ]]
 then
 	host=1
 fi
-if [ x"$marker" != "x" -a $chassis -eq 0 ]
+if [ x"$marker" != "x" -a $switches -eq 0 ]
 then
-	echo "$BASENAME: -m option only applicable to chassis, ignored" >&2
+	echo "$BASENAME: -m option only applicable to switches, ignored" >&2
 fi
 if [ "$timelimit" -le 0 ]
 then
@@ -215,11 +215,11 @@ export TEST_TIMEOUT_MULT="$FF_TIMEOUT_MULT"
 export CFG_LOGIN_METHOD="$FF_LOGIN_METHOD"
 export CFG_PASSWORD="$FF_PASSWORD"
 export CFG_ROOTPASS="$FF_ROOTPASS"
-export CFG_CHASSIS_LOGIN_METHOD="$FF_CHASSIS_LOGIN_METHOD"
-export CFG_CHASSIS_ADMIN_PASSWORD="$FF_CHASSIS_ADMIN_PASSWORD"
+export CFG_SWITCH_LOGIN_METHOD="$FF_SWITCH_LOGIN_METHOD"
+export CFG_SWITCH_ADMIN_PASSWORD="$FF_SWITCH_ADMIN_PASSWORD"
 export TEST_SERIALIZE_OUTPUT="$FF_SERIALIZE_OUTPUT"
 
-if [ $chassis -eq 0 ]
+if [ $switches -eq 0 ]
 then
 	check_host_args $BASENAME
 	if [ $parallel -eq 0 ]
@@ -234,16 +234,16 @@ else
 	then
 		user=admin
 	fi
-	check_chassis_args $BASENAME
+	check_switches_args $BASENAME
 	if [ "$Sopt" = y ]
 	then
-		echo -n "Password for $user on all chassis: " > /dev/tty
+		echo -n "Password for $user on all switches: " > /dev/tty
 		stty -echo < /dev/tty > /dev/tty
 		password=
 		read password < /dev/tty
 		stty echo < /dev/tty > /dev/tty
 		echo > /dev/tty
-		export CFG_CHASSIS_ADMIN_PASSWORD="$password"
+		export CFG_SWITCH_ADMIN_PASSWORD="$password"
 	fi
 	# pardon my spelling need plural chassis that is distinct from singular
 	if [ $parallel -eq 0 ]
@@ -252,5 +252,5 @@ else
 	else
 		tclproc=chassises_parallel_run_cmd
 	fi
-	$TOOLSDIR/tcl_proc $tclproc "$CHASSIS" "$user" "$1" $quiet "$marker" "$output_prefix"
+	$TOOLSDIR/tcl_proc $tclproc "$SWITCHES" "$user" "$1" $quiet "$marker" "$output_prefix"
 fi

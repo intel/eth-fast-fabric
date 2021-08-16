@@ -29,7 +29,7 @@
 # END_ICS_COPYRIGHT8   ****************************************
 
 # [ICS VERSION STRING: unknown]
-# perform an ethcapture on all hosts/chassis and upload to this host
+# perform an ethcapture on all hosts/switches and upload to this host
 
 # optional override of defaults
 if [ -f /etc/eth-tools/ethfastfabric.conf ]
@@ -47,57 +47,57 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-#	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F chassisfile]" >&2
-#	echo "                  [ -h 'hosts'] [-H 'chassis'] [-t portsfile]" >&2
+#	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F switchesfile]" >&2
+#	echo "                  [ -h 'hosts'] [-H 'switches'] [-t portsfile]" >&2
 #	echo "                  [-S] [-D detail_level] [file]" >&2
 	echo "Usage: $BASENAME [-p] [-f hostfile] [ -h 'hosts'] [-d upload_dir] " >&2
 	echo "                  [-D detail_level] [file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-#	echo "   -C - perform capture against chassis, default is hosts" >&2
-#	echo "   -p - perform capture upload in parallel on all hosts/chassis" >&2
+#	echo "   -C - perform capture against switches, default is hosts" >&2
+#	echo "   -p - perform capture upload in parallel on all hosts/switches" >&2
 	echo "   -p - perform capture upload in parallel on all hosts" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "   -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -h hosts - list of hosts to perform capture of" >&2
-#	echo "   -H chassis - list of chassis to perform capture of" >&2
+#	echo "   -H switches - list of switches to perform capture of" >&2
 #	echo "   -t portsfile - file with list of local HFI ports used to access" >&2
 #	echo "           fabric(s) for switch access, default is /etc/$FF_PRD_NAME/ports" >&2
 	echo "   -d upload_dir - directory to upload to, default is uploads" >&2
-#	echo "   -S - securely prompt for password for admin on chassis" >&2
+#	echo "   -S - securely prompt for password for admin on switches" >&2
 	echo "   -D detail_level - level of detail passed to host ethcapture" >&2
 	echo "           1-Local 2-Fabric 3-Analysis" >&2
 	echo "   file - name for capture file [.tgz will be appended]" >&2
 	echo " Environment:" >&2
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-#	echo "   CHASSIS - list of chassis, used if -C used and -h option not supplied" >&2
+#	echo "   SWITCHES - list of switches, used if -C used and -h option not supplied" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-#	echo "   CHASSIS_FILE - file containing list of chassis, used in absence of -F and -H" >&2
+#	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 	echo "   UPLOADS_DIR - directory to upload to, used in absence of -d" >&2
 	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-#	echo "   FF_CHASSIS_LOGIN_METHOD - how to login to chassis: telnet or ssh" >&2
-#	echo "   FF_CHASSIS_ADMIN_PASSWORD - admin password for chassis, used in absence of -S" >&2
+#	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switches: telnet or ssh" >&2
+#	echo "   FF_SWITCH_ADMIN_PASSWORD - admin password for switches, used in absence of -S" >&2
 	echo "example:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME mycapture" >&2
 	echo "   $BASENAME -h 'arwen elrond' 030127capture" >&2
-#	echo "  Operations on chassis" >&2
+#	echo "  Operations on switches" >&2
 #	echo "   $BASENAME -C" >&2
 #	echo "   $BASENAME -C mycapture" >&2
-#	echo "   $BASENAME -C -H 'chassis1 chassis2' 030127capture" >&2
+#	echo "   $BASENAME -C -H 'switch1 switch2' 030127capture" >&2
 	echo "For hosts:" >&2
 	echo "   ethcapture will be run to create the specified capture file within ~root" >&2
 	echo "   on each host (with the .tgz suffix added). The files will be" >&2
 	echo "   uploaded and unpacked into a matching directory name within" >&2
 	echo "   upload_dir/hostname/ on the local system" >&2
 	echo "   default file name is hostcapture" >&2
-#	echo "For Chassis:" >&2
-#	echo "   The capture CLI command will be run on each chassis and its output will be" >&2
-#	echo "   saved to upload_dir/chassisname/file on the local system" >&2
-#	echo "   default file name is chassiscapture" >&2
+#	echo "For Switches:" >&2
+#	echo "   The capture CLI command will be run on each switch and its output will be" >&2
+#	echo "   saved to upload_dir/switchname/file on the local system" >&2
+#	echo "   default file name is switchcapture" >&2
 	echo "The uploaded captures will be combined into a tgz file with the file name" >&2
 	echo "specified and the suffix .all.tgz added" >&2
 	exit 0
@@ -105,26 +105,26 @@ Usage_full()
 
 Usage()
 {
-#	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F chassisfile] [-S]" >&2
+#	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F switchesfile] [-S]" >&2
 #	echo "                  [-D detail_level] [file]" >&2
 	echo "Usage: $BASENAME [-p] [-f hostfile] [-D detail_level] [file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-#	echo "   -C - perform capture against chassis, default is hosts" >&2
-#	echo "   -p - perform capture upload in parallel on all hosts/chassis" >&2
+#	echo "   -C - perform capture against switches, default is hosts" >&2
+#	echo "   -p - perform capture upload in parallel on all hosts/switches" >&2
 	echo "   -p - perform capture upload in parallel on all hosts" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
-#	echo "   -S - securely prompt for password for admin on chassis or switch" >&2
+#	echo "   -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
+#	echo "   -S - securely prompt for password for admin on switch" >&2
 	echo "   -D detail_level - level of detail passed to host ethcapture" >&2
 	echo "   file - name for capture file [.tgz will be appended]" >&2
 	echo "example:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME mycapture" >&2
-#	echo "  Operations on chassis" >&2
+#	echo "  Operations on switches" >&2
 #	echo "   $BASENAME -C" >&2
 #	echo "   $BASENAME -C mycapture" >&2
 	echo "For hosts:" >&2
@@ -133,10 +133,10 @@ Usage()
 	echo "   uploaded and unpacked into a matching directory name within" >&2
 	echo "   uploads/hostname/ on the local system" >&2
 	echo "   default file name is hostcapture" >&2
-#	echo "For Chassis:" >&2
-#	echo "   The capture CLI command will be run on each chassis and its output will be" >&2
-#	echo "   saved to uploads/chassisname/file on the local system" >&2
-#	echo "   default file name is chassiscapture" >&2
+#	echo "For Switches:" >&2
+#	echo "   The capture CLI command will be run on each switch and its output will be" >&2
+#	echo "   saved to uploads/switchname/file on the local system" >&2
+#	echo "   default file name is switchcapture" >&2
 	echo "The uploaded captures will be combined into a tgz file with the file name" >&2
 	echo "specified and the suffix .all.tgz added" >&2
 	exit 2
@@ -148,7 +148,7 @@ then
 fi
 
 popt=n
-chassis=0
+switches=0
 host=0
 Sopt=n
 Dopt=
@@ -157,19 +157,19 @@ while getopts f:h:d:pD: param
 do
 	case $param in
 #	C)
-#		chassis=1;;
+#		switches=1;;
 	f)
 		host=1
 		export HOSTS_FILE="$OPTARG";;
 #	F)
-#		chassis=1
-#		export CHASSIS_FILE="$OPTARG";;
+#		switches=1
+#		export SWITCHES_FILE="$OPTARG";;
 	h)
 		host=1
 		export HOSTS="$OPTARG";;
 #	H)
-#		chassis=1
-#		CHASSIS="$OPTARG";;
+#		switches=1
+#		SWITCHES="$OPTARG";;
 	t)
 		export PORTS_FILE="$OPTARG";;
 	d)
@@ -189,12 +189,12 @@ if [[ $# -gt 1 ]]
 then
 	Usage
 fi
-if [[ $(($chassis+$host)) -gt 1 ]]
+if [[ $(($switches+$host)) -gt 1 ]]
 then
-	echo "$BASENAME: conflicting arguments, more than one of host, and chassis specified" >&2
+	echo "$BASENAME: conflicting arguments, more than one of hosts, and switches specified" >&2
 	Usage
 fi
-if [[ $(($chassis+$host)) -eq 0 ]]
+if [[ $(($switches+$host)) -eq 0 ]]
 then
 	host=1
 fi
@@ -203,11 +203,11 @@ if [[ $# -gt 0 ]]
 then
 	file="$1"
 else
-	if [ $chassis -eq 0 ]
+	if [ $switches -eq 0 ]
 	then
 		file=hostcapture
 	else
-		file=chassiscapture
+		file=switchcapture
 	fi
 fi
 if [ `dirname $file` != . ]
@@ -233,7 +233,7 @@ expand_host_capture()
 	fi
 }
 
-if [ $chassis -eq 0 ]
+if [ $switches -eq 0 ]
 then
 	check_host_args $BASENAME
 
@@ -279,25 +279,25 @@ then
 		fi
 	done
 else
-	check_chassis_args $BASENAME
+	check_switches_args $BASENAME
 	if [ "$Sopt" = y ]
 	then
-		echo -n "Password for admin on all chassis: " > /dev/tty
+		echo -n "Password for admin on all switches: " > /dev/tty
 		stty -echo < /dev/tty > /dev/tty
 		password=
 		read password < /dev/tty
 		stty echo < /dev/tty > /dev/tty
 		echo > /dev/tty
-		export FF_CHASSIS_ADMIN_PASSWORD="$password"
+		export FF_SWITCH_ADMIN_PASSWORD="$password"
 	fi
 
-	echo "Running capture on all chassis ..."
+	echo "Running capture on all switches ..."
 	running=0
 	captures=
-	for chassis in $CHASSIS
+	for switch in $SWITCHES
 	do
-		chassis=`strip_chassis_slots "$chassis"`
-		captures="$captures $chassis/$file"
+		switch=`strip_chassis_slots "$switch"`
+		captures="$captures $switch/$file"
 		if [ "$popt" = "y" ]
 		then
 			if [ $running -ge $FF_MAX_PARALLEL ]
@@ -306,22 +306,22 @@ else
 				running=0
 			fi
 			(
-			mkdir -p $UPLOADS_DIR/$chassis
+			mkdir -p $UPLOADS_DIR/$switch
 			# filter out carriage returns
-			/usr/sbin/ethcmdall -C -H "$chassis" -m 'End of Capture' "capture" |tr -d '\015' > $UPLOADS_DIR/$chassis/$file
+			/usr/sbin/ethcmdall -C -H "$switch" -m 'End of Capture' "capture" |tr -d '\015' > $UPLOADS_DIR/$switch/$file
 			if [ $? != 0 ]
 			then
-				echo "ERROR: capture from $chassis failed"
+				echo "ERROR: capture from $switch failed"
 			fi
 			) &
 			running=$(( $running + 1))
 		else
-			mkdir -p $UPLOADS_DIR/$chassis
+			mkdir -p $UPLOADS_DIR/$switch
 			# filter out carriage returns
-			/usr/sbin/ethcmdall -C -H "$chassis" -m 'End of Capture' "capture" |tr -d '\015' > $UPLOADS_DIR/$chassis/$file
+			/usr/sbin/ethcmdall -C -H "$switch" -m 'End of Capture' "capture" |tr -d '\015' > $UPLOADS_DIR/$switch/$file
 			if [ $? != 0 ]
 			then
-				echo "ERROR: capture from $chassis failed"
+				echo "ERROR: capture from $switch failed"
 			fi
 		fi
 	done

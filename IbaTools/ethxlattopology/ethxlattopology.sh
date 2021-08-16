@@ -32,7 +32,7 @@
 
 # Topology script to translate the CSV form (topology.csv) of a
 # standard-format topology spread sheet for a fabric to one or more topology
-# XML files (topology.0:0.xml) at the specified levels (top-level, rack group,
+# XML files (topology.<plane>.xml) at the specified levels (top-level, rack group,
 # rack, edge switch).  This script operates from the fabric directory and
 # populates it.
 
@@ -110,11 +110,12 @@ FILE_NODEEDGES="nodeedges.csv"
 FILE_NODECHASSIS="nodechassis.csv"
 FILE_SWITCHES="switches"
 FILE_HOSTS="hosts"
+# will update with plane name in format topology.<plane>.xml
 FILE_TOPOLOGY_OUT="topology.xml"
 OUT_FOLDER=""
 FILE_RESERVE="file_reserve"
-FILE_TEMP=$(mktemp "opaxlattopo-1.XXXX")
-FILE_TEMP2=$(mktemp "opaxlattopo-2.XXXX")
+FILE_TEMP=$(mktemp "ethxlattopo-1.XXXX")
+FILE_TEMP2=$(mktemp "ethxlattopo-2.XXXX")
 DIR_TEMP=$(mktemp -d -t "ethff-XXXX")
 FILE_TOPOLOGY_TEMP="topology_temp.xml"
 # Note: there are no real limits on numbers of groups, racks or switches;
@@ -1323,6 +1324,8 @@ do
 done
 
 shift $((OPTIND -1))
+
+FILE_TOPOLOGY_OUT="topology.$plane.xml"
 
 if [ $# -ge 1 ]; then
     FILE_TOPOLOGY_LINKS=$1

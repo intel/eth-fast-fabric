@@ -47,25 +47,25 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-#	echo "Usage: $BASENAME [-CpU] [-f hostfile] [-F chassisfile] [-h 'hosts']" >&2
-#	echo "                      [-H 'chassis'] [-u user] [-S]" >&2
+#	echo "Usage: $BASENAME [-CpU] [-f hostfile] [-F switchesfile] [-h 'hosts']" >&2
+#	echo "                      [-H 'switches'] [-u user] [-S]" >&2
 #	echo "                      [-RP]" >&2
 	echo "Usage: $BASENAME [-pU] [-f hostfile] [-h 'hosts'] [-u user] [-S] [-RP]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo >&2
 	echo "   --help - produce full help text" >&2
-#	echo "   -C - perform operation against chassis, default is hosts" >&2
+#	echo "   -C - perform operation against switches, default is hosts" >&2
 	echo "   -p - perform operation against all hosts in parallel" >&2
 	echo "   -U - only perform connect (to enter in local hosts knownhosts)" >&2
 	echo "        (when run in this mode the -S option is ignored)" >&2
     echo >&2
 	echo "   -f hostfile     - file with hosts in cluster, default is " >&2
 	echo "                     $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F chassisfile  - file with chassis in cluster, default is" >&2
-#	echo "                     $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "   -F switchesfile  - file with switches in cluster, default is" >&2
+#	echo "                     $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -h hosts        - list of hosts to setup" >&2
-#	echo "   -H chassis      - list of chassis to setup" >&2
+#	echo "   -H switches      - list of switches to setup" >&2
 	echo >&2
 	echo "   -u user         - user on remote system to allow this user to ssh to," >&2
 	echo "                     default is current user code for host(s)" >&2
@@ -75,12 +75,12 @@ Usage_full()
 	echo >&2
 	echo " Environment:" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-#	echo "   CHASSIS_FILE - file containing list of chassis, used in absence of -F and -H" >&2
+#	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-#	echo "   CHASSIS - list of chassis, used if -C used and -H and -F options not supplied" >&2
+#	echo "   SWITCHES - list of switches, used if -C used and -H and -F options not supplied" >&2
 	echo "   FF_MAX__PARALLEL - when -p option is used, maximum concurrent operations" >&2
-#	echo "   FF_CHASSIS_LOGIN_METHOD - how to login to chassis: telnet or ssh" >&2
-#	echo "   FF_CHASSIS_ADMIN_PASSWORD - password for chassis, used in absence of -S" >&2
+#	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switch: telnet or ssh" >&2
+#	echo "   FF_SWITCH_ADMIN_PASSWORD - password for switch, used in absence of -S" >&2
 	echo >&2
 	echo "example:">&2
 	echo "  Operations on hosts" >&2
@@ -88,35 +88,35 @@ Usage_full()
 	echo "   $BASENAME -U" >&2
 	echo "   $BASENAME -h 'arwen elrond' -U" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME -U" >&2
-#	echo "  Operations on chassis" >&2
+#	echo "  Operations on switches" >&2
 #	echo "   $BASENAME -C" >&2
-#	echo "   $BASENAME -C -H 'chassis1 chassis2'" >&2
-#	echo "   CHASSIS='chassis1 chassis2' $BASENAME -C" >&2
+#	echo "   $BASENAME -C -H 'switch1 switch2'" >&2
+#	echo "   SWITCHES='switch1 switch2' $BASENAME -C" >&2
 	exit 0
 }
 
 Usage()
 {
-#	echo "Usage: $BASENAME [-CpU] [-f hostfile] [-F chassisfile]" >&2
+#	echo "Usage: $BASENAME [-CpU] [-f hostfile] [-F switchesfile]" >&2
 #	echo "                      [-S]" >&2
 	echo "Usage: $BASENAME [-pU] [-f hostfile] [-S]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-#	echo "   -C - perform operation against chassis, default is hosts" >&2
+#	echo "   -C - perform operation against switches, default is hosts" >&2
 	echo "   -p - perform operation against all hosts in parallel" >&2
 	echo "   -U - only perform connect (to enter in local hosts knownhosts)" >&2
 	echo "         (when run in this mode, the -S options is ignored)" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F chassisfile - file with chassis in cluster, default is" >&2
-#	echo "         $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "   -F switchesfile - file with switches in cluster, default is" >&2
+#	echo "         $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -S - securely prompt for password for user on remote system" >&2
 	echo >&2
 	echo "example:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME -S" >&2
 	echo "   $BASENAME -U" >&2
-#	echo "  Operations on chassis" >&2
+#	echo "  Operations on switches" >&2
 #	echo "   $BASENAME -C" >&2
 	exit 2
 }
@@ -134,7 +134,7 @@ Ropt=n
 Sopt=n
 uopt=n
 password=
-chassis=0
+switches=0
 host=0
 skip_ping=n
 bracket=''
@@ -150,7 +150,7 @@ while getopts pUf:h:u:SRP param
 do
 	case $param in
 #	C)
-#		chassis=1;;
+#		switches=1;;
 	p)
 		popt=y;;
 	U)
@@ -159,14 +159,14 @@ do
 		host=1
 		HOSTS="$OPTARG";;
 #	H)
-#		chassis=1
-#		CHASSIS="$OPTARG";;
+#		switches=1
+#		SWITCHES="$OPTARG";;
 	f)
 		host=1
 		HOSTS_FILE="$OPTARG";;
 #	F)
-#		chassis=1
-#		CHASSIS_FILE="$OPTARG";;
+#		switches=1
+#		SWITCHES_FILE="$OPTARG";;
 	u)
 		uopt=y
 		user="$OPTARG";;
@@ -185,12 +185,12 @@ if [ $# -gt 0 ]
 then
 	Usage
 fi
-if [[ $(($chassis+$host)) -gt 1 ]]
+if [[ $(($switches+$host)) -gt 1 ]]
 then
-	echo "$BASENAME: conflicting arguments, host and chassis both specified" >&2
+	echo "$BASENAME: conflicting arguments, hosts and switches both specified" >&2
 	Usage
 fi
-if [[ $(($chassis+$host)) -eq 0 ]]
+if [[ $(($switches+$host)) -eq 0 ]]
 then
 	host=1
 fi
@@ -212,23 +212,23 @@ then
         bracket='\['
         close_bracket='\]'
 fi
-if [ "$chassis" = 1 -a "$Ropt" = y ]
+if [ "$switches" = 1 -a "$Ropt" = y ]
 then
-	echo "$BASENAME: Warning: -R option ignored for chassis" >&2
+	echo "$BASENAME: Warning: -R option ignored for switches" >&2
 	Ropt=n
 fi
-# for chassis, make the default user to be admin (unless specified)
-if [ $chassis = 1 -a  "$uopt" = n ]
+# for switches, make the default user to be admin (unless specified)
+if [ $switches = 1 -a  "$uopt" = n ]
 then
 	user="admin"
 fi
 
-if [ $chassis -eq 1 ]
+if [ $switches -eq 1 ]
 then
 	shellcmd=ssh
 	copycmd=scp
-	export CFG_CHASSIS_LOGIN_METHOD="$FF_CHASSIS_LOGIN_METHOD"
-	export CFG_CHASSIS_ADMIN_PASSWORD="$FF_CHASSIS_ADMIN_PASSWORD"
+	export CFG_SWITCH_LOGIN_METHOD="$FF_SWITCH_LOGIN_METHOD"
+	export CFG_SWITCH_ADMIN_PASSWORD="$FF_SWITCH_ADMIN_PASSWORD"
 	if [ "$Sopt" = y ]
 	then
 		given_pwd='entered'
@@ -251,16 +251,16 @@ then
 		export password
 	 fi
 else
-	check_chassis_args $BASENAME
+	check_switches_args $BASENAME
 	if [ "$Sopt" = y ]
 	then
-		echo -n "Password for $user on all chassis: " > /dev/tty
+		echo -n "Password for $user on all switches: " > /dev/tty
 		stty -echo < /dev/tty > /dev/tty
 		password=
 		read password < /dev/tty
 		stty echo < /dev/tty > /dev/tty
 		echo > /dev/tty
-		export CFG_CHASSIS_ADMIN_PASSWORD="$password"
+		export CFG_SWITCH_ADMIN_PASSWORD="$password"
 	fi
 fi
 
@@ -365,8 +365,8 @@ expect {
 fi
 }
 
-# send command to the chassis and always expect to be prompted for password
-run_chassis_cmd()
+# send command to the switches and always expect to be prompted for password
+run_switch_cmd()
 {
 expect -c "
 global env
@@ -375,7 +375,7 @@ expect {
 {assword:} {
 		puts -nonewline stdout \"<password supplied>\"
 		flush stdout
-		exp_send \"$CFG_CHASSIS_ADMIN_PASSWORD\r\"
+		exp_send \"$CFG_SWITCH_ADMIN_PASSWORD\r\"
 		interact
 		wait
 	}
@@ -391,11 +391,11 @@ expect {
 "
 }
 
-# connect to chassis via ssh
-connect_to_chassis()
+# connect to switch via ssh
+connect_to_switch()
 {
 	# $1 = user
-	# $2 = chassis
+	# $2 = switch
 	# $3 = 1 if display connected
 
 	# We use an alternate file to build up the new keys
@@ -503,57 +503,57 @@ process_host()
 	fi
 }
 
-# do selected operation for a single chassis
-process_chassis()
+# do selected operation for a single switch
+process_switch()
 {
-	local chassisname=$1
-	local tempfile=~/.ssh/.tmp_chassis_keys.$running
+	local switchname=$1
+	local tempfile=~/.ssh/.tmp_switch_keys.$running
 
-	tchassis=`strip_chassis_slots  $chassisname`
-	[ "$skip_ping" = "y" ] || ping_host $tchassis
+	tswitch=`strip_chassis_slots  $switchname`
+	[ "$skip_ping" = "y" ] || ping_host $tswitch
 	if [ $? != 0 ]
 	then
-		echo "Couldn't ping $tchassis"
+		echo "Couldn't ping $tswitch"
 		sleep 1
 	else
 		if [ "$Uopt" = n ]
 		then
-			echo "Configuring $tchassis..."
+			echo "Configuring $tswitch..."
 			# ensure that we can login successfully by trying any simple command with expected response
-			$chassis_cmd $tchassis $user "chassisQuery" 2>&1| grep -q 'slots:'
+			$switch_cmd $tswitch $user "chassisQuery" 2>&1| grep -q 'slots:'
 			if [ $? -ne 0 ]
 			then
-				echo "Login to $tchassis failed for the $given_pwd password, skipping..."
+				echo "Login to $tswitch failed for the $given_pwd password, skipping..."
 				continue
 			fi
 			rm -f $tempfile $tempfile.2 2>/dev/null
-			/usr/lib/$FF_PRD_NAME/tcl_proc chassis_sftp_cmd "sftp $user@\[${tchassis}\]:" "get /firmware/$user/authorized_keys $tempfile" 2>&1| grep -q 'FAILED'
+			/usr/lib/$FF_PRD_NAME/tcl_proc chassis_sftp_cmd "sftp $user@\[${tswitch}\]:" "get /firmware/$user/authorized_keys $tempfile" 2>&1| grep -q 'FAILED'
 			if [ $? -eq 0 ] || [ ! -f $tempfile ]
 			then
-				echo "Unable to configure $tchassis for password-less ssh, skipping..."
+				echo "Unable to configure $tswitch for password-less ssh, skipping..."
 				continue
 			fi
 			cat ~/.ssh/id_rsa.pub $tempfile | sort -u > $tempfile.2
-			/usr/lib/$FF_PRD_NAME/tcl_proc chassis_sftp_cmd "sftp $user@\[${tchassis}\]:" "put $tempfile.2 /firmware/$user/authorized_keys" 2>&1| grep -q 'FAILED'
+			/usr/lib/$FF_PRD_NAME/tcl_proc chassis_sftp_cmd "sftp $user@\[${tswitch}\]:" "put $tempfile.2 /firmware/$user/authorized_keys" 2>&1| grep -q 'FAILED'
 			if [ $? -eq 0 ]
 			then
-				echo "$tchassis password-less ssh config failed, skipping..."
+				echo "$tswitch password-less ssh config failed, skipping..."
 			else
-				connect_to_chassis $user $tchassis 1
+				connect_to_switch $user $tswitch 1
 				if [ $? -eq 0 ]
 				then
-					echo "Configured $tchassis"
+					echo "Configured $tswitch"
 				fi
 			fi
 			rm -f $tempfile $tempfile.2 2>/dev/null
 		else
-			echo "Connecting to $tchassis..."
-			connect_to_chassis $user $tchassis 1
+			echo "Connecting to $tswitch..."
+			connect_to_switch $user $tswitch 1
 		fi
 	fi
 } 
 
-# configure ssh on the host(s) or chassis
+# configure ssh on the host(s) or switches
 running=0
 total_processed=0
 rm -rf ~/.ssh/.known_hosts-ffnew ~/.ssh/.known_hosts-fftmp
@@ -618,8 +618,8 @@ then
 		fi
 	done
 else
-	chassis_cmd='/usr/lib/$FF_PRD_NAME/tcl_proc chassis_run_cmd'
-	for chassisname in $CHASSIS
+	switch_cmd='/usr/lib/$FF_PRD_NAME/tcl_proc chassis_run_cmd'
+	for switchname in $SWITCHES
 	do
 		if [ "$popt" = y ]
 		then
@@ -630,10 +630,10 @@ else
 				update_known_hosts
 				running=0
 			fi
-			process_chassis $chassisname < /dev/tty &
+			process_switch $switchname < /dev/tty &
 			running=$(($running +1))
 		else
-			process_chassis $chassisname
+			process_switch $switchname
 			stty $stty_settings
 			update_known_hosts
 		fi

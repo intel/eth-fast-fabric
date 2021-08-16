@@ -117,16 +117,16 @@ Usage_ethhostadmin_full()
 }
 #Usage_opachassisadmin_full()
 #{
-#	echo "Usage: opachassisadmin [-c] [-F chassisfile] [-H 'chassis'] " >&2
+#	echo "Usage: opachassisadmin [-c] [-F switchesfile] [-H 'switches'] " >&2
 #	echo "              [-P packages] [-a action] [-I fm_bootstate]" >&2
 #	echo "              [-S] [-d upload_dir] [-s securityfiles] operation ..." >&2
 #	echo "              or" >&2
 #	echo "       opachassisadmin --help" >&2
 #	echo "  --help - produce full help text" >&2
 #	echo "  -c - clobber result files from any previous run before starting this run" >&2
-#	echo "  -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
-#	echo "  -H chassis - list of chassis to execute operation against" >&2
+#	echo "  -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
+#	echo "  -H switches - list of switches to execute operation against" >&2
 #	echo "  -P packages - filenames/directories of firmware" >&2
 #	echo "                   images to install.  For directories specified, all" >&2
 #	echo "                   .pkg, .dpkg and .spkg files in directory tree will be used." >&2
@@ -135,51 +135,51 @@ Usage_ethhostadmin_full()
 #	echo "                or for fmgetconfig, filename to upload to (default" >&2
 #	echo "                   opafm.xml)" >&2
 #	echo "  -a action - action for supplied file" >&2
-#	echo "              For Chassis upgrade:" >&2
+#	echo "              For Switch upgrade:" >&2
 #	echo "                 push   - ensure firmware is in primary or alternate" >&2
 #	echo "                 select - ensure firmware is in primary" >&2
 #	echo "                 run    - ensure firmware is in primary and running" >&2
 #	echo "                 default is push" >&2
-#	echo "              For Chassis fmconfig:" >&2
-#	echo "                 push   - ensure config file is in chassis" >&2
+#	echo "              For Switch fmconfig:" >&2
+#	echo "                 push   - ensure config file is in switch" >&2
 #	echo "                 run    - after push, restart FM on master, stop on slave" >&2
 #	echo "                 runall - after push, restart FM on all MM" >&2
-#	echo "              For Chassis fmcontrol:" >&2
+#	echo "              For Switch fmcontrol:" >&2
 #	echo "                 stop   - stop FM on all MM" >&2
 #	echo "                 run    - make sure FM running on master, stopped on slave" >&2
 #	echo "                 runall - make sure FM running on all MM" >&2
 #	echo "                 restart- restart FM on master, stop on slave" >&2
 #	echo "                 restartall- restart FM on all MM" >&2
-#	echo "              For Chassis fmsecurityfiles:" >&2
-#	echo "                 push   - ensure FM security files are in chassis" >&2
+#	echo "              For Switch fmsecurityfiles:" >&2
+#	echo "                 push   - ensure FM security files are in switch" >&2
 #	echo "                 restart- after push, restart FM on master, stop on slave" >&2
 #	echo "                 restartall - after push, restart FM on all MM" >&2
 #	echo "  -I fm_bootstate fmconfig and fmcontrol install options" >&2
-#	echo "                 disable - disable FM start at chassis boot" >&2
-#	echo "                 enable - enable FM start on master at chassis boot" >&2
-#	echo "                 enableall - enable FM start on all MM at chassis boot" >&2
+#	echo "                 disable - disable FM start at switch boot" >&2
+#	echo "                 enable - enable FM start on master at switch boot" >&2
+#	echo "                 enableall - enable FM start on all MM at switch boot" >&2
 #	echo "  -d upload_dir - directory to upload FM config files to, default is uploads" >&2
-#	echo "  -S - securely prompt for password for admin on chassis" >&2
+#	echo "  -S - securely prompt for password for admin on switches" >&2
 #	echo "  -s securityFiles - security files to install, default is '*.pem'" >&2
-#	echo "                For Chassis fmsecurityfiles, filenames/directories of" >&2
+#	echo "                For Switch fmsecurityfiles, filenames/directories of" >&2
 #	echo "                   security files to install.  For directories specified," >&2
 #	echo "                   all security files in directory tree will be used." >&2
 #	echo "                   shell wildcards may also be used within quotes." >&2
-#	echo "                or for Chassis fmgetsecurityfiles, filename to upload to" >&2
+#	echo "                or for Switch fmgetsecurityfiles, filename to upload to" >&2
 #	echo "                   (default *.pem)" >&2
 #	echo "  operation - operation to perform. operation can be one or more of:" >&2
-#	echo "     reboot - reboot chassis, ensure they go down and come back" >&2
-#	echo "     configure - run wizard to set up chassis configuration" >&2
-#	echo "     upgrade - upgrade install of all chassis" >&2
-#	echo "     getconfig - get basic configuration of chassis" >&2
-#	echo "     fmconfig - FM config operation on all chassis" >&2
-#	echo "     fmgetconfig - Fetch FM config from all chassis" >&2
-#	echo "     fmcontrol - Control FM on all chassis" >&2
-#	echo "     fmsecurityfiles - FM security files operation on all chassis" >&2
-#	echo "     fmgetsecurityfiles - Fetch FM security files from all chassis" >&2
+#	echo "     reboot - reboot switch, ensure they go down and come back" >&2
+#	echo "     configure - run wizard to set up switch configuration" >&2
+#	echo "     upgrade - upgrade install of all switches" >&2
+#	echo "     getconfig - get basic configuration of switch" >&2
+#	echo "     fmconfig - FM config operation on all switches" >&2
+#	echo "     fmgetconfig - Fetch FM config from all switches" >&2
+#	echo "     fmcontrol - Control FM on all switches" >&2
+#	echo "     fmsecurityfiles - FM security files operation on all switches" >&2
+#	echo "     fmgetsecurityfiles - Fetch FM security files from all switches" >&2
 #	echo " Environment:" >&2
-#	echo "   CHASSIS - list of chassis, used if -H and -F option not supplied" >&2
-#	echo "   CHASSIS_FILE - file containing list of chassis, used in absence of -F and -H" >&2
+#	echo "   SWITCHES - list of switches, used if -H and -F option not supplied" >&2
+#	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 #	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
 #	echo "   FF_SERIALIZE_OUTPUT - serialize output of parallel operations (yes or no)" >&2
 #	echo "   FF_TIMEOUT_MULT - Multiplier for all timeouts associated with this command." >&2
@@ -188,8 +188,8 @@ Usage_ethhostadmin_full()
 #	echo "for example:" >&2
 #	echo "   opachassisadmin -c reboot" >&2
 #	echo "   opachassisadmin -P /root/ChassisFw4.2.0.0.1 upgrade" >&2
-#	echo "   opachassisadmin -H 'chassis1 chassis2' reboot" >&2
-#	echo "   CHASSIS='chassis1 chassis2' opachassisadmin reboot" >&2
+#	echo "   opachassisadmin -H 'switch1 switch2' reboot" >&2
+#	echo "   SWITCHES='switch1 switch2' opachassisadmin reboot" >&2
 #	echo "   opachassisadmin -a run -P '*.pkg' upgrade" >&2
 #	echo "During run the following files are produced:" >&2
 #	echo "  test.res - appended with summary results of run" >&2
@@ -247,15 +247,15 @@ Usage_ethhostadmin()
 }
 #Usage_opachassisadmin()
 #{
-#	echo "Usage: opachassisadmin [-c] [-F chassisfile] " >&2
+#	echo "Usage: opachassisadmin [-c] [-F switchesfile] " >&2
 #	echo "              [-P packages] [-I fm_bootstate] [-a action]" >&2
 #    echo "              [-S] [-d upload_dir] [-s securityfiles] operation ..." >&2
 #	echo "              or" >&2
 #	echo "       opachassisadmin --help" >&2
 #	echo "  --help - produce full help text" >&2
 #	echo "  -c - clobber result files from any previous run before starting this run" >&2
-#	echo "  -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "  -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "  -P packages - filenames/directories of firmware" >&2
 #	echo "                   images to install.  For directories specified, all" >&2
 #	echo "                   .pkg, .dpkg and .spkg files in directory tree will be used." >&2
@@ -264,48 +264,48 @@ Usage_ethhostadmin()
 #	echo "                or for fmgetconfig, filename to upload to (default" >&2
 #	echo "                   opafm.xml)" >&2
 #	echo "  -a action - action for supplied file" >&2
-#	echo "              For Chassis upgrade:" >&2
+#	echo "              For Switch upgrade:" >&2
 #	echo "                 push   - ensure firmware is in primary or alternate" >&2
 #	echo "                 select - ensure firmware is in primary" >&2
 #	echo "                 run    - ensure firmware is in primary and running" >&2
 #	echo "                 default is push" >&2
-#	echo "              For Chassis fmconfig:" >&2
-#	echo "                 push   - ensure config file is in chassis" >&2
+#	echo "              For Switch fmconfig:" >&2
+#	echo "                 push   - ensure config file is in switch" >&2
 #	echo "                 run    - after push, restart FM on master, stop on slave" >&2
 #	echo "                 runall - after push, restart FM on all MM" >&2
-#	echo "              For Chassis fmcontrol:" >&2
+#	echo "              For Switch fmcontrol:" >&2
 #	echo "                 stop   - stop FM on all MM" >&2
 #	echo "                 run    - make sure FM running on master, stopped on slave" >&2
 #	echo "                 runall - make sure FM running on all MM" >&2
 #	echo "                 restart- restart FM on master, stop on slave" >&2
 #	echo "                 restartall- restart FM on all MM" >&2
-#	echo "              For Chassis fmsecurityfiles:" >&2
-#	echo "                 push   - ensure FM security files are in chassis" >&2
+#	echo "              For Switch fmsecurityfiles:" >&2
+#	echo "                 push   - ensure FM security files are in switch" >&2
 #	echo "                 restart- after push, restart FM on master, stop on slave" >&2
 #	echo "                 restartall - after push, restart FM on all MM" >&2
 #	echo "  -I fm_bootstate fmconfig and fmcontrol install options" >&2
-#	echo "                 disable - disable FM start at chassis boot" >&2
-#	echo "                 enable - enable FM start on master at chassis boot" >&2
-#	echo "                 enableall - enable FM start on all MM at chassis boot" >&2
+#	echo "                 disable - disable FM start at switch boot" >&2
+#	echo "                 enable - enable FM start on master at switch boot" >&2
+#	echo "                 enableall - enable FM start on all MM at switch boot" >&2
 #	echo "  -d upload_dir - directory to upload FM config files to, default is uploads" >&2
-#	echo "  -S - securely prompt for password for admin on chassis" >&2
+#	echo "  -S - securely prompt for password for admin on switches" >&2
 #	echo "  -s securityFiles - security files to install, default is '*.pem'" >&2
-#	echo "                For Chassis fmsecurityfiles, filenames/directories of" >&2
+#	echo "                For Switch fmsecurityfiles, filenames/directories of" >&2
 #	echo "                   security files to install.  For directories specified," >&2
 #	echo "                   all security files in directory tree will be used." >&2
 #	echo "                   shell wildcards may also be used within quotes." >&2
-#	echo "                or for Chassis fmgetsecurityfiles, filename to upload to" >&2
+#	echo "                or for Switch fmgetsecurityfiles, filename to upload to" >&2
 #	echo "                   (default *.pem)" >&2
 #	echo "  operation - operation to perform. operation can be one or more of:" >&2
-#	echo "     reboot - reboot chassis, ensure they go down and come back" >&2
-#	echo "     configure - run wizard to set up chassis configuration" >&2
-#	echo "     upgrade - upgrade install of all chassis" >&2
-#	echo "     getconfig - get basic configuration of chassis" >&2
-#	echo "     fmconfig - FM config operation on all chassis" >&2
-#	echo "     fmgetconfig - Fetch FM config from all chassis" >&2
-#	echo "     fmcontrol - Control FM on all chassis" >&2
-#	echo "     fmsecurityfiles - FM security files operation on all chassis" >&2
-#	echo "     fmgetsecurityfiles - Fetch FM security files from all chassis" >&2
+#	echo "     reboot - reboot switch, ensure they go down and come back" >&2
+#	echo "     configure - run wizard to set up switch configuration" >&2
+#	echo "     upgrade - upgrade install of all switches" >&2
+#	echo "     getconfig - get basic configuration of switch" >&2
+#	echo "     fmconfig - FM config operation on all switches" >&2
+#	echo "     fmgetconfig - Fetch FM config from all switches" >&2
+#	echo "     fmcontrol - Control FM on all switches" >&2
+#	echo "     fmsecurityfiles - FM security files operation on all switches" >&2
+#	echo "     fmgetsecurityfiles - Fetch FM security files from all switches" >&2
 #	echo "for example:" >&2
 #	echo "   opachassisadmin -c reboot" >&2
 #	echo "   opachassisadmin -P /root/ChassisFw4.2.0.0.1 upgrade" >&2
@@ -351,8 +351,8 @@ export CFG_USERNAME="$FF_USERNAME"
 export CFG_PASSWORD="$FF_PASSWORD"
 export CFG_ROOTPASS="$FF_ROOTPASS"
 export CFG_LOGIN_METHOD="$FF_LOGIN_METHOD"
-export CFG_CHASSIS_LOGIN_METHOD="$FF_CHASSIS_LOGIN_METHOD"
-export CFG_CHASSIS_ADMIN_PASSWORD="$FF_CHASSIS_ADMIN_PASSWORD"
+export CFG_SWITCH_LOGIN_METHOD="$FF_SWITCH_LOGIN_METHOD"
+export CFG_SWITCH_ADMIN_PASSWORD="$FF_SWITCH_ADMIN_PASSWORD"
 export CFG_FAILOVER="n"
 export CFG_FTP_SERVER=""
 #export CFG_IPOIB="y"
@@ -390,7 +390,7 @@ securityFiles="notsupplied"
 case $mode in
 ethhostadmin) host=1; options='cd:h:f:r:I:U:P:T:S';;
 #ethhostadmin) host=1; options='cd:h:f:i:r:I:U:P:T:m:S';;
-#opachassisadmin) chassis=1; options='a:I:cH:F:P:d:Ss:';;
+#opachassisadmin) switches=1; options='a:I:cH:F:P:d:Ss:';;
 esac
 while getopts "$options"  param
 do
@@ -406,14 +406,14 @@ do
 		host=1
 		HOSTS="$OPTARG";;
 #	H)
-#		chassis=1
-#		CHASSIS="$OPTARG";;
+#		switches=1
+#		SWITCHES="$OPTARG";;
 	f)
 		host=1
 		HOSTS_FILE="$OPTARG";;
 #	F)
-#		chassis=1
-#		CHASSIS_FILE="$OPTARG";;
+#		switches=1
+#		SWITCHES_FILE="$OPTARG";;
 #	i)
 #		export CFG_IPOIB_SUFFIX="$OPTARG"
 #		export FF_IPOIB_SUFFIX="$OPTARG";;

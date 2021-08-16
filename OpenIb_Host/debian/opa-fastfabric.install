@@ -1,11 +1,8 @@
 /etc/eth-tools/allhosts
-/etc/eth-tools/chassis
-/etc/eth-tools/esm_chassis
 /etc/eth-tools/hosts
 /etc/eth-tools/ethfastfabric.conf
 /etc/eth-tools/ethmon.conf
 /etc/eth-tools/ethmon.si.conf
-/etc/eth-tools/ports
 /etc/eth-tools/switches
 /usr/lib/eth-tools/osid_wrapper
 /usr/lib/opa/fm_tools/config_check

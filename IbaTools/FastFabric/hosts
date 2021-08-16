@@ -2,7 +2,14 @@
 # This file lists the TCP/IP names of the hosts in the cluster.
 # EXCEPT FOR THE NODE RUNNING FASTFABRIC
 #
-# If Ethernet is being used for the management network, specify
-# the hostname corresponding to the ethernet IP address.
+# Each line may specify a single host, a comment or another host list file to
+# include. You can augment a hostname with a list of network interfaces to
+# specify the interfaces join the fabric. For example,
+#   host1:eth2,eth3
+# If no network interfaces defined for a host, all available interfaces on the
+# host will be considered as part of the fabric.
+# A host shall appear only in one line. If there are multiple occurrences,
+# FastFabric will use the last one.
+#
 # This file will be used by FastFabric to indicate which hosts should be
 # operated on by various fastfabric menus and CLI commands.

@@ -878,21 +878,21 @@ proc target_chassis_admin_sh { target {slot ""} {user "admin"}} {
 ##	-code error on failure
 ## Additional Information:
 ##	uses:
-##		env(CFG_CHASSIS_LOGIN_METHOD) to select between telnet or ssh
-##		env(CFG_CHASSIS_ADMIN_PASSWORD) as password for admin (if no password-less ssh)
+##		env(CFG_SWITCH_LOGIN_METHOD) to select between telnet or ssh
+##		env(CFG_SWITCH_ADMIN_PASSWORD) as password for admin (if no password-less ssh)
 
 	global env
 
-	if { "$env(CFG_CHASSIS_LOGIN_METHOD)" == "ssh" } {
-		target_chassis_ssh $target $user $env(CFG_CHASSIS_ADMIN_PASSWORD)
-	} elseif { "$env(CFG_CHASSIS_LOGIN_METHOD)" == "telnet" } {
-		target_chassis_telnet $target $user $env(CFG_CHASSIS_ADMIN_PASSWORD)
+	if { "$env(CFG_SWITCH_LOGIN_METHOD)" == "ssh" } {
+		target_chassis_ssh $target $user $env(CFG_SWITCH_ADMIN_PASSWORD)
+	} elseif { "$env(CFG_SWITCH_LOGIN_METHOD)" == "telnet" } {
+		target_chassis_telnet $target $user $env(CFG_SWITCH_ADMIN_PASSWORD)
 	} else {
-		set info "CFG_CHASSIS_LOGIN_METHOD must be ssh or telnet"
+		set info "CFG_SWITCH_LOGIN_METHOD must be ssh or telnet"
 		return -code error -errorinfo $info $info
 	}
 	if { "$slot" != "" } {
-		target_chassis_rlogin_slot $slot $user $env(CFG_CHASSIS_ADMIN_PASSWORD)
+		target_chassis_rlogin_slot $slot $user $env(CFG_SWITCH_ADMIN_PASSWORD)
 	}
 
 	return 0
@@ -1980,10 +1980,10 @@ proc chassis_scp_cmd { scp_cmd } {
 	set_timeout 120
 	set expecting "scp session ($scp_cmd)"
 	expect {
-        "assword:"  { exp_send "$env(CFG_CHASSIS_ADMIN_PASSWORD)\r"
+        "assword:"  { exp_send "$env(CFG_SWITCH_ADMIN_PASSWORD)\r"
                   exp_continue
                 }
-        "assword->"  { exp_send "$env(CFG_CHASSIS_ADMIN_PASSWORD)\r"
+        "assword->"  { exp_send "$env(CFG_SWITCH_ADMIN_PASSWORD)\r"
                   exp_continue
                 }
 		"refused"	{ set info "Failed to $scp_cmd"
@@ -2046,10 +2046,10 @@ proc chassis_sftp_cmd { sftp_cmd sftp_action { not_found 1 } } {
 	set_timeout 120
 	set expecting "sftp session ($sftp_cmd)"
 	expect {
-        "assword:"  { exp_send "$env(CFG_CHASSIS_ADMIN_PASSWORD)\r"
+        "assword:"  { exp_send "$env(CFG_SWITCH_ADMIN_PASSWORD)\r"
                   exp_continue
                 }
-        "assword->"  { exp_send "$env(CFG_CHASSIS_ADMIN_PASSWORD)\r"
+        "assword->"  { exp_send "$env(CFG_SWITCH_ADMIN_PASSWORD)\r"
                   exp_continue
                 }
 		"refused"	{ set info "Failed to $sftp_cmd"

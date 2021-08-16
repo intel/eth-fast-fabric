@@ -14,11 +14,8 @@ fi
 # Override default location for HOSTS_FILE
 export HOSTS_FILE=${HOSTS_FILE:-$CONFIG_DIR/eth-tools/hosts}
 
-# Override default location for CHASSIS_FILE
-export CHASSIS_FILE=${CHASSIS_FILE:-$CONFIG_DIR/eth-tools/chassis}
-
-# Override default location for OPASWITCHES_FILE
-export OPASWITCHES_FILE=${OPASWITCHES_FILE:-$CONFIG_DIR/eth-tools/switches}
+# Override default location for SWITCHES_FILE
+export SWITCHES_FILE=${SWITCHES_FILE:-$CONFIG_DIR/eth-tools/switches}
 
 # Default management host
 export MGMT_HOST=${MGMT_HOST:-localhost}
@@ -83,12 +80,12 @@ export FF_PASSWORD=${FF_PASSWORD:-}
 # suing to root
 export FF_ROOTPASS=${FF_ROOTPASS:=}
 
-# How to login to chassis
+# How to login to switches
 # can be ssh or telnet
-#export FF_CHASSIS_LOGIN_METHOD=${FF_CHASSIS_LOGIN_METHOD:-ssh}
+#export FF_SWITCH_LOGIN_METHOD=${FF_SWITCH_LOGIN_METHOD:-ssh}
 
 # password for admin (not needed if password-less ssh configured)
-#export FF_CHASSIS_ADMIN_PASSWORD=${FF_CHASSIS_ADMIN_PASSWORD:-adminpass}
+#export FF_SWITCH_ADMIN_PASSWORD=${FF_SWITCH_ADMIN_PASSWORD:-adminpass}
 
 # options for ethreport during ethfabricanalysis health check
 # for  strict link speed checks, such as -o slowconfiglinks or 
@@ -96,15 +93,15 @@ export FF_ROOTPASS=${FF_ROOTPASS:=}
 export FF_FABRIC_HEALTH=${FF_FABRIC_HEALTH:- -o errors -o slowlinks}
 
 # list of CLI commands to issue during opachassisanalysis
-#export FF_CHASSIS_CMDS=${FF_CHASSIS_CMDS:-showAllConfig}
+#export FF_SWITCH_CMDS=${FF_SWITCH_CMDS:-showAllConfig}
 
 # single CLI command to issue to check overall health during opachassisanalysis
-# hwCheck is prefered, but is not supported on older chassis FW
-#export FF_CHASSIS_HEALTH=${FF_CHASSIS_HEALTH:-hwCheck}
+# hwCheck is prefered, but is not supported on older switches FW
+#export FF_SWITCH_HEALTH=${FF_SWITCH_HEALTH:-hwCheck}
 
 # list of analysis to perform during ethallanalysis
 # pick appropriate type of SM to analyze
-#export FF_ALL_ANALYSIS=${FF_ALL_ANALYSIS:-fabric chassis}
+#export FF_ALL_ANALYSIS=${FF_ALL_ANALYSIS:-fabric switches}
 export FF_ALL_ANALYSIS=${FF_ALL_ANALYSIS:-fabric}
 
 # command to perform text files for baseline vs latest snapshot during

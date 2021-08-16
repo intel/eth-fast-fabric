@@ -192,71 +192,39 @@ check_host_args()
 	extract_node_ports "$CONTENTS"
 }
 
-check_chassis_args()
+check_switches_args()
 {
 	# $1 is command name
-	# uses $CHASSIS and $CHASSIS_FILE
-	# sets $CHASSIS or calls Usage which should exit
-	local l_chassis_file
+	# uses $SWITCHES and $SWITCHES_FILE
+	# sets $SWITCHES or calls Usage which should exit
+	local l_switches_file
 
-	if [ "$CHASSIS_FILE" = "" ]
+	if [ "$SWITCHES_FILE" = "" ]
 	then
-		CHASSIS_FILE=$CONFIG_DIR/$FF_PRD_NAME/chassis
+		SWITCHES_FILE=$CONFIG_DIR/$FF_PRD_NAME/switches
 	fi
-	if [ "$CHASSIS" = "" ]
+	if [ "$SWITCHES" = "" ]
 	then
-		l_chassis_file=$CHASSIS_FILE
-		CHASSIS_FILE=`resolve_file "$1" "$CHASSIS_FILE"`
-		if [ "$CHASSIS_FILE" = "" ]
+		l_switches_file=$SWITCHES_FILE
+		SWITCHES_FILE=`resolve_file "$1" "$SWITCHES_FILE"`
+		if [ "$SWITCHES_FILE" = "" ]
 		then
-			echo "$1: CHASSIS env variable is empty and the file $l_chassis_file does not exist" >&2 
-			echo "$1: Must export CHASSIS or CHASSIS_FILE or use -F or -H option" >&2
+			echo "$1: SWITCHES env variable is empty and the file $l_switches_file does not exist" >&2
+			echo "$1: Must export SWITCHES or SWITCHES_FILE or use -F or -H option" >&2
 			Usage
 		fi
-		CONTENTS=`expand_file "$1" "$CHASSIS_FILE"`
-		CHASSIS=`extract_device_name "$1" "$CONTENTS"`
-		if [ "$CHASSIS" = "" ]
+		CONTENTS=`expand_file "$1" "$SWITCHES_FILE"`
+		SWITCHES=`extract_device_name "$1" "$CONTENTS"`
+		if [ "$SWITCHES" = "" ]
 		then
-			echo "$1: CHASSIS env variable and the file $CHASSIS_FILE are both empty" >&2 
-			echo "$1: Must export CHASSIS or CHASSIS_FILE or use -F or -H option" >&2
+			echo "$1: SWITCHES env variable and the file $SWITCHES_FILE are both empty" >&2
+			echo "$1: Must export SWITCHES or SWITCHES_FILE or use -F or -H option" >&2
 			Usage
 		fi
 	fi
 	
-	export CFG_CHASSIS_LOGIN_METHOD=$FF_CHASSIS_LOGIN_METHOD
-	export CFG_CHASSIS_ADMIN_PASSWORD=$FF_CHASSIS_ADMIN_PASSWORD
-}
-
-check_ib_transport_args()
-{
-	# $1 is command name
-	# uses $OPASWITCHES and $OPASWITCHES_FILE
-	# sets $OPASWITCHES or calls Usage which should exit
-	local l_opaswitches_file
-
-	if [ "$OPASWITCHES_FILE" = "" ]
-	then
-		OPASWITCHES_FILE=$CONFIG_DIR/$FF_PRD_NAME/switches
-	fi
-	if [ "$OPASWITCHES" = "" ]
-	then
-		l_opaswitches_file=$OPASWITCHES_FILE
-		OPASWITCHES_FILE=`resolve_file "$1" "$OPASWITCHES_FILE"`
-		if [ "$OPASWITCHES_FILE" = "" ]
-		then
-			echo "$1: OPASWITCHES env variable is empty and the file $l_opaswitches_file does not exist" >&2 
-			echo "$1: Must export OPASWITCHES or OPASWITCHES_FILE or use -L or -N option" >&2
-			Usage
-		fi
-		OPASWITCHES=`expand_file "$1" "$OPASWITCHES_FILE"`
-		if [ "$OPASWITCHES" = "" ]
-		then
-			echo "$1: OPASWITCHES env variable and the file $OPASWITCHES_FILE are both empty" >&2 
-			echo "$1: Must export OPASWITCHES or OPASWITCHES_FILE or use -L or -N option" >&2
-			Usage
-		fi
-	fi
-	
+	export CFG_SWITCHES_LOGIN_METHOD=$FF_SWITCH_LOGIN_METHOD
+	export CFG_SWITCHES_ADMIN_PASSWORD=$FF_SWITCH_ADMIN_PASSWORD
 }
 
 check_ports_args()
@@ -300,39 +268,6 @@ check_ports_args()
 	fi
 	
 }
-
-check_esm_chassis_args()
-{
-	# $1 is command name
-	# uses $ESM_CHASSIS and $ESM_CHASSIS_FILE
-	# sets $ESM_CHASSIS or calls Usage which should exit
-	local l_esm_chassis_file
-
-	if [ "$ESM_CHASSIS_FILE" = "" ]
-	then
-		ESM_CHASSIS_FILE=$CONFIG_DIR/$FF_PRD_NAME/esm_chassis
-	fi
-	if [ "$ESM_CHASSIS" = "" ]
-	then
-		l_esm_chassis_file=$ESM_CHASSIS_FILE
-		ESM_CHASSIS_FILE=`resolve_file "$1" "$ESM_CHASSIS_FILE"`
-		if [ "$ESM_CHASSIS_FILE" = "" ]
-		then
-			echo "$1: ESM_CHASSIS env variable is empty and the file $l_esm_chassis_file does not exist" >&2 
-			echo "$1: Must export ESM_CHASSIS or ESM_CHASSIS_FILE or use -G or -E option" >&2
-			Usage
-		fi
-		ESM_CHASSIS=`expand_file "$1" "$ESM_CHASSIS_FILE"`
-		if [ "$ESM_CHASSIS" = "" ]
-		then
-			echo "$1: ESM_CHASSIS env variable and the file $ESM_CHASSIS_FILE are both empty" >&2 
-			echo "$1: Must export ESM_CHASSIS or ESM_CHASSIS_FILE or use -G or -E option" >&2
-			Usage
-		fi
-	fi
-	
-}
-
 
 strip_chassis_slots()
 {

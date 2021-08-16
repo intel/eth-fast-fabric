@@ -127,7 +127,6 @@ sub install_fastfabric
 	check_rpm_config_file("$CONFIG_DIR/eth-tools/ethmon.conf", $depricated_dir);
 	check_rpm_config_file("$CONFIG_DIR/eth-tools/ethfastfabric.conf", $depricated_dir);
 	check_rpm_config_file("$CONFIG_DIR/eth-tools/allhosts", $depricated_dir);
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/chassis", $depricated_dir);
 	check_rpm_config_file("$CONFIG_DIR/eth-tools/hosts", $depricated_dir);
 	check_rpm_config_file("$CONFIG_DIR/eth-tools/switches", $depricated_dir);
 	check_rpm_config_file("$CONFIG_DIR/eth-tools/mgt_config.xml", $depricated_dir);

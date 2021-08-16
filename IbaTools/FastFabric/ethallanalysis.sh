@@ -29,7 +29,7 @@
 # END_ICS_COPYRIGHT8   ****************************************
 
 # [ICS VERSION STRING: unknown]
-# Analyze fabric, chassis and SMs for errors and/or changes relative to baseline
+# Analyze fabric and switches for errors and/or changes relative to baseline
 
 # optional override of defaults
 if [ -f /etc/eth-tools/ethfastfabric.conf ]
@@ -48,7 +48,7 @@ Usage_full()
 {
 	echo "Usage: ${BASENAME} [-b|-e] [-s] [-d dir] [-c file] [-T topology_inputs]" >&2
 	echo "                    [-E file] [-p planes]">&2
-#	echo "                    [-F chassisfile] [-H 'chassis']">&2
+#	echo "                    [-F switchesfile] [-H 'switches']">&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -65,17 +65,17 @@ Usage_full()
 	echo "            the first enabled plane defined in config file" >&2
 	echo "   -T topology_inputs - name of topology input filenames separated by space." >&2
 	echo "            See ethreport for more information on topology_input files" >&2
-#	echo "   -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
-#	echo "   -H chassis - list of chassis to analyze" >&2
+#	echo "   -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
+#	echo "   -H switches - list of switches to analyze" >&2
 	echo " Environment:" >&2
-#	echo "   CHASSIS - list of chassis, used if -F and -H options not supplied" >&2
-#	echo "   CHASSIS_FILE - file containing list of chassis, used if -F and -H options not" >&2
+#	echo "   SWITCHES - list of switches, used if -F and -H options not supplied" >&2
+#	echo "   SWITCHES_FILE - file containing list of switches, used if -F and -H options not" >&2
 #	echo "                  supplied" >&2
 	echo "   FF_ANALYSIS_DIR - top level directory for baselines and failed health checks" >&2
-#	echo "   FF_CHASSIS_CMDS - list of commands to issue during analysis," >&2
+#	echo "   FF_SWITCH_CMDS - list of commands to issue during analysis," >&2
 #	echo "                     unused if -e option supplied" >&2
-#	echo "   FF_CHASSIS_HEALTH - single command to issue to check overall health during analysis," >&2
+#	echo "   FF_SWITCH_HEALTH - single command to issue to check overall health during analysis," >&2
 #	echo "                       unused if -b option supplied" >&2
 	echo "for example:" >&2
 	echo "   ${BASENAME}" >&2
@@ -84,7 +84,7 @@ Usage_full()
 
 Usage()
 {
-#	echo "Usage: ${BASENAME} [-b|-e] [-s] [-F chassisfile]" >&2
+#	echo "Usage: ${BASENAME} [-b|-e] [-s] [-F switchesfile]" >&2
 	echo "Usage: ${BASENAME} [-b|-e] [-s]" >&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
@@ -92,8 +92,8 @@ Usage()
 	echo "   -b - baseline mode, default is compare/check mode" >&2
 	echo "   -e - evaluate health only, default is compare/check mode" >&2
 	echo "   -s - save history of failures (errors/differences)" >&2
-#	echo "   -F chassisfile - file with chassis in cluster" >&2
-#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+#	echo "   -F switchesfile - file with switches in cluster" >&2
+#	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "for example:" >&2
 	echo "   ${BASENAME}" >&2
 	exit 2
@@ -122,8 +122,8 @@ do
 	E)	opts="$opts -E '$OPTARG'";;
 	p)	opts="$opts -p '$OPTARG'";;
 	T)	opts="$opts -T '$OPTARG'";;
-#	H)	export CHASSIS="$OPTARG";;
-#	F)	export CHASSIS_FILE="$OPTARG";;
+#	H)	export SWITCHES="$OPTARG";;
+#	F)	export SWITCHES_FILE="$OPTARG";;
 	?)	Usage;;
 	esac
 done
@@ -144,8 +144,8 @@ do
 	case $i in
 	fabric)
 		;;
-	chassis)
-		check_chassis_args ${BASENAME};;
+	switches)
+		check_switches_args ${BASENAME};;
 	*)
 		echo "${BASENAME}: Invalid setting in FF_ALL_ANALYSIS: $i" >&2
 		exit 1;;
@@ -165,7 +165,7 @@ do
 			status=bad
 		fi
 		;;
-	chassis)
+	switches)
 		eval /usr/sbin/opachassisanalysis $opts
 		if [ $? != 0 ]
 		then

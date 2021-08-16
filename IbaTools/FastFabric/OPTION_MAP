@@ -1,291 +1,347 @@
 List of command line options used in various Fast Fabric tools
---help			provide full help text, otherwise brief help of common options
--a 			show all hosts (ethcheckload)
--a			clear all performance stats for all ports
--a 			ip address of node running FE
--a action		Action for specified chassis firmware upgrade (push, select, run)
--a 'sguid ..;dguid..'   query by a list of port guids
--b			Take a baseline without a health check
--b date_time	begin time for performance stats interval query
--b {b | b,c | ,c}   output a block of data with range of count
--c			clobber previous result files before run
--c			copy files before run (ethverifyhosts)
--c			focus select value
--c crc			new CRC enabled (opaportconfig)
--c char			concatentation character
--c file			config file for error analysis or thresholds
--d 			display configuration checksum information (opafmconfigcheck)
--d			delta flag for port counters query (0 or 1)
--d dir			upload or download directory (or UPLOADS_DIR or DOWNLOADS_DIR)
-				or analysis directory tree (FF_ANALYSIS_DIR)
--d detail		detail level for report
--d name			query by node name/description or vf name
--d delimiter		delimiter output between names and values
--e			evaluate health only, default is compare/check mode
--e			output mtu & rate as eunm values (opagenvf)
--e flag			32 bit selection flag for clearing port counters
--e element		name of XML element to extract, name of header XML element to end
--e date_time	end time for performance stats interval query
--f 			delta flag for portCounters query (0 or 1)
--f value		focus select value for getting focus ports
--f hostfile		hosts to act on (or HOSTS_FILE)
--g 			group name for groupInfo query
--g			display in line by line format (default is summary) (opainfo)
--g guid			query by port guid
--g element		name of XML element to generate
--h 			host name of node running FE
--h element		name of XML element in which to enclose generated XML elements
--h hosts		hosts to act on (or HOSTS)
--h hfi			HFI to use
--i ipoib_suffix		suffix to convert ethernet to IPoIB
--i seconds		Obtain performance stats over interval seconds
--i vfindex		query a specific vfindex
--i level		output indent level (0-15)
--j time			begin time in opa[pa|fe]query pa queries
--k			kill any previous jobs (ethverifyhosts)
--k			in XML tags with newlines, keep newlines as is
--k pkey			query a specific pkey
--l 			list files but dont create archive (oparchive)
--l			add comments with line numbers after each XML end tag
--l lid			query a specific lid
--m 			access fabric information directly from SMA
--m netmask		netmask for configuring IPoIB
--m marker		marker for end of cmd output in ethcmdall
--m gid			query by multicast gid
--m port			port in destination device to query
--n numprocs		number of processes per node for cabletests, number of hosts
-   			       for ethcheckload
--n guid			query by node guid
--n image_number		64 bit image number
--n mask			port mask in hex (ports 31-0)
--o output_file		write data to output file
--o directory		output directory
--p 			run command in parallel
--p plane		fabric plane to use
--p planes		list of fabric planes to use
--p guid			query by port guid
--q 			quiet mode
--q time     end time in opa[pa|fe]query pa queries
--r			size of window for focus ports list
--r			recursive download/upload of directories
--r 			reverse output (least busy hosts) (opachassisanalysis)
--r seconds		repeat to keep port down for seconds (opaportconfig)
--r release		release to load on servers
--s			save history of analysis failures
--s			get performance stats for all ports
--s			strict check mode (opafmconfigcheck)
--s			update/resolved switches switch names using topology xml
--s			specify a service level (default 0)
--s guid			query by system image guid
--s element		name of XML element to suppress extraction
--s file			secondary topology CSV input file
--s flag			32 bit select flag for clearing port counters
--s speed		new link speeds enabled (opaportconfig)
--t 			optimized recursive copy of directories using TAR
--t 			trim leading and trailing whitespace in XML tag contents
--t portsfile		list of local hfi ports used (or PORTS_FILE)
--t type			query by node type
--t file			primary topology CSV input file
--u user			user code for host operation (default is root)
--u upload_file		destination filename to upload to (ethverifyhosts)
--u gid			query by port gid
--v			verbose mode
--v			show version
--v level		verbose level (0-8)
--v debugging mode	display debugging and status information (opafmconfigcheck)
--w			start window for focus ports
--w mask			32 bit virtual lane select mask
--w width		new link widths enabled (opaportconfig)
--x 			output in xml
--x			exclude libs, kernel, module samples (oparchive)
--x snapshot_suffix  	suffix for snapshot file created (ethlinkanalysis)
--x gid			specify a source gid for query
--y time		image time in opa[pa|fe]query pa queries
--z			do not get port info first, clear port attributes (opaportconfig)
+--answer            Provides an answer to a question               iefsconfig
+  keyword=value
+--disable           Disables the setting                           ethautostartconfig
+--disable           Disables the setting                           ethsystemconfig
+--enable            Enables the setting                            ethautostartconfig
+--enable            Enables the setting                            ethsystemconfig
+--help              provide full help text, otherwise brief help
+                    of common options
+--list              Lists all available utilities                  ethautostartconfig
+--list              Lists all available utilities                  ethsystemconfig
+--status            Shows status of setting                        ethautostartconfig
+--status            Shows status of setting                        ethsystemconfig
+--timeout           Specifies the timeout (wait time for response) ethreport
 
--A			skip "active" test (ethfindgood)
--A			force clear of hw error counters (ethcabletest)
--A			get PortInfo for down switch ports direct from SMA
--A 'sgid ...;dgid ...'  query by list of gids
--B 'sguid ...;dguid ...' query by list of port guids
--C			perform operation on chassis (default is hosts)
--C			clear error counters, clear performance counters
--D point		Destination for trace route
--D detail		detail level for ethcapture
--E 			ESM FE
--E esmchassis		eSM chassis to act on (or ESM_CHASSIS)
--E file			Ethernet Mgt conf file (ethreport)
--F chassisfile		chassis to act on (or CHASSIS_FILE)
--F focus		focus option for report
--G esmchassisfile	eSM chassis to act on (or ESM_CHASSIS_FILE)
--G 'gid gid'		query by a pair of gids
--H 			only include permanent hardware data
--H			do not output element name header record
--H chassis		chassis to act on (or CHASSIS)
--I 			issue query in legacy Inifiband format
--I install_opts		install options for server install
--I fm_bootstate		fmconfig and fmcontrol install options
--K			do not clean temporary files
--L 			limit operation to specified focus
--L opaswitches		node list file for inband operations on switches (or OPASWITCHES_FILE)
--L lid			set PortInfo.LID = lid (opaportconfig)
--L SL			query by service level
--L nodefile		File with switches in cluster (default /etc/eth-tools/switches)
--M 			access performance stats directly from PMA
--M			inage offset (pa query)
--M host			Connected mgmt host from which queries can be initiated
--N 			omit node and IOC names
--N			port number for portCounters query
--N opaswitches		node list for inband operations on switches (or OPASWITCHES)
--N nodes		list of nodes to execute against
--O			image offset (groupInfo, groupConfig, portCounters)
--O			override, bypass version checks and force upgrade
--P 			skip ping of host
--P			output hostname/chassis name as line prefix for ethcmdall
--P			include data persistent across reboots
--P 'guid guid'		query by a pair of port guids
--P port_number		port number for portCounters query
--P state		new port physical state (opaportconfig)
--P file			Read command parameters from command file (opaxml)
--P packages		packages to load for server or chassis upgrade
--R			configure remote hosts only (skips localhost in ethsetupssh)
--R			skip "running/ssh" test
--R			do not attempt to get routes (opadisablehosts, opagenswitches)
--R path			filesystem path to search (oparchive)
--Q			do not include focus description in report
--S			securely prompt for chassis admin password
--S 			start of window for focus ports (should be 0)
--S point		source for trace route
--S serviceid		query a specific service id
--S state		new port state (opaportconfig)
--T product		IntelEth product type to install
--T timelimit		timelimit for ethcmdall operations and tools using ethcmdall
--T file			name of topology file input/output file or SSL/TLS parameters XML file
--U			only perform connect (for ethsetupssh)
--U			omit unexpected devices (ethlinkanalysis)
--U			user controlled counters flag for portCounters query
--U upgrade_opts		upgrade options for server upgrade
--V			VF name for vfInfo query
--V			verbose output
--X file			input file to use
+-a                  Shows all hosts                                ethcheckload
+-A                  Skips the active test                          ethfindgood
+-A                  Gets PortInfo for down switch ports            ethreport         (may remove it)
+-a admin            Specifies the list of admin hosts that can     ethsetupsnmp
+                    SNMP query
+-b                  Sets the baseline mode                         ethallanalysis
+-b                  Specifies the baseline mode                    ethfabricanalysis
+-C                  Performs more topology file validation         eth2rm
+-C                  Outputs list of supported components           iefsconfig
+-c                  Overwrites the result files from any previous  ethhostadmin
+                    run before starting this run
+-C                  ping against switches                          ethpingall
+-c                  Copies hostverify.sh to hosts first            ethverifyhosts
+-c community        Specifies the community string used for SNMP   ethsetupsnmp
+                    query
+-c file             Specifies the error thresholds configuration   ethallanalysis
+                    file
+-c file             Specifies the error thresholds config file     ethfabricanalysis
+-c file             Specifies the error thresholds configuration   ethlinkanalysis
+                    file
+-c file             Specifies the error thresholds configuration   ethreport
+                    file
+-D comp             Disables autostart of given component          iefsconfig
+-d delimiter        Uses single character or string as the         ethxmlextract
+                    delimiter between element names and element
+                    values
+-d delimiter        Specifies the delimiter character that         ethxmlgenerate
+                    separates values in the input file
+-d detail           Captures level of detail                       ethcapture
+-D detail_level     the level of detail of the capture             ethcaptureall
+-d dir              Identifies the top-level directory             ethallanalysis
+-d dir              Specifies the top-level directory for saving   ethfabricanalysis
+                    baseline and history of failed checks
+-d dir              Specifies the directory in which to create     ethfindgood
+                    alive, active, running, good, and bad files
+-d dir              Specifies the directory to retrieve            ethhostadmin
+                    product.release.tgz for load or upgrade
+-d download_dir     the directory to download files from           ethdownloadall
+-d level            Specifies the level of detail 0-n for output   ethreport
+-d level            Specifies the output detail level              ethxlattopology
+-d upload_dir       the directory to upload to                     ethcaptureall
+-d upload_dir       the target directory to upload loadavg         ethcheckload
+-d upload_dir       Specifies the directory to upload to           ethuploadall
+-d upload_dir       Specifies the directory to upload result from  ethverifyhosts
+                    each host to
+-e                  Evaluates health only                          ethallanalysis
+-e                  Evaluates health only                          ethfabricanalysis
+-e comp             Uninstalls the given component with default    iefsconfig
+                    options
+-E comp             Enables autostart of a given component         iefsconfig
+-e element          Name of the XML element that is the enclosing  ethxmlgenerate
+                    header end tag
+-e extract_element  Specifies the name of the XML element to       ethxmlextract
+                    extract
+-E file             Ethernet Mgt configuration file                ethallanalysis
+-E file             Specifies Ethernet Mgt configuration file      ethfabricanalysis
+-E file             Specifies the Intel Ethernet configuration     ethfabricinfo
+                    file
+-E file             Ethernet Mgt configuration file                ethlinkanalysis
+-E file             Specifies the Intel Ethernet configuration     ethreport
+                    file
+-F filename         Specifies the filename of hostverify script to ethverifyhosts
+                    use
+-f hostfile         the file with hosts to include in NIC-to-SW    ethcabletest
+                    test
+-f hostfile         the file with hosts in cluster                 ethcaptureall
+-f hostfile         the file with hosts to check                   ethcheckload
+-f hostfile         the file with hosts in cluster                 ethcmdall
+-f hostfile         the file with hosts in cluster                 ethdownloadall
+-f hostfile         Specifies the file with hosts in cluster       ethfindgood
+-f hostfile         Specifies the file with the names of hosts in  ethhostadmin
+                    a cluster
+-f hostfile         Specifies the file with hosts in cluster       ethpingall
+-f hostfile         Specifies the file with hosts in cluster       ethscpall
+-f hostfile         Specifies the file with hosts in cluster       ethsetupsnmp
+-f hostfile         Specifies the file with hosts in cluster       ethsetupssh
+-f hostfile         Specifies the file containing the list of      ethshowallports
+                    hosts
+-f hostfile         Specifies the file with hosts in cluster       ethuploadall
+-f hostfile         Specifies the file with hosts in cluster       ethverifyhosts
+-f linkfiles        Specifies the space separated core switch      ethxlattopology
+                    linksum files
+-F point            the focus area for output                      eth2rm
+-F point            Specifies the focus area for report            ethreport
+-F switchesfile     Specifies the file with switches in cluster    ethpingall
+-g                  Specifies the output switch GUIDs instead of   eth2rm
+                    names
+-G                  Installs GPU Direct components                 iefsconfig
+-g element          Generates value for element using value in     ethxmlgenerate
+                    next field from the input file
+-H                  Suppresses headers for script parsing          ethcheckload
+-H                  Does not output element name header record     ethxmlextract
+-h element          Name of the XML element that is the enclosing  ethxmlgenerate
+                    header start tag
+-h host             Specifies the list of hosts to execute command ethcmdall
+-h hosts            the list of hosts to include in NIC-SW test    ethcabletest
+-h hosts            the list of hosts on which to perform a        ethcaptureall
+                    capture
+-h hosts            the list of hosts to check                     ethcheckload
+-h HOSTS            the list of hosts to download files to         ethdownloadall
+-h hosts            Specifies the list of hosts to ping            ethfindgood
+-h hosts            Specifies the list of hosts to execute the     ethhostadmin
+                    operation against
+-h hosts            Specifies the list of hosts to ping            ethpingall
+-h hosts            Specifies the list of hosts to copy to         ethscpall
+-h hosts            Specifies the list of hosts in cluster         ethsetupsnmp
+-h hosts            Specifies the list of hosts to set up          ethsetupssh
+-h hosts            Specifies the list of hosts for which to show  ethshowallports
+                    ports
+-h hosts            Specifies the list of hosts to upload from     ethuploadall
+-h hosts            Specifies the list of hosts to ping            ethverifyhosts
+-H switches         Specifies the list of switches to ping.        ethpingall
+-i indent           Sets indentation to use per level              ethxmlfilter
+-i indent           Sets indentation to use per level              ethxmlindent
+-I install_options  Specifies the software install options         ethhostadmin
+-i level            Specifies the output indent level              ethxlattopology
+-i number           Number of spaces to indent each level of XML   ethxmlgenerate
+                    output
+-k                  At start and end of verification, kills any    ethverifyhosts
+                    existing hostverify or xhpl jobs on the hosts
+-K                  Specifies DO NOT clean temporary files         ethxlattopology
+-k                  In tags with purely whitespace that contain    ethxmlfilter
+                    newlines, keeps newlines as-is
+-k                  In tags with purely whitespace that contain    ethxmlindent
+                    newlines, keeps newlines as-is
+-L                  Limits operation to exact specified focus with ethreport
+                    -F for port error counters check
+-l                  Adds comments with line numbers after each end ethxmlfilter
+                    tag
+-m mibs             Specifies the list of MIBs that are readable   ethsetupsnmp
+                    in SNMP queries
+-N                  Omits node                                     ethreport
+-n numprocs         number of processes per host for NIC-SW test   ethcabletest
+-n numprocs         Shows the specified number of top numprocs     ethcheckload
+                    hosts
+-o output           output type                                    eth2rm
+-o report           Specifies the report type for output           ethreport
+-o report           Specifies the report type for output           ethxlattopology
+-p                  Performs capture upload in parallel            ethcaptureall
+-p                  Runs command in parallel on all hosts          ethcmdall
+-P                  Outputs the hostname as prefix to each output  ethcmdall
+                    line
+-p                  copy in parallel on all hosts                  ethdownloadall
+-p                  Pings all hosts/switches in parallel           ethpingall
+-p                  Performs copy in parallel on all hosts         ethscpall
+-p                  Performs operation against all hosts in        ethsetupsnmp
+                    parallel
+-p                  Performs operation against all hosts in        ethsetupssh
+                    parallel
+-P                  Skips ping of host                             ethsetupssh
+-p                  Performs copy in parallel on all hosts         ethuploadall
+-P packages         Specifies the packages to install.             ethhostadmin
+-P param_file       Reads command parameters from param_file       ethxmlextract
+-P param_file       Uses input command line options (parameters)   ethxmlgenerate
+                    from param_file
+-p plane            Plane name                                     ethxlattopology
+-p planes           Fabric planes separated by space               ethallanalysis
+-p planes           Specifies Fabric planes separated by space.    ethfabricanalysis
+-p planes           Fabric planes separated by space.              ethlinkanalysis
+-p prefix           the prefix to prepend to all NIC hostnames     eth2rm
+-q                  Disables progress reports                      eth2rm
+-q                  Quiet mode, do not show command to execute     ethcmdall
+-q                  Disables progress reports                      ethreport
+-Q                  Excludes focus description from report         ethreport
+-r                  Reverses output to show the least busy hosts   ethcheckload
+-r                  recursive download of directories              ethdownloadall
+-R                  Skips the running test (SSH)                   ethfindgood
+-r                  Performs recursive copy of directories         ethscpall
+-R                  Skips setup of SSH to local host               ethsetupssh
+-r                  Performs recursive upload of directories       ethuploadall
+-r release          Specifies the software version to load/upgrade ethhostadmin
+                    to
+-S                  Performs strict topology file validation       eth2rm
+-s                  Saves history of failures (errors/differences) ethallanalysis
+-s                  Enables autostart for all installed drivers    iefsconfig
+-s                  Saves history of failures                      ethfabricanalysis
+-S                  Securely prompts for user password on remote   ethhostadmin
+                    system
+-S                  Securely prompts for password for user on      ethsetupssh
+                    remote system
+-s element          Specifies the name of the XML element to       ethxmlfilter
+                    suppress
+-s suffix           the suffix to append to all NIC hostnames      eth2rm
+-s suppress_element Specifies the name of the XML element to       ethxmlextract
+                    suppress extraction
+-t                  Truncates switch names at first space          eth2rm
+-t                  Performs optimized recursive copy of           ethscpall
+                    directories using tar
+-t                  Trims leading and trailing whitespace in tag   ethxmlfilter
+                    contents
+-t                  Trims leading and trailing whitespace in tag   ethxmlindent
+                    contents
+-T product          Specifies the product type to install          ethhostadmin
+-T timelimit        the time limit in seconds when running host    ethcmdall
+                    commands
+-T timelimit        Specifies the time limit in seconds for host   ethfindgood
+                    to respond to SSH
+-T timelimit        Specifies the time limit in seconds for host   ethverifyhosts
+                    to complete tests
+-T topology_input   Uses topology_input file to augment and verify ethreport
+                    fabric information
+-T topology_inputs  name of topology input filenames separated by  ethallanalysis
+                    space
+-T topology_inputs  Specifies the name of topology input filenames ethfabricanalysis
+                    separated by space
+-T topology_inputs  Specifies the name of topology input filenames ethlinkanalysis
+                    separated by space
+-u                  Changes spaces in switch names to underscores  eth2rm
+-u                  Uninstalls all ULPs and drivers with default   iefsconfig
+                    options
+-U                  Omits unexpected devices and links in          ethlinkanalysis
+                    punchlist file from verify reports
+-U                  Performs connect only (to enter in local       ethsetupssh
+                    hosts, known hosts)
+-U upgrade_options  Specifies the software upgrade options         ethhostadmin
+-u upload_file      Specifies the filename to upload               ethverifyhosts
+                    hostverify.res
+-u user             the user to perform the command                ethcmdall
+-u user             the user to perform the copy                   ethdownloadall
+-u user             Specifies the user to perform copy to          ethscpall
+-u user             Specifies the user on remote system to allow   ethsetupssh
+                    this user to SSH to
+-u user             Specifies the user to perform copy to          ethuploadall
+-v                  verbose logging                                iefsconfig
+-V                  Outputs version                                iefsconfig
+-v                  Returns verbose output                         ethreport
+-v                  Produces verbose output                        ethxmlextract
+-v                  Produces verbose output                        ethxmlgenerate
+-v level            Specifies the verbose level                    ethxlattopology
+-vv                 very verbose debug logging                     iefsconfig
+-x                  Produces output in XML                         ethreport
+-X input_file       Parses XML from input_file                     ethxmlextract
+-X input_file       Generates XML from CSV in input_file           ethxmlgenerate
+-X snapshot_input   Generates a report using data in               ethfabricinfo
+                    snapshot_input file
+-X snapshot_input   Performs analysis using data in snapshot_input ethlinkanalysis
+-X snapshot_input   Generates a report using the data in the       ethreport
+                    snapshot_input file
+-x snapshot_suffix  Creates a snapshot file with the suffix        ethlinkanalysis
 
-Output Type Descriptions used by Fast Fabric tools - note that individual tools
-may not support all output types.
-   all		      - comp, nodes, ious, links, extlinks, slowconnlinks, errors reports
-   bfrctrl            - list of buffer control tables
-   brcomps	      - Brief summary of all systems and SMs in fabric
-   brnodes	      - brief summary of all nodes and SMs in fabric
-   cableinfo          - list of Cable Info records
-   classportinfo      - list of port info records
-   clearerrorinfo     - clears the error info
-   clearportstatus    - clears the port status
-   clrAllPortCounters - clear all port counters in a fabric
-   clrPortCounters    - clear port counters of a fabric port
-   clrVfPortCounters  - clear VF port counters of a fabric port
-   conginfo           - list of Congestion Info Records
-   comps	      - Summary of all systems & SMs in fabric
-   desc               - list of node descriptions/names
-   errors	      - summary of links whose errors exceed counts in config file
-   extislinks	      - summary of all inter-switch links external to system
-   extlinks	      - summary of all links external to system
-   fabricinfo	      - summary of fabric devices
-   focusPorts	      - get sorted list of ports
-   freezeImage	      - creates a freeze frame for image ID
-   groupConfig	      - configuration of a PA group
-   groupInfo	      - summary of statistics of a PA group
-   groupList	      - List of PA groups
-   getdatacounters    - list of data counters
-   geterrorcounters   - list of error counters
-   geterrorinfo       - list of error info
-   getportstatus      - list of port status records
-   hficongcon         - list of HFI Congesting Control Settings
-   hficongset         - list of HFI Congestion Settings
-   niclinks	      		- summary of all NIC links
-   ibnodeinfo         - list of IB generic node data records (opasmaquery)
-   imageInfo	      - get information about a PA image
-   inform             - list of inform info records
-   ious		      - summary of all IO units in fabric
-   islinks	      		- summary of all inter-switch links
-   ifid                - list of ifids
-   ifids		      - summary of all IfIDs in fabric
-   linear	      - summary of linear fowarding database (FDB) for each switch
-   linfdb             - list of switch linear FDB records
-   link               - list of link records
-   links	      - summary of all links
-   mcast	      - summary of multicast FDB for each switch
-   mcfdb              - list of switch multicast FDB records
-   mcmember           - list of multicast member records
-   misconfiglinks     - summary of links configured to run slower than supported
-   misoconnlinks      - summary of links connected with mismatched speed potential
-   moveFreeze	      - move freeze frame from image ID to new image ID
-   node               - list of node records
-   nodes	      - summary of all nodes types and SMs in fabric
-   nodeaggr           - aggregate query returning list of node info and description records
-   nodedesc           - list of node description records
-   nodeguid           - list of node guids
-   nodeinfo           - list of node info records
-   none		      - no report (useful if just want to clear stats)
-   otherports	      - summary of ports not connected to this fabric
-   paclassPortInfo    - class port info
-   path               - list of path records
-   pathusage	      - summary of number of NIC to NIC paths routed through each switch port
-   pkey               - list of P-Key table records
-   pmConfig	      - retrieve PM configuration information
-   portCounters	      - port counters for a fabric port
-   portgroup          - list of AR Port Group records
-   portgroups	      - summary of adaptive routing port groups for each switch
-   portgroupfdb       - list of AR Port Group FWD records
-   portguid           - list of port guids
-   portinfo           - list of port info records
-   portusage	      - summary of ports referenced in linear FDB for each switch
-   pstateinfo         - list of switch port state info records
-   quarantine         - list of quarantined nodes
-   quarantinednodes   - summary of quarantined nodes
-   ranfdb             - list of switch random FDB records
-   releaseImage	      - release freeze frame for image ID
-   renewImage	      - renew lease for freeze frame for image ID
-   route	      - trace route between -S and -D points
-   saclassPortInfo    - class port info
-   scsc		      - list of SC to SC mapping table records
-   scsl               - list of SC to SL mapping table records
-   scvlnt             - list of SC to VLnt table records
-   scvlt              - list of SC to VLt table records
-   service            - list of service records
-   slsc               - list of SL to SC mapping table records
-   slowconfiglinks    - summary of links configured to run slower than supported
-   slowconnlinks      - summary of links connected with mismatched speed potential
-   slowlinks	      - summary of links running slower than expected
-   sminfo             - list of SM info records
-   snapshot	      - output fabric state for later use as snapshot input
-   swaggr             - aggregate query returning list of node info and switch info records
-   swconglog          - list of switch congestion log records
-   swcongset          - list of Switch Congestion Settings
-   swinfo             - list of switch info records
-   swportcong         - list of switch congestion settings
-   systemguid         - list of system image guids
-   topology	      - output topology of fabric for later use as topology input
-   trace              - list of trace records
-   treepathusage      - analysis of number of NIC to NIC paths routed through each switch port for fat tree
-   validatecreditloops	- validate topology configuration of fabric to identify credit loops
-   validatepgs	      - validate all port groups in fabric
-   validateroute      - validate all routes in fabric
-   validateroutes     - validate all routes in fabric
-   verifyall	      - verifynics, verifysws, verifysms, verifylinks reports
-   verifyextislinks	  - compare fabric external inter-switch links to supplied topology
-   verifyextlinks     - compare fabric links to supplied topology (external links only)
-   verifynics	      - compare fabric NICs to supplied topology
-   verifyniclinks	      - compare fabric NIC links to supplied topology
-   verifyislinks	  - compare fabric inter-switch links to supplied topology
-   verifylinks	      - compare fabric links to supplied topology
-   verifynodes	      - verifynics and verifysws reports
-   verifysms	      - compare fabric SMs to supplied topology
-   verifysws	      - compare fabric switches to supplied topology
-   vfConfig	      - configuration for a virtual fabric
-   vfFocusPorts	      - get sorted list of virtual fabric ports
-   vfinfo             - summary of vFabric information
-   vlList	      - list of virtual fabrics
-   vfmember	      - summary of vFabric membership information
-   vfPortCounters     - port counters for a fabric port
-   vfinfocsv          - list of vFabrics in CSV format
-   vfinfocsv2         - list of vFabrics in CSV format with enums
-   vlarb              - list of VL arbitration table records
+
+Output Type Descriptions used by Fast Fabric tools
+  all              Includes all reports above                 ethlinkanalysis
+  all              Returns comps, nodes, links, extlinks,     ethreport
+                   slowconnlinks, and errors reports
+  brcomps          Brief summary of all systems in fabric     ethreport
+  brnodes          Brief summary of all node types in fabric  ethreport
+  brnodes          Creates the <Node> section xml for the csv ethxlattopology
+                   input
+  comps            Summary of all systems in fabric           ethreport
+  errors           link error analysis                        ethlinkanalysis
+  errors           Summary of links whose errors exceed       ethreport
+                   counts in the configuration file
+  extislinks       Summary of inter-switch links external to  ethreport
+                   systems
+  extlinks         Summary of links external to systems       ethreport
+  fabricinfo       Fabric information                         ethreport
+  hosts            FastFabric hosts file omitting this host   eth2rm
+  ifids            Summary of all ifids in the fabric         ethreport
+  islinks          Summary of inter-switch links              ethreport
+  linkinfo         Summary of all links with ifids in the     ethreport
+                   fabric
+  links            Summary of all links                       ethreport
+  links            Creates the <LinkSummary> section xml for  ethxlattopology
+                   the csv input
+  load             Starts initial installation of all hosts   ethhostadmin
+  misconfiglinks   links configured to run slower than        ethlinkanalysis
+                   supported
+  misconfiglinks   Summary of links configured to run slower  ethreport
+                   than supported
+  misconnlinks     links connected with mismatched speed      ethlinkanalysis
+                   potential
+  misconnlinks     Summary of links connected with mismatched ethreport
+                   speed potential
+  mpiperf          Verifies latency and bandwidth for each    ethhostadmin
+                   host
+  mpiperfdeviation Verifies latency and bandwidth for each    ethhostadmin
+                   host against a defined threshold
+  niclinks         Summary of links to NICs                   ethreport
+  nodes            Summary of all node types in fabric        ethreport
+  none             No report                                  ethreport
+  otherports       Summary of ports not connected to the      ethreport
+                   fabric
+  reboot           Reboots hosts, ensures they go down and    ethhostadmin
+                   come back
+  rping            Verifies this host can ping each host      ethhostadmin
+                   through RDMA
+  slowconfiglinks  Summary of links configured to run slower  ethreport
+                   than supported, includes slowlinks
+  slowconnlinks    Summary of links connected with mismatched ethreport
+                   speed potential, includes slowconfiglinks
+  slowlinks        links running slower than expected.        ethlinkanalysis
+  slowlinks        Summary of links running slower than       ethreport
+                   expected
+  slurm            SLURM tree nodes                           eth2rm
+  slurmfull        SLURM fat tree nodes and ISLs              eth2rm
+  snapshot         Outputs snapshot of the fabric state for   ethreport
+                   later use as snapshot_input
+  topology         Outputs the topology of the fabric for     ethreport
+                   later use as topology_input
+  upgrade          Upgrades installation of all hosts.        ethhostadmin
+  verifyall        Verifies links, NICs, and switches against ethlinkanalysis
+                   topology input
+  verifyall        Returns verifynics, verifysws, and         ethreport
+                   verifylinks reports
+  verifyextislinks Limits analysis to inter-switch links      ethlinkanalysis
+                   external to systems
+  verifyextislinks Limits analysis to interswitch links       ethreport
+                   external to system
+  verifyextlinks   Verifies links external to systems against ethlinkanalysis
+                   topology input
+  verifyextlinks   Limits analysis to links external to       ethreport
+                   systems
+  verifyislinks    Limits analysis to inter-switch links      ethlinkanalysis
+  verifyislinks    Limits analysis to interswitch links.      ethreport
+  verifylinks      Verifies links against topology input      ethlinkanalysis
+  verifylinks      Compares fabric (or snapshot) links to     ethreport
+                   supp lied topology and identifies
+                   differences and omissions
+  verifyniclinks   Limits analysis to NIC links               ethlinkanalysis
+  verifyniclinks   Limits analysis to links to NICs.          ethreport
+  verifynics       Verifies NICs against topology input       ethlinkanalysis
+  verifynics       Compares fabric (or snapshot) NICs to      ethreport
+                   supplied topology and identifies
+                   differences and omissions
+  verifynodes      Verifies NICs and switches against         ethlinkanalysis
+                   topology file
+  verifynodes      Returns verifynics and verifysws reports   ethreport
+  verifysws        Verifies switches against topology input.  ethlinkanalysis
+  verifysws        Compares fabric (or snapshot) switches to  ethreport
+                   supplied topology and identifies
+                   differences and omissions

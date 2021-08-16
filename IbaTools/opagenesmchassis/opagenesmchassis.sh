@@ -66,7 +66,7 @@ Usage_full()
 	echo "                 x:y = HFI x, port y" >&2
 	echo "              The first HFI in the system is 1.  The first port on an HFI is 1." >&2
 	echo " Environment:" >&2
-	echo "   FF_CHASSIS_ADMIN_PASSWORD - password for chassis, used in absence of -S" >&2
+	echo "   FF_SWITCH_ADMIN_PASSWORD - password for chassis, used in absence of -S" >&2
         echo "   PORTS - list of ports, used in absence of -t and -p" >&2
 	echo "   PORTS_FILE - file containing list of ports, used in absence of -t and -p" >&2
 	echo "for example:" >&2

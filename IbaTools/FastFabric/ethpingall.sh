@@ -46,47 +46,47 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F chassisfile] [-h 'hosts']" >&2
-	echo "                     [-H 'chassis']" >&2
+	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F switchesfile] [-h 'hosts']" >&2
+	echo "                     [-H 'switches']" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-	echo "   -C - perform ping against chassis, default is hosts" >&2
-	echo "        Merely selects applicable list, can ping both hosts and chassis" >&2
-	echo "   -p - ping all hosts/chassis in parallel" >&2
+	echo "   -C - perform ping against switches, default is hosts" >&2
+	echo "        Merely selects applicable list, can ping both hosts and switches" >&2
+	echo "   -p - ping all hosts/switches in parallel" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -F chassisfile - file with chassis in cluster" >&2
-	echo "        default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+	echo "   -F switchesfile - file with switches in cluster" >&2
+	echo "        default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -h hosts - list of hosts to ping" >&2
-	echo "   -H chassis - list of chassis to ping" >&2
+	echo "   -H switches - list of switches to ping" >&2
 	echo " Environment:" >&2
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   CHASSIS - list of chassis, used if -H option not supplied" >&2
+	echo "   SWITCHES - list of switches, used if -H option not supplied" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   CHASSIS_FILE - file containing list of chassis, used in absence of -F and -H" >&2
+	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
 	echo "example:">&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -h 'arwen elrond'" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME" >&2
 	echo "   $BASENAME -C" >&2
-	echo "   $BASENAME -C -H 'chassis1 chassis2'" >&2
-	echo "   CHASSIS='chassis1 chassis2' $BASENAME -C" >&2
+	echo "   $BASENAME -C -H 'switch1 switch2'" >&2
+	echo "   SWITCHES='switch1 switch2' $BASENAME -C" >&2
 	exit 0
 }
 
 Usage()
 {
-	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F chassisfile]" >&2
+	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F switchesfile]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-	echo "   -C - perform ping against chassis, default is hosts" >&2
-	echo "        Merely selects applicable list, can ping both hosts and chassis" >&2
-	echo "   -p - ping all hosts/chassis in parallel" >&2
+	echo "   -C - perform ping against switches, default is hosts" >&2
+	echo "        Merely selects applicable list, can ping both hosts and switches" >&2
+	echo "   -p - ping all hosts/switches in parallel" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -F chassisfile - file with chassis in cluster" >&2
-	echo "        default is $CONFIG_DIR/$FF_PRD_NAME/chassis" >&2
+	echo "   -F switchesfile - file with switches in cluster" >&2
+	echo "        default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "example:">&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -C" >&2
@@ -112,24 +112,24 @@ ping_dest()
 
 popt=n
 host=0
-chassis=0
+switches=0
 while getopts Cf:F:h:H:p param
 do
 	case $param in
 	C)
-		chassis=1;;
+		switches=1;;
 	h)
 		host=1
 		HOSTS="$OPTARG";;
 	H)
-		chassis=1
-		CHASSIS="$OPTARG";;
+		switches=1
+		SWITCHES="$OPTARG";;
 	f)
 		host=1
 		HOSTS_FILE="$OPTARG";;
 	F)
-		chassis=1
-		CHASSIS_FILE="$OPTARG";;
+		switches=1
+		SWITCHES_FILE="$OPTARG";;
 	p)
 		popt=y;;
 	?)
@@ -141,28 +141,28 @@ if [ $# -gt 0 ]
 then
 	Usage
 fi
-if [[ $(($chassis+$host)) -gt 1 ]]
+if [[ $(($switches+$host)) -gt 1 ]]
 then
-	echo "$BASENAME: conflicting arguments, host and chassis both specified" >&2
+	echo "$BASENAME: conflicting arguments, hosts and switches both specified" >&2
 	Usage
 fi
-if [[ $(($chassis+$host)) -eq 0 ]]
+if [[ $(($switches+$host)) -eq 0 ]]
 then
 	host=1
 fi
-if [ $chassis -eq 0 ]
+if [ $switches -eq 0 ]
 then
 	check_host_args $BASENAME
 	DESTS="$HOSTS"
 else
-	check_chassis_args $BASENAME
-	DESTS="$CHASSIS"
+	check_switches_args $BASENAME
+	DESTS="$SWITCHES"
 fi
 
 running=0
 for dest in $DESTS
 do
-	if [ $chassis -ne 0 ]
+	if [ $switches -ne 0 ]
 	then
 		dest=`strip_chassis_slots "$dest"`
 	fi
