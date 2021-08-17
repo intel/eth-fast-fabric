@@ -20,12 +20,15 @@ List of command line options used in various Fast Fabric tools
                     SNMP query
 -b                  Sets the baseline mode                         ethallanalysis
 -b                  Specifies the baseline mode                    ethfabricanalysis
+-b                  bind address                                   ethudtress
 -C                  Performs more topology file validation         eth2rm
 -C                  Outputs list of supported components           iefsconfig
+-C                  message count                                  ethustress
 -c                  Overwrites the result files from any previous  ethhostadmin
                     run before starting this run
 -C                  ping against switches                          ethpingall
 -c                  Copies hostverify.sh to hosts first            ethverifyhosts
+-c                  number of connections                           ethudtress
 -c community        Specifies the community string used for SNMP   ethsetupsnmp
                     query
 -c file             Specifies the error thresholds configuration   ethallanalysis
@@ -185,14 +188,17 @@ List of command line options used in various Fast Fabric tools
 -r                  Performs recursive upload of directories       ethuploadall
 -r release          Specifies the software version to load/upgrade ethhostadmin
                     to
+-r                  sender sends reply messages                    ethudstress
 -S                  Performs strict topology file validation       eth2rm
 -s                  Saves history of failures (errors/differences) ethallanalysis
 -s                  Enables autostart for all installed drivers    iefsconfig
 -s                  Saves history of failures                      ethfabricanalysis
+-s                  server ip address                              ethudstress
 -S                  Securely prompts for user password on remote   ethhostadmin
                     system
 -S                  Securely prompts for password for user on      ethsetupssh
                     remote system
+-S                  message size                                   ethudstress
 -s element          Specifies the name of the XML element to       ethxmlfilter
                     suppress
 -s suffix           the suffix to append to all NIC hostnames      eth2rm
@@ -205,6 +211,7 @@ List of command line options used in various Fast Fabric tools
                     contents
 -t                  Trims leading and trailing whitespace in tag   ethxmlindent
                     contents
+-t                  type of service (ToS) for this tool            ethudstress
 -T product          Specifies the product type to install          ethhostadmin
 -T timelimit        the time limit in seconds when running host    ethcmdall
                     commands
@@ -212,6 +219,7 @@ List of command line options used in various Fast Fabric tools
                     to respond to SSH
 -T timelimit        Specifies the time limit in seconds for host   ethverifyhosts
                     to complete tests
+-T timeout          timeout for test                               ethudtress
 -T topology_input   Uses topology_input file to augment and verify ethreport
                     fabric information
 -T topology_inputs  name of topology input filenames separated by  ethallanalysis
@@ -300,6 +308,7 @@ Output Type Descriptions used by Fast Fabric tools
                    come back
   rping            Verifies this host can ping each host      ethhostadmin
                    through RDMA
+  pfctest          Verifies PFC works via empirical test      ethhostadmin
   slowconfiglinks  Summary of links configured to run slower  ethreport
                    than supported, includes slowlinks
   slowconnlinks    Summary of links connected with mismatched ethreport

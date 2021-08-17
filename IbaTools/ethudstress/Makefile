@@ -1,10 +1,10 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
-#
-# Copyright (c) 2015-2020, Intel Corporation
-#
+# 
+# Copyright (c) 2015-2017, Intel Corporation
+# 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#
+# 
 #     * Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
 #     * Neither the name of Intel Corporation nor the names of its contributors
 #       may be used to endorse or promote products derived from this software
 #       without specific prior written permission.
-#
+# 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,20 +24,12 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
+# 
 # END_ICS_COPYRIGHT8   ****************************************
-# Makefile for OPENIB_HOST Project
+# Makefile for eth2rm
 
 # Include Make Control Settings
 include $(TL_DIR)/$(PROJ_FILE_DIR)/Makesettings.project
-
-# default target for project level makefile is stage
-stage::
-#prepfiles:: prepfiles_global
-clobber::
-ALL:: ff_files
-
-BSP_SPECIFIC_DIRS=
 
 #=============================================================================#
 # Definitions:
@@ -46,14 +38,12 @@ BSP_SPECIFIC_DIRS=
 # Name of SubProjects
 DS_SUBPROJECTS	= 
 # name of executable or downloadable image
-EXECUTABLE		= # 
+EXECUTABLE		= $(BUILDDIR)/ethudstress$(EXE_SUFFIX)
 # list of sub directories to build
-
-
-DIRS			= \
-
+DIRS			= 
 # C files (.c)
 CFILES			= \
+				ethudstress.c \
 				# Add more c files here
 # C++ files (.cpp)
 CCFILES			= \
@@ -62,7 +52,7 @@ CCFILES			= \
 LFILES			= \
 				# Add more lex files here
 # archive library files (basename, $ARFILES will add MOD_LIB_DIR/prefix and suffix)
-LIBFILES = 
+LIBFILES=
 # Windows Resource Files (.rc)
 RSCFILES		=
 # Windows IDL File (.idl)
@@ -78,31 +68,25 @@ MISC_FILES		=
 SOURCES			= $(CFILES) $(CCFILES) $(LFILES) $(RSCFILES) $(IDLFILE)
 # Source files to include in DSP File
 DSP_SOURCES		= $(INCLUDE_TARGETS) $(SOURCES) $(MISC_FILES) \
-				  $(RSCFILES) $(DEFFILE) $(MAKEFILE) Makerules.project 
+				  $(RSCFILES) $(DEFFILE) $(MAKEFILE) 
 # all object files
 OBJECTS			= $(CFILES:.c=$(OBJ_SUFFIX)) $(CCFILES:.cpp=$(OBJ_SUFFIX)) \
 				  $(LFILES:.lex=$(OBJ_SUFFIX))
 RSCOBJECTS		= $(RSCFILES:.rc=$(RES_SUFFIX))
 # targets to build during LIBS phase
 LIB_TARGETS_IMPLIB	=
-LIB_TARGETS_ARLIB	= 
+LIB_TARGETS_ARLIB	= # $(LIB_PREFIX)ResourceTest$(ARLIB_SUFFIX)
 LIB_TARGETS_EXP		= $(LIB_TARGETS_IMPLIB:$(ARLIB_SUFFIX)=$(EXP_SUFFIX))
 LIB_TARGETS_MISC	= 
 # targets to build during CMDS phase
 CMD_TARGETS_SHLIB	= 
 CMD_TARGETS_EXE		= $(EXECUTABLE)
-CMD_TARGETS_MISC	=
+CMD_TARGETS_MISC	= 
 # files to remove during clean phase
 CLEAN_TARGETS_MISC	=  
 CLEAN_TARGETS		= $(OBJECTS) $(RSCOBJECTS) $(IDL_TARGETS) $(CLEAN_TARGETS_MISC)
 # other files to remove during clobber phase
-CLOBBER_TARGETS_MISC= comp_ff_of_prereq_RHEL78.pl comp_ff_of_prereq_RHEL79.pl \
-                      comp_ff_of_prereq_RHEL8.pl comp_ff_of_prereq_RHEL81.pl \
-		      comp_ff_of_prereq_RHEL82.pl comp_ff_of_prereq_RHEL83.pl \
-		      comp_ff_of_prereq_RHEL84.pl \
-                      comp_ff_of_prereq_SLES124.pl comp_ff_of_prereq_SLES125.pl \
-                      comp_ff_of_prereq_SLES15.pl comp_ff_of_prereq_SLES151.pl \
-                      comp_ff_of_prereq_SLES152.pl comp_ff_of_prereq_SLES153.pl
+CLOBBER_TARGETS_MISC=
 # sub-directory to install to within bin
 BIN_SUBDIR		= 
 # sub-directory to install to within include
@@ -126,18 +110,11 @@ INCLUDE_SUBDIR		=
 #				(in addition to LOCALDEPLIBS)
 #LOCAL_LIB_DIRS	= User library directories for libpaths [Empty]
 
-LOCALDEPLIBS = 
-
-FF_FILES = comp_ff_of_prereq_RHEL78.pl comp_ff_of_prereq_RHEL79.pl \
-	comp_ff_of_prereq_RHEL8.pl comp_ff_of_prereq_RHEL81.pl \
-	comp_ff_of_prereq_RHEL82.pl comp_ff_of_prereq_RHEL83.pl \
-	comp_ff_of_prereq_RHEL84.pl \
-	comp_ff_of_prereq_SLES124.pl comp_ff_of_prereq_SLES125.pl \
-	comp_ff_of_prereq_SLES15.pl comp_ff_of_prereq_SLES151.pl \
-	comp_ff_of_prereq_SLES152.pl comp_ff_of_prereq_SLES153.pl
+CLOCAL=$(CIBACCESS) $(CPIE)
+LOCALLIBS=pthread rdmacm ibverbs
 
 # Include Make Rules definitions and rules
-include $(TL_DIR)/$(PROJ_FILE_DIR)/Makerules.project
+include $(TL_DIR)/IbaTools/Makerules.module
 
 #=============================================================================#
 # Overrides:
@@ -165,14 +142,8 @@ include $(TL_DIR)/Makerules/Maketargets.install
 # install for stage phase
 include $(TL_DIR)/Makerules/Maketargets.stage
 
-ff_files: $(FF_FILES)
-
-clobber_pl_files:
-	rm -f $(FF_FILES)
-
-STAGE::
-
-CLOBBER::
+# Unit test execution
+#include $(TL_DIR)/Makerules/Maketargets.runtest
 
 #=============================================================================#
 

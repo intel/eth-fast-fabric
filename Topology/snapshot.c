@@ -113,6 +113,11 @@ static void PortDataXmlOutputEndPortLID(IXmlOutputState_t *state, const char *ta
 	IXmlOutputLIDValue(state, tag, ((PortData *)data)->EndPortLID);
 }
 
+static void PortDataXmlOutputPortId(IXmlOutputState_t *state, const char *tag, void *data)
+{
+	IXmlOutputStr(state, tag, (char *)data);
+}
+
 static void PortDataXmlParserEndEndPortLID(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
 {
 	uint32 value;
@@ -369,7 +374,7 @@ static void LDRLogXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field
  */
 static IXML_FIELD PortDataFields[] = {
 	{ tag:"PortNum", format:'U', IXML_FIELD_INFO(PortData, PortNum) },
-	{ tag:"PortId", format:'C', IXML_FIELD_INFO(PortData, PortInfo.LocalPortId) },
+	{ tag:"PortId", format:'c', format_func:PortDataXmlOutputPortId, IXML_FIELD_INFO(PortData, PortInfo.LocalPortId) },
 	{ tag:"MgmtIfAddr", format:'H', IXML_FIELD_INFO(PortData, PortGUID) },
 	{ tag:"EndMgmtIfID", format:'K', format_func:PortDataXmlOutputEndPortLID, end_func:PortDataXmlParserEndEndPortLID }, // bitfield
 //	{ tag:"SubnetPrefix", format:'H', IXML_FIELD_INFO(PortData, PortInfo.SubnetPrefix) },

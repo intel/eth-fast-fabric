@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *             Copyright 2020-2021, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethhostadmin 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.TH ethhostadmin 8 "Intel Corporation" "Copyright(C) 2020\-2021" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethhostadmin
 
@@ -82,7 +82,7 @@ where \fI<distro>\fR is the distribution and CPU, such as RHEL81-x86\(ul64.
 .TP 10
 -P \fIpackages\fR
 
-Specifies the packages to install. Default is eth\(ultools eth\(ulrdma mpi. Refer to INSTALL -C for compete list of packages.
+Specifies the packages to install. Default is eth eth\(ulrdma. Refer to INSTALL -C for compete list of packages.
 
 .TP 10
 -S
@@ -127,6 +127,15 @@ Reboots hosts, ensures they go down and come back.
 .sp
 rping
 Verifies this host can ping each host through RDMA.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+pfctest
+Verifies PFC works on all hosts.
 
 .RE
 
@@ -242,6 +251,11 @@ Reboots the given hosts and ensures they go down and come back up by pinging the
 rping
 
 Verifies RDMA basic operation by ensuring that the nodes can ping each other through RDMA. To run this command, Intel(R) Ethernet Fabric software must be installed, RDMA must be configured and running on the host, and the given hosts, and switches must be up.
+
+.TP 10
+pfctest
+
+Empirical test which verifies PFC is working right. To run this command, Intel(R) Ethernet Fabric software must be installed, PFC must be configured on both hosts and switches, and the given hosts and switches must be up.
 
 .TP 10
 mpiperf

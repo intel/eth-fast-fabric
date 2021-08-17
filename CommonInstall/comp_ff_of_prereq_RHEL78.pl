@@ -68,6 +68,7 @@ my @fastfabric_prereq = (
     "libgcc",
     "libibumad",
     "libibverbs",
+    "librdmacm",
     "libstdc++",
     "ncurses-libs",
     "net-snmp-libs",

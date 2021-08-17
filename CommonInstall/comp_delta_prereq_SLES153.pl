@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2021, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,45 +37,60 @@
 #
 ## ==========================================================================
 #
-#Installation Prequisites array for fast fabric
-#and of tools component
-my @eth_tools_prereq = (
-    "bash",
-    "bc",
-    "expat",
-    "expect",
-    "glibc",
-    "libgomp",
-    "libibumad",
-    "libibverbs-utils",
-    "librdmacm-utils",
-    "net-snmp",
-    "net-snmp-utils",
-    "openssl",
-    "openssl-libs",
-    "perl",
-    "rdma-core",
-    "tcl",
+#Installation Prequisites array for delta components
+my @eth_module_prereq = (
+			"bash",
+			"kernel-default",
+			"kmod",
 );
-$comp_prereq_hash{'eth_tools_prereq'} = \@eth_tools_prereq;
+$comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
 
-my @fastfabric_prereq = (
-    "bash",
-    "cronie",
-    "expat",
-    "expect",
-    "glibc",
-    "libgcc",
-    "libibumad",
-    "libibverbs",
-    "librdmacm",
-    "libstdc++",
-    "ncurses-libs",
-    "net-snmp-libs",
-    "openssl-libs",
-    "openblas-devel",
-    "perl",
-    "tcl",
-    "zlib",
+my @psm3_prereq = (
+			"bash",
+			"glibc",
+			"libfabric",
+			"libgcc_s1",
+			"libibverbs1",
+			"libnuma1",
+			"libuuid1",
+			"rdma-core",
 );
-$comp_prereq_hash{'fastfabric_prereq'} = \@fastfabric_prereq;
+$comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;
+
+my @openmpi_gcc_ofi_prereq = (
+			"bash",
+			"glibc",
+			"libfabric",
+			"libgcc_s1",
+			"libgfortran4",
+			"libnl3-200",
+			"libquadmath0",
+			"perl",
+			"pkg-config",
+			"libz1",
+);
+$comp_prereq_hash{'openmpi_gcc_ofi_prereq'} = \@openmpi_gcc_ofi_prereq;
+
+my @openmpi_intel_ofi_prereq = (
+			"bash",
+);
+$comp_prereq_hash{'openmpi_intel_ofi_prereq'} = \@openmpi_intel_ofi_prereq;
+
+my @openmpi_prereq = (
+			"glibc",
+			"bash",
+			"libz1",
+			"pkg-config",
+			"libgcc_s1",
+			"libgfortran3",
+			"gcc-fortran",
+			"libgomp1",
+			"libibverbs1",
+			"libquadmath0",
+			"librdmacm1",
+			"libstdc++6",
+			"libz1",
+			"opensm-libs3",
+			"opensm-devel",
+);
+$comp_prereq_hash{'openmpi_prereq'} = \@openmpi_prereq;

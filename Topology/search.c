@@ -67,7 +67,7 @@ PortData * FindNodePortId(NodeData *nodep, char* portid)
 	cl_map_item_t *p;
 	for (p=cl_qmap_head(&nodep->Ports); p != cl_qmap_end(&nodep->Ports); p = cl_qmap_next(p)) {
 		PortData *portp = PARENT_STRUCT(p, PortData, NodePortsEntry);
-		if (strncmp(portp->PortInfo.LocalPortId,
+		if (strncmp((const char *)portp->PortInfo.LocalPortId,
 					portid, TINY_STR_ARRAY_SIZE) == 0)
 		{
 			return portp;

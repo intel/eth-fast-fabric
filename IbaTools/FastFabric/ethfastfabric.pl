@@ -148,7 +148,7 @@ my %FabricSetupStepsMenuDelimiter = (
 my @FabricAdminSteps;
 # ethpingall replaced with findgood
 @FabricAdminSteps = ( "config", "fabric_info", "findgood", "singlehost",
-				"showallports", "rping",
+				"showallports", "rping", "pfctest",
 				"refreshssh", "mpiperf", "health", "cabletest", "ethcaptureall",
 				"ethcmdall", "viewres"
 					);
@@ -160,6 +160,7 @@ my %FabricAdminStepsName = (
 				"singlehost" => "Perform Single Host Verification",
 				"showallports" => "Verify Eth Fabric Status and Topology",
 				"rping" => "Verify Hosts Ping via RDMA",
+				"pfctest" => "Verify PFC via empirical test",
 				"refreshssh" => "Refresh SSH Known Hosts",
 				"mpiperf" => "Check MPI Performance",
 				"health" => "Check Overall Fabric Health",
@@ -177,6 +178,7 @@ my %FabricAdminStepsMenuDelimiter = (
 				"singlehost" => "",
 				"showallports" => "",
 				"rping" => "",
+				"pfctest" => "",
 				"refreshssh" => "",
 				"mpiperf" => "",
 				"health" => "",
@@ -1092,16 +1094,25 @@ sub fabricsetup_buildmpi
 	my $build_dir = read_ffconfig_param("FF_MPI_APPS_DIR");
 	do {
 		if ("$build_dir" eq "") {
-			print "Enter location to copy and build MPI Apps:";
+			print "Enter location (or none) for copy and build MPI Apps:";
 		} else {
-			print "Enter location to copy and build MPI Apps [$build_dir]:";
+			print "Enter location (or none) for copy and build MPI Apps [$build_dir]:";
 		}
 		chomp($inp = <STDIN>);
 		$inp=remove_whitespace($inp);
 		if ("$inp" eq "") {
 			$inp = "$build_dir";
+		} elsif ("$inp" eq "$mpi_apps_dir") {
+			print "Cannot directly use $mpi_apps_dir\n";
+			$inp = "";
 		}
-	} until ( "$inp" ne "");
+	} until ( "$inp" ne "" || "$inp" eq "none");
+	if ("$inp" eq "none") {
+		print "You have selected to skip the building of the MPI Apps step\n";
+		HitKeyCont;
+		return 0;
+	}
+
 	$build_dir = "$inp";
 	print "Build MPI Apps at $build_dir\n";
 	HitKeyCont;
@@ -1174,17 +1185,33 @@ sub fabricsetup_buildmpi
 			if ( "$cuda_dir" eq "" ) {
 				$cuda_dir = "/usr/local"
 			}
-			$cuda_dir = `find $cuda_dir -name nvcc 2>/dev/null`;
-			chomp $cuda_dir;
-			$cuda_dir =~ s/\/bin\/nvcc//;
-			if ("$cuda_dir" ne "") {
+			my $nvcc_pathes = `find -L $cuda_dir -name nvcc 2>/dev/null`;
+			my @nvcc_pathes = split /[[:space:]]+/, $nvcc_pathes;
+			my @cuda_dirs = ();
+			foreach my $p (@nvcc_pathes) {
+				$p =~ s/\/bin\/nvcc//;
+				@cuda_dirs = (@cuda_dirs, $p);
+			}
+			if (scalar(@cuda_dirs) > 1) {
+				print "Multiple CUDA Directories Found\n";
+				HitKeyCont;
+				$title2 = "CUDA Directories Selection";
+				$cuda_dir = selection_menu(
+					"$title1", "$title2", "CUDA Directory",
+					@cuda_dirs);
+				if ("$cuda_dir" eq "" ) {
+					print "You have selected to skip the building of the MPI Apps step\n";
+					$mode = "skip";
+				} else {
+					print "\nUse CUDA at $cuda_dir\n";
+				}
+			} else {
+				$cuda_dir = @cuda_dirs[0];
 				print "\nFound CUDA at $cuda_dir\n";
+			}
+			if ("$cuda_dir" ne "") {
 				if ($support_cuda) {
-					my $cuda_inp = read_ffconfig_param("FF_MPI_APPS_CUDA");
-					if ("$cuda_inp" eq "") {
-						$cuda_inp = "y";
-					}
-					if (GetYesNo("Build with CUDA support?", "$cuda_inp")) {
+					if (GetYesNo("Build with CUDA support?", "y")) {
 						$cuda_opts = "MPI_APPS_CUDA=y CUDA_DIR=$cuda_dir"
 					}
 				} else {
@@ -1723,6 +1750,13 @@ sub fabricadmin_rping
 		return 1;
 	}
 	return run_fabric_cmd("$BIN_DIR/ethhostadmin -f $FabricAdminHostsFile rping");
+}
+sub fabricadmin_pfctest
+{
+	if (! valid_config_file("Host File", $FabricAdminHostsFile) ) {
+		return 1;
+	}
+	return run_fabric_cmd("$BIN_DIR/ethhostadmin -f $FabricAdminHostsFile pfctest");
 }
 sub fabricadmin_refreshssh
 {

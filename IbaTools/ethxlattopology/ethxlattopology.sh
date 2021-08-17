@@ -336,7 +336,7 @@ usage_full()
   echo "       -N            -  DO NOT generate Port Numbers from Port IDs. Will introduce slightly" >&2
   echo "                        poorer topology loading performance. Useful when have difficulty" >&2
   echo "                        to generate Port Numbers, such as complicated Port ID formats," >&2
-  echo "                        or no enough Port IDs to train the Port Number generator." >&2
+  echo "                        or not enough Port IDs to train the Port Number generator." >&2
   echo "       -f linkfiles  -  space separated core switch linksum files" >&2
   echo "       -o report     -  report type for output; by default, all the sections" >&2
   echo "                        are generated" >&2

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *             Copyright 2020-2021, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethxmlgenerate 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.TH ethxmlgenerate 8 "Intel Corporation" "Copyright(C) 2020\-2021" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethxmlgenerate
 

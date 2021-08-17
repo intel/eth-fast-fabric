@@ -609,13 +609,17 @@ sub rpm_run_install($$$)
 		LogPrint "  $RPM -U --force $options $rpmfile\n";
 		$out=`$RPM -U --force $options $rpmfile 2>&1`;
 		if ( $? == 0 ) {
-			NormalPrint("$out");
-		} else {
-			NormalPrint("ERROR - Failed to install $rpmfile\n");
-			NormalPrint("$out");
-			$exit_code = 1;
-			HitKeyCont;
+			# DKMS install returns ZERO when there is build error, so we check
+			# install output here.
+			if ($out eq "" || ! ($out =~ /DKMS.*Error! Bad return status/s)) {
+				NormalPrint("$out");
+				return;
+			}
 		}
+		NormalPrint("ERROR - Failed to install $rpmfile\n");
+		NormalPrint("$out");
+		$exit_code = 1;
+		HitKeyCont;
 
 	} else {
 		# initial install of rpm
@@ -627,13 +631,17 @@ sub rpm_run_install($$$)
 		LogPrint "  $RPM -i $options $rpmfile\n";
 		$out=`$RPM -i $options $rpmfile 2>&1`;
 		if ( $? == 0 ) {
-			NormalPrint("$out");
-		} else {
-			NormalPrint("ERROR - Failed to install $rpmfile\n");
-			NormalPrint("$out");
-			$exit_code = 1;
-			HitKeyCont;
+			# DKMS install returns ZERO when there is build error, so we check
+			# install output here.
+			if ($out eq "" || ! ($out =~ /DKMS.*Error! Bad return status/s)) {
+				NormalPrint("$out");
+				return;
+			}
 		}
+		NormalPrint("ERROR - Failed to install $rpmfile\n");
+		NormalPrint("$out");
+		$exit_code = 1;
+		HitKeyCont;
 	}
 }
 
@@ -722,7 +730,9 @@ sub rpm_resolve($$)
 	} else {
 		my $osver = rpm_tr_os_version("$mode");	# OS version
 		# we expect 1 match, ignore all other filenames returned
-		if ( "$CUR_VENDOR_VER" eq 'ES124' || "$CUR_VENDOR_VER" eq 'ES125' ||"$CUR_VENDOR_VER" eq 'ES15' || "$CUR_VENDOR_VER" eq 'ES151' || "$CUR_VENDOR_VER" eq 'ES152') {
+		if ( "$CUR_VENDOR_VER" eq 'ES124' || "$CUR_VENDOR_VER" eq 'ES125' || "$CUR_VENDOR_VER" eq 'ES15'
+			|| "$CUR_VENDOR_VER" eq 'ES151' || "$CUR_VENDOR_VER" eq 'ES152' || "$CUR_VENDOR_VER" eq 'ES153')
+		{
 			DebugPrint("Checking for Kernel Rpm: ${rpmpath}-${osver}_k*.${cpu}.rpm\n");
 			$rpmfile = file_glob("${rpmpath}-${osver}_k*.${cpu}.rpm");
 		} else {
@@ -995,8 +1005,9 @@ sub check_rpmbuild_dependencies($)
 				NormalPrint("kernel-rpm-macros ($last_checked) is required to build $srpm\n");
 				$err++;
 			}
-			if (! rpm_is_installed("kernel-abi-whitelists", "any") ) {
-				NormalPrint("kernel-abi-whitelists ($last_checked) is required to build $srpm\n");
+			if (! rpm_is_installed("kernel-abi-whitelists", "any") &&
+				! rpm_is_installed("kernel-abi-stablelists", "any")) {
+				NormalPrint("kernel-abi-whitelists/kernel-abi-stablelists ($last_checked) is required to build $srpm\n");
 				$err++;
 			}
 		}

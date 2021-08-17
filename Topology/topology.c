@@ -588,7 +588,7 @@ static void ExpectedPortXmlParserEndPortNum(IXmlParserState_t *state, const IXML
 
 static IXML_FIELD ExpectedPortFields[] = {
 	{ tag:"PortNum", format:'u', end_func:ExpectedPortXmlParserEndPortNum },
-	{ tag:"PortId", format:'p', IXML_FIELD_INFO(ExpectedPort, PortId) },
+	{ tag:"PortId", format:'p', IXML_P_FIELD_INFO(ExpectedPort, PortId, TINY_STR_ARRAY_SIZE) },
 	{ tag:"IfID", format:'h', IXML_FIELD_INFO(ExpectedPort, lid) },
 	{ tag:"MgmtIfAddr", format:'h', IXML_FIELD_INFO(ExpectedPort, PortGuid) },
 	{ NULL }

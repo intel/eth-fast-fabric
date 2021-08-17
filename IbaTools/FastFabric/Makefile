@@ -68,7 +68,7 @@ MISC_FILES		= switches allhosts-sample chassis-sample esm_chassis-sample \
 				mac_to_dhcp opa_ca_openssl.cnf opa_comp_openssl.cnf \
 				opa_ca_openssl.cnf-sample opa_comp_openssl.cnf-sample
 # expect files
-TCL_SOURCES		= chassis_reboot.exp reboot.exp load.exp rping.exp \
+TCL_SOURCES		= chassis_reboot.exp reboot.exp load.exp rping.exp pfctest.exp\
 				chassis_upgrade.exp chassis_fmconfig.exp chassis_fmcontrol.exp \
 				chassis_fmgetconfig.exp chassis_fmgetsecurityfiles.exp \
 				chassis_fmsecurityfiles.exp upgrade.exp configipoib.exp \

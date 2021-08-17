@@ -68,6 +68,7 @@ my @fastfabric_prereq = (
 			"libgcc_s1",
 			"libibumad3",
 			"libibverbs1",
+			"librdmacm1",
 			"libstdc++6",
 			"libncurses5",
 			"libsnmp30",

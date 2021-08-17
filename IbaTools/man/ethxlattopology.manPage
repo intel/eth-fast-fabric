@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020, Intel Corporation                     *
+.\" .\" *             Copyright 2020-2021, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethxlattopology 8 "Intel Corporation" "Copyright(C) 2020" "EFSFFCLIRG (Man Page)"
+.TH ethxlattopology 8 "Intel Corporation" "Copyright(C) 2020\-2021" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethxlattopology
 
@@ -14,7 +14,7 @@ ethxlattopology
 .PP
 Generates a topology XML file of a cluster using your customized <topologyfile>.csv and core switch linksum files, e.g. linksum\(ulswd06.csv, and linksum\(ulswd24.csv as input. The output topology XML file can be used to bring up and verify the cluster.
 .SH Syntax
-ethxlattopology [-d  \fIlevel\fR] [-v  \fIlevel\fR] [-i  \fIlevel\fR] [-K] [-f  \fIlinkfiles\fR]
+ethxlattopology [-d  \fIlevel\fR] [-v  \fIlevel\fR] [-i  \fIlevel\fR] [-K] [-N] [-f  \fIlinkfiles\fR]
 .br
 
 [-o  \fIreport\fR] [-p  \fIplane\fR] [source [dest]]
@@ -121,6 +121,13 @@ Specifies DO NOT clean temporary files.
 
 .IP
 Prevents temporary files in each topology directory from being removed. Temporary files contain CSV formatted lists of links, NICs, and switches used to create a topology XML file. Temporary files are not typically needed after a topology file is created, or can be retained for subsequent inspection or processing.
+.TP 10
+-N
+
+Specifies DO NOT generate Port Numbers from Port IDs.
+
+.IP
+This will introduce slightly poorer topology loading performance. Useful when have difficulty to generate Port Numbers, such as complicated Port ID formats, or not enough Port IDs to train the Port Number generator.
 .TP 10
 -f \fIlinkfiles\fR
 

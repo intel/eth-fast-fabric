@@ -132,6 +132,8 @@ sub overrides()
 		@Components = ( @delta_Components_sles15_sp1 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES152" ) {
 		@Components = ( @delta_Components_sles15_sp2 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
+		@Components = ( @delta_Components_sles15_sp3 );
 	} else {
 		# unsupported OS
 		@Components = ( );

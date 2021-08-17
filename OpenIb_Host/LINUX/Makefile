@@ -128,6 +128,9 @@ endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES152"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES152.pl
 endif
+ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES153"
+        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES153.pl
+endif
 
 COMP_SOURCES= \
 				 $(TL_DIR)/CommonInstall/comp_oftools.pl \

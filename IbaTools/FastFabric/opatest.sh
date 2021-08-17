@@ -91,6 +91,7 @@ Usage_ethhostadmin_full()
 #	echo "              configipoib - create ifcfg-ib1 using host IP addr from /etc/hosts" >&2
 	echo "              reboot - reboot hosts, ensure they go down and come back" >&2
 	echo "              rping - verify this host can ping each host via RDMA" >&2
+	echo "              pfctest - verify PFC works on all hosts" >&2
 #	echo "              ipoibping - verify this host can ping each host via IPoIB" >&2
 	echo "              mpiperf - verify latency and bandwidth for each host" >&2
 	echo "              mpiperfdeviation - check for latency and bandwidth tolerance" >&2
@@ -230,6 +231,7 @@ Usage_ethhostadmin()
 #	echo "              configipoib - create ifcfg-ib1 using host IP addr from /etc/hosts" >&2
 	echo "              reboot - reboot hosts, ensure they go down and come back" >&2
 	echo "              rping - verify this host can ping each host via RDMA" >&2
+	echo "              pfctest - verify PFC works on all hosts" >&2
 #	echo "              ipoibping - verify this host can ping each host via IPoIB" >&2
 	echo "              mpiperf - verify latency and bandwidth for each host" >&2
 	echo "              mpiperfdeviation - check for latency and bandwidth tolerance" >&2
@@ -549,7 +551,7 @@ do
 		fi
 		run_test $test_suite;;
 #	reboot|sacache|configipoib|ipoibping|mpiperf|mpiperfdeviation)
-	reboot|rping|mpiperf|mpiperfdeviation)
+	reboot|rping|pfctest|mpiperf|mpiperfdeviation)
 		run_test $test_suite;;
 	*)
 		echo "Invalid Operation name: $test_suite" >&2

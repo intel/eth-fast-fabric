@@ -105,7 +105,7 @@ Usage()
 	echo "   -d OUTPUTDIR - write detailed results to OUTPUTDIR (defaults to /root)" >&2
 	echo "   -f hostfile - file with hosts and interfaces in cluster. Interfaces of the" >&2
 	echo "                 current hosts will be used in verification. Doesn't support " >&2
-	ehco "                 'include' in hostfile" >&2
+	echo "                 'include' in hostfile" >&2
 	echo "   --help - produce full help text" >&2
 	echo "	 test - one or more specific tests to run" >&2
 	echo "This verifies basic node configuration and performance" >&2
@@ -941,9 +941,14 @@ check_nic_settings()
 		failure=1
 	fi
 
-	#confirm roce_cwnd setting
-	[ $(cat /sys/kernel/config/irdma/$irdma_dev/roce_cwnd) -eq "1024" ] || \
-		{ fail_msg "PFC not configured correctly; roce_cwnd does not indicate flow control is detected on $dev..."; failure=1; }
+	#confirm pfc setting
+	if type dcb > /dev/null
+	then
+		dcb pfc show dev $dev | grep "prio-pfc .*[0-9]:on" || \
+		{ fail_msg "PFC not configured correctly; none of the priorities enabled pfc on $dev..."; failure=1; }
+	else
+		echo "`hostname -s`: skipped PFC config check because dcb command not found. Please make sure iproute2 5.11 or later is installed"
+	fi
 
 	#confirm IPv4 GID
 	cat /sys/class/infiniband/$irdma_dev/ports/1/gids/* | egrep -e "^0000:0000:0000:0000:0000:ffff:[a-fA-F0-9]+:[a-fA-F0-9]+$" || \

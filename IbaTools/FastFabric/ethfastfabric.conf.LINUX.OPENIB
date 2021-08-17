@@ -114,10 +114,6 @@ export FF_DIFF_CMD=${FF_DIFF_CMD:-diff -C 1}
 # This MUST be a absolute path which exists on all nodes
 export FF_MPI_APPS_DIR=${FF_MPI_APPS_DIR:-$HOME/mpi_apps}
 
-# indicate whether use CUDA version MPI. 'y' will use CUDA, 'n' will not use
-# CUDA, and empty will use CUDA if it's installed and MPI supports it
-export FF_MPI_APPS_CUDA=${FF_MPI_APPS_CUDA:-}
-
 # location to find CUDA
 export FF_CUDA_DIR=${FF_CUDA_DIR:-/usr/local/cuda}
 

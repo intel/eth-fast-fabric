@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2021, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -39,43 +39,43 @@
 #
 #Installation Prequisites array for fast fabric
 #and of tools component
+
 my @eth_tools_prereq = (
-    "bash",
-    "bc",
-    "expat",
-    "expect",
-    "glibc",
-    "libgomp",
-    "libibumad",
-    "libibverbs-utils",
-    "librdmacm-utils",
-    "net-snmp",
-    "net-snmp-utils",
-    "openssl",
-    "openssl-libs",
-    "perl",
-    "rdma-core",
-    "tcl",
+			"bash",
+			"bc",
+			"libexpat1",
+			"expect",
+			"glibc",
+			"libgomp1",
+			"libibumad3",
+			"libibverbs-utils",
+			"librdmacm-utils",
+			"net-snmp",
+			"openssl",
+			"libopenssl1_1",
+			"perl",
+			"rdma-core",
+			"tcl",
 );
 $comp_prereq_hash{'eth_tools_prereq'} = \@eth_tools_prereq;
 
 my @fastfabric_prereq = (
-    "bash",
-    "cronie",
-    "expat",
-    "expect",
-    "glibc",
-    "libgcc",
-    "libibumad",
-    "libibverbs",
-    "librdmacm",
-    "libstdc++",
-    "ncurses-libs",
-    "net-snmp-libs",
-    "openssl-libs",
-    "openblas-devel",
-    "perl",
-    "tcl",
-    "zlib",
+			"bash",
+			"cronie",
+			"libexpat1",
+			"expect",
+			"glibc",
+			"libgcc_s1",
+			"libibumad3",
+			"libibverbs1",
+			"librdmacm1",
+			"libstdc++6",
+			"libncurses6",
+			"libsnmp30",
+			"libopenssl1_1",
+			"openblas-devel",
+			"perl",
+			"tcl",
+			"libz1",
 );
 $comp_prereq_hash{'fastfabric_prereq'} = \@fastfabric_prereq;

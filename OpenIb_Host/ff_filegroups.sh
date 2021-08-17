@@ -2,7 +2,7 @@ basic_tools_sbin="ethcapture"
 
 basic_tools_sbin_sym=""
 
-basic_tools_opt="setup_self_ssh usemem ethipcalc stream"
+basic_tools_opt="setup_self_ssh usemem ethipcalc stream ethudstress"
 
 basic_mans="ethcapture.1"
 
@@ -14,7 +14,7 @@ ff_tools_opt=""
 
 ff_tools_exp="basic.exp common_funcs.exp ff_function.exp
 	ib.exp eth_to_xml.exp ibtools.exp install.exp load.exp mpi.exp
-	mpiperf.exp mpiperfdeviation.exp network.exp proc_mgr.exp reboot.exp rping.exp
+	mpiperf.exp mpiperfdeviation.exp network.exp proc_mgr.exp reboot.exp rping.exp pfctest.exp
 	target.exp tools.exp upgrade.exp tclIndex tcl_proc comm12 front"
 
 ff_tools_sbin="ethcabletest ethcheckload ethextracterror ethextractlink

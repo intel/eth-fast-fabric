@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2021, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -46,7 +46,7 @@ Usage_full()
 	echo "   before.csv - output from a ethextractperf2 run" >&2
 	echo "   after.csv - output from a ethextractperf2 run" >&2
 	echo >&2
-	echo "${cmd} merges output from two opaextactperf2 runs from the same fabric" >&2
+	echo "${cmd} merges output from two ethextactperf2 runs from the same fabric" >&2
 	echo "Counters for matching links will be computed (before subtracted from after)" >&2
 	echo "and a CSV file equivalent to ethextractperf2's output format will be generated" >&2
 	echo "suitable for importing into a spreadsheet or parsing by other scripts." >&2
@@ -78,6 +78,26 @@ Usage()
 	echo "   ${cmd} before.csv after.csv > delta.csv" >&2
 	echo >&2
 	exit 2
+}
+
+convert_file()
+{
+	src=$1
+	dst=$2
+	sn=$3
+
+	if head -1 "$src" | grep "PortId" >/dev/null 2>&1; then
+		awk -F ";" -v sn="$sn" 'NR>1 {printf sn";"NR";"; print $0}' "$src" | sort --field-separator=';' --key='5,6' > $dst
+	else
+		# old version file has no PortId
+		awk -F ";" -v sn="$sn" 'NR>1 {printf sn";"NR";";
+		    for (i=1;i<5;i++) printf $i";";
+		    printf ";";
+		    for (i=5;i<9;i++) printf $i";";
+		    printf ";";
+		    for (i=9;i<NF;i++) printf $i";";
+		    print $NF}' "$src" | sort --field-separator=';' --key='5,6' > $dst
+	fi
 }
 
 ## Main function
@@ -112,9 +132,9 @@ IFS=';'
 
 # omit heading line
 # add sequencing number and line number before desc;type;guid;port so same
-# device in each file will sort next to eachother and f1 sorts before f2.
-nl -s';' "$f1"|tail -n+2 | sed -e 's/^ */1;/'|sort --field-separator=';' --key='5,6' > ${tempfile}.prefix1
-nl -s';' "$f2"|tail -n+2 | sed -e 's/^ */2;/'|sort --field-separator=';' --key='5,6' > ${tempfile}.prefix2
+# device in each file will sort next to each other and f1 sorts before f2.
+convert_file $f1 ${tempfile}.prefix1 "1"
+convert_file $f2 ${tempfile}.prefix2 "2"
 # some debug code which can help identify nodes which are not in both files
 #cut -f3-6 -d';' ${tempfile}.prefix1 > ${tempfile}.nodes1
 #cut -f3-6 -d';' ${tempfile}.prefix2 > ${tempfile}.nodes2
@@ -137,7 +157,7 @@ use_2=n # do _2 variables potentially have 1st line ("1") for a port
 # in a stable fabric these will not happen.  However in a fabric with a few
 # bad links, devices offline or where cables have been moved, this can happen
 ( cat ${tempfile}.prefix1 ${tempfile}.prefix2|sort --field-separator=';' --key='5,6' --key '1,1'; echo "END" ) | \
-	while read num_1 lineno_1 NodeDesc_1 NodeType_1 IfAddr_1 PortNum_1 nNodeDesc_1 nNodeType_1 nIfAddr_1 nPortNum_1 LinkSpeedActive_1 IfHCOutOctetsMB_1 IfHCOutOctets_1 IfHCOutUcastPkts_1 IfHCOutMulticastPkts_1 IfHCInOctetsMB_1 IfHCInOctets_1 IfHCInUcastPkts_1 IfHCInMulticastPkts_1 Dot3HCStatsInternalMacTransmitErrors_1 Dot3HCStatsInternalMacReceiveErrors_1 Dot3HCStatsSymbolErrors_1 IfOutErrors_1 IfInErrors_1 IfInUnknownProtos_1 Dot3HCStatsAlignmentErrors_1 Dot3HCStatsFCSErrors_1 Dot3HCStatsFrameTooLongs_1 IfOutDiscards_1 IfInDiscards_1 Dot3StatsCarrierSenseErrors_1 Dot3StatsSingleCollisionFrames_1 Dot3StatsMultipleCollisionFrames_1 Dot3StatsSQETestErrors_1 Dot3StatsDeferredTransmissions_1 Dot3StatsLateCollisions_1 Dot3StatsExcessiveCollisions_1
+	while read num_1 lineno_1 NodeDesc_1 NodeType_1 IfAddr_1 PortNum_1 PortId_1 nNodeDesc_1 nNodeType_1 nIfAddr_1 nPortNum_1 nPortId_1 LinkSpeedActive_1 IfHCOutOctetsMB_1 IfHCOutOctets_1 IfHCOutUcastPkts_1 IfHCOutMulticastPkts_1 IfHCInOctetsMB_1 IfHCInOctets_1 IfHCInUcastPkts_1 IfHCInMulticastPkts_1 Dot3HCStatsInternalMacTransmitErrors_1 Dot3HCStatsInternalMacReceiveErrors_1 Dot3HCStatsSymbolErrors_1 IfOutErrors_1 IfInErrors_1 IfInUnknownProtos_1 Dot3HCStatsAlignmentErrors_1 Dot3HCStatsFCSErrors_1 Dot3HCStatsFrameTooLongs_1 IfOutDiscards_1 IfInDiscards_1 Dot3StatsCarrierSenseErrors_1 Dot3StatsSingleCollisionFrames_1 Dot3StatsMultipleCollisionFrames_1 Dot3StatsSQETestErrors_1 Dot3StatsDeferredTransmissions_1 Dot3StatsLateCollisions_1 Dot3StatsExcessiveCollisions_1
 do
 	if [ x"$num_1" = x"END" ]
 	then
@@ -164,15 +184,15 @@ do
 		if [ "$use_2" != y  ]
 		then
 			# "2" without a preceeding "1", skip line just read into _1
-			echo "$cmd: Warning: skipping unmatched line $lineno_1 in after: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1" >&2
+			echo "$cmd: Warning: skipping unmatched line $lineno_1 in after: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1" >&2
 		else
 			# _2 has our "1", _1 has our "2"
-			if [ x"$IfAddr_1" != x"$IfAddr_2" -o  x"$PortNum_1" != x"$PortNum_2" ]
+			if [ x"$IfAddr_1" != x"$IfAddr_2" -o  x"$PortNum_1" != x"$PortNum_2" -o x"$PortId_1" != x"$PortId_2" ]
 			then
 				# got a "1" followed by a "2" and they don't match, skip both
-				echo "$cmd: Warning: skipping unmatched line $lineno_2 in before: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2" >&2
-				echo "$cmd: Warning: skipping unmatched line $lineno_1 in after: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1" >&2
-			elif [ x"$nIfAddr_1" != x"$nIfAddr_2" -o  x"$nPortNum_1" != x"$nPortNum_2" ]
+				echo "$cmd: Warning: skipping unmatched line $lineno_2 in before: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$PortId_1" >&2
+				echo "$cmd: Warning: skipping unmatched line $lineno_1 in after: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1" >&2
+			elif [ x"$nIfAddr_1" != x"$nIfAddr_2" -o  x"$nPortNum_1" != x"$nPortNum_2" -o x"$nPortId_1" != x"$nPortId_2" ]
 			then
 				# we got a "1" followed by "2", however neighbor changed
 				echo "$cmd: Warning: skipping changed line $lineno_2 in before: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$nNodeDesc_2;$nNodeType_2;$nIfAddr_2;$nPortNum_2" >&2
@@ -181,7 +201,7 @@ do
 				#echo "process num_1=2 use_2" >&2
 				# use _2 as before and _1 as after when compute delta
 				# for fields not subtracted, show after (_1) as more recent
-				echo "$NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$nNodeDesc_1;$nNodeType_1;$nIfAddr_1;$nPortNum_1;\
+				echo "$NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1;$nNodeDesc_1;$nNodeType_1;$nIfAddr_1;$nPortNum_1;n$PortId_1;\
 $LinkSpeedActive_1;$(($IfHCOutOctetsMB_1 - $IfHCOutOctetsMB_2));$(($IfHCOutOctets_1 - $IfHCOutOctets_2));\
 $(($IfHCOutUcastPkts_1 - $IfHCOutUcastPkts_2));$(($IfHCOutMulticastPkts_1 - $IfHCOutMulticastPkts_2));\
 $(($IfHCInOctetsMB_1 - $IfHCInOctetsMB_2));$(($IfHCInOctets_1 - $IfHCInOctets_2));\
@@ -204,12 +224,12 @@ $(($Dot3StatsExcessiveCollisions_1 - $Dot3StatsExcessiveCollisions_2))"
 		fi
 	else
 		# num_1 is "1"
-		read num_2 lineno_2 NodeDesc_2 NodeType_2 IfAddr_2 PortNum_2 nNodeDesc_2 nNodeType_2 nIfAddr_2 nPortNum_2 LinkSpeedActive_2 IfHCOutOctetsMB_2 IfHCOutOctets_2 IfHCOutUcastPkts_2 IfHCOutMulticastPkts_2 IfHCInOctetsMB_2 IfHCInOctets_2 IfHCInUcastPkts_2 IfHCInMulticastPkts_2 Dot3HCStatsInternalMacTransmitErrors_2 Dot3HCStatsInternalMacReceiveErrors_2 Dot3HCStatsSymbolErrors_2 IfOutErrors_2 IfInErrors_2 IfInUnknownProtos_2 Dot3HCStatsAlignmentErrors_2 Dot3HCStatsFCSErrors_2 Dot3HCStatsFrameTooLongs_2 IfOutDiscards_2 IfInDiscards_2 Dot3StatsCarrierSenseErrors_2 Dot3StatsSingleCollisionFrames_2 Dot3StatsMultipleCollisionFrames_2 Dot3StatsSQETestErrors_2 Dot3StatsDeferredTransmissions_2 Dot3StatsLateCollisions_2 Dot3StatsExcessiveCollisions_2
+		read num_2 lineno_2 NodeDesc_2 NodeType_2 IfAddr_2 PortNum_2 PortId_2 nNodeDesc_2 nNodeType_2 nIfAddr_2 nPortNum_2 nPortId_2 LinkSpeedActive_2 IfHCOutOctetsMB_2 IfHCOutOctets_2 IfHCOutUcastPkts_2 IfHCOutMulticastPkts_2 IfHCInOctetsMB_2 IfHCInOctets_2 IfHCInUcastPkts_2 IfHCInMulticastPkts_2 Dot3HCStatsInternalMacTransmitErrors_2 Dot3HCStatsInternalMacReceiveErrors_2 Dot3HCStatsSymbolErrors_2 IfOutErrors_2 IfInErrors_2 IfInUnknownProtos_2 Dot3HCStatsAlignmentErrors_2 Dot3HCStatsFCSErrors_2 Dot3HCStatsFrameTooLongs_2 IfOutDiscards_2 IfInDiscards_2 Dot3StatsCarrierSenseErrors_2 Dot3StatsSingleCollisionFrames_2 Dot3StatsMultipleCollisionFrames_2 Dot3StatsSQETestErrors_2 Dot3StatsDeferredTransmissions_2 Dot3StatsLateCollisions_2 Dot3StatsExcessiveCollisions_2
 		#echo "process num_2=$num_2" >&2
 		if [ x"$num_2" = x"END" ]
 		then
 			# "1" without a "2" at end of file
-			echo "$cmd: Warning: skipping unmatched line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1" >&2
+			echo "$cmd: Warning: skipping unmatched line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1" >&2
 			break
 		fi
 		if ! [[ x"$Dot3StatsExcessiveCollisions_2" =~ ^x[0-9]+$ ]]
@@ -229,7 +249,7 @@ $(($Dot3StatsExcessiveCollisions_1 - $Dot3StatsExcessiveCollisions_2))"
 		if [ x"$num_2" = x"1" ]
 		then
 			# two "1" in a row, skip _1, use this line for next pairing
-			echo "$cmd: Warning: skipping unmatched line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1" >&2
+			echo "$cmd: Warning: skipping unmatched line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1" >&2
 			use_2=y
 			continue
 		elif [ x"$num_1" != "x1" -o x"$num_2" != "x2" ]	# paranoid check
@@ -238,19 +258,19 @@ $(($Dot3StatsExcessiveCollisions_1 - $Dot3StatsExcessiveCollisions_2))"
 			echo "$cmd: Script Error: Incorrect sort order" >&2
 			exit 1
 		else
-			if [ x"$IfAddr_1" != x"$IfAddr_2" -o  x"$PortNum_1" != x"$PortNum_2" ]
+			if [ x"$IfAddr_1" != x"$IfAddr_2" -o  x"$PortNum_1" != x"$PortNum_2" -o  x"$PortId_1" != x"$PortId_2" ]
 			then
 				# "1" followed by non-matching "2", skip both
-				echo "$cmd: Warning: skipping unmatched line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1" >&2
-				echo "$cmd: Warning: skipping unmatched line $lineno_2 in after: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2" >&2
-			elif [ x"$nIfAddr_1" != x"$nIfAddr_2" -o  x"$nPortNum_1" != x"$nPortNum_2" ]
+				echo "$cmd: Warning: skipping unmatched line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1" >&2
+				echo "$cmd: Warning: skipping unmatched line $lineno_2 in after: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$PortId_2" >&2
+			elif [ x"$nIfAddr_1" != x"$nIfAddr_2" -o  x"$nPortNum_1" != x"$nPortNum_2" -o x"$PortId_1" != x"$PortId_2" ]
 			then
 				# we got a "1" followed by "2", however neighbor changed
-				echo "$cmd: Warning: skipping changed line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$nNodeDesc_1;$nNodeType_1;$nIfAddr_1;$nPortNum_1" >&2
-				echo "$cmd: Warning: skipping changed line $lineno_2 in after: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$nNodeDesc_2;$nNodeType_2;$nIfAddr_2;$nPortNum_2" >&2
+				echo "$cmd: Warning: skipping changed line $lineno_1 in before: $NodeDesc_1;$NodeType_1;$IfAddr_1;$PortNum_1;$PortId_1;$nNodeDesc_1;$nNodeType_1;$nIfAddr_1;$nPortNum_1;$nPortId_1" >&2
+				echo "$cmd: Warning: skipping changed line $lineno_2 in after: $NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$PortId_2;$nNodeDesc_2;$nNodeType_2;$nIfAddr_2;$nPortNum_2;$nPortId_2" >&2
 			else
 				# for fields not subtracted, show after (_2) as more recent
-				echo "$NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$nNodeDesc_2;$nNodeType_2;$nIfAddr_2;$nPortNum_2;\
+				echo "$NodeDesc_2;$NodeType_2;$IfAddr_2;$PortNum_2;$PortId_2;$nNodeDesc_2;$nNodeType_2;$nIfAddr_2;$nPortNum_2;$nPortId_2;\
 $LinkSpeedActive_2;$(($IfHCOutOctetsMB_2 - $IfHCOutOctetsMB_1));$(($IfHCOutOctets_2 - $IfHCOutOctets_1));\
 $(($IfHCOutUcastPkts_2 - $IfHCOutUcastPkts_1));$(($IfHCOutMulticastPkts_2 - $IfHCOutMulticastPkts_1));\
 $(($IfHCInOctetsMB_2 - $IfHCInOctetsMB_1));$(($IfHCInOctets_2 - $IfHCInOctets_1));\

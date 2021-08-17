@@ -68,12 +68,15 @@ export MPI_CMD_ARGS="$MPI_CMD_ARGS -ppn 1"
 # reachability to another rank of an MPI job. You will not normally need
 # to change this.
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_DEVICES self,shm,nic"
- 
+
+# The PSM RDMA mode controls how data transfers are done.
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_RDMA 1"
+
 # When running single-rail you can specify the RDMA NIC to use via
 # PSM3_NIC. PSM3_NIC selects by the device name
 # (as listed alphabetically in /sys/class/infiniband) or by device number,
 # with the first device listed in /sys/class/infiniband being device 0,
-# the second device being device 1, and so on. By default, 
+# the second device being device 1, and so on. By default,
 # PSM3_NIC=-1 (select first available NIC).
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_NIC irdma0"
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_NIC 2"
@@ -81,10 +84,26 @@ export MPI_CMD_ARGS="$MPI_CMD_ARGS -ppn 1"
 # These values can enable and control PSM Multi-Rail
 # In most cases the default automatic selections will be sufficient
 # The sample shown is for Dual NIC server with one port per NIC connected
+# and all PSM processes using both NICs
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_MULTIRAIL 1 -genv PSM3_MULTIRAIL_MAP 0,1"
+
+# If the network is routed so that NICs with different IP subnets can still
+# talk to eachother, this causes PSM to treat all IP addresses as part of the
+# same network.
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_ALLOW_ROUTERS 1"
 
 # Use this to explicitly specify a MTU
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_MTU 4096"
+
+# PSM at job launch can output basic identifying information including it's
+# version, location, NIC(s) selected, etc
+# The 1st example outputs this for all ranks, the second outputs only for rank 0
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_IDENTIFY 1"
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_IDENTIFY 1:"
+
+# PSM can output performance statistics periodically to a separate file per
+# rank.  This controls the frequency of the output (in seconds)
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_PRINT_STATS 1"
 
 # PSM has the capability to dump its own backtrace on a crash, independent of
 # the existing coredump facility. Enabling this feature should cause a
@@ -93,5 +112,5 @@ export MPI_CMD_ARGS="$MPI_CMD_ARGS -ppn 1"
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_BACKTRACE 1"
 
 # This variable is used by the OPA run_* scripts to force benchmarks to run
-# on selected CPU cores. 
+# on selected CPU cores.
 #export MPI_TASKSET="${MPI_TASKSET:- -c 1-7}"

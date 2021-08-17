@@ -1,0 +1,370 @@
+# BEGIN_ICS_COPYRIGHT8 ****************************************
+#
+# Copyright (c) 2021, Intel Corporation
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#     * Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Intel Corporation nor the names of its contributors
+#       may be used to endorse or promote products derived from this software
+#       without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# END_ICS_COPYRIGHT8   ****************************************
+
+# [ICS VERSION STRING: unknown]
+
+source /usr/lib/eth-tools/ibtools.exp
+source "/usr/lib/eth-tools/ff_function.exp"
+
+#=============================================================================#
+# Test Suite Description:
+#-----------------------------------------------------------------------------#
+## pfc
+## -------
+## Empirical pfc test to all hosts
+#=============================================================================#
+
+# manditory setup
+log_user 0;	# disable detailed logging to stdout
+
+# uncomment the following to debug the test
+#strace 20
+#log_user 1
+#exp_internal 1
+#cmd_trace on
+#strace 4
+
+set group_size 9
+set num_conns 8
+set msg_count 10240
+set msg_size 4096
+set min_msg_size 1024
+set conn_timeout_s 10
+set stress_tool /usr/lib/eth-tools/ethudstress
+set driver "ice"
+
+proc suite_setup {} {
+	# example of conditional setup
+	#test_execute {load populate} {
+		#do some installation or configuration stuff
+	#}
+}
+
+proc case_setup {} {
+# setup to do at start of each test case
+# Usage:
+#	pass as argument to start_suite
+# Arguments:
+#	None
+# This procedure will be run at the start of every test case
+# It provides an opportunity for uniform cleanup/setup for each test case
+
+	#upvar 2 host host
+
+	#host_save_log $host
+}
+
+proc case_cleanup { failed } {
+# cleanup to do after each test case
+# Usage:
+#	pass as argument to start_suite
+# Arguments:
+#	failed - set to 1 if test case failed in which case additional
+#		information/files may be desired in test_tmp
+#		set to 0 if test case passed
+# This procedure will be run at the end of every test case
+# It provides an opportunity for uniform cleanup after each test case
+	global env
+
+	test_execute {} {
+		if { $failed || [ test_save_temp ] } {
+			# save any logs/results from system(s) under test
+			#upvar host host
+			#host_check_log $host "qipoib"
+		}
+	}
+}
+
+proc get_app_lost_count_file {host port} {
+	return "/tmp/$host-[pid].$port.ethudstress.lost"
+}
+
+proc collect_counters {counters host port delta} {
+# collect port counters
+# Usage:
+#       collect_counter host_ports delta
+# Arguments:
+#       host - hsot name
+#       port - port name
+#       delta - indicator of whether calculation delta count
+	upvar $counters pcs
+	set app_count_file [get_app_lost_count_file $host $port]
+	target_root_sh $host
+	unix_cmd 10 0 "type ethtool"
+	if {!$delta} {
+		unix_cmd 10 0 "echo 'Lost:0' > $app_count_file"
+	}
+
+	send_unix_cmd "ethtool -S $port | egrep --color=never 'tx_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/hw_counters/ && grep --color=never . *Discards; cat $app_count_file"
+	expect_unix_prompt 5 out
+	foreach line $out {
+		if { [string match {[tr]x_*} $line] || [string match {ip*} $line] || [string match {Lost*} $line]} {
+			set key_value [split $line ":"]
+			set k [lindex $key_value 0]
+			set v [lindex $key_value 1]
+			if {$delta} {
+				set delta_val [expr $v - $pcs($k) ]
+				set pcs($k) $delta_val
+			} else {
+				set pcs($k) $v
+			}
+		}
+	}
+	if {$delta} {
+		unix_cmd 10 0 "rm -f $app_count_file"
+	}
+	target_root_sh_exit
+}
+
+proc run_ethudstress {server_host server_port senders} {
+	global env
+	global num_conns
+	global msg_count
+	global msg_size
+	global conn_timeout_s
+	global stress_tool
+
+	target_root_sh $server_host
+	unix_cmd 30 "" "killall $stress_tool"
+	send_unix_cmd "ip a show dev $server_port"
+	set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
+	if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy ip_addr]} {
+		fail_test "Couldn't find ip address for $server_host:$server_port"
+	}
+	check_exit_status 30 0
+	target_root_sh_exit
+
+	set rec_num_conns [expr $num_conns * [llength $senders]]
+	set exp_timeout [expr $conn_timeout_s + 10]
+	set app_count_file [get_app_lost_count_file $server_host $server_port]
+	array set counters {}
+
+	collect_counters counters $server_host $server_port 0
+	init_subprocesses
+	subprocess {
+		target_root_sh $server_host
+		send_unix_cmd "$stress_tool -b $ip_addr -c $rec_num_conns -C $msg_count -S $msg_size -T $conn_timeout_s | tee >(grep ' Lost: '|cut -d' ' -f4-5|tr -d ' '> $app_count_file)"
+		expect_list $exp_timeout {"Test complete"} {"Error"}
+		target_root_sh_exit
+	}
+
+	after 1000
+	foreach client $senders {
+		subprocess {
+			target_root_sh $client
+			after 1000
+			send_unix_cmd "$stress_tool -s $ip_addr -c $num_conns -C $msg_count -S $msg_size -T $conn_timeout_s"
+			expect_list $exp_timeout {"Test complete"} {"Error"}
+			target_root_sh_exit
+		}
+	}
+	wait_subprocesses
+	collect_counters counters $server_host $server_port 1
+
+	set has_tx_pause 0
+	set has_dropped 0
+	set app_lost_pkts 0
+	foreach {k v} [array get counters] {
+		if {([string match {*dropped*} $k] || [string match {*Discards} $k]) && [string compare $v 0] } {
+			set has_dropped 1
+		}
+		if {[string match {tx_priority*} $k] && [string compare $v 0] } {
+			set has_tx_pause 1
+		}
+		if {[string match {Lost} $k] && [string compare $v 0] } {
+			set app_lost_pkts 1
+		}
+	}
+	set err_msg_body ""
+	if { !$has_tx_pause } {
+		append err_msg_body "Has no pause frames. "
+	}
+	if { $has_dropped } {
+		append err_msg_body "Has dropped packages."
+	}
+	if { $app_lost_pkts && $err_msg_body eq ""} {
+		append err_msg_body "App lost packages, senders may have wrong PFC."
+	}
+	if {[string compare $err_msg_body ""]} {
+		set err_msg "Receiver $server_host:$server_port - "
+		append err_msg $err_msg_body
+		error $err_msg \
+		      "Receiver $server_host:$server_port shall generate pause frames and have no dropped packages" \
+		      1
+	}
+}
+
+proc test_case_pfc {receiver receiver_ports senders {punchlist 0}} {
+##
+## test_case_pfc
+## -------------------
+## test_case to verify PFC works on 3 host
+##
+## Usage:
+##	test_case_pfc receiver receiver_ports senders [punchlist]
+## Arguments:
+##	receiver - the receiver host to run as ethudstress server
+##	reeiver_ports - the network interfaces for the ethudstress server
+##	senders - hosts to run as ethudstress clients
+##	punchlist - should punchlist be updated on failure (default=0=no)
+## Returns:
+##	None
+## Additional Information:
+##	must be used within a test_suite's body, performs test_case calls
+##	uses case_setup and case_cleanup provided by caller
+##	no item_setup nor item_cleanup used
+	global env
+
+	test_case "$receiver" "In-cast $receiver<--($senders)" "test PFC of $receiver
+confirm $receiver can generate pause frames when other hosts send data to it
+File: /usr/lib/eth-tools/pfctest.exp" case_setup case_cleanup {
+		upvar receiver receiver
+		upvar receiver_ports receiver_ports
+		upvar senders senders
+		upvar punchlist punchlist
+
+		if {"$receiver_ports" == ""} {
+			# shouldn't happen
+			fail_test "No ports on $receiver"
+		}
+		foreach port $receiver_ports {
+			if { [ catch { set res [
+				test_item ":$port<--($senders)" \
+				          "In-cast $receiver:$port<--($senders)" \
+				          "ethudstress send data from $senders to $receiver:$port" \
+				          noop cleanup_all_children {
+					run_ethudstress $receiver $port $senders
+			} ] } err_str ] != 0  || $res != 0 } {
+				if { $punchlist } {
+					append_punchlist "$receiver" "PFC test failed on $receiver:$port<--($senders): $err_str"
+				}
+			}
+			target_root_sh $receiver
+			set app_count_file [get_app_lost_count_file $receiver $port]
+			unix_cmd 10 0 "rm -f $app_count_file"
+			target_root_sh_exit
+		}
+	}
+}
+
+test_suite "pfctest" "Empirical PFC Test" "Empirical PFC test on all hosts
+File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
+	# Global Initializations for Test Suite:
+	# --------------------------------------
+
+	# ADD ANY GLOBAL INITIALIZATION HERE, SUCH AS:
+	# set env(MY_ENV_VAR) value
+	# also validate the environment
+	# if the environment is bad call fail_suite "information" abort_now
+	# abort_now should be 0 if it is safe to proceed and simply ignore all
+	# test_case calls.  it should be 1 if that is not possible.
+
+	# Procedures used to support Test Suite:
+	# --------------------------------------
+
+	# The actual test cases:
+	# ----------------------
+
+	global group_size
+	global msg_size
+	global min_msg_size
+	global driver
+
+	set hrange {}
+	set hindex -1
+	foreach hp [split $env(CFG_HOST_PORTS) ";"] {
+		incr hindex
+		set key_value [split $hp ":"]
+		set HOST_PORTS([lindex $key_value 0]) [lindex $key_value 1]
+		lappend hrange $hindex
+	}
+	set mtu_file "/tmp/hostsmtu_[pid]"
+	parallel host [array names HOST_PORTS]  {
+		set ports $HOST_PORTS($host)
+		target_root_sh $host
+		if {"$ports" == ""} {
+			send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
+			set out [expect_list 20 {"(?n)^PORTS:.*"}]
+			if {![regexp {: ([\w ]+)} $out dummy ports]} {
+				fail_test "No $driver interfaces found"
+			}
+			check_exit_status 20 0
+			set HOST_PORTS($host) $ports
+		}
+
+		set desired_mtu $msg_size
+		foreach port $HOST_PORTS($host) {
+			send_unix_cmd "ip addr show dev $port"
+			set out [expect_list 20 {" mtu [0-9]+"}]
+			if {![regexp {([0-9]+)} $out dummy mtu]} {
+				fail_test "$host: No mtu found on interface $port"
+			}
+			check_exit_status 20 0
+			if {[expr $mtu < $min_msg_size]} {
+				fail_test "$host: Mtu $mtu is less then minimum message size $min_msg_size"
+			}
+			if {[expr $mtu < $msg_size]} {
+				set desired_mtu $min_msg_size
+			}
+		}
+
+		target_root_sh_exit
+		# echo is safe on parallel when the string size if less than buffer size
+		exec echo "$desired_mtu" >> $mtu_file
+	}
+	set new_msg_size [exec sh -c "grep $min_msg_size $mtu_file >/dev/null && echo $min_msg_size || echo $msg_size"]
+	if {$new_msg_size != $msg_size} {
+		show_message "Adjusted message size from $msg_size to $new_msg_size due to small MTU"
+		set msg_size $new_msg_size
+	}
+	exec rm -f $mtu_file
+
+	# run ethudstress between one host and its next 2 hosts in host list
+	# to ensure the first host can generate pause frames, and the other two
+	# hosts can respond on pause frames (come from switch), so no pkg drop.
+	# For host1,...,hostN, we test among (host1, host2, hosts3),
+	# (host2, host3, host4), ..., (hostN-2, hostN-1, hostN), and
+	# (hostN-1, hostN, host1), (hostN, host1, host2)
+
+	if {[llength $hrange] == 1} {
+		fail_suite "Need at lest two hosts!" 1
+	}
+	if {[llength $hrange] < $group_size} {
+		set group_size [llength $hrange]
+	}
+	parallel hindex $hrange {
+		set receiver [lindex [array names HOST_PORTS] $hindex]
+		set senders {}
+		for {set i 1} {$i < $group_size} {incr i} {
+			set index [expr ($hindex + $i) % [llength $hrange]]
+			lappend senders [lindex [array names HOST_PORTS] $index]
+                }
+		test_case_pfc $receiver $HOST_PORTS($receiver) $senders 1
+	}
+}
