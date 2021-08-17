@@ -22,7 +22,7 @@ By default, Make will build these programs with the MPI installed in
 You can override this by setting MPICH_PREFIX in your .bashrc file. For
 example, the following will use Intel MPI:
 
-export MPICH_PREFIX=/opt/intel/impi_latest/intel64
+export MPICH_PREFIX=/opt/intel/oneapi/mpi/latest/
 
 
 COMPILING THE TEST PROGRAMS:

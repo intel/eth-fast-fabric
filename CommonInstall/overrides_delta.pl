@@ -78,6 +78,11 @@ my @delta_Components_rhel83 = (
 	"eth_rdma",
 	"delta_debug",
 	);
+my @delta_Components_rhel84 = (
+	"psm3",
+	"eth_rdma",
+	"delta_debug",
+	);
 my @delta_Components_sles15 = (
 	"psm3",
 	"eth_rdma",
@@ -119,6 +124,8 @@ sub overrides()
 		@Components = ( @delta_Components_rhel82 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
 		@Components = ( @delta_Components_rhel83 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
+		@Components = ( @delta_Components_rhel84 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
 		@Components = ( @delta_Components_sles15 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {

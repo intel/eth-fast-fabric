@@ -117,7 +117,7 @@ sub install_fastfabric
 	printf("Installing $ComponentInfo{'fastfabric'}{'Name'} $version $DBG_FREE...\n");
 	LogPrint "Installing $ComponentInfo{'fastfabric'}{'Name'} $version $DBG_FREE for $CUR_DISTRO_VENDOR $CUR_VENDOR_VER\n";
 
-	install_comp_rpms('fastfabric', " -U ", $install_list);
+	install_comp_rpms('fastfabric', " -U --nodeps ", $install_list);
 
 	# TBD - spec file should do this
 	check_dir("/usr/share/eth-tools/samples");

@@ -16,7 +16,7 @@ Provides a simple sample of how to generate the topology XML file used for topol
 .PP
 This tool uses CSV input files ethtopology\(ullinks.txt, ethtopology\(ulNICs.txt, and ethtopology\(ulSWs.txt to generate LinkSummary, Node NICs, and Node SWs information, respectively. These files are samples of what might be produced as part of translating a user custom file format into temporary intermediate CSV files.
 .PP
-LinkSummary information includes Link, Cable, and Port information. Note that ethgentopology (not ethxmlgenerate) generates the XML version string as well as the <Topology> and <LinkSummary> lines. Also note that the indent level is at the default value of zero (0). The portions of the script that call ethxmlgenerate follow:
+LinkSummary information includes Link, Cable, and Port information. Note that ethgentopology (not ethxmlgenerate) generates the XML version string as well as the <Report> and <LinkSummary> lines. Also note that the indent level is at the default value of zero (0). The portions of the script that call ethxmlgenerate follow:
 .PP
 
 .br
@@ -44,7 +44,7 @@ ethxmlgenerate -X /usr/share/eth-tools/samples/ethtopology\(ul2.txt -d \\; \\
 -h Node -g IfAddr -g NodeDesc -g NodeDetails -e Node
 
 .SH Syntax
-/usr/share/eth-tools/samples/ethgentopology [--help]
+/usr/share/eth-tools/samples/ethgentopology [--help] [plane]
 .PP
 
 .B NOTE:
@@ -63,6 +63,10 @@ Produces sample output. See
 --help
 
 Produces full help text.
+.TP 10
+plane
+
+Plane name. Default is \[aq]plane\[aq].
 
 .SH ethtopology\(ullinks.txt
 
@@ -134,7 +138,7 @@ When run against the supplied topology input files, /usr/share/eth-tools/samples
 <?xml version="1.0" encoding="utf-8" ?>
 .br
 
-<Topology>
+<Report plane="plane">
 .br
 
 <LinkSummary>
@@ -344,6 +348,6 @@ When run against the supplied topology input files, /usr/share/eth-tools/samples
 </Nodes>
 .br
 
-</Topology>
+</Report>
 
 .br

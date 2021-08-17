@@ -1814,13 +1814,11 @@ void DestroyFabricData(FabricData_t *fabricp)
 }
 
 static uint64_t convertNodeName2Guid(char* idStr, size_t len) {
-//TODO: This logic will change since IP address will now be used as the LID
 	int hash = 0;
 	int i = 0;
 	for (; i < len; i++) {
 		hash = hash * 31 + idStr[i];
 	}
-	hash = hash & 0xfff;
 	return hash;
 }
 

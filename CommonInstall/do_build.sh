@@ -34,10 +34,11 @@
 
 Usage()
 {
-	echo "Usage: do_build [-d] [-Q] [mpi [config_opt [install_dir]]]" >&2
+	echo "Usage: do_build [-d|-O|-C] [mpi [config_opt [install_dir]]]" >&2
 	echo "        -d - use default settings for selected MPI's options" >&2
 	echo "            if omitted, will be prompted for each option" >&2
-	echo "        -Q - build the MPI targeted for the PSM API." >&2
+	echo "        -O - build the MPI targeted for the OFI API." >&2
+	echo "        -C - build the MPI targeted for the OFI API with CUDA support." >&2
 	echo "        mpi - MPI to build (only openmpi)" >&2
 	echo "        config_opt - a compiler selection option (gcc, pathscale, pgi or intel)" >&2
 	echo "             if config_opt is not specified, the user will be prompted" >&2
@@ -45,7 +46,7 @@ Usage()
 	echo "        install_dir - where to install MPI, see MPICH_PREFIX below" >&2
 	echo "" >&2
 	echo "Environment:" >&2
-	echo "    STACK_PREFIX - where to find IB stack." >&2
+	echo "    STACK_PREFIX - where to find IEFS stack. Default is /usr" >&2
 	echo "    BUILD_DIR - temporary directory to use during build of MPI" >&2
 	echo "            Default is /var/tmp/Intel-openmpi" >&2
 	echo "    MPICH_PREFIX - selects location for installed MPI" >&2
@@ -65,11 +66,12 @@ Usage()
 }
 
 build_opts=
-while getopts "Qd" o
+while getopts "OCd" o
 do
 	case "$o" in
 	d) build_opts="$build_opts -d";;
-	Q) build_opts="$build_opts -Q";;
+	O) build_opts="$build_opts -O";;
+	C) build_opts="$build_opts -C";;
 	*) Usage;;
 	esac
 done

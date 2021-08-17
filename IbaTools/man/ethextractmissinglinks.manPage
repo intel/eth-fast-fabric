@@ -27,7 +27,7 @@ Produces full help text.
 .TP 10
 -T/--topology \fItopology\(ulinput\fR
 
-Specifies the topology file to verify against. Default is /etc/eth-tools/topology.0:0.xml
+Specifies the topology file to verify against. Default is /etc/eth-tools/topology.xml
 
 .TP 10
 -o/--output \fIreport\fR
@@ -55,7 +55,16 @@ Generates a report using the data in the snapshot\(ulinput file. snapshot\(ulinp
 
 .sp
 -E/--eth \fIconfig\(ulfile\fR
-Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+Specifies the Ethernet Mgt configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-p \fIplane\fR
+Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
 
 .RE
 
@@ -249,7 +258,7 @@ List all the missing links in the fabric:
 List all the missing links to a switch named "coresw1":
 .br
 
-     ethextractmissinglinks -T topology.0:0.xml -F "node:coresw1"
+     ethextractmissinglinks -T topology.plane.xml -F "node:coresw1"
 .br
 
 
@@ -267,4 +276,4 @@ List all the missing connections to end-nodes:
 List all the missing links between two switches:
 .br
 
-     ethextractmissinglinks -o verifyislinks -T topology.0:0.xml
+     ethextractmissinglinks -o verifyislinks -T topology.plane.xml

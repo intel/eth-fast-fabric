@@ -64,7 +64,7 @@ my $OLD_BASE_DIR = "/etc/sysconfig/eth-tools";
 my $BASE_DIR = "/etc/eth-tools";
 # iba editable config scripts
 my $OFA_CONFIG_DIR = "/etc/rdma";
-my $ETH_CONFIG_DIR = "/etc/etc-tools";
+my $ETH_CONFIG_DIR = "/etc/eth-tools";
 
 my $UVP_CONF_FILE = "$BASE_DIR/uvp.conf";
 my $UVP_CONF_FILE_SOURCE = "uvp.conf";
@@ -445,41 +445,43 @@ sub default_opascripts_env_vars()
 	setup_env("ETH_ROCE_ON", 1);
 }
 
+sub has_ascfg_file()
+{
+	if (! -e "$ETH_ASCFG_FILE")
+	{
+		if (rpm_is_installed("iefsconfig", "any")) {
+			NormalPrint("Couldn't find file $ETH_ASCFG_FILE\n");
+		}
+		return 0;
+	}
+	return 1;
+}
+
 sub enable_autostartconfig($)
 {
 	my $name = shift();
-	if (! -e "$ETH_ASCFG_FILE")
+	if (has_ascfg_file())
 	{
-		NormalPrint("Couldn't find file $ETH_ASCFG_FILE\n");
-		return;
+		system("$ETH_ASCFG_FILE --enable $name");
 	}
-	system("$ETH_ASCFG_FILE --enable $name");
 }
 
 sub disable_autostartconfig($)
 {
 	my $name = shift();
-	if (! -e "$ETH_ASCFG_FILE")
+	if (has_ascfg_file())
 	{
-		NormalPrint("Couldn't find file $ETH_ASCFG_FILE\n");
-		return;
+		system("$ETH_ASCFG_FILE --disable $name");
 	}
-	system("$ETH_ASCFG_FILE --disable $name");
 }
 
 sub status_autostartconfig($)
 {
 	my $name = shift();
-	if (! -e "$ETH_ASCFG_FILE")
-	{
-		NormalPrint("Couldn't find file $ETH_ASCFG_FILE\n");
-		return 0;
-	}
-	if ( 0 == system("$ETH_ASCFG_FILE --status $name | grep ' \\[ENABLED\\]' > /dev/null 2>&1") ) {
+	if ( has_ascfg_file() && ( 0 == system("$ETH_ASCFG_FILE --status $name | grep ' \\[ENABLED\\]' > /dev/null 2>&1") ) ) {
 		return 1;
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 # this will be replaced in component specific INSTALL with any special

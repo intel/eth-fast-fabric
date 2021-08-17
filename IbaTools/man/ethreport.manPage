@@ -19,8 +19,8 @@ ethreport  [-v][-q] [--timeout] [-o  \fIreport\fR]
 [-d  \fIdetail\fR]
 [-N] [-x] [-X  \fIsnapshot\(ulinput\fR] [-T  \fItopology\(ulinput\fR]
 .br
-[-A] [-c  \fIfile\fR] [-L] [-F  \fIpoint\fR]
-[-Q] [-E  \fIfile\fR]
+[-c  \fIfile\fR] [-L] [-F  \fIpoint\fR]
+[-Q] [-E  \fIfile\fR] [-p plane]
 .SH Options
 
 .TP 10
@@ -76,11 +76,6 @@ Generates a report using the data in the snapshot\(ulinput file. snapshot\(ulinp
 Uses topology\(ulinput file to augment and verify fabric information. When used, various reports can be augmented with information not available electronically. \[aq]-\[aq] may be used to specify stdin.
 
 .TP 10
--A/--allports
-
-Gets PortInfo for down switch ports.
-
-.TP 10
 -c/--config \fIfile\fR
 
 Specifies the error thresholds configuration file. Default is /etc/eth-tools/ethmon.conf file.
@@ -89,6 +84,11 @@ Specifies the error thresholds configuration file. Default is /etc/eth-tools/eth
 -E/--ethconfig \fIfile\fR
 
 Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+
+.TP 10
+-p \fIplane\fR
+
+Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
 
 .TP 10
 -L/--limit

@@ -84,7 +84,7 @@
 #  Link MTU:          17
 #  Link Details:      18
 #  Node Fields:       19 and above
-#  Node/PortNum Field Calculated
+#  Node/PortId Field Calculated
 
 # Core specifications (same line):
 #  Core Name:X
@@ -97,6 +97,7 @@ readonly BASENAME="$(basename $0)"
 FIELD_COUNT=18
 
 ## Defines:
+PN_GENERATE="/usr/lib/eth-tools/ethportnum"
 XML_GENERATE="/usr/sbin/ethxmlgenerate"
 XML_INDENT="/usr/sbin/ethxmlindent"
 FILE_TOPOLOGY_LINKS="topology.csv"
@@ -193,6 +194,7 @@ fl_output_spine_leaf=1
 n_verbose=2
 indent=4
 fl_clean=1
+pn_gen=1
 linksum_files=""
 linksum_file=""
 ix_srcgroup=0
@@ -210,7 +212,7 @@ rack=""
 switch=""
 leaves=""
 additional_fields=0
-portnum_field=0
+portid_field=0
 ix_line=0
 group_cnt=1
 rack_cnt=1
@@ -268,12 +270,13 @@ misc_params=""
 declare -A misc_sw_table
 declare -A misc_fi_table
 declare -A sw_portlist_table
+declare -A port_num_table
 
 declare -a misc_param_index
 
 remove_file() {
   if [ -f $1 ]; then
-   rm -f $1
+   /bin/rm -f $1
   fi
 }
 
@@ -309,7 +312,7 @@ functout=
 # Output usage information
 usage_full()
 {
-  echo "Usage: ${BASENAME} [-d level] [-v level] [-i level] [-K] [-f linkfiles] " >&2
+  echo "Usage: ${BASENAME} [-d level] [-v level] [-i level] [-K] [-N] [-f linkfiles] " >&2
   echo "                      [-o report] [-p plane] [source [dest]]" >&2
   echo "           or" >&2
   echo "       ${BASENAME} --help" >&2
@@ -330,6 +333,10 @@ usage_full()
   echo "                         8 - reserved" >&2
   echo "       -i level      -  output indent level (default 4)" >&2
   echo "       -K            -  DO NOT clean temporary files" >&2
+  echo "       -N            -  DO NOT generate Port Numbers from Port IDs. Will introduce slightly" >&2
+  echo "                        poorer topology loading performance. Useful when have difficulty" >&2
+  echo "                        to generate Port Numbers, such as complicated Port ID formats," >&2
+  echo "                        or no enough Port IDs to train the Port Number generator." >&2
   echo "       -f linkfiles  -  space separated core switch linksum files" >&2
   echo "       -o report     -  report type for output; by default, all the sections" >&2
   echo "                        are generated" >&2
@@ -431,18 +438,21 @@ gen_topology()
     remove_file "$FILE_TEMP"
     mv $FILE_LINKSUM $FILE_TEMP
     sort -u $FILE_TEMP > $FILE_LINKSUM
+    repair_linksum $FILE_LINKSUM
   fi
   if [ -f $FILE_LINKSUM_NOCORE ]
     then
     remove_file "$FILE_TEMP"
     mv $FILE_LINKSUM_NOCORE $FILE_TEMP
     sort -u $FILE_TEMP > $FILE_LINKSUM_NOCORE
+    repair_linksum $FILE_LINKSUM_NOCORE
   fi
   if [ -f $FILE_LINKSUM_NOCABLE ]
     then
     remove_file "$FILE_TEMP"
     mv $FILE_LINKSUM_NOCABLE $FILE_TEMP
     sort -u $FILE_TEMP > $FILE_LINKSUM_NOCABLE
+    repair_linksum $FILE_LINKSUM_NOCABLE
   fi
 
   if [ -f $FILE_NODENICS ]
@@ -524,16 +534,16 @@ gen_topology()
     echo "<LinkSummary>" >> $FILE_TOPOLOGY_TEMP
     if [ -s $FILE_LINKSUM -a $1 == 1 ]
       then
-      $XML_GENERATE -X $FILE_LINKSUM -d \; -i 2 -h Link -g Rate -g MTU -g LinkDetails -g Internal -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g PortNum -g NodeType -g NodeDesc -e Port -h Port -g PortNum -g NodeType -g NodeDesc -e Port -e Link >> $FILE_TOPOLOGY_TEMP
+      $XML_GENERATE -X $FILE_LINKSUM -d \; -i 2 -h Link -g Rate -g MTU -g LinkDetails -g Internal -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g PortNum -g PortId -g NodeType -g NodeDesc -e Port -h Port -g PortNum -g PortId -g NodeType -g NodeDesc -e Port -e Link >> $FILE_TOPOLOGY_TEMP
     elif [ -s $FILE_LINKSUM_NOCORE -a $1 == 0 ]
       then
-      $XML_GENERATE -X $FILE_LINKSUM_NOCORE -d \; -i 2 -h Link -g Rate -g MTU -g LinkDetails -g Internal -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g PortNum -g NodeType -g NodeDesc -e Port -h Port -g PortNum -g NodeType -g NodeDesc -e Port -e Link >> $FILE_TOPOLOGY_TEMP
+      $XML_GENERATE -X $FILE_LINKSUM_NOCORE -d \; -i 2 -h Link -g Rate -g MTU -g LinkDetails -g Internal -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g PortNum -g PortId -g NodeType -g NodeDesc -e Port -h Port -g PortNum -g PortId -g NodeType -g NodeDesc -e Port -e Link >> $FILE_TOPOLOGY_TEMP
     fi
 
     if [ -s $FILE_LINKSUM_NOCABLE -a $2 == 1 ]
       then
       # Note: <Cable> header not needed because cable data is null
-      $XML_GENERATE -X $FILE_LINKSUM_NOCABLE -d \; -i 2 -h Link -g Rate -g MTU -g LinkDetails -g Internal -g CableLength -g CableLabel -g CableDetails -h Port -g PortNum -g NodeType -g NodeDesc -e Port -h Port -g PortNum -g NodeType -g NodeDesc -e Port -e Link >> $FILE_TOPOLOGY_TEMP
+      $XML_GENERATE -X $FILE_LINKSUM_NOCABLE -d \; -i 2 -h Link -g Rate -g MTU -g LinkDetails -g Internal -g CableLength -g CableLabel -g CableDetails -h Port -g PortNum -g PortId -g NodeType -g NodeDesc -e Port -h Port -g PortNum -g PortId -g NodeType -g NodeDesc -e Port -e Link >> $FILE_TOPOLOGY_TEMP
     fi
     echo "</LinkSummary>" >> $FILE_TOPOLOGY_TEMP
   fi
@@ -582,16 +592,6 @@ proc_link_files()
     fi
     if [[ -n ${mode} ]]; then
       awk -F ',' '{print NR","$3,$4","$5","$6","$9,$10","$11","$12}' ${file} | grep "${DUMMY_CORE_NAME}" > ${out_file}
-      bad_lines="$(awk -F ',' -e '$3 !~ /^[0-9]+$/ {print " "$1}' ${out_file}|tr -d '\n')"
-      if [[ -n $bad_lines ]]; then
-        echo "Error: Invalid Source Port in ${file} (line:${bad_lines})" >&2
-        has_err=1
-      fi
-      bad_lines="$(awk -F ',' -e '$6 !~ /^[0-9]+$/ {print " "$1}' ${out_file}|tr -d '\n')"
-      if [[ -n $bad_lines ]]; then
-        echo "Error: Invalid Destination Port in ${file} (line:${bad_lines})" >&2
-        has_err=1
-      fi
       bad_lines="$(awk -F ',' -e "\$4 !~ /^${NODETYPE_SPINE}\$|^\$/ {print \" \"\$1}" ${out_file} | tr -d '\n')"
       if [[ -n $bad_lines ]]; then
         echo "Error: Source Type is not ${NODETYPE_SPINE} in ${file} (line:${bad_lines})" >&2
@@ -631,11 +631,11 @@ generate_linksum_nocable()
 
     while read -a t
     do
-      local IFS="|" link="${RATE_DEFAULT};${MTU_SW_SW};;1;;;;${t[2]};${NODETYPE_SWITCH};${t[1]};${t[5]};${NODETYPE_SWITCH};${t[4]}"
+      local IFS="|" link="${RATE_DEFAULT};${MTU_SW_SW};;1;;;;;${t[2]};${NODETYPE_SWITCH};${t[1]};;${t[5]};${NODETYPE_SWITCH};${t[4]}"
       # Add Source Spine
-      add_portnum_to_switchportlist "${t[2]}" "${t[1]}" "1"
+      add_portid_to_switchportlist "${t[2]}" "${t[1]}" "1"
       # Add Destination Leaf
-      add_portnum_to_switchportlist "${t[5]}" "${t[4]}" "1"
+      add_portid_to_switchportlist "${t[5]}" "${t[4]}" "1"
       echo "$link" >> ${FILE_LINKSUM_NOCABLE}
       local IFS=","
     done < $FILE_TEMP
@@ -1080,9 +1080,9 @@ add_fields_to_misc_table()
   esac
 }
 
-add_portnum_to_switchportlist()
+add_portid_to_switchportlist()
 {
-  local portnum=$1
+  local portid=$1
   local node_desc=$2
   local internal=$3
   local portlist=""
@@ -1102,38 +1102,32 @@ add_portnum_to_switchportlist()
     exit 1
   fi
 
-  # Make sure port number is numerical value
-  if [[ ${portnum//[[:digit:]]/} ]]; then
-    echo "Error port number is non-numerical \"$portnum\" (line:$ix_line)" >&2
-    exit 2
-  fi
-
   # Make sure this port is not already in the portlist
   IFS=','
   for port in $portlist
   do
-    if [ "$port" == "$portnum" ]; then
+    if [ "$port" == "$portid" ]; then
        # check to make sure there are not duplicate entries in the CSV files
        # accept duplicate internal ports and drop them from list
        if [ "$internal" == "1" ]; then
          return
        else
-         echo "Error port number \"$portnum\" is already in the list of ports processed for \"$node_desc\" (line:$ix_line)" >&2
+         echo "Error port id \"$portid\" is already in the list of ports processed for \"$node_desc\" (line:$ix_line)" >&2
          exit 2
        fi
     fi
   done
 
   if [ "$portlist" == "" ]; then
-    portlist="$portnum"
+    portlist="$portid"
   else
-    portlist="${portlist},${portnum}"
+    portlist="${portlist},${portid}"
   fi
 
   sw_portlist_table[$node_desc]="$portlist"
 }
 
-lookup_portnum_from_switchportlist()
+lookup_portid_from_switchportlist()
 {
   local node_desc=$1
   local __res=$2
@@ -1150,6 +1144,66 @@ lookup_portnum_from_switchportlist()
   eval $__res="'$portlist'"
 }
 
+lookup_portnum()
+{
+  local node_desc=$1
+  local portid=$2
+  local __res=$3
+
+  if [ "$node_desc" == "" ]; then
+    return
+  fi
+
+  # Remove whitespace in node description for associative array lookup (required by Bash)
+  node_desc=${node_desc//[[:space:]]/_}
+  local IFS=$'\n'
+  portnum="${port_num_table["$node_desc$CAT_CHAR_NIC$portid"]}"
+  if [ -z "$portnum" ]; then
+    portlist=${sw_portlist_table[$node_desc]}
+    if [ -n "$portlist" ]; then
+      for port in $($PN_GENERATE <(echo -e "${portlist//,/\\n}")); do
+        key="$node_desc$CAT_CHAR_NIC${port#*:}"
+        port_num_table["$key"]="${port%%:*}"
+      done
+      portnum="${port_num_table["$node_desc$CAT_CHAR_NIC$portid"]}"
+    fi
+  fi
+  eval $__res="'$portnum'"
+}
+
+# insert port num into linksum file
+repair_linksum()
+{
+  if [ $pn_gen == 0 ]; then
+    return
+  fi
+
+  local file="$1"
+  local tmpfile=$(mktemp)
+  local IFS=";"
+  while read -a t
+  do
+    src_portnum=${t[7]}
+    src_portid=${t[8]}
+    src_type=${t[9]}
+    src_node=${t[10]}
+    dst_portnum=${t[11]}
+    dst_portid=${t[12]}
+    dst_type=${t[13]}
+    dst_node=${t[14]}
+    if [ "$src_type" == "SW" ]; then
+    	lookup_portnum "$src_node" "$src_portid" src_portnum
+    fi
+    if [ "$dst_type" == "SW" ]; then
+    	lookup_portnum "$dst_node" "$dst_portid" dst_portnum
+    fi
+    prefix=("${t[@]::7}")
+    echo "${prefix[*]};$src_portnum;$src_portid;$src_type;$src_node;$dst_portnum;$dst_portid;$dst_type;$dst_node" >> "$tmpfile"
+  done < "$file"
+  /bin/mv "$tmpfile" "$file"
+  remove_file "$tmpfile"
+}
+
 generate_switch_section()
 {
   local line=""
@@ -1159,7 +1213,7 @@ generate_switch_section()
   declare -a port_array
   local portnum=""
   local switch_entry=""
-  local portnum_entry=""
+  local port_entry=""
   local IFS
 
   # Generate Nodes/Switches section in XML
@@ -1167,7 +1221,7 @@ generate_switch_section()
   if [ -s $FILE_NODESWITCHES ]
     then
     while read -r line; do
-        portnum_entry=""
+        port_entry=""
         switch_entry=""
         node_desc=${line//;*}
         if [ "$node_desc" == "" ]; then
@@ -1176,7 +1230,7 @@ generate_switch_section()
         fi
 
         # Sanity check Switch Node ports
-        lookup_portnum_from_switchportlist "$node_desc" port_list
+        lookup_portid_from_switchportlist "$node_desc" port_list
         if [ "$port_list" == "" ]; then
           echo "Internal Error: Switch defined (${node_desc}) with no ports" >&2
           exit 1
@@ -1194,40 +1248,43 @@ generate_switch_section()
 
           # Add required PortNum 0 definition
           if [ "$port_field" == "required" ]; then
-            portnum_entry=${portnum_entry}$'\n'
-            portnum_entry=${portnum_entry}"<Port>"
-            portnum_entry=${portnum_entry}$'\n'
-            portnum_entry=${portnum_entry}"<PortNum>0</PortNum>"
-            portnum_entry=${portnum_entry}$'\n'
-            portnum_entry=${portnum_entry}"</Port>"
+            port_entry=${port_entry}$'\n'
+            port_entry=${port_entry}"<Port>"
+            port_entry=${port_entry}$'\n'
+            port_entry=${port_entry}"<PortNum>0</PortNum>"
+            port_entry=${port_entry}"<PortId></PortId>"
+            port_entry=${port_entry}$'\n'
+            port_entry=${port_entry}"</Port>"
           fi
         fi
 
         if [ "$port_field" == "required" ]; then
-          # Sort Port number list to make output more readable
+          # Sort Port list to make output more readable
           IFS=','
           port_array=""
-          for portnum in $port_list; do
-            port_array+=($portnum)
+          for portid in $port_list; do
+            lookup_portnum "$node_desc" "$portid" portnum
+            port_array+=("$portnum:$portid")
           done
-          port_array=($(echo ${port_array[@]} | tr ' ' '\n' | sort -n -u| tr '\n' ' '))
-
+          IFS=$'\n'
+          port_array=($(sort -h -u <<< "${port_array[*]}"))
           unset IFS
-          # Insert Port number list to XML
-          for portnum in ${port_array[@]}
+          # Insert Port list to XML
+          for port in ${port_array[@]}
           do
-            portnum_entry=${portnum_entry}$'\n'
-            portnum_entry=${portnum_entry}"<Port>"
-            portnum_entry=${portnum_entry}$'\n'
-            portnum_entry=${portnum_entry}"<PortNum>${portnum}</PortNum>"
-            portnum_entry=${portnum_entry}$'\n'
-            portnum_entry=${portnum_entry}"</Port>"
+            port_entry=${port_entry}$'\n'
+            port_entry=${port_entry}"<Port>"
+            port_entry=${port_entry}$'\n'
+            port_entry=${port_entry}"<PortNum>${port%%:*}</PortNum>"
+            port_entry=${port_entry}"<PortId>${port#*:}</PortId>"
+            port_entry=${port_entry}$'\n'
+            port_entry=${port_entry}"</Port>"
           done
         fi
 
         # Write entry to XML file
         echo $switch_entry >> $FILE_TOPOLOGY_TEMP
-        echo $portnum_entry >> $FILE_TOPOLOGY_TEMP
+        echo $port_entry >> $FILE_TOPOLOGY_TEMP
         echo "</Node>" >> $FILE_TOPOLOGY_TEMP
     done < $FILE_NODESWITCHES
   fi
@@ -1274,7 +1331,7 @@ lookup_misc_table_entry()
 ## Main function:
 
 # Get options
-while getopts d:i:Kf:v:o:p: option
+while getopts d:i:KNf:v:o:p: option
 do
   case $option in
   d)
@@ -1295,6 +1352,10 @@ do
 
   K)
     fl_clean=0
+    ;;
+
+  N)
+    pn_gen=0
     ;;
 
   f)
@@ -1397,15 +1458,15 @@ do
       # This may happen if user is using minimal sample csv
       if [[ "$additional_fields" -lt "0" ]]; then
          additional_fields=0
-         portnum_field=FIELD_COUNT
+         portid_field=FIELD_COUNT
       else
-        # Topology XMLs require a Node/Port/PortNum Field
-        portnum_field=${#t[@]}
+        # Topology XMLs require a Node/Port/PortId Field
+        portid_field=${#t[@]}
         if [[ "$additional_fields" -gt "0" ]] ; then
           t_additional=${t[@]:$FIELD_COUNT}
-          if array_contains t_additional[@] "Port:LID" || array_contains t_additional[@] "Port:LMC" ; then
+          if array_contains t_additional[@] "Port:LID" ; then
             port_field="required"
-            t[$portnum_field]="Port:PortNum"
+            t[$portid_field]="Port:PortId"
             ((additional_fields++))
           fi
         fi
@@ -1456,9 +1517,9 @@ do
     fi
 
     if [ `cvt_nodetype "$t_srctype"` == "$NODETYPE_SWITCH" ]; then
-      t[$portnum_field]=0
+      t[$portid_field]=0
     else
-      t[$portnum_field]=$t_srcport
+      t[$portid_field]=$t_srcport
     fi
 
     t_cablelabel=`trim_trailing_whitespace "${t[12]}"`
@@ -1596,20 +1657,20 @@ do
 
       if [ "$nodetype1" == "$NODETYPE_SWITCH" ]; then
         # Add Source Port to PortList if Source Node is Switch
-        add_portnum_to_switchportlist "$t_srcport" "$nodedesc1" "$internal"
+        add_portid_to_switchportlist "$t_srcport" "$nodedesc1" "$internal"
       fi
 
       if [ "$nodetype2" == "$NODETYPE_SWITCH" ]; then
         # Add Destination Port to PortList if Destination Node is Switch
-        add_portnum_to_switchportlist "$t_dstport" "$nodedesc2" "$internal"
+        add_portid_to_switchportlist "$t_dstport" "$nodedesc2" "$internal"
       fi
 
       # Output CSV FILE_LINKSUM
       if [ $nodetype2 != "$NODETYPE_ENDPOINT" ]; then
         if [ $nodetype1 == "$NODETYPE_SWITCH" ] && [ $nodetype2 == "$NODETYPE_SWITCH" ]; then
-          link="${rate};${MTU_SW_SW};${t_linkdetails};${internal};${t_cablelength};${t_cablelabel};${t_cabledetails};${t_srcport};${nodetype1};${nodedesc1};${t_dstport};${nodetype2};${nodedesc2}"
+          link="${rate};${MTU_SW_SW};${t_linkdetails};${internal};${t_cablelength};${t_cablelabel};${t_cabledetails};;${t_srcport};${nodetype1};${nodedesc1};;${t_dstport};${nodetype2};${nodedesc2}"
         else
-          link="${rate};${MTU_SW_NIC};${t_linkdetails};${internal};${t_cablelength};${t_cablelabel};${t_cabledetails};1;${nodetype1};${nodedesc1};${t_dstport};${nodetype2};${nodedesc2}"
+          link="${rate};${MTU_SW_NIC};${t_linkdetails};${internal};${t_cablelength};${t_cablelabel};${t_cabledetails};1;;${nodetype1};${nodedesc1};;${t_dstport};${nodetype2};${nodedesc2}"
         fi
         echo "${link}" >> ${FILE_LINKSUM}
       fi
@@ -1887,9 +1948,9 @@ do
         leaves=`cat $FILE_NODELEAVES | tr '\012' '|' | sed -e 's/|$//'`
       fi
       generate_linksum_nocable $linksum_file
-      cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 10 | sort -u >> ${FILE_NODESWITCHES}
-      cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | sort -u >> ${FILE_NODESWITCHES}
-      cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | cut -d "$CAT_CHAR" -f 1 | sort -u >> ${FILE_NODECHASSIS}
+      cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 11 | sort -u >> ${FILE_NODESWITCHES}
+      cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | sort -u >> ${FILE_NODESWITCHES}
+      cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | cut -d "$CAT_CHAR" -f 1 | sort -u >> ${FILE_NODECHASSIS}
 
       if [ $((n_detail & OUTPUT_GROUPS)) != 0 ]
         then
@@ -1900,9 +1961,9 @@ do
           leaves=`cat $core_group/$FILE_NODELEAVES | tr '\012' '|' | sed -e 's/|$//'`
         fi
         cp ${FILE_LINKSUM_NOCABLE} "$core_group"/${FILE_LINKSUM_NOCABLE}
-        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 10 | sort -u >> "$core_group"/${FILE_NODESWITCHES}
-        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | sort -u >> "$core_group"/${FILE_NODESWITCHES}
-        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | cut -d "$CAT_CHAR" -f 1 | sort -u >> "$core_group"/${FILE_NODECHASSIS}
+        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 11 | sort -u >> "$core_group"/${FILE_NODESWITCHES}
+        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | sort -u >> "$core_group"/${FILE_NODESWITCHES}
+        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | cut -d "$CAT_CHAR" -f 1 | sort -u >> "$core_group"/${FILE_NODECHASSIS}
       fi
 
       if [ $((n_detail & OUTPUT_RACKS)) != 0 ]
@@ -1914,9 +1975,9 @@ do
           leaves=`cat "$core_group"/"$core_rack"/$FILE_NODELEAVES | tr '\012' '|' | sed -e 's/|$//'`
         fi
         cp ${FILE_LINKSUM_NOCABLE} "$core_group"/"$core_rack"/${FILE_LINKSUM_NOCABLE}
-        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 10 | sort -u >> "$core_group"/"$core_rack"/${FILE_NODESWITCHES}
-        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | sort -u >> "$core_group"/"$core_rack"/${FILE_NODESWITCHES}
-        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | cut -d "$CAT_CHAR" -f 1 | sort -u >> "$core_group"/"$core_rack"/${FILE_NODECHASSIS}
+        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 11 | sort -u >> "$core_group"/"$core_rack"/${FILE_NODESWITCHES}
+        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | sort -u >> "$core_group"/"$core_rack"/${FILE_NODESWITCHES}
+        cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | cut -d "$CAT_CHAR" -f 1 | sort -u >> "$core_group"/"$core_rack"/${FILE_NODECHASSIS}
       fi
 
     # End of core switch information
@@ -1975,17 +2036,17 @@ do
           done
           leaves=`echo $leaves | sed -e 's/|$//'`
           generate_linksum_nocable $linksum_file
-          cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 10 | sort -u >> ${FILE_NODESWITCHES}
-          cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | sort -u >> ${FILE_NODESWITCHES}
+          cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 11 | sort -u >> ${FILE_NODESWITCHES}
+          cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | sort -u >> ${FILE_NODESWITCHES}
           if [ $((n_detail & OUTPUT_GROUPS)) != 0 ]
             then
-            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 10 | sort -u >> "${core_name_group["$core_name"]}"/${FILE_NODESWITCHES}
-            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | sort -u >> "$core_group"/${FILE_NODESWITCHES}
+            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 11 | sort -u >> "${core_name_group["$core_name"]}"/${FILE_NODESWITCHES}
+            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | sort -u >> "$core_group"/${FILE_NODESWITCHES}
           fi
           if [ $((n_detail & OUTPUT_RACKS)) != 0 ]
             then
-            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 10 | sort -u >> "${core_name_group["$core_name"]}"/"${core_name_rack["$core_name"]}"/${FILE_NODESWITCHES}
-            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 13 | sort -u >> "${core_name_group["$core_name"]}"/"${core_name_rack["$core_name"]}"/${FILE_NODESWITCHES}
+            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 11 | sort -u >> "${core_name_group["$core_name"]}"/"${core_name_rack["$core_name"]}"/${FILE_NODESWITCHES}
+            cat ${FILE_LINKSUM_NOCABLE} | cut -d ';' -f 15 | sort -u >> "${core_name_group["$core_name"]}"/"${core_name_rack["$core_name"]}"/${FILE_NODESWITCHES}
           fi
         fi
         leaf_array=()

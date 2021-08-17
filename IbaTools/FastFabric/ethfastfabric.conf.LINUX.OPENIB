@@ -44,7 +44,7 @@ export FF_PRODUCT=${FF_PRODUCT:-IntelEth-Basic.`cat /usr/lib/eth-tools/osid_wrap
 export FF_PRODUCT_VERSION=${FF_PRODUCT_VERSION:-`cat /etc/eth-tools/version_wrapper 2>/dev/null`}
 
 # IntelEth packages to install during ethhostadmin load [-P option]
-export FF_PACKAGES=${FF_PACKAGES:-eth_tools eth_rdma mpi}
+export FF_PACKAGES=${FF_PACKAGES:-eth eth_rdma}
 
 # Additional INSTALL options during ethhostadmin load
 #export FF_INSTALL_OPTIONS=${FF_INSTALL_OPTIONS:- --answer LIMITS_SEL=4}
@@ -113,6 +113,13 @@ export FF_DIFF_CMD=${FF_DIFF_CMD:-diff -C 1}
 # As needed they can be copied to a global filesystem and adjust this variable
 # This MUST be a absolute path which exists on all nodes
 export FF_MPI_APPS_DIR=${FF_MPI_APPS_DIR:-$HOME/mpi_apps}
+
+# indicate whether use CUDA version MPI. 'y' will use CUDA, 'n' will not use
+# CUDA, and empty will use CUDA if it's installed and MPI supports it
+export FF_MPI_APPS_CUDA=${FF_MPI_APPS_CUDA:-}
+
+# location to find CUDA
+export FF_CUDA_DIR=${FF_CUDA_DIR:-/usr/local/cuda}
 
 #location of Cable Health Report files
 #export FF_CABLE_HEALTH_REPORT_DIR=${FF_CABLE_HEALTH_REPORT_DIR:-/var/opt/opafm/cablehealth}

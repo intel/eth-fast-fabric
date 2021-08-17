@@ -38,11 +38,12 @@ include $(TL_DIR)/$(PROJ_FILE_DIR)/Makesettings.project
 # Name of SubProjects
 DS_SUBPROJECTS	= 
 # name of executable or downloadable image
-EXECUTABLE		= 
+EXECUTABLE		= $(BUILDDIR)/ethportnum$(EXE_SUFFIX)
 # list of sub directories to build
 DIRS			= 
 # C files (.c)
 CFILES			= \
+				ethportnum.c \
 				# Add more c files here
 # C++ files (.cpp)
 CCFILES			= \
@@ -113,8 +114,8 @@ INCLUDE_SUBDIR		=
 #LOCAL_LIB_DIRS	= User library directories for libpaths [Empty]
 
 CLOCAL=$(CIBACCESS) $(CPIE)
-LOCALDEPLIBS = 
-LOCAL_INCLUDE_DIRS=
+LOCALDEPLIBS =$(IBACCESS_USER_LIBS) Topology
+LOCAL_INCLUDE_DIRS= $(BUILDDIR)/Topology
 LOCALLIBS=
 LOCAL_LIB_DIRS=
 

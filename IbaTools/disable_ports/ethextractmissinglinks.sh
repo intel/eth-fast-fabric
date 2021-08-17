@@ -157,21 +157,21 @@ if [ -s $tempfile ]
 then
 	IFS=';'
 	cat $tempfile | /usr/sbin/ethxmlextract -H -d \; -e ${XML_PREFIX}.Link.Port.IfAddr \
-		-e ${XML_PREFIX}.Link.Port.PortNum -e ${XML_PREFIX}.Link.Port.NodeType \
+		-e ${XML_PREFIX}.Link.Port.PortNum -e ${XML_PREFIX}.Link.Port.PortId -e ${XML_PREFIX}.Link.Port.NodeType \
 		-e ${XML_PREFIX}.Link.Port.NodeDesc -e ${XML_PREFIX}.Link.Problem \
-		| while read ifaddr port type desc problem
+		| while read ifaddr port portid type desc problem
 		do
 			if [ -z "$line1" -a -z "$problem" ]
 			# if current line is 1st half of link and not a problem
 			then
 				# Port 1 if LINK: 'NodeGUID;PortNum;NodeType;NodeDesc;'
-				line1="${ifaddr};${port};${type};${desc};"
+				line1="${ifaddr};${port};${portid};${type};${desc};"
 
 			elif [ -z "$line2" -a -z "$problem" ]
 			# if current line is 2nd half of link and not a problem
 			then
 				# Port 2 if LINK: 'IfAddr;PortNum;NodeType;NodeDesc;'
-				line2="${ifaddr};${port};${type};${desc};"
+				line2="${ifaddr};${port};${portid};${type};${desc};"
 
 			elif [ "$problem" == "Missing Link" -a "$line1" -a "$line2" ]
 			# if current line is the Missing Link Problem and other data exists
@@ -188,7 +188,7 @@ then
 			else
 			# else None of the Link.Problems were "Missing Link",
 			#      Reset temp variables and set current line to 1st port of link
-				line1="${ifaddr};${port};${type};${desc};"
+				line1="${ifaddr};${port};${portid};${type};${desc};"
 				line2=
 			fi
 	done

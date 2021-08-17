@@ -78,6 +78,7 @@ my @delta_kernel_srpms_rhel8 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel81 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel82 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel83 = ( 'kmod-iefs-kernel-updates' );
+my @delta_kernel_srpms_rhel84 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms = ( );
 
 # This provides information for all kernel srpms
@@ -93,18 +94,18 @@ my %delta_srpm_info = (
 		# only used in sles12sp2
 	"iefs-kernel-updates-kmp-default" =>        { Available => "",
 					Builds => "iefs-kernel-updates-kmp-default iefs-kernel-updates-devel",
-					PartOf => " psm3",
+					PartOf => " eth_module",
 					},
 		# only used in rhel72 and rhel73
 	"kmod-iefs-kernel-updates" =>    { Available => "",
 					Builds => "kmod-iefs-kernel-updates iefs-kernel-updates-devel",
-					PartOf => " psm3",
+					PartOf => " eth_module",
 					},
 );
 
 my %delta_autostart_save = ();
 # ==========================================================================
-# Delta psm3 build in prep for installation
+# Delta eth_module build in prep for installation
 
 # based on %delta_srpm_info{}{'Available'} determine if the given SRPM is
 # buildable and hence available on this CPU for $osver combination
@@ -150,6 +151,8 @@ sub init_delta_info($)
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel82 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel83 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
+		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel84 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel8 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES78" ) {
@@ -218,7 +221,7 @@ sub delta_srpm_file($$)
 # indicate where DELTA built RPMs can be found
 sub delta_rpms_dir()
 {
-	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
+	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
 
 	if (-d "$srcdir/$RPMS_SUBDIR/$CUR_DISTRO_VENDOR-$CUR_VENDOR_VER" ) {
 		return "$srcdir/$RPMS_SUBDIR/$CUR_DISTRO_VENDOR-$CUR_VENDOR_VER";
@@ -402,7 +405,7 @@ sub build_delta($$$$$$)
 
 	# -------------------------------------------------------------------------
 	# perform the builds
-	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
+	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
 
 	# use a different directory for BUILD_ROOT to limit conflict with OFED
 	if ("$build_temp" eq "" ) {
@@ -465,7 +468,7 @@ sub build_delta($$$$$$)
 }
 
 # forward declarations
-sub installed_delta_psm3();
+sub installed_delta_eth_module();
 
 # TBD - might not need any more
 # return 0 on success, != 0 otherwise
@@ -530,9 +533,9 @@ sub uninstall_old_delta_rpms($$$)
 # rpms
 sub uninstall_prev_versions()
 {
-	if (! installed_delta_psm3) {
+	if (! installed_delta_eth_module) {
 		return 0;
-	} elsif (! comp_is_uptodate('psm3')) { # all delta_comp same version
+	} elsif (! comp_is_uptodate('eth_module')) { # all delta_comp same version
 		if (0 != uninstall_old_delta_rpms("any", "silent", "previous OFA DELTA")) {
 			return 1;
 		}
@@ -540,15 +543,10 @@ sub uninstall_prev_versions()
 	return 0;
 }
 
-sub has_version_delta()
-{
-	return -e "$BASE_DIR/version_delta";
-}
-
 sub media_version_delta()
 {
-	# all OFA components at same version as psm3
-	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
+	# all OFA components at same version as eth_module
+	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
 	return `cat "$srcdir/Version"`;
 }
 
@@ -644,6 +642,9 @@ sub IsAutostart_delta_comp2($)
 	my $WhichStartup = $ComponentInfo{$comp}{'StartupScript'};
 	my $ret = $WhichStartup eq "" ? 1 : IsAutostart($WhichStartup);	# just to be safe, test this too
 
+	if ($ComponentInfo{$comp}{'StartupParams'} eq "") {
+		return 0;
+	}
 	# to be true, all parameters must be yes
 	foreach my $p ( @{ $ComponentInfo{$comp}{'StartupParams'} } ) {
 			$ret &= ( read_conf_param($p, "/$OFA_CONFIG") eq "yes");
@@ -685,7 +686,7 @@ sub need_reinstall_delta_comp($$$)
 	my $install_list = shift();	# total that will be installed when done
 	my $installing_list = shift();	# what items are being installed/reinstalled
 
-	if (! comp_is_uptodate('psm3')) { # all delta_comp same version
+	if (! comp_is_uptodate('eth_module')) { # all delta_comp same version
 		# on upgrade force reinstall to recover from uninstall of old rpms
 		return "all";
 	} else {
@@ -711,50 +712,47 @@ sub run_uninstall($$$)
 }
 
 # ==========================================================================
-# psm3 installation
+# eth_module installation
 
 # determine if the given capability is configured for Autostart at boot
-sub IsAutostart2_psm3()
+sub IsAutostart2_eth_module()
 {
 	return status_autostartconfig("RENDEZVOUS");
 }
-sub autostart_desc_psm3()
+sub autostart_desc_eth_module()
 {
-	return autostart_desc_comp('psm3');
+	return autostart_desc_comp('eth_module');
 }
 # enable autostart for the given capability
-sub enable_autostart2_psm3()
+sub enable_autostart2_eth_module()
 {
 	enable_autostartconfig("RENDEZVOUS")
 }
 # disable autostart for the given capability
-sub disable_autostart2_psm3()
+sub disable_autostart2_eth_module()
 {
 	disable_autostartconfig("RENDEZVOUS")
 }
 
-sub get_rpms_dir_psm3($)
+sub get_rpms_dir_eth_module($)
 {
 	my $package = shift();
 	return get_rpms_dir_delta($package)
 }
 
-sub available_psm3()
+sub available_eth_module()
 {
-    my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
-        return (-d "$srcdir/SRPMS" || -d "$srcdir/RPMS" );
+	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
+	return (-d "$srcdir/SRPMS" || -d "$srcdir/RPMS" );
 }
 
-sub installed_psm3()
+sub installed_eth_module()
 {
-	return (installed_delta_psm3);
+	return (installed_delta_eth_module);
 }
 
-sub installed_delta_psm3()
+sub installed_delta_eth_module()
 {
-	if (! has_version_delta()) {
-		return 0;
-	}
 	if (rpm_is_installed("iefs-kernel-updates-dkms", "any")) {
 		return 1;
 	}
@@ -771,11 +769,12 @@ sub installed_delta_psm3()
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
+		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES124" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES125" ) {
-		return (has_version_delta()
-		     && rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER));
+		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {
@@ -787,9 +786,13 @@ sub installed_delta_psm3()
 	}
 }
 
-# only called if installed_psm3 is true
-sub installed_version_psm3()
+# only called if installed_eth_module is true
+sub installed_version_eth_module()
 {
+	if (rpm_is_installed("ethmeta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+		return dot_version("$version");
+	}
 	if ( -e "$BASE_DIR/version_delta" ) {
 		return `cat $BASE_DIR/version_delta`;
 	} else {
@@ -797,10 +800,141 @@ sub installed_version_psm3()
 	}
 }
 
+# only called if available_eth_module is true
+sub media_version_eth_module()
+{
+	return media_version_delta();
+}
+
+sub build_eth_module($$$$)
+{
+	my $osver = shift();
+	my $debug = shift();    # enable extra debug of build itself
+	my $build_temp = shift();       # temp area for use by build
+	my $force = shift();    # force a rebuild
+
+	init_delta_info($osver);
+
+	return build_delta("@Components", "@Components", $osver, $debug,$build_temp,$force);
+}
+
+sub need_reinstall_eth_module($$)
+{
+	my $install_list = shift();     # total that will be installed when done
+	my $installing_list = shift();  # what items are being installed/reinstalled
+
+	return (need_reinstall_delta_comp('eth_module', $install_list, $installing_list));
+}
+
+sub preinstall_eth_module($$)
+{
+	my $install_list = shift();     # total that will be installed when done
+	my $installing_list = shift();  # what items are being installed/reinstalled
+
+	return preinstall_delta("eth_module", $install_list, $installing_list);
+}
+
+sub install_eth_module($$)
+{
+	my $install_list = shift();     # total that will be installed when done
+	my $installing_list = shift();  # what items are being installed/reinstalled
+
+	print_comp_install_banner('eth_module');
+	setup_env("ETH_INSTALL_CALLER", 1);
+
+	install_comp_rpms('eth_module', " -U --nodeps ", $install_list);
+
+	need_reboot();
+
+	$ComponentWasInstalled{'eth_module'}=1;
+}
+
+sub postinstall_eth_module($$)
+{
+	my $install_list = shift();     # total that will be installed when done
+	my $installing_list = shift();  # what items are being installed/reinstalled
+	delta_restore_autostart('eth_module');
+
+	rebuild_ramdisk();
+}
+
+sub uninstall_eth_module($$)
+{
+	my $install_list = shift();     # total that will be left installed when done
+	my $uninstalling_list = shift();        # what items are being uninstalled
+
+	print_comp_uninstall_banner('eth_module');
+	setup_env("ETH_INSTALL_CALLER", 1);
+	uninstall_comp_rpms('eth_module', ' --nodeps ', $install_list, $uninstalling_list, 'verbose');
+	need_reboot();
+	$ComponentWasInstalled{'eth_module'}=0;
+	rebuild_ramdisk();
+}
+
+sub check_os_prereqs_eth_module
+{
+	return rpm_check_os_prereqs("eth_module", "any");
+}
+
+# ==========================================================================
+# psm3 installation
+
+# determine if the given capability is configured for Autostart at boot
+sub IsAutostart2_psm3()
+{
+	return IsAutostart_delta_comp2('psm3');
+}
+sub autostart_desc_psm3()
+{
+	return autostart_desc_comp('psm3');
+}
+# enable autostart for the given capability
+sub enable_autostart2_psm3()
+{
+	enable_autostart($ComponentInfo{'psm3'}{'StartupScript'});
+}
+# disable autostart for the given capability
+sub disable_autostart2_psm3()
+{
+	disable_autostart($ComponentInfo{'psm3'}{'StartupScript'});
+}
+
+sub get_rpms_dir_psm3($)
+{
+	my $package = shift();
+	return get_rpms_dir_delta($package)
+}
+
+sub available_psm3()
+{
+    my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
+        return (-d "$srcdir/SRPMS" || -d "$srcdir/RPMS" );
+}
+
+sub installed_delta_psm3()
+{
+	return rpm_is_installed("libpsm3-fi", "any");
+}
+
+sub installed_psm3()
+{
+	return (installed_delta_psm3);
+}
+
+# only called if installed_psm3 is true
+sub installed_version_psm3()
+{
+	my $version = rpm_query_version_release_pkg("libpsm3-fi");
+	return dot_version("$version");
+}
+
 # only called if available_psm3 is true
 sub media_version_psm3()
 {
-    return media_version_delta();
+	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
+	my $rpmfile = rpm_resolve("$srcdir/RPMS/*/libpsm3-fi", "any");
+	my $version= rpm_query_version_release("$rpmfile");
+	return dot_version("$version");
 }
 
 sub build_psm3($$$$)
@@ -810,9 +944,7 @@ sub build_psm3($$$$)
     my $build_temp = shift();       # temp area for use by build
     my $force = shift();    # force a rebuild
 
-    init_delta_info($osver);
-
-    return build_delta("@Components", "@Components", $osver, $debug,$build_temp,$force);
+    return 0;
 }
 
 sub need_reinstall_psm3($$)
@@ -828,7 +960,7 @@ sub preinstall_psm3($$)
     my $install_list = shift();     # total that will be installed when done
     my $installing_list = shift();  # what items are being installed/reinstalled
 
-    return preinstall_delta("psm3", $install_list, $installing_list);
+    return 0;
 }
 
 sub install_psm3($$)
@@ -841,9 +973,8 @@ sub install_psm3($$)
 
     install_comp_rpms('psm3', " -U --nodeps ", $install_list);
 
-    need_reboot();
-
     my $version = media_version_delta();
+	chomp $version;
     system "echo '$version' > $BASE_DIR/version_delta 2>/dev/null";
     $ComponentWasInstalled{'psm3'}=1;
 }
@@ -852,9 +983,6 @@ sub postinstall_psm3($$)
 {
     my $install_list = shift();     # total that will be installed when done
     my $installing_list = shift();  # what items are being installed/reinstalled
-    delta_restore_autostart('psm3');
-
-	rebuild_ramdisk();
 }
 
 sub uninstall_psm3($$)
@@ -865,10 +993,8 @@ sub uninstall_psm3($$)
     print_comp_uninstall_banner('psm3');
     setup_env("ETH_INSTALL_CALLER", 1);
     uninstall_comp_rpms('psm3', ' --nodeps ', $install_list, $uninstalling_list, 'verbose');
-    need_reboot();
+	system("rm -rf $BASE_DIR/version_delta");
     $ComponentWasInstalled{'psm3'}=0;
-    remove_blacklist('hfi1');
-    rebuild_ramdisk();
 }
 
 sub check_os_prereqs_psm3
@@ -891,6 +1017,10 @@ sub installed_eth_rdma()
 
 sub installed_version_eth_rdma()
 {
+	if (rpm_is_installed("ethmeta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+		return dot_version("$version");
+	}
 	if ( -e "$BASE_DIR/version_delta" ) {
 		return `cat $BASE_DIR/version_delta`;
 	} else {
@@ -937,13 +1067,11 @@ sub install_eth_rdma($$)
 	install_comp_rpms('eth_rdma', " -U --nodeps ", $install_list);
 
 	# bonding is more involved, require user to edit to enable that
-	if (!$Default_SameAutostart) {
-		config_roce("y");
-		config_lmtsel("$DEFAULT_LIMITS_SEL");
-		Config_ifcfg();
-		#Config_IPoIB_cfg;
-		need_reboot();
-	}
+	config_roce("y");
+	config_lmtsel("$DEFAULT_LIMITS_SEL");
+	Config_ifcfg();
+	#Config_IPoIB_cfg;
+	need_reboot();
 	$ComponentWasInstalled{'eth_rdma'}=1;
 }
 
@@ -994,13 +1122,16 @@ sub available_delta_debug()
 
 sub installed_delta_debug()
 {
-	return (rpm_is_installed("libibumad-debuginfo", "user")
-			&& has_version_delta());
+	return rpm_is_installed("libpsm3-fi-debuginfo", "user");
 }
 
 # only called if installed_delta_debug is true
 sub installed_version_delta_debug()
 {
+	if (rpm_is_installed("ethmeta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+		return dot_version("$version");
+	}
 	if ( -e "$BASE_DIR/version_delta" ) {
 		return `cat $BASE_DIR/version_delta`;
 	} else {
@@ -1140,19 +1271,15 @@ sub available_ibacm()
 
 sub installed_ibacm()
 {
-	return (rpm_is_installed("ibacm", "user")
-			&& has_version_delta());
+	return rpm_is_installed("ibacm", "user");
 }
 
 # only used on RHEL72, for other distros ibacm is only a SubComponent
 # only called if installed_ibacm is true
 sub installed_version_ibacm()
 {
-	if ( -e "$BASE_DIR/version_delta" ) {
-		return `cat $BASE_DIR/version_delta`;
-	} else {
-		return "";
-	}
+	my $version = rpm_query_version_release_pkg("ibacm");
+	return dot_version("$version");
 }
 
 # only called if available_ibacm is true

@@ -51,7 +51,7 @@ readonly BASENAME="$(basename $0)"
 
 Usage_basic()
 {
-	echo "Usage: $BASENAME [-E file] [-X snapshot_input]" >&2
+	echo "Usage: $BASENAME [-v] [-q] [-E file] [-p planes] [-X snapshot_input]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -60,7 +60,7 @@ Usage_basic()
 	echo "   -E file - Ethernet Mgt config file" >&2
 	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
 	echo "   -p planes - Fabric planes separated by space. Default is" >&2
-	echo "            the first enabled plane defined in config file" >&2
+	echo "            the first enabled plane defined in config file." >&2
 	echo "            Value 'ALL' will use all enabled planes." >&2
 	echo "   -X snapshot_input - generate report using data in snapshot_input" >&2
 	echo "for example:" >&2

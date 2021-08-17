@@ -38,15 +38,21 @@
 ## ==========================================================================
 #
 #Installation Prequisites array for delta components
+my @eth_module_prereq = (
+    "bash",
+    "kernel",
+    "kmod",
+);
+$comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
+
 my @psm3_prereq = (
     "bash",
     "glibc",
-    "kernel",
-    "kmod",
     "libfabric",
     "libgcc",
     "libibverbs",
     "numactl-libs",
+    "libuuid",
     "rdma-core",
 );
 $comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;

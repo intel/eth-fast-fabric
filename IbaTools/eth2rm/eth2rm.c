@@ -137,16 +137,18 @@ void ShowExpectedLinkPortSelBriefSummary(ExpectedLink *elinkp, PortSelector *por
 		else
 			fprintf(stderr, "                  ");
 		if (portselp->gotPortNum)
-			fprintf(stderr, " %3u               ",portselp->PortNum);
+			fprintf(stderr, " %3u             ",portselp->PortNum);
 		else if (portselp->PortGUID)
 			fprintf(stderr, " 0x%016"PRIx64, portselp->PortGUID);
 		else
 			fprintf(stderr, "                   ");
+		if (portselp->PortId)
+			fprintf(stderr, " %-*s", TINY_STR_ARRAY_SIZE, portselp->PortId);
 		if (portselp->NodeType)
-			fprintf(stderr, " %s",
+			fprintf(stderr, " %-3s ",
 				StlNodeTypeToText(portselp->NodeType));
 		else
-			fprintf(stderr, "   ");
+			fprintf(stderr, "    ");
 		if (portselp->NodeDesc)
 			fprintf(stderr, " %.*s\n",
 				NODE_DESCRIPTION_ARRAY_SIZE, portselp->NodeDesc);
@@ -196,7 +198,7 @@ void ShowExpectedLinksReport(/*Point *focus,*/ int indent, int detail)
 
 	fprintf(stderr, "%*sLinks Topology Expected\n", indent, "");
 
-	fprintf(stderr, "%*sRate MTU  NodeGUID          Port or PortGUID    Type Name\n", indent, "");
+	fprintf(stderr, "%*sRate MTU  NodeGUID          Port or PortGUID  PortId           Type Name\n", indent, "");
 	if (detail && (g_Fabric.flags & FF_CABLEDATA)) {
 		//fprintf(stderr, "%*sPortDetails\n", indent+4, "");
 		//fprintf(stderr, "%*sLinkDetails\n", indent+4, "");

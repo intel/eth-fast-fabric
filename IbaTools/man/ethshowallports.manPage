@@ -21,7 +21,7 @@ ethreport is more powerful Intel(R) Ethernet Fabric Suite FastFabric commands. F
 .SH Syntax
 ethshowallports [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
 .br
-[-S]
+
 .SH Options
 
 .TP 10
@@ -36,10 +36,6 @@ Specifies the file containing the list of hosts in cluster. Default is /etc/eth-
 -h \fIhosts\fR
 
 Specifies the list of hosts for which to show ports.
-.TP 10
--S
-
-Securely prompts for password for admin on chassis.
 .SH Environment Variables
 
 .PP

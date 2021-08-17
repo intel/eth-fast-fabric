@@ -369,6 +369,7 @@ static void LDRLogXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field
  */
 static IXML_FIELD PortDataFields[] = {
 	{ tag:"PortNum", format:'U', IXML_FIELD_INFO(PortData, PortNum) },
+	{ tag:"PortId", format:'C', IXML_FIELD_INFO(PortData, PortInfo.LocalPortId) },
 	{ tag:"MgmtIfAddr", format:'H', IXML_FIELD_INFO(PortData, PortGUID) },
 	{ tag:"EndMgmtIfID", format:'K', format_func:PortDataXmlOutputEndPortLID, end_func:PortDataXmlParserEndEndPortLID }, // bitfield
 //	{ tag:"SubnetPrefix", format:'H', IXML_FIELD_INFO(PortData, PortInfo.SubnetPrefix) },

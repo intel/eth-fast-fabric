@@ -99,6 +99,7 @@ CLEAN_TARGETS		= $(OBJECTS) $(RSCOBJECTS) $(IDL_TARGETS) $(CLEAN_TARGETS_MISC)
 CLOBBER_TARGETS_MISC= comp_ff_of_prereq_RHEL78.pl comp_ff_of_prereq_RHEL79.pl \
                       comp_ff_of_prereq_RHEL8.pl comp_ff_of_prereq_RHEL81.pl \
 		      comp_ff_of_prereq_RHEL82.pl comp_ff_of_prereq_RHEL83.pl \
+		      comp_ff_of_prereq_RHEL84.pl \
                       comp_ff_of_prereq_SLES124.pl comp_ff_of_prereq_SLES125.pl \
                       comp_ff_of_prereq_SLES15.pl comp_ff_of_prereq_SLES151.pl comp_ff_of_prereq_SLES152.pl
 # sub-directory to install to within bin
@@ -129,6 +130,7 @@ LOCALDEPLIBS =
 FF_FILES = comp_ff_of_prereq_RHEL78.pl comp_ff_of_prereq_RHEL79.pl \
 	comp_ff_of_prereq_RHEL8.pl comp_ff_of_prereq_RHEL81.pl \
 	comp_ff_of_prereq_RHEL82.pl comp_ff_of_prereq_RHEL83.pl \
+	comp_ff_of_prereq_RHEL84.pl \
 	comp_ff_of_prereq_SLES124.pl comp_ff_of_prereq_SLES125.pl \
 	comp_ff_of_prereq_SLES15.pl comp_ff_of_prereq_SLES151.pl comp_ff_of_prereq_SLES152.pl
 

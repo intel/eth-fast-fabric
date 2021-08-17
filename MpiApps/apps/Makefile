@@ -74,6 +74,11 @@ endif
 ifndef MPI_LIB_DIR
 export MPI_LIB_DIR=/lib
 endif
+ifeq "$(MPI_APPS_CUDA)" "y"
+ifndef CUDA_DIR
+CUDA_DIR=/usr/local/cuda
+endif
+endif
 
 all:: INCLUDES LIBS CMDS
 .PHONY: all
@@ -121,11 +126,23 @@ MULTIBW: SHOWMPI
 
 STRESS: SHOWMPI
 	@echo "Building mpi_stress..."
+ifeq "$(MPI_APPS_CUDA)" "y"
+	cd mpi_stress;\
+	$(MPICC) -DMPI_STRESS_CUDA -I$(MPI_INCLUDE_DIR) -I$(CUDA_DIR)/include -L$(CUDA_DIR)/lib64 -o mpi_stress mpi_stress.c -lcuda -lcudart -lz;
+else
 	cd mpi_stress;\
 	$(MPICC) -I$(MPI_INCLUDE_DIR) -o mpi_stress mpi_stress.c -lz;
+endif
 	@echo
 .PHONY: STRESS
 
+ifeq "$(MPI_APPS_CUDA)" "y"
+OSU_CONFIG=--enable-cuda --with-cuda=$(CUDA_DIR)
+OSU_PATH="$(PATH):$(CUDA_DIR)/bin"
+else
+OSU_CONFIG=
+OSU_PATH="$(PATH)"
+endif
 OSU563: SHOWMPI
 	@echo "Building OSU 5.6.3 benchmarks..."
 	cd osu-micro-benchmarks-5.6.3; \
@@ -133,12 +150,13 @@ OSU563: SHOWMPI
 		find . -name Makefile.in |xargs -r touch; \
 		find . -name configure |xargs -r touch
 	cd osu-micro-benchmarks-5.6.3; \
+	export PATH=$(OSU_PATH); \
 	if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" || "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
 		# intel compiler \
-		./configure CC=$(REAL_MPICC) CXX=$(REAL_MPICXX) LIBS="-lirc"; make; \
+		./configure $(OSU_CONFIG) CC=$(REAL_MPICC) CXX=$(REAL_MPICXX) LIBS="-lirc"; make; \
 	else \
 		# gcc compiler \
-		./configure CC=$(REAL_MPICC) CXX=$(REAL_MPICXX); make; \
+		./configure $(OSU_CONFIG) CC=$(REAL_MPICC) CXX=$(REAL_MPICXX); make; \
 	fi
 	@echo
 .PHONY: OSU563

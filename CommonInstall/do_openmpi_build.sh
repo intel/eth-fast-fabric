@@ -104,7 +104,7 @@ CheckPreReqs()
 
 Usage()
 {
-	echo "Usage: do_openmpi_build [-d] [-O|-C] [config_opt [install_dir]]" >&2
+	echo "Usage: do_openmpi_build [-d|-O|-C] [config_opt [install_dir]]" >&2
 	echo "       -d - use default settings for openmpi options" >&2
 	echo "            if omitted, will be prompted for each option" >&2
 	echo "       -O - build the MPI targeted for the OFI API." >&2
@@ -115,7 +115,7 @@ Usage()
 	echo "       install_dir - where to install MPI, see MPICH_PREFIX below" >&2
 	echo "" >&2
 	echo "Environment:" >&2
-	echo "    STACK_PREFIX - where to find IB stack." >&2
+	echo "    STACK_PREFIX - where to find IEFS stack. Default is /usr" >&2
 	echo "    BUILD_DIR - temporary directory to use during build of MPI" >&2
 	echo "            Default is /var/tmp/Intel-openmpi" >&2
 	echo "    MPICH_PREFIX - selects location for installed MPI" >&2
@@ -175,20 +175,37 @@ get_yes_no()
 	done
 }
 
+check_arg()
+{
+	if [ -n "$opt" ]
+	then
+		echo "ERROR: Option '-$o': cannot use with '-$opt'" >&2
+		Usage
+	fi
+	opt="$1"
+}
+
+opt=
 skip_prompt=n
 iflag=n	# undocumented option, build in context of install
-Qflag=n
 Oflag=n
 Cflag=n
-while getopts "idQOC" o
+while getopts "idOC" o
 do
 	case "$o" in
-	i) iflag=y;;
-	Q) Qflag=y;;
-	O) Oflag=y;;
-	C) Cflag=y;;
-	d) skip_prompt=y;;
-	*) Usage;;
+	i)
+		iflag=y;;
+	O)
+		check_arg $o
+		Oflag=y;;
+	C)
+		check_arg $o
+		Cflag=y;;
+	d)
+		check_arg $o
+		skip_prompt=y;;
+	*)
+		Usage;;
 	esac
 done
 shift $((OPTIND -1))
@@ -213,7 +230,7 @@ then
 fi
 
 echo
-echo "IFS OpenMPI MPI Library/Tools rebuild"
+echo "IEFS OpenMPI MPI Library/Tools rebuild"
 
 if [ x"$1" != x"" ]
 then
@@ -274,36 +291,10 @@ fi
 export PATH=$PATH:$NVCCDIR
 
 # now get openmpi options.
-if [ "$skip_prompt" != y -a "$Qflag" != y ]
+if [ -z "$opt" ]
 then
-	if rpm -qa|grep infinipath-psm-devel >/dev/null 2>&1
-	then
-		echo
-		get_yes_no "Build for True Scale HCA PSM" "y"
-		if [ "$ans" = 1 ]
-		then
-			Qflag=y
-		fi
-	fi
-fi
-
-if [ "$skip_prompt" != y -a "$Oflag" != y ]
-then
-	if rpm -qa|grep libfabric-devel >/dev/null 2>&1
-	then
-		echo
-		get_yes_no "Build for OFI" "y"
-		if [ "$ans" = 1 ]
-		then
-			Oflag=y
-		fi
-	fi
-fi
-
-if [ "$skip_prompt" != y -a "$Cflag" != y ]
-then
-	if  rpm -qa|grep libfabric-devel >/dev/null 2>&1  &&
-		rpm -qa|grep cuda-cudart-dev >/dev/null 2>&1
+	Oflag=y # by default build for OFI if no options
+	if  rpm -qa|grep cuda-cudart-dev >/dev/null 2>&1
 	then
 		echo
 		get_yes_no "Build for OFI with Cuda" "y"
@@ -313,7 +304,7 @@ then
 		fi
 	fi
 fi
-# if -d (skip_prompt) the only option provided, ./configure will run with
+# if -d (skip_prompt) is the only option provided, ./configure will run with
 # no paramters and build what is auto-detected
 
 openmpi_conf_psm=''
@@ -325,20 +316,20 @@ if [ "$Oflag" = y ]
 then
 	PREREQ+=('libfabric-devel')
 	openmpi_conf_psm=" $openmpi_conf_psm --with-libfabric=/usr "
-	# PSM2 indicated by ofi suffix so user can ID from PSM or OFI MPIs
+	# OFI indicated by ofi suffix so user can ID from other MPI builds
 	openmpi_path_suffix="-ofi"
 	openmpi_rpm_suffix="_ofi"
-	interface=psm
+	interface=ofi
 fi
 
 if [ "$Cflag" = y ]
 then
 	PREREQ+=('libfabric-devel' 'cuda-cudart-dev')
 	openmpi_conf_psm=" $openmpi_conf_psm --with-libfabric=/usr --with-cuda=/usr/local/cuda "
-	# CUDA indicated by -cuda suffix so user can ID  from PSM2 without cuda, PSM or OFI MPIs
+	# CUDA indicated by -cuda-ofi suffix so user can ID from other MPI builds
 	openmpi_path_suffix="-cuda-ofi"
 	openmpi_rpm_suffix="_cuda_ofi"
-	interface=psm
+	interface=cuda_ofi
 fi
 
 CheckPreReqs
@@ -352,7 +343,12 @@ unset FFLAGS
 unset F90FLAGS
 unset LDLIBS
 
-logfile=make.openmpi.$interface.$compiler
+if [ -z "$interface" ]
+then
+	logfile=make.openmpi.$compiler
+else
+	logfile=make.openmpi.$interface.$compiler
+fi
 (
 	STACK_PREFIX=${STACK_PREFIX:-/usr}
 	BUILD_DIR=${BUILD_DIR:-/var/tmp/Intel-openmpi}
@@ -527,7 +523,7 @@ logfile=make.openmpi.$interface.$compiler
 
 	if [ "$Cflag" = y ]
 	then
-		pref_env="$pref_env MPI_STRESS_CUDA=1"
+		pref_env="$pref_env"
 	else
 		# HWLOC component auto detects CUDA and will use it even if it is NOT
 		# a CUDA OMPI build. So, tell HWLOC to ignore CUDA (if found on the system)

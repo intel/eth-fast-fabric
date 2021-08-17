@@ -117,6 +117,9 @@ static const char *FormatPortSelector(PortSelector *portselp)
 	if (portselp->gotPortNum) {
 		offset += sprintf(&format[offset], "%*sPortNum: %u", offset?1:0, "", portselp->PortNum);
 	}
+	if (portselp->PortId) {
+		offset += sprintf(&format[offset], "%*sPortId: %s", offset?1:0, "", portselp->PortId);
+	}
 	if (portselp->PortGUID) {
 		offset += sprintf(&format[offset], "%*sPortGUID: 0x%016"PRIx64, offset?1:0, "", portselp->PortGUID);
 	}
@@ -186,12 +189,15 @@ static void ResolvePortSelector(FabricData_t *fabricp, PortSelector *portselp, N
 	// as basic template for topology input
 	// Valid combos in order of consideration:
 	// 		NodeGUID, PortNum
+	// 		NodeGUID, PortId
 	// 		NodeGUID, PortGUID - only if PortGUID on same node as NodeGUID
 	// 		NodeGUID (fully resolves to port if only 1 port on node)
 	// 		NodeDesc, PortNum
+	// 		NodeDesc, PortId
 	// 		NodeDesc, PortGUID - only if PortGUID on same node as NodeDesc
 	// 		NodeDesc (fully resolves to port if only 1 port on node)
 	// 		PortGUID, PortNum (useful if PortGUID is switch port 0)
+	// 		PortGUID, PortId (useful if PortGUID is switch port 0)
 	// 		PortGUID
 	// presently:
 	//		NodeGuid, NodeDesc - NodeDesc is ignored
@@ -218,6 +224,13 @@ static void ResolvePortSelector(FabricData_t *fabricp, PortSelector *portselp, N
 		PortData *portp = FindNodePort(*nodepp, portselp->PortNum);
 		if (portp) {
 			*portpp = portp;	// overrides PortGUID
+ 			*matchLevel=MATCH_PORT;
+		}
+	}
+	if (*nodepp && ! *portpp && portselp->PortId) {
+		PortData *portp = FindNodePortId(*nodepp, portselp->PortId);
+		if (portp) {
+			*portpp = portp;
  			*matchLevel=MATCH_PORT;
 		}
 	}
@@ -265,8 +278,10 @@ static boolean isCompletePortSelector(PortSelector *portselp)
 	if (! portselp)
 		return FALSE;
 	return ((portselp->NodeGUID && portselp->gotPortNum)
+		|| (portselp->NodeGUID && portselp->PortId)
 		|| (portselp->PortGUID)
-		|| (portselp->NodeDesc && portselp->gotPortNum));
+		|| (portselp->NodeDesc && portselp->gotPortNum)
+		|| (portselp->NodeDesc && portselp->PortId));
 	// the two below are indeterminate
 	// 		NodeGUID (fully resolves to port if only 1 port on node)
 	// 		NodeDesc (fully resolves to port if only 1 port on node)
@@ -277,6 +292,7 @@ IXML_FIELD PortSelectorFields[] = {
 	{ tag:"IfAddr", format:'h', IXML_FIELD_INFO(PortSelector, NodeGUID) },
 	{ tag:"MgmtIfAddr", format:'h', IXML_FIELD_INFO(PortSelector, PortGUID) },
 	{ tag:"PortNum", format:'k', format_func: PortSelectorXmlOutputPortNum, end_func:PortSelectorXmlParserEndPortNum },
+	{ tag:"PortId", format:'p', IXML_P_FIELD_INFO(PortSelector, PortId, TINY_STR_ARRAY_SIZE) },
 	{ tag:"NodeDesc", format:'p', IXML_P_FIELD_INFO(PortSelector, NodeDesc, STL_NODE_DESCRIPTION_ARRAY_SIZE) },
 	{ tag:"PortDetails", format:'p', IXML_P_FIELD_INFO(PortSelector, details, PORT_DETAILS_STRLEN) },
 	{ tag:"NodeType", format:'k', IXML_FIELD_INFO(PortSelector, NodeType), format_func:IXmlOutputOptionalNodeType, end_func:IXmlParserEndNodeType },	// input str output both
@@ -562,19 +578,19 @@ static void ExpectedPortXmlParserEndPortNum(IXmlParserState_t *state, const IXML
 	}
 }
 
-static void ExpectedPortXmlParserEndLmc(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
-{
-	uint8 value;
-
-	if (IXmlParseUint8(state, content, len, &value))
-		((ExpectedPort *)object)->lmc = value;
-}
+//static void ExpectedPortXmlParserEndLmc(IXmlParserState_t *state, const IXML_FIELD *field void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+//{
+//	uint8 value;
+//
+//	if (IXmlParseUint8(state, content, len, &value))
+//		((ExpectedPort *)object)->lmc = value;
+//}
 
 static IXML_FIELD ExpectedPortFields[] = {
 	{ tag:"PortNum", format:'u', end_func:ExpectedPortXmlParserEndPortNum },
-	{ tag:"LID", format:'h', IXML_FIELD_INFO(ExpectedPort, lid) },
-	{ tag:"LMC", format:'u', end_func:ExpectedPortXmlParserEndLmc },
-	{ tag:"PortGUID", format:'h', IXML_FIELD_INFO(ExpectedPort, PortGuid) },
+	{ tag:"PortId", format:'p', IXML_FIELD_INFO(ExpectedPort, PortId) },
+	{ tag:"IfID", format:'h', IXML_FIELD_INFO(ExpectedPort, lid) },
+	{ tag:"MgmtIfAddr", format:'h', IXML_FIELD_INFO(ExpectedPort, PortGuid) },
 	{ NULL }
 };
 

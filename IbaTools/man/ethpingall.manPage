@@ -12,11 +12,11 @@ ethpingall
 
 
 .PP
-Pings a group of hosts or chassis to verify that they are powered on and accessible through TCP/IP ping.
+Pings a group of hosts or switches to verify that they are powered on and accessible through TCP/IP ping.
 .SH Syntax
-ethpingall [-C] [-p] [-f  \fIhostfile\fR] [-F  \fIchassisfile\fR] [-h \[aq]hosts\[aq]]
+ethpingall [-C] [-p] [-f  \fIhostfile\fR] [-F  \fIswitchesfile\fR] [-h \[aq]hosts\[aq]]
 .br
-[-H \[aq]chassis\[aq]]
+[-H \[aq]switches\[aq]]
 .SH Options
 
 .TP 10
@@ -27,12 +27,12 @@ Produces full help text.
 .TP 10
 -C
 
-Performs a ping against a chassis. Default is hosts.
+Performs a ping against switches. Default is hosts.
 
 .TP 10
 -p
 
-Pings all hosts /chassis in parallel.
+Pings all hosts /switches in parallel.
 
 .TP 10
 -f \fIhostfile\fR
@@ -42,11 +42,11 @@ Specifies the file with hosts in cluster.
 Default is /etc/eth-tools/hosts.
 
 .TP 10
--F \fIchassisfile\fR
+-F \fIswitchesfile\fR
 
-Specifies the file with chassis in cluster.
+Specifies the file with switches in cluster.
 .br
-Default is /etc/eth-tools/chassis.
+Default is /etc/eth-tools/switches.
 
 .TP 10
 -h hosts
@@ -54,9 +54,9 @@ Default is /etc/eth-tools/chassis.
 Specifies the list of hosts to ping.
 
 .TP 10
--H chassis
+-H switches
 
-Specifies the list of chassis to ping.
+Specifies the list of switches to ping.
 
 .SH Example
 ethpingall
@@ -72,13 +72,13 @@ ethpingall -C
 .PP
 
 .B NOTE:
-This command pings all hosts /chassis found in the specified host /chassis file. The use of -C option merely selects the default file and/or environment variable to use. For this command, it is valid to use a file that lists both hosts and chassis.
+This command pings all hosts /switches found in the specified host /switches file. The use of -C option merely selects the default file and/or environment variable to use. For this command, it is valid to use a file that lists both hosts and switches.
 
 .br
-ethpingall -C -H \[aq]chassis1 chassis2\[aq]
+ethpingall -C -H \[aq]switch1 switch2\[aq]
 .br
 
-CHASSIS=\[aq]chassis1 chassis2\[aq] ethpingall -C
+SWITCHES=\[aq]switch1 switch2\[aq] ethpingall -C
 .SH Environment Variables
 
 .TP 10
@@ -87,9 +87,9 @@ CHASSIS=\[aq]chassis1 chassis2\[aq] ethpingall -C
 List of hosts, used if -h option not supplied.
 
 .TP 10
-\fBCHASSIS\fR
+\fBSWITCHES\fR
 
-List of chassis, used if -H option not supplied.
+List of switches, used if -H option not supplied.
 
 .TP 10
 \fBHOSTS\(ulFILE\fR
@@ -97,9 +97,9 @@ List of chassis, used if -H option not supplied.
 File containing list of hosts, used in absence of -f and -h.
 
 .TP 10
-\fBCHASSIS\(ulFILE\fR
+\fBSWITCHES\(ulFILE\fR
 
-File containing list of chassis, used in absence of -F and -H.
+File containing list of switches, used in absence of -F and -H.
 
 .TP 10
 \fBFF\(ulMAX\(ulPARALLEL\fR

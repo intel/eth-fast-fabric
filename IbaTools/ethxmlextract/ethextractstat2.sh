@@ -212,7 +212,7 @@ do
 done < <(cat $tempfile | \
         /usr/sbin/ethxmlextract -d \; -e Link:id -e Rate -e Internal -e LinkDetails \
         -e CableLength -e CableLabel -e CableDetails -e Port.IfAddr \
-        -e Port.MgmtIfAddr -e Port.PortNum -e Port.NodeType -e Port.NodeDesc \
+        -e Port.MgmtIfAddr -e Port.PortNum -e Port.PortId -e Port.NodeType -e Port.NodeDesc \
         -e Port.PortDetails \
         -e IfHCOutOctetsValue -e IfHCOutUcastPktsValue -e IfHCOutMulticastPktsValue \
         -e IfHCInOctetsValue -e IfHCInUcastPktsValue -e IfHCInMulticastPktsValue \

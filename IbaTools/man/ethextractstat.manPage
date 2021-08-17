@@ -51,15 +51,6 @@ Generates a report using the data in the snapshot\(ulinput file. snapshot\(ulinp
 .TP 10
 
 .sp
--A/--allports
-Gets PortInfo for down switch ports.
-
-.RE
-
-.RS
-.TP 10
-
-.sp
 -c/--config \fIfile\fR
 Specifies the error thresholds configuration file. Default is /etc/eth-tools/ethmon.conf file.
 
@@ -71,6 +62,15 @@ Specifies the error thresholds configuration file. Default is /etc/eth-tools/eth
 .sp
 -E/--eth \fIconfig\(ulfile\fR
 Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+
+.RE
+
+.RS
+.TP 10
+
+.sp
+-p \fIplane\fR
+Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
 
 .RE
 

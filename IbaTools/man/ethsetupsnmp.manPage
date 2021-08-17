@@ -14,7 +14,7 @@ ethsetupsnmp
 .PP
 Sets up SNMP on hosts to allow ethreport to query fabric data through SNMP.
 .SH Syntax
-ethsetupsnmp [-p] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-a  \fIadmin\fR]
+ethsetupsnmp [-p] [-L] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-a  \fIadmin\fR]
 .br
 
 [-c  \fIcommunity\fR] [-m  \fImibs\fR]
@@ -41,6 +41,11 @@ Default is /etc/eth-tools/hosts.
 -h \fIhosts\fR
 
 Specifies the list of hosts in cluster.
+
+.TP 10
+-L
+
+Include localhost (the current node) in setup.
 
 .TP 10
 -a \fIadmin\fR

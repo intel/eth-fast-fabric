@@ -8,13 +8,13 @@ Url: http://www.intel.com/
 Source: eth-mpi-apps.tgz
 
 AutoReq: no
+Requires: eth-tools-fastfabric%{?_isa} >= %{version}-%{release}
 __RPM_REQ
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 Contains applications and source for testing MPI performance in conjunction with eth-tools-basic or stand alone.
-IFSComponent: Tools_FF __RPM_VERSION.__RPM_RELEASE
 
 __RPM_DBG
 
@@ -46,8 +46,13 @@ rm -rf $RPM_BUILD_ROOT
 %files -f %{_builddir}/mpi_apps.list
 
 %changelog
+* Tue Apr 6 2021 Jijun Wang <jijun.wang@intel.com> - 11.1.0.0
+- added req on eth-tools-fast-fabric
+- removed component information in description
+
 * Mon Feb 26 2018 Jijun Wang <jijun.wang@intel.com> - 10.8.0.0
 - Added component information in description for all rpms
+
 * Wed Dec 2 2015 Brandon Yates <brandon.yates@intel.com>
 - Initial Creation
 

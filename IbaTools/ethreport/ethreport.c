@@ -500,14 +500,15 @@ void ShowPointPortBriefSummary(const char* prefix, PortData *portp, Format_t for
 	switch (format) {
 	case FORMAT_TEXT:
 		if (portp->PortGUID)
-			printf("%*s%s%3u 0x%016"PRIx64"\n",
+			printf("%*s%s%3u %s 0x%016"PRIx64"\n",
 				indent, "", prefix,
 				portp->PortNum,
+				portp->PortInfo.LocalPortId,
 				portp->PortGUID);
 		else
-			printf("%*s%s%3u\n",
+			printf("%*s%s%3u %s\n",
 				indent, "", prefix,
-				portp->PortNum);
+				portp->PortNum, portp->PortInfo.LocalPortId);
 		ShowPointNodeBriefSummary("in Node: ", portp->nodep, format,
 								indent+4, detail);
 		break;
@@ -515,6 +516,7 @@ void ShowPointPortBriefSummary(const char* prefix, PortData *portp, Format_t for
 		printf("%*s<Port id=\"0x%016"PRIx64":%u\">\n", indent, "",
 				portp->nodep->NodeInfo.NodeGUID, portp->PortNum);
 		XmlPrintDec("PortNum", portp->PortNum, indent+4);
+		XmlPrintStr("PortId", (const char*) portp->PortInfo.LocalPortId, indent+4);
 		if (portp->PortGUID)
 			XmlPrintHex64("MgmtIfAddr", portp->PortGUID, indent+4);
 		ShowPointNodeBriefSummary("in Node: ", portp->nodep, format,
@@ -566,8 +568,8 @@ void ShowExpectedLinkPortSelBriefSummary(const char* prefix,
 			PortData *portp = side == 1 ? elinkp->portp1 : elinkp->portp2;
 			if (portp)
 				printf(" %-*s", TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId);
-			else
-				printf("                 ");
+			else if (portselp->PortId)
+				printf(" %-*s", TINY_STR_ARRAY_SIZE, portselp->PortId);
 			if (portselp->NodeType)
 				printf(" %s",
 					StlNodeTypeToText(portselp->NodeType));
@@ -598,6 +600,8 @@ void ShowExpectedLinkPortSelBriefSummary(const char* prefix,
 			PortData *portp = side == 1 ? elinkp->portp1 : elinkp->portp2;
 			if (portp)
 				XmlPrintStr("PortId", (const char*) portp->PortInfo.LocalPortId, indent+4);
+			else if (portselp->PortId)
+				XmlPrintStr("PortId", portselp->PortId, indent+4);
 			if (portselp->PortGUID)
 				XmlPrintHex64("MgmtIfAddr", portselp->PortGUID, indent+4);
 			if (portselp->NodeType)
@@ -1271,9 +1275,8 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 				XmlPrintPortIfID("EndMgmtIfID", portp->EndPortLID,
 							indent+4);
 			XmlPrintHex64("MgmtIfAddr", portp->PortGUID, indent+4);
-		} else {
-			XmlPrintStr("PortId", (const char*) pPortInfo->LocalPortId, indent+4);
 		}
+		XmlPrintStr("PortId", (const char*) pPortInfo->LocalPortId, indent+4);
 		{
 			PortSelector* portselp = GetPortSelector(portp);
 			if (portselp && portselp->details) {
@@ -2180,7 +2183,7 @@ void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int deta
 					TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId,
 					portp->PortGUID);
 			else
-				printf("%*s%3u 0x%04x %-*s 0x%016"PRIx64,
+				printf("%*s%3u 0x%06x   %-*s 0x%016"PRIx64,
 					indent, "", portp->PortNum, portp->EndPortLID,
 					TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId,
 					portp->PortGUID);
@@ -2223,7 +2226,7 @@ void ShowPortBriefSummaryHeadings(Format_t format, int indent, int detail)
 {
 	switch (format) {
 	case FORMAT_TEXT:
-		printf("%*sPort IfID      PortId         MgmtIfAddr          Speed\n", indent, "");
+		printf("%*sPort IfID      PortId           MgmtIfAddr          Speed\n", indent, "");
 		break;
 	case FORMAT_XML:
 		break;
@@ -3718,7 +3721,7 @@ void ShowAllIPReport(Point *focus, Format_t format, int indent, int detail)
 				printf( "%*s0x%.*x", indent, "", (portp->EndPortLID <= IB_MAX_UCAST_LID ? 4:8),
 					portp->EndPortLID);
 				printf("       ");
-				printf( " 0x%016"PRIx64" %3u %s %s\n",
+				printf( " 0x%016"PRIx64" %3u   %s  %s\n",
 					nodep->NodeInfo.NodeGUID, portp->PortNum,
 					StlNodeTypeToText(nodep->NodeInfo.NodeType),
 					g_noname?g_name_marker:(char*)nodep->NodeDesc.NodeString );
@@ -3869,7 +3872,7 @@ void Usage_full(void)
 	fprintf(stderr, "                                potential\n");
 	fprintf(stderr, "    errors                    - summary of links whose errors exceed counts in\n");
 	fprintf(stderr, "                                config file\n");
-	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
+//	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
 	fprintf(stderr, "    verifynics                 - compare fabric (or snapshot) NICs to supplied\n");
 	fprintf(stderr, "                                topology and identify differences and omissions\n");
 	fprintf(stderr, "    verifysws                 - compare fabric (or snapshot) Switches to\n");
@@ -3909,25 +3912,39 @@ void Usage_full(void)
 	fprintf(stderr, "   ifid:value                 - value is numeric ifid\n");
 	fprintf(stderr, "   ifid:value:node            - value is numeric ifid, selects node with given ifid\n");
 	fprintf(stderr, "   ifid:value:port:value2     - value is numeric ifid of node, value2 is port #\n");
+	fprintf(stderr, "   ifid:value:portid:value2   - value is numeric ifid of node, value2 is port id\n");
 	fprintf(stderr, "   mgmtifaddr:value           - value is numeric port mgmtifaddr\n");
 	fprintf(stderr, "   ifaddr:value               - value is numeric node ifaddr\n");
 	fprintf(stderr, "   ifaddr:value1:port:value2\n");
 	fprintf(stderr, "                              - value1 is numeric node ifaddr, value2 is port #\n");
+	fprintf(stderr, "   ifaddr:value1:portid:value2\n");
+	fprintf(stderr, "                              - value1 is numeric node ifaddr, value2 is port id\n");
 	fprintf(stderr, "   chassisid:value            - value is numeric chassisid\n");
 	fprintf(stderr, "   chassisid:value1:port:value2\n");
-	fprintf(stderr, "                              - value1 is numeric chassisid value2 is port #\n");
+	fprintf(stderr, "                              - value1 is numeric chassisid, value2 is port #\n");
+	fprintf(stderr, "   chassisid:value1:portid:value2\n");
+	fprintf(stderr, "                              - value1 is numeric chassisid, value2 is port id\n");
 	fprintf(stderr, "   node:value                 - value is node description (node name)\n");
-	fprintf(stderr, "   node:value1:port:value2    - value1 is node description (node name) value2 is port #\n");
+	fprintf(stderr, "   node:value1:port:value2    - value1 is node description (node name), value2 is port #\n");
+	fprintf(stderr, "   node:value1:portid:value2  - value1 is node description (node name), value2 is port id\n");
 	fprintf(stderr, "   nodepat:value              - value is glob pattern for node description (node name)\n");
 	fprintf(stderr, "   nodepat:value1:port:value2 - value1 is glob pattern for node description\n");
 	fprintf(stderr, "                                (node name), value2 is port #\n");
+	fprintf(stderr, "   nodepat:value1:portid:value2\n");
+	fprintf(stderr, "                              - value1 is glob pattern for node description\n");
+	fprintf(stderr, "                                (node name), value2 is port id\n");
 	fprintf(stderr, "   nodedetpat:value           - value is glob pattern for node details\n");
 	fprintf(stderr, "   nodedetpat:value1:port:value2\n");
 	fprintf(stderr, "                              - value1 is glob pattern for node details,\n");
 	fprintf(stderr, "                                value2 is port #\n");
+	fprintf(stderr, "   nodedetpat:value1:portid:value2\n");
+	fprintf(stderr, "                              - value1 is glob pattern for node details,\n");
+	fprintf(stderr, "                                value2 is port id\n");
 	fprintf(stderr, "   nodetype:value             - value is node type (SW or NIC)\n");
 	fprintf(stderr, "   nodetype:value1:port:value2\n");
-	fprintf(stderr, "                              - value1 is node type (SW or NIC) value2 is port #\n");
+	fprintf(stderr, "                              - value1 is node type (SW or NIC), value2 is port #\n");
+	fprintf(stderr, "   nodetype:value1:portid:value2\n");
+	fprintf(stderr, "                              - value1 is node type (SW or NIC), value2 is port id\n");
 	fprintf(stderr, "   rate:value                 - value is string for rate (25g, 50g, 75g, 100g, 150g, 200g)\n");
 	fprintf(stderr, "                                omits switch mgmt port 0\n");
 	fprintf(stderr, "   portstate:value            - value is string for state (up, down, testing, unknown,\n");
@@ -4004,7 +4021,7 @@ void Usage(void)
 	fprintf(stderr, "                                potential\n");
 	fprintf(stderr, "    errors                    - summary of links whose errors exceed counts in\n");
 	fprintf(stderr, "                                config file\n");
-	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
+//	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
 	fprintf(stderr, "    all                       - comp, nodes, links, extlinks,\n");
 	fprintf(stderr, "                                slowconnlinks, and error reports\n");
 	fprintf(stderr, "    fabricinfo                - fabric information\n");
@@ -4173,8 +4190,8 @@ report_t checkOutputType(const char* name)
 		return REPORT_MISCONNLINKS;
 	} else if (0 == strcmp(optarg, "errors")) {
 		return REPORT_ERRORS;
-	} else if (0 == strcmp(optarg, "otherports")) {
-		return REPORT_OTHERPORTS;
+//	} else if (0 == strcmp(optarg, "otherports")) {
+//		return REPORT_OTHERPORTS;
 	} else if (0 == strcmp(optarg, "verifylinks")) {
 		return REPORT_VERIFYLINKS;
 	} else if (0 == strcmp(optarg, "verifyextlinks")) {

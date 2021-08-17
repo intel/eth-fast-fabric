@@ -94,7 +94,7 @@ fi
   #    2 Link values (CSV 2-3) (Rate, LinkDetails)
   #    3 Cable values (CSV 4-6) (CableLength, CableLabel, CableDetails)
   #    5 CableInfo values (CSV 7-11) (DeviceTechShort, ... VendorRev)
-  #    2 Port values (CSV 12-13) (NodeDesc, PortNum)
+  #    3 Port values (CSV 12-14) (NodeDesc, PortNum, PortId)
   # due to the nesting of tags, ethxmlextract will output the following
   #    All lines have LinkID and Rate and one set of Cable values, Cableinfo values, or Port Values
 
@@ -127,7 +127,7 @@ function genReport()
 			# Display the header the first time through
 			if [ $printHeader -eq 1 ]
 			then
-				echo "Rate;LinkDetails;CableLength;CableLabel;CableDetails;DeviceTechShort;CableInfo.Length;CableInfo.VendorName;CableInfo.VendorPN;CableInfo.VendorRev;Port.NodeDesc;Port.PortNum;Port.NodeDesc;Port.PortNum"
+				echo "Rate;LinkDetails;CableLength;CableLabel;CableDetails;DeviceTechShort;CableInfo.Length;CableInfo.VendorName;CableInfo.VendorPN;CableInfo.VendorRev;Port.NodeDesc;Port.PortNum;Port.PortId;Port.NodeDesc;Port.PortNum;Port.PortId"
 				printHeader=0
 			fi
 
@@ -172,7 +172,7 @@ function genReport()
 		then
 			if [ "$Port1ValuesStr" == ";" ]
 			then
-				Port1ValuesStr=`echo $line | cut -d \; -f 12-13`
+				Port1ValuesStr=`echo $line | cut -d \; -f 12-14`
 			fi
 
 			if [ "$Port1ValuesStr" != ";" ]
@@ -183,7 +183,7 @@ function genReport()
 		then
 			if [ "$Port2ValuesStr" == ";" ]
 			then
-				Port2ValuesStr=`echo $line | cut -d \; -f 12-13`
+				Port2ValuesStr=`echo $line | cut -d \; -f 12-14`
 			fi
 
 			if [ "$Port2ValuesStr" != ";" ]
@@ -196,7 +196,7 @@ function genReport()
 		/usr/sbin/ethxmlextract -H -d \; -e Link:id -e Rate -e LinkDetails -e CableLength \
 		-e CableLabel -e CableDetails -e DeviceTechShort -e CableInfo.Length \
 		-e CableInfo.VendorName -e CableInfo.VendorPN -e CableInfo.VendorRev \
-		-e Port.NodeDesc -e Port.PortNum)
+		-e Port.NodeDesc -e Port.PortNum -e Port.PortId)
 
 
 	# Now print the final link record

@@ -78,7 +78,7 @@ fi
 echo '<?xml version="1.0" encoding="utf-8" ?>'
 echo "<Report plane=\"$plane\">"
 echo '<LinkSummary>'
-/usr/sbin/ethxmlgenerate -X ${TOOL_DIR}/ethtopology_links.txt -d \; -h Link -g Rate -g MTU -g Internal -g LinkDetails -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g IfAddr -g PortNum -g NodeDesc -g MgmtIfAddr -g NodeType -g PortDetails -e Port -h Port -g IfAddr -g PortNum -g NodeDesc -g MgmtIfAddr -g NodeType -g PortDetails -e Port -e Link
+/usr/sbin/ethxmlgenerate -X ${TOOL_DIR}/ethtopology_links.txt -d \; -h Link -g Rate -g MTU -g Internal -g LinkDetails -h Cable -g CableLength -g CableLabel -g CableDetails -e Cable -h Port -g IfAddr -g PortNum -g PortId -g NodeDesc -g MgmtIfAddr -g NodeType -g PortDetails -e Port -h Port -g IfAddr -g PortNum -g PortId -g NodeDesc -g MgmtIfAddr -g NodeType -g PortDetails -e Port -e Link
 echo '</LinkSummary>'
 echo '<Nodes>'
 echo '<NICs>'

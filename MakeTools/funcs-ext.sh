@@ -1309,7 +1309,15 @@ getIntelcompilervarsfile()
 	foundfile=
 	for f in $(ls -rd /opt/intel/${prefix}*)
 	do
-		if [ -f $f/$subdir/bin/compilervars.sh ]
+		# Expect PREFIX = oneapi/compiler/2021.2.0
+		if grep -q 'oneapi' <<<"${prefix}" 2>/dev/null
+		then
+			if [ -f $f/env/vars.sh ]
+			then
+				foundfile=$f/env/vars.sh
+				break
+			fi
+		elif [ -f $f/$subdir/bin/compilervars.sh ]
 		then
 			foundfile=$f/$subdir/bin/compilervars.sh
 			break

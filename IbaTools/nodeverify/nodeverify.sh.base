@@ -45,6 +45,7 @@ NIC_IFS=""      # space separated interface list used in fabric. Empty string wi
 ROCE_IFS=""     # space separated interface list used for RoCE (which will be
                 # used to check PFC settings). Empty string will use the NIC_IFS
 LIMITS_SEL=5    # expected irdma Resource Limits Selector
+MTU=9000        # expected MTU. empty string will ignore MTU verification
 PCI_MAXPAYLOAD=256	  # expected value for PCI max payload
 PCI_MINREADREQ=512	  # expected value for PCI min read req size
 PCI_MAXREADREQ=4096	 # expected value for PCI max read req size
@@ -876,49 +877,81 @@ test_nic_settings()
 	date
 
 	set -x
+	failure=0
 
 	#confirm ice and irdma are loaded
 	ice=$(lsmod | grep ice)
 	[ -n "$ice" ] || fail "ice module not loaded"
 	irdma=$(lsmod | grep irdma)
-	[ -n "$irdma" ] || fail "irdma module not loaded"
-
-	#confirm RoCE is enabled
-	[ $(cat /sys/module/irdma/parameters/roce_ena) -eq "0" ] && fail "RoCE is not enabled..."
+	[ -n "$irdma" ] || { fail_msg "irdma module not loaded"; failure=1; }
 
 	#confirm irdma limits_sel is expected
 	sel=$(cat /sys/module/irdma/parameters/limits_sel)
-	[ $sel -ne $LIMITS_SEL ] && fail "Incorrect irdma limits_sel: Expect $LIMITS_SEL  Got $sel"
+	[ $sel -ne $LIMITS_SEL ] && \
+		{ fail_msg "Incorrect irdma limits_sel: Expect $LIMITS_SEL  Got $sel"; failure=1; }
 
 	for dev in $ROCE_IFS; do
 		(check_nic_settings $dev)
+		[ $? -eq 0 ] || failure=1
 	done
+
+	[ $failure -ne 0 ] && exit 1
+
+	pass
 }
 
 check_nic_settings()
 {
 	dev=$1
+	failure=0
 
-	check_tool ethtool
+	if type ethtool > /dev/null
+	then
+		#confirm firmware DCB mode is enabled
+		[ $(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}') == "on" ] || \
+			{ fail_msg "fw-lldp-agent is off for $dev..."; failure=1; }
 
-	#confirm firmware DCB mode is enabled
-	[ $(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}') == "on" ] || fail "fw-lldp-agent is off for $dev..."
+		#confirm LFC is disabled
+		[[ $(ethtool -a $dev | grep RX | awk '{print $2}') == "on" || \
+			$(ethtool -a $dev | grep TX | awk '{print $2}') == "on" ]] && \
+			{ fail_msg "PFC not configured correctly; LFC is enabled for $dev..."; failure=1; }
+	else
+		fail_msg "Cannot find ethtool. Skipped PFC config check on $dev."
+		failure=1
+	fi
 
-	#confirm LFC is disabled
-	( [ $(ethtool -a $dev | grep RX | awk '{print $2}') == "on" ] || [ $(ethtool -a $dev | grep TX | awk '{print $2}') == "on" ] ) && fail "PFC not configured correctly; LFC is enabled for $dev..."
+	#confirm MTU
+	act_mtu=$(ip addr show dev $dev | head -n 1 | sed 's/^.* mtu \([0-9]\+\) .*/\1/g')
+	[[ -z "$MTU" || $act_mtu -eq $MTU ]] || \
+		{ fail_msg "Incorrect MTU on $dev. Expect $MTU, got $act_mtu"; failure=1; }
 
 	# get Intel Ethernet NIC information
 	slot=$(ls -l /sys/class/net | grep $dev | awk '{print $11}' | cut -d "/" -f 6)
+	[ -n "$slot" ] || fail "Cannot find device slot or $dev"
 	irdma_dev=$(ls $(find /sys/devices/ -name $slot)/infiniband)
+	[ -n "$irdma_dev" ] || fail "Cannot find irdma device for $dev"
+
+	# confirm RoCE
+	if type ibv_devinfo > /dev/null
+	then
+		ibv_devinfo -d $irdma_dev | grep "transport:\s\+InfiniBand" || \
+			{ fail_msg "RoCE is off on device $dev"; failure=1; }
+	else
+		fail_msg "Cannot find ibv_devinfo. Skipped RoCE check on $dev."
+		failure=1
+	fi
 
 	#confirm roce_cwnd setting
-	[ $(cat /sys/kernel/config/irdma/$irdma_dev/roce_cwnd) -eq "1024" ] || fail "PFC not configured correctly; roce_cwnd does not indicate flow control is detected on $irdma_dev..."
+	[ $(cat /sys/kernel/config/irdma/$irdma_dev/roce_cwnd) -eq "1024" ] || \
+		{ fail_msg "PFC not configured correctly; roce_cwnd does not indicate flow control is detected on $dev..."; failure=1; }
 
 	#confirm IPv4 GID
-	cat /sys/class/infiniband/$irdma_dev/ports/1/gids/* | egrep -e "^0000:0000:0000:0000:0000:ffff:[a-fA-F0-9]+:[a-fA-F0-9]+$" || fail "IPv4 GID not found on $irdma_dev"
+	cat /sys/class/infiniband/$irdma_dev/ports/1/gids/* | egrep -e "^0000:0000:0000:0000:0000:ffff:[a-fA-F0-9]+:[a-fA-F0-9]+$" || \
+		{ fail_msg "IPv4 GID not found on $dev"; failure=1; }
 
 	set +x
 
+	[ $failure -ne 0 ] && exit 1
 	pass " $dev"
 }
 

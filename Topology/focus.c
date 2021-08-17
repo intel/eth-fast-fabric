@@ -46,8 +46,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 // Functions to Parse Focus arguments and build POINTs for matches
-typedef boolean (PointPortElinkCompareCallback_t)(ExpectedLink *elinkp, void *nodecmp, uint8 portnum);
-static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, uint8 find_flag, PointPortElinkCompareCallback_t *callback, void *nodecmp, char **pp);
+typedef boolean (PointPortElinkCompareCallback_t)(ExpectedLink *elinkp, void *nodecmp, uint8 portnum, char* portid);
+static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, boolean is_portnunm, Point *pPoint, uint8 find_flag, PointPortElinkCompareCallback_t *callback, void *nodecmp, char **pp);
 
 /* check arg to see if 1st characters match prefix, if so return pointer
  * into arg just after prefix, otherwise return NULL
@@ -96,7 +96,11 @@ static FSTATUS ParseIfIDPoint(FabricData_t *fabricp, char *arg, Point *pPoint, u
 		} else if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
 			pPoint->u.nodep = portp->nodep;
 			pPoint->Type = POINT_TYPE_NODE;
-			return ParsePointPort(fabricp, param, pPoint, find_flag, NULL, NULL, pp);
+			return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag, NULL, NULL, pp);
+		} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+			pPoint->u.nodep = portp->nodep;
+			pPoint->Type = POINT_TYPE_NODE;
+			return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag, NULL, NULL, pp);
 		}
 		return FSUCCESS;
 	} else {
@@ -126,21 +130,34 @@ static FSTATUS ParseMgmtIfAddrPoint(FabricData_t *fabricp, char *arg, Point *pPo
 /* Parse a :port:# suffix, this will limit the Point to the list of ports
  * with the given number
  */
-static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, uint8 find_flag, PointPortElinkCompareCallback_t *callback, void *nodecmp, char **pp)
+static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, boolean is_portnunm, Point *pPoint, uint8 find_flag, PointPortElinkCompareCallback_t *callback, void *nodecmp, char **pp)
 {
-	uint8 portnum;
+	uint8 portnum = 0;
+	char portid[TINY_STR_ARRAY_SIZE+1] = "";
 	FSTATUS status;
 	Point newPoint;
 	boolean fabric_fail = FALSE;
 
 	ASSERT(PointValid(pPoint));
 	PointInit(&newPoint);
-	if (FSUCCESS != StringToUint8(&portnum, arg, pp, 0, TRUE))  {
-		fprintf(stderr, "%s: Invalid Port Number format: '%s'\n",
-						g_Top_cmdname, arg);
-		status = FINVALID_PARAMETER;
-		goto fail;
+
+	if (is_portnunm) {
+		if (FSUCCESS != StringToUint8(&portnum, arg, pp, 0, TRUE))  {
+			fprintf(stderr, "%s: Invalid Port Number format: '%s'\n",
+							g_Top_cmdname, arg);
+			status = FINVALID_PARAMETER;
+			goto fail;
+		}
+	} else {
+		StringCopy(portid, arg, sizeof(portid));
+		*pp = arg + strlen(portid);
+		if (!portid[0]) {
+			fprintf(stderr, "%s: empty port id\n", g_Top_cmdname);
+			status = FINVALID_PARAMETER;
+			goto fail;
+		}
 	}
+
 	// for fabric we try to provide a more detailed message using the
 	// fabric_fail flag and leaving some of the information in the pPoint
 	if (find_flag & FIND_FLAG_FABRIC) {
@@ -161,7 +178,9 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 			goto fail;
 		case POINT_TYPE_NODE:
 			{
-			PortData *portp = FindNodePort(pPoint->u.nodep, portnum);
+			PortData *portp = is_portnunm ?
+			                  FindNodePort(pPoint->u.nodep, portnum) :
+			                  FindNodePortId(pPoint->u.nodep, portid);
 			if (! portp) {
 				fabric_fail = TRUE;
 			} else {
@@ -177,7 +196,9 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 
 			for (i=ListHead(pNodeList); i != NULL; i = ListNext(pNodeList, i)) {
 				NodeData *nodep = (NodeData*)ListObj(i);
-				PortData *portp = FindNodePort(nodep, portnum);
+				PortData *portp = is_portnunm ?
+				                  FindNodePort(nodep, portnum) :
+				                  FindNodePortId(nodep, portid);
 				if (portp) {
 					status = PointListAppend(&newPoint, POINT_TYPE_PORT_LIST, portp);
 					if (FSUCCESS != status)
@@ -198,7 +219,9 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 #if !defined(VXWORKS) || defined(BUILD_DMC)
 		case POINT_TYPE_IOC:
 			{
-			PortData *portp = FindNodePort(pPoint->u.iocp->ioup->nodep, portnum);
+			PortData *portp = is_portnunm ?
+			                  FindNodePort(pPoint->u.iocp->ioup->nodep, portnum) :
+			                  FindNodePortId(pPoint->u.iocp->ioup->nodep, portid);
 			if (! portp) {
 				fabric_fail = TRUE;
 			} else {
@@ -214,7 +237,9 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 
 			for (i=ListHead(pIocList); i != NULL; i = ListNext(pIocList, i)) {
 				IocData *iocp = (IocData*)ListObj(i);
-				PortData *portp = FindNodePort(iocp->ioup->nodep, portnum);
+				PortData *portp = is_portnunm ?
+				                  FindNodePort(iocp->ioup->nodep, portnum) :
+				                  FindNodePortId(iocp->ioup->nodep, portid);
 				if (portp) {
 					status = PointListAppend(&newPoint, POINT_TYPE_PORT_LIST, portp);
 					if (FSUCCESS != status)
@@ -240,7 +265,9 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 
 			for (p=cl_qmap_head(&systemp->Nodes); p != cl_qmap_end(&systemp->Nodes); p = cl_qmap_next(p)) {
 				NodeData *nodep = PARENT_STRUCT(p, NodeData, SystemNodesEntry);
-				PortData *portp = FindNodePort(nodep, portnum);
+				PortData *portp = is_portnunm ?
+				                  FindNodePort(nodep, portnum) :
+				                  FindNodePortId(nodep, portid);
 				if (portp) {
 					status = PointListAppend(&newPoint, POINT_TYPE_PORT_LIST, portp);
 					if (FSUCCESS != status)
@@ -263,54 +290,17 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 
 	// for FIND_FLAG_ENODE leave any selected ExpectedNodes as is
 	
-	if (find_flag & FIND_FLAG_ESM) {
-		switch (pPoint->EsmType) {
-		case POINT_ESM_TYPE_NONE:
-			break;
-		case POINT_ESM_TYPE_SM:
-			if (! (pPoint->u3.esmp->gotPortNum
-					 && pPoint->u3.esmp->PortNum == portnum)) {
-				PointEsmDestroy(pPoint);
-			}
-			break;
-		case POINT_ESM_TYPE_SM_LIST:
-			{
-			LIST_ITERATOR i;
-			DLIST *pEsmList = &pPoint->u3.esmList;
-
-			for (i=ListHead(pEsmList); i != NULL; i = ListNext(pEsmList, i)) {
-				ExpectedSM *esmp = (ExpectedSM*)ListObj(i);
-				if (esmp->gotPortNum && esmp->PortNum == portnum) {
-					status = PointEsmListAppend(&newPoint, POINT_ESM_TYPE_SM_LIST, esmp);
-					if (FSUCCESS != status)
-						goto fail;
-				}
-			}
-			if (! PointValid(&newPoint)) {
-				PointEsmDestroy(pPoint);
-			} else {
-				PointEsmCompress(&newPoint);
-				status = PointEsmCopy(pPoint, &newPoint);
-				PointDestroy(&newPoint);
-				if (FSUCCESS != status)
-					goto fail;
-			}
-			}
-			break;
-		}
-	}
-
 	if ((find_flag & FIND_FLAG_ELINK) && callback) {
 		// rather than retain extra information to indicate which side of
 		// the ELINK matched the original search criteria (nodeguid, nodedesc,
 		// nodedescpat, nodetype) we use a callback to
-		// recompare with the original criteria and also check against portnum
+		// recompare with the original criteria and also check against portnum/portid
 		// N/A search critieria: nodedetpat, iocname, ioctype, iocnamepat
 		switch (pPoint->ElinkType) {
 		case POINT_ELINK_TYPE_NONE:
 			break;
 		case POINT_ELINK_TYPE_LINK:
-			if (! (*callback)(pPoint->u4.elinkp, nodecmp, portnum)){
+			if (! (*callback)(pPoint->u4.elinkp, nodecmp, portnum, portid)){
 				PointElinkDestroy(pPoint);
 			}
 			break;
@@ -321,7 +311,7 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 
 			for (i=ListHead(pElinkList); i != NULL; i = ListNext(pElinkList, i)) {
 				ExpectedLink *elinkp = (ExpectedLink*)ListObj(i);
-				if ((*callback)(elinkp, nodecmp, portnum)){
+				if ((*callback)(elinkp, nodecmp, portnum, portid)){
 					status = PointElinkListAppend(&newPoint, POINT_ELINK_TYPE_LINK_LIST, elinkp);
 					if (FSUCCESS != status)
 						goto fail;
@@ -356,30 +346,48 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, Point *pPoint, u
 			ASSERT(0);	// should not get here
 			break;
 		case POINT_TYPE_NODE:
-			fprintf(stderr, "%s: Node %.*s GUID 0x%016"PRIx64" Port %u Not Found\n",
+			fprintf(stderr, "%s: Node %.*s GUID 0x%016"PRIx64" ",
 				g_Top_cmdname, STL_NODE_DESCRIPTION_ARRAY_SIZE,
 				(char*)pPoint->u.nodep->NodeDesc.NodeString,
-				pPoint->u.nodep->NodeInfo.NodeGUID, portnum);
+				pPoint->u.nodep->NodeInfo.NodeGUID);
+			if (is_portnunm) {
+				fprintf(stderr, "Port %u Not Found\n", portnum);
+			} else {
+				fprintf(stderr, "PortId %s Not Found\n", portid);
+			}
 			break;
 		case POINT_TYPE_NODE_LIST:
 #if !defined(VXWORKS) || defined(BUILD_DMC)
 		case POINT_TYPE_IOC_LIST:
 #endif
 		case POINT_TYPE_SYSTEM:
-			fprintf(stderr, "%s: Port %u Not Found\n", g_Top_cmdname, portnum);
+			if (is_portnunm) {
+				fprintf(stderr, "%s: Port %u Not Found\n", g_Top_cmdname, portnum);
+			} else {
+				fprintf(stderr, "%s: PortId %s Not Found\n", g_Top_cmdname, portid);
+			}
 			break;
 #if !defined(VXWORKS) || defined(BUILD_DMC)
 		case POINT_TYPE_IOC:
-			fprintf(stderr, "%s: IOC %.*s GUID 0x%016"PRIx64" Port %u Not Found\n",
+			fprintf(stderr, "%s: IOC %.*s GUID 0x%016"PRIx64" ",
 					g_Top_cmdname, IOC_IDSTRING_SIZE,
 					(char*)pPoint->u.iocp->IocProfile.IDString,
-					pPoint->u.iocp->IocProfile.IocGUID, portnum);
+					pPoint->u.iocp->IocProfile.IocGUID);
+			if (is_portnunm) {
+				fprintf(stderr, "Port %u Not Found\n", portnum);
+			} else {
+				fprintf(stderr, "PortId %s Not Found\n", portid);
+			}
 			break;
 #endif
 		}
 		status = FNOT_FOUND;
 	} else if (! PointValid(pPoint)) {
-		fprintf(stderr, "%s: Port %u Not Found\n", g_Top_cmdname, portnum);
+		if (is_portnunm) {
+			fprintf(stderr, "%s: Port %u Not Found\n", g_Top_cmdname, portnum);
+		} else {
+			fprintf(stderr, "%s: PortId %s Not Found\n", g_Top_cmdname, portid);
+		}
 		status = FNOT_FOUND;
 	} else {
 		return FSUCCESS;
@@ -391,16 +399,24 @@ fail:
 	return status;
 }
 
-static boolean PointPortElinkCompareNodeGuid(ExpectedLink *elinkp, void *nodecmp, uint8 portnum)
+static boolean PointPortCompare(PortSelector *portselp, uint8 portnum, char* portid)
+{
+	if (portid && portid[0]) {
+		return portselp && portselp->PortId
+		       && (strncmp(portselp->PortId, portid, TINY_STR_ARRAY_SIZE) == 0);
+	} else {
+		return portselp && portselp->gotPortNum && (portselp->PortNum == portnum);
+	}
+}
+
+static boolean PointPortElinkCompareNodeGuid(ExpectedLink *elinkp, void *nodecmp, uint8 portnum, char* portid)
 {
 	EUI64 guid = *(EUI64*)nodecmp;
 
 	return ((elinkp->portselp1 && elinkp->portselp1->NodeGUID == guid
-				 && elinkp->portselp1->gotPortNum
-				 && elinkp->portselp1->PortNum == portnum)
+				 && PointPortCompare(elinkp->portselp1, portnum, portid))
 			|| (elinkp->portselp2 && elinkp->portselp2->NodeGUID == guid
-				 && elinkp->portselp2->gotPortNum
-				 && elinkp->portselp2->PortNum == portnum));
+				 && PointPortCompare(elinkp->portselp2, portnum, portid)));
 }
 
 static FSTATUS ParseIfAddrPoint(FabricData_t *fabricp, char *arg, Point *pPoint, uint8 find_flag, char **pp)
@@ -425,7 +441,10 @@ static FSTATUS ParseIfAddrPoint(FabricData_t *fabricp, char *arg, Point *pPoint,
 		return status;
 
 	if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
-		return ParsePointPort(fabricp, param, pPoint, find_flag, 
+		return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag,
+								PointPortElinkCompareNodeGuid, &guid, pp);
+	} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+		return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag,
 								PointPortElinkCompareNodeGuid, &guid, pp);
 	} else {
 		return FSUCCESS;
@@ -458,7 +477,9 @@ static FSTATUS ParseChassisIDPoint(FabricData_t *fabricp, char *arg, Point *pPoi
 	// N/A for FIND_FLAG_ENODE, FIND_FLAG_ESM and FIND_FLAG_ELINK
 	if (PointValid(pPoint)) {
 		if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
-			return ParsePointPort(fabricp, param, pPoint, find_flag, NULL, NULL, pp);
+			return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag, NULL, NULL, pp);
+		} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+			return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag, NULL, NULL, pp);
 		}
 		return FSUCCESS;
 	} else {
@@ -468,18 +489,16 @@ static FSTATUS ParseChassisIDPoint(FabricData_t *fabricp, char *arg, Point *pPoi
 	}
 }
 
-static boolean PointPortElinkCompareNodeName(ExpectedLink *elinkp, void *nodecmp, uint8 portnum)
+static boolean PointPortElinkCompareNodeName(ExpectedLink *elinkp, void *nodecmp, uint8 portnum, char* portid)
 {
 	char *name = (char*)nodecmp;
 
 	return ((elinkp->portselp1 && elinkp->portselp1->NodeDesc
-				&& elinkp->portselp1->gotPortNum
-				&& elinkp->portselp1->PortNum == portnum
+				&& PointPortCompare(elinkp->portselp1, portnum, portid)
 				&& 0 == strncmp(elinkp->portselp1->NodeDesc,
 								name, STL_NODE_DESCRIPTION_ARRAY_SIZE))
 			|| (elinkp->portselp2 && elinkp->portselp2->NodeDesc
-				&& elinkp->portselp2->gotPortNum
-				&& elinkp->portselp2->PortNum == portnum
+				&& PointPortCompare(elinkp->portselp2, portnum, portid)
 				&& 0 == strncmp(elinkp->portselp2->NodeDesc,
 								name, STL_NODE_DESCRIPTION_ARRAY_SIZE)));
 }
@@ -517,7 +536,10 @@ static FSTATUS ParseNodeNamePoint(FabricData_t *fabricp, char *arg, Point *pPoin
 		return status;
 
 	if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
-		return ParsePointPort(fabricp, param, pPoint, find_flag,
+		return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag,
+								PointPortElinkCompareNodeName, arg, pp);
+	} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+		return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag,
 								PointPortElinkCompareNodeName, arg, pp);
 	} else {
 		return FSUCCESS;
@@ -525,17 +547,15 @@ static FSTATUS ParseNodeNamePoint(FabricData_t *fabricp, char *arg, Point *pPoin
 }
 
 #ifndef __VXWORKS__
-static boolean PointPortElinkCompareNodeNamePat(ExpectedLink *elinkp, void *nodecmp, uint8 portnum)
+static boolean PointPortElinkCompareNodeNamePat(ExpectedLink *elinkp, void *nodecmp, uint8 portnum, char* portid)
 {
 	char *pattern = (char*)nodecmp;
 
 	return ( (elinkp->portselp1 && elinkp->portselp1->NodeDesc
-				&& elinkp->portselp1->gotPortNum
-				&& elinkp->portselp1->PortNum == portnum
+				&& PointPortCompare(elinkp->portselp1, portnum, portid)
 				&& 0 == fnmatch(pattern, elinkp->portselp1->NodeDesc, 0))
 			|| (elinkp->portselp2 && elinkp->portselp2->NodeDesc
-				&& elinkp->portselp2->gotPortNum
-				&& elinkp->portselp2->PortNum == portnum
+				&& PointPortCompare(elinkp->portselp2, portnum, portid)
 				&& 0 == fnmatch(pattern, elinkp->portselp2->NodeDesc, 0)));
 }
 
@@ -750,7 +770,10 @@ static FSTATUS ParseNodeNamePatPoint(FabricData_t *fabricp, char *arg, Point *pP
 		return status;
 
 	if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
-		return ParsePointPort(fabricp, param, pPoint, find_flag,
+		return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag,
+								PointPortElinkCompareNodeNamePat, arg, pp);
+	} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+		return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag,
 								PointPortElinkCompareNodeNamePat, arg, pp);
 	} else {
 		return FSUCCESS;
@@ -794,23 +817,23 @@ static FSTATUS ParseNodeDetPatPoint(FabricData_t *fabricp, char *arg, Point *pPo
 		return status;
 
 	if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
-		return ParsePointPort(fabricp, param, pPoint, find_flag, NULL, NULL, pp);
+		return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag, NULL, NULL, pp);
+	} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+		return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag, NULL, NULL, pp);
 	} else {
 		return FSUCCESS;
 	}
 }
 #endif /* __VXWORKS__ */
 
-static boolean PointPortElinkCompareNodeType(ExpectedLink *elinkp, void *nodecmp, uint8 portnum)
+static boolean PointPortElinkCompareNodeType(ExpectedLink *elinkp, void *nodecmp, uint8 portnum, char* portid)
 {
 	NODE_TYPE type = *(NODE_TYPE*)nodecmp;
 
 	return ((elinkp->portselp1 && elinkp->portselp1->NodeType == type
-				 && elinkp->portselp1->gotPortNum
-				 && elinkp->portselp1->PortNum == portnum)
+				 && PointPortCompare(elinkp->portselp1, portnum, portid) )
 			|| (elinkp->portselp2 && elinkp->portselp2->NodeType == type
-				 && elinkp->portselp2->gotPortNum
-				 && elinkp->portselp2->PortNum == portnum));
+				 && PointPortCompare(elinkp->portselp2, portnum, portid)));
 }
 
 static FSTATUS ParseNodeTypePoint(FabricData_t *fabricp, char *arg, Point *pPoint, uint8 find_flag, char **pp)
@@ -860,7 +883,10 @@ static FSTATUS ParseNodeTypePoint(FabricData_t *fabricp, char *arg, Point *pPoin
 		return status;
 
 	if (NULL != (param = ComparePrefix(*pp, ":port:"))) {
-		return ParsePointPort(fabricp, param, pPoint, find_flag,
+		return ParsePointPort(fabricp, param, TRUE, pPoint, find_flag,
+								PointPortElinkCompareNodeType, &type, pp);
+	} else if (NULL != (param = ComparePrefix(*pp, ":portid:"))) {
+		return ParsePointPort(fabricp, param, FALSE, pPoint, find_flag,
 								PointPortElinkCompareNodeType, &type, pp);
 	} else {
 		return FSUCCESS;

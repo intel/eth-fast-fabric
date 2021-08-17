@@ -154,13 +154,13 @@ gen_errors_punchlist()
 	export IFS=';'
 	port1=
 	#$ETHREPORT "$@" -o errors -x | /usr/sbin/ethxmlextract -H -d \; -e LinkErrors.Link.Port.NodeGUID -e LinkErrors.Link.Port.PortNum -e LinkErrors.Link.Port.NodeType -e LinkErrors.Link.Port.NodeDesc|while read line
-	eval $ETHREPORT "$@" -o errors -x | /usr/sbin/ethxmlextract -H -d \; -e LinkErrors.Link.Port.NodeDesc -e LinkErrors.Link.Port.PortNum|while read desc port
+	eval $ETHREPORT "$@" -o errors -x | /usr/sbin/ethxmlextract -H -d \; -e LinkErrors.Link.Port.NodeDesc -e LinkErrors.Link.Port.PortNum -e LinkErrors.Link.Port.PortId|while read desc port portid
 	do
 		if [ x"$port1" = x ]
 		then
-			port1="$desc p$port"
+			port1="$desc p$port $portid"
 		else
-			append_punchlist "$port1 $desc p$port" "Link errors"
+			append_punchlist "$port1 $desc p$port $portid" "Link errors"
 			port1=
 		fi
 	done
@@ -175,13 +175,13 @@ gen_slowlinks_punchlist()
 	export IFS=';'
 	port1=
 	#$ETHREPORT "$@" -o slowlinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksExpected.Link.Port.NodeGUID -e LinksExpected.Link.Port.PortNum -e LinksExpected.Link.Port.NodeType -e LinksExpected.Link.Port.NodeDesc|while read line
-	eval $ETHREPORT "$@" -o slowlinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksExpected.Link.Port.NodeDesc -e LinksExpected.Link.Port.PortNum|while read desc port
+	eval $ETHREPORT "$@" -o slowlinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksExpected.Link.Port.NodeDesc -e LinksExpected.Link.Port.PortNum -e LinksExpected.Link.Port.PortId|while read desc port portid
 	do
 		if [ x"$port1" = x ]
 		then
-			port1="$desc p$port"
+			port1="$desc p$port $portid"
 		else
-			append_punchlist "$port1 $desc p$port" "Link speed/width lower than expected"
+			append_punchlist "$port1 $desc p$port $portid" "Link speed/width lower than expected"
 			port1=
 		fi
 	done
@@ -196,13 +196,13 @@ gen_misconfiglinks_punchlist()
 	export IFS=';'
 	port1=
 	#$ETHREPORT "$@" -o misconfiglinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksConfig.Link.Port.NodeGUID -e LinksConfig.Link.Port.PortNum -e LinksConfig.Link.Port.NodeType -e LinksConfig.Link.Port.NodeDesc|while read line
-	eval $ETHREPORT "$@" -o misconfiglinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksConfig.Link.Port.NodeDesc -e LinksConfig.Link.Port.PortNum|while read desc port
+	eval $ETHREPORT "$@" -o misconfiglinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksConfig.Link.Port.NodeDesc -e LinksConfig.Link.Port.PortNum -e LinksConfig.Link.Port.PortId|while read desc port portid
 	do
 		if [ x"$port1" = x ]
 		then
-			port1="$desc p$port"
+			port1="$desc p$port $portid"
 		else
-			append_punchlist "$port1 $desc p$port" "Link speed/width configured lower than supported"
+			append_punchlist "$port1 $desc p$port $portid" "Link speed/width configured lower than supported"
 			port1=
 		fi
 	done
@@ -217,13 +217,13 @@ gen_misconnlinks_punchlist()
 	export IFS=';'
 	line1=
 	#$ETHREPORT "$@" -o misconnlinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksMismatched.Link.Port.NodeGUID -e LinksMismatched.Link.Port.PortNum -e LinksMismatched.Link.Port.NodeType -e LinksMismatched.Link.Port.NodeDesc|while read line
-	eval $ETHREPORT "$@" -o misconnlinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksMismatched.Link.Port.NodeDesc -e LinksMismatched.Link.Port.PortNum|while read desc port
+	eval $ETHREPORT "$@" -o misconnlinks -x | /usr/sbin/ethxmlextract -H -d \; -e LinksMismatched.Link.Port.NodeDesc -e LinksMismatched.Link.Port.PortNum -e LinksMismatched.Link.Port.PortId|while read desc port portid
 	do
 		if [ x"$line1" = x ]
 		then
-			line1="$desc p$port"
+			line1="$desc p$port $portid"
 		else
-			append_punchlist "$line1 $desc p$port" "Link speed/width mismatch"
+			append_punchlist "$line1 $desc p$port $portid" "Link speed/width mismatch"
 			line1=
 		fi
 	done
@@ -255,11 +255,11 @@ process_links_csv()
 	port2=
 	foundPort=
 	prob=
-	while read desc port portprob linkprob
+	while read desc port portid portprob linkprob
 	do
 		if [ x"$port1" = x ]
 		then
-			port1="$desc p$port"
+			port1="$desc p$port $portid"
 			prob="$portprob"
 			if [ x"$prob" = x ]
 			then
@@ -267,7 +267,7 @@ process_links_csv()
 			fi
 		elif [ x"$port2" = x ]
 		then
-			port2="$desc p$port"
+			port2="$desc p$port $portid"
 			if [ x"$prob" = x ]
 			then
 				prob=$portprob
@@ -305,35 +305,35 @@ gen_verifylinks_punchlist()
 # $@ =  snapshot, port and/or topology selection options for ethreport
 {
 	# TBD - is cable information available?
-	eval $ETHREPORT "$@" -o verifylinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyLinks.Link.Port.NodeDesc -e VerifyLinks.Link.Port.PortNum -e VerifyLinks.Link.Port.Problem -e VerifyLinks.Link.Problem|process_links_csv
+	eval $ETHREPORT "$@" -o verifylinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyLinks.Link.Port.NodeDesc -e VerifyLinks.Link.Port.PortNum -e VerifyLinks.Link.Port.PortId -e VerifyLinks.Link.Port.Problem -e VerifyLinks.Link.Problem|process_links_csv
 }
 
 gen_verifyextlinks_punchlist()
 # $@ =  snapshot, port and/or topology selection options for ethreport
 {
 	# TBD - is cable information available?
-	eval $ETHREPORT "$@" -o verifyextlinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyExtLinks.Link.Port.NodeDesc -e VerifyExtLinks.Link.Port.PortNum -e VerifyExtLinks.Link.Port.Problem -e VerifyExtLinks.Link.Problem|process_links_csv
+	eval $ETHREPORT "$@" -o verifyextlinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyExtLinks.Link.Port.NodeDesc -e VerifyExtLinks.Link.Port.PortNum -e VerifyExtLinks.Link.Port.PortId -e VerifyExtLinks.Link.Port.Problem -e VerifyExtLinks.Link.Problem|process_links_csv
 }
 
 gen_verifyniclinks_punchlist()
 # $@ =  snapshot, port and/or topology selection options for ethreport
 {
 	# TBD - is cable information available?
-	eval $ETHREPORT "$@" -o verifyniclinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyNICLinks.Link.Port.NodeDesc -e VerifyNICLinks.Link.Port.PortNum -e VerifyNICLinks.Link.Port.Problem -e VerifyNICLinks.Link.Problem|process_links_csv
+	eval $ETHREPORT "$@" -o verifyniclinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyNICLinks.Link.Port.NodeDesc -e VerifyNICLinks.Link.Port.PortNum -e VerifyNICLinks.Link.Port.PortId -e VerifyNICLinks.Link.Port.Problem -e VerifyNICLinks.Link.Problem|process_links_csv
 }
 
 gen_verifyislinks_punchlist()
 # $@ =  snapshot, port and/or topology selection options for ethreport
 {
 	# TBD - is cable information available?
-	eval $ETHREPORT "$@" -o verifyislinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyISLinks.Link.Port.NodeDesc -e VerifyISLinks.Link.Port.PortNum -e VerifyISLinks.Link.Port.Problem -e VerifyISLinks.Link.Problem|process_links_csv
+	eval $ETHREPORT "$@" -o verifyislinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyISLinks.Link.Port.NodeDesc -e VerifyISLinks.Link.Port.PortNum -e VerifyISLinks.Link.Port.PortId -e VerifyISLinks.Link.Port.Problem -e VerifyISLinks.Link.Problem|process_links_csv
 }
 
 gen_verifyextislinks_punchlist()
 # $@ =  snapshot, port and/or topology selection options for ethreport
 {
 	# TBD - is cable information available?
-	eval $ETHREPORT "$@" -o verifyextislinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyExtISLinks.Link.Port.NodeDesc -e VerifyExtISLinks.Link.Port.PortNum -e VerifyExtISLinks.Link.Port.Problem -e VerifyExtISLinks.Link.Problem|process_links_csv
+	eval $ETHREPORT "$@" -o verifyextislinks -x | /usr/sbin/ethxmlextract -H -d \; -e VerifyExtISLinks.Link.Port.NodeDesc -e VerifyExtISLinks.Link.Port.PortNum -e VerifyExtISLinks.Link.Port.PortId -e VerifyExtISLinks.Link.Port.Problem -e VerifyExtISLinks.Link.Problem|process_links_csv
 }
 
 gen_verifynics_punchlist()

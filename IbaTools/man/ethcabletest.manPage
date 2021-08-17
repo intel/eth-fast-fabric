@@ -33,6 +33,11 @@ Specifies the file with hosts to include in NIC-to-SW test. Default is /etc/eth-
 Specifies the list of hosts to include in NIC-SW test.
 
 .TP 10
+-n \fInumprocs\fR
+
+Number of processes per host for NIC-SW test.
+
+.TP 10
 start
 
 Starts the NIC-SW.
@@ -46,12 +51,10 @@ Stops the NIC-SW.
 The NIC-SW cable test requires that the \fBFF\(ulMPI\(ulAPPS\(ulDIR\fR is set, and it contains a pre-built copy of the Intel(R)   mpi\(ulapps for an appropriate message passing interface (MPI).
 .SH Examples
 ethcabletest -f good
-.br
-
 ethcabletest -h \[aq]arwen elrond\[aq] start
+HOSTS=\[aq]arwen elrond\[aq] ethcabletest stop
 .br
 
-HOSTS=\[aq]arwen elrond\[aq] ethcabletest stop
 .SH Environment Variables
 
 .PP

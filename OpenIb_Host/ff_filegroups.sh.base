@@ -27,7 +27,7 @@ ff_tools_sbin="ethcabletest ethcheckload ethextracterror ethextractlink
 	ethpingall ethscpall ethsetupsnmp ethsetupssh ethshowallports ethfabricinfo
 	ethuploadall eth2rm ethextractperf2 ethmergeperf2"
 
-ff_tools_misc="ff_funcs ethgetipaddrtype ethfastfabric.conf.def show_counts"
+ff_tools_misc="ff_funcs ethgetipaddrtype ethfastfabric.conf.def show_counts ethportnum"
 
 ff_tools_fm=""
 

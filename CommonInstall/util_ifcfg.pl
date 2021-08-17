@@ -712,8 +712,8 @@ sub Config_ifcfg()
 		chomp $dev;
 		if (GetYesNo("Configure interface $dev now?", "y") == 1)
 		{
-			my $mtu = GetNumericValue("MTU value", 9000, 68, 655356);
-			Config_MTU($dev, $mtu);
+			# my $mtu = GetNumericValue("MTU value", 9000, 68, 655356);
+			# Config_MTU($dev, $mtu);
 			NormalPrint "Flow Control config, recommend willing mode Priority Flow Control...\n";
 			if (GetYesNo("Turn off Link Level Flow Control?", "y") == 1)
 			{
@@ -749,11 +749,11 @@ sub Reset_ifcfg()
 		chomp $dev;
 		NormalPrint("Restore config for interface $dev\n");
 
-		my $mtu = Get_MTU($dev);
-		if (GetYesNo("Remove MTU ($mtu)?", "y") == 1)
-		{
-			Config_MTU($dev, "");
-		}
+		# my $mtu = Get_MTU($dev);
+		# if (GetYesNo("Remove MTU ($mtu)?", "y") == 1)
+		# {
+		# 	Config_MTU($dev, "");
+		# }
 		if (GetYesNo("Turn off Link Level Flow Control?", "y") == 1)
 		{
 			system "$ETH_SYSTEMCFG_FILE --disable LFC $dev";

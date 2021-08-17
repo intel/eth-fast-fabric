@@ -12,7 +12,7 @@ ethexpandfile
 
 
 .PP
-Expands a Intel(R) Ethernet Fabric Suite FastFabric hosts, chassis, or switches file. This tool expands and filter outs blank and commented lines. This can be useful when building other scripts that may use these files as input.
+Expands a Intel(R) Ethernet Fabric Suite FastFabric hosts, or switches file. This tool expands and filter outs blank and commented lines. This can be useful when building other scripts that may use these files as input.
 .SH Syntax
 ethexpandfile  \fIfile\fR
 .SH Options

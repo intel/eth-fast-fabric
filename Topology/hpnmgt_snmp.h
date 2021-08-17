@@ -109,7 +109,7 @@ SNMPOid dot3HCStatsFrameTooLongs = { ".1.3.6.1.2.1.10.7.11.1.4", SNMP_MSG_GETNEX
 SNMPOid dot3HCStatsInternalMacReceiveErrors = { ".1.3.6.1.2.1.10.7.11.1.5", SNMP_MSG_GETNEXT };
 SNMPOid dot3HCStatsSymbolErrors = { ".1.3.6.1.2.1.10.7.11.1.6", SNMP_MSG_GETNEXT };
 
-SNMPOid dot1dBasePortIfIndex = { ".1.3.6.1.2.1.17.1.4.1.2", SNMP_MSG_GETNEXT };
+//SNMPOid dot1dBasePortIfIndex = { ".1.3.6.1.2.1.17.1.4.1.2", SNMP_MSG_GETNEXT };
 
 SNMPOid ifMauStatus = { ".1.3.6.1.2.1.26.2.1.1.4", SNMP_MSG_GETNEXT };
 SNMPOid ifMauMediaAvailable = { ".1.3.6.1.2.1.26.2.1.1.5", SNMP_MSG_GETNEXT };
@@ -153,7 +153,7 @@ SNMPOid *LLDPOids[] = { &lldpLocChassisId, &lldpLocSysName,
 	&dot3StatsCarrierSenseErrors, &dot3HCStatsAlignmentErrors,
 	&dot3HCStatsFCSErrors, &dot3HCStatsInternalMacTransmitErrors,
 	&dot3HCStatsFrameTooLongs, &dot3HCStatsInternalMacReceiveErrors,
-	&dot3HCStatsSymbolErrors, &dot1dBasePortIfIndex,
+	&dot3HCStatsSymbolErrors,
 	&ifMauStatus, &ifMauMediaAvailable, &ifMauTypeListBits,
 	&ifMauAutoNegAdminStatus, &ifName, &ifHCInOctets, &ifHCInUcastPkts,
 	&ifHCInMulticastPkts, &ifHCOutOctets, &ifHCOutUcastPkts,

@@ -1080,8 +1080,8 @@ sub fabricsetup_configsnmp
 }
 sub fabricsetup_buildmpi
 {
+	my $inp;
 	my $mpi_apps_dir = "/usr/src/eth/mpi_apps";
-	my $build_dir = read_ffconfig_param("FF_MPI_APPS_DIR");
 	if (! -e "$mpi_apps_dir/Makefile") {
 		# the makefile and some of apps are part of opa-fastfabric package
 		print "$mpi_apps_dir/Makefile: not found\n";
@@ -1089,10 +1089,26 @@ sub fabricsetup_buildmpi
 		HitKeyCont;
 		return 1;
 	}
+	my $build_dir = read_ffconfig_param("FF_MPI_APPS_DIR");
+	do {
+		if ("$build_dir" eq "") {
+			print "Enter location to copy and build MPI Apps:";
+		} else {
+			print "Enter location to copy and build MPI Apps [$build_dir]:";
+		}
+		chomp($inp = <STDIN>);
+		$inp=remove_whitespace($inp);
+		if ("$inp" eq "") {
+			$inp = "$build_dir";
+		}
+	} until ( "$inp" ne "");
+	$build_dir = "$inp";
+	print "Build MPI Apps at $build_dir\n";
+	HitKeyCont;
 	# for now do not build NASA, etc, just basic stuff
 	my $mode;
 	my $mpich_prefix;
-	my $inp;
+	my $cuda_opts = "";
 	do {
 		# get default MPI to use
 		$mpich_prefix= `cd $mpi_apps_dir 2>/dev/null; . ./select_mpi 2>/dev/null; echo \$MPICH_PREFIX`;
@@ -1102,6 +1118,7 @@ sub fabricsetup_buildmpi
 		my $prefix="/usr";
 		my $dirs=`find $prefix/mpi -maxdepth 2 -mindepth 2 -type d 2>/dev/null|sort`;
 		$dirs=$dirs . `find /opt/intel/impi/*/intel64 -maxdepth 0 -type d 2>/dev/null|sort`;
+		$dirs=$dirs . `find /opt/intel/oneapi/mpi/* -maxdepth 0 -type d 2>/dev/null|sort`;
 		my @dirs = split /[[:space:]]+/, $dirs;
 
 		#print "The following MPIs have been found on this system:\n";
@@ -1150,6 +1167,30 @@ sub fabricsetup_buildmpi
 		} else {
 			print "You have selected to use MPI: $mpich_prefix\n";
 			$mode="build";
+			# check whether MPI support cuda or not.
+			my $support_cuda = ! system "find $mpich_prefix -name 'libmca_common_cuda.*' | grep libmca_common_cuda > /dev/null";
+			# find valid cuda dir
+			my $cuda_dir = read_ffconfig_param("FF_CUDA_DIR");
+			if ( "$cuda_dir" eq "" ) {
+				$cuda_dir = "/usr/local"
+			}
+			$cuda_dir = `find $cuda_dir -name nvcc 2>/dev/null`;
+			chomp $cuda_dir;
+			$cuda_dir =~ s/\/bin\/nvcc//;
+			if ("$cuda_dir" ne "") {
+				print "\nFound CUDA at $cuda_dir\n";
+				if ($support_cuda) {
+					my $cuda_inp = read_ffconfig_param("FF_MPI_APPS_CUDA");
+					if ("$cuda_inp" eq "") {
+						$cuda_inp = "y";
+					}
+					if (GetYesNo("Build with CUDA support?", "$cuda_inp")) {
+						$cuda_opts = "MPI_APPS_CUDA=y CUDA_DIR=$cuda_dir"
+					}
+				} else {
+					print "Selected MPI doesn't support CUDA. Will build without CUDA support\n";
+				}
+			}
 		}
 	} until (GetYesNo("Are you sure you want to proceed?", "n") );
 			
@@ -1164,11 +1205,11 @@ sub fabricsetup_buildmpi
 	if (!installed_mpiapps()){
 		print "Package $ComponentName{mpiapps} not installed. Only building subset of MPI Apps\n";
 		HitKeyCont;
-		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix make clobber eth-base")) {
+		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber eth-base")) {
 			return 1;
 		}
 	} else{
-		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix make clobber quick")) {
+		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber quick")) {
 			return 1;
 		}
 	}

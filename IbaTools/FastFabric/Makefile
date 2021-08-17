@@ -178,9 +178,6 @@ opacablehealthcron: opacablehealthcron.sh
 opa-cablehealth: opacablehealth.cron
 	$(CP) $< $@
 
-switches:	ibnodes
-	$(CP) $< $@
-
 osid_wrapper:
 	echo $(BUILD_TARGET_OS_ID) > osid_wrapper
 

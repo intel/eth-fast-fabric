@@ -77,7 +77,7 @@ then
 	Usage_full
 fi
 
-/usr/sbin/ethreport -o comps -x -d 10 "$@" | /usr/sbin/ethxmlextract -d \; -e NodeDesc -e ChassisID -e PortNum -e LinkSpeedActive -e IfHCOutOctetsMB -e IfHCOutOctets -e IfHCOutUcastPkts -e IfHCOutMulticastPkts -e IfHCInOctetsMB -e IfHCInOctets -e IfHCInUcastPkts -e IfHCInMulticastPkts -e Dot3HCStatsInternalMacTransmitErrors -e Dot3HCStatsInternalMacReceiveErrors -e Dot3HCStatsSymbolErrors -e IfOutErrors -e IfInErrors -e IfInUnknownProtos -e Dot3HCStatsAlignmentErrors -e Dot3HCStatsFCSErrors -e Dot3HCStatsFrameTooLongs -e IfOutDiscards -e IfInDiscards -e Dot3StatsCarrierSenseErrors -e Dot3StatsSingleCollisionFrames -e Dot3StatsMultipleCollisionFrames -e Dot3StatsSQETestErrors -e Dot3StatsDeferredTransmissions -e Dot3StatsLateCollisions -e Dot3StatsExcessiveCollisions -s Neighbor
+/usr/sbin/ethreport -o comps -x -d 10 "$@" | /usr/sbin/ethxmlextract -d \; -e NodeDesc -e ChassisID -e PortNum -e PortId -e LinkSpeedActive -e IfHCOutOctetsMB -e IfHCOutOctets -e IfHCOutUcastPkts -e IfHCOutMulticastPkts -e IfHCInOctetsMB -e IfHCInOctets -e IfHCInUcastPkts -e IfHCInMulticastPkts -e Dot3HCStatsInternalMacTransmitErrors -e Dot3HCStatsInternalMacReceiveErrors -e Dot3HCStatsSymbolErrors -e IfOutErrors -e IfInErrors -e IfInUnknownProtos -e Dot3HCStatsAlignmentErrors -e Dot3HCStatsFCSErrors -e Dot3HCStatsFrameTooLongs -e IfOutDiscards -e IfInDiscards -e Dot3StatsCarrierSenseErrors -e Dot3StatsSingleCollisionFrames -e Dot3StatsMultipleCollisionFrames -e Dot3StatsSQETestErrors -e Dot3StatsDeferredTransmissions -e Dot3StatsLateCollisions -e Dot3StatsExcessiveCollisions -s Neighbor
 if [ $? -ne 0 ]; then
 	echo "${cmd}: Unable to get performance report" >&2
 	Usage

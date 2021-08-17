@@ -62,7 +62,7 @@ Ethernet Mgt configuration file. The default is /etc/eth-tools/mgt\(ulconfig.xml
 .TP 10
 -p \fIplanes\fR
 
-Fabric planes separated by space.. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
+Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
 
 .TP 10
 \fIreports\fR

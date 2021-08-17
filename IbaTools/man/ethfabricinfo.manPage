@@ -21,7 +21,7 @@ For more extensive fabric analysis, use ethreport. These tools can be found in t
 
 .
 .SH Syntax
-ethfabricinfo [-E  \fIfile\fR] [-X  \fIsnapshot\(ulinput\fR]
+ethfabricinfo [-v] [-q] [-E  \fIfile\fR] [-p  \fIplanes\fR] [-X  \fIsnapshot\(ulinput\fR]
 .SH Options
 
 .TP 10
@@ -29,9 +29,21 @@ ethfabricinfo [-E  \fIfile\fR] [-X  \fIsnapshot\(ulinput\fR]
 
 Produces full help text.
 .TP 10
+-v
+
+verbose output
+.TP 10
+-q
+
+disable progress reports
+.TP 10
 -E \fIfile\fR
 
 Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml.
+.TP 10
+-p \fIplanes\fR
+
+Fabric planes separated by space. Default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
 .TP 10
 -X \fIsnapshot\(ulinput\fR
 

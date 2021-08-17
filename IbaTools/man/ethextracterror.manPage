@@ -49,8 +49,8 @@ Uses topology\(ulinput file to augment and verify fabric information. When used,
 .TP 10
 
 .sp
--A/--allports
-Gets PortInfo for down switch ports.
+-E/--eth \fIconfig\(ulfile\fR
+Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
 
 .RE
 
@@ -58,8 +58,8 @@ Gets PortInfo for down switch ports.
 .TP 10
 
 .sp
--E/--eth \fIconfig\(ulfile\fR
-Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+-p \fIplane\fR
+Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
 
 .RE
 

@@ -65,7 +65,7 @@ ethfabricanalysis
 .PP
 The fabric analysis tool checks the following:
 .IP \(bu
-Fabric links (both internal to switch chassis and external cables)
+Fabric links (both internal to switch and external cables)
 .IP \(bu
 Fabric components (nodes, links, systems, and their configuration)
 .IP \(bu

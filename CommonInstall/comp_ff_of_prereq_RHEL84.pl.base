@@ -37,59 +37,44 @@
 #
 ## ==========================================================================
 #
-#Installation Prequisites array for delta components
-my @eth_module_prereq = (
+#Installation Prequisites array for fast fabric
+#and of tools component
+my @eth_tools_prereq = (
     "bash",
-    "kernel",
-    "kmod",
-);
-$comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
-
-my @psm3_prereq = (
-    "bash",
+    "bc",
+    "expat",
+    "expect",
     "glibc",
-    "libfabric",
-    "libgcc",
-    "libibverbs",
-    "numactl-libs",
-    "libuuid",
-    "rdma-core",
-);
-$comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;
-
-my @openmpi_prereq = (
-    "bash",
-    "glibc",
-    "libgcc",
-    "libgfortran",
-    "gcc-gfortran",
     "libgomp",
-    "libibverbs",
-    "libquadmath",
-    "librdmacm",
-    "libstdc++",
-    "libstdc++-devel",
-    "opensm-libs",
-    "pkgconfig",
-    "zlib",
-);
-$comp_prereq_hash{'openmpi_prereq'} = \@openmpi_prereq;
-
-my @openmpi_gcc_ofi_prereq = (
-    "bash",
-    "glibc",
-    "libfabric",
-    "libgcc",
-    "libgfortran",
-    "libnl3",
-    "libquadmath",
+    "libibumad",
+    "libibverbs-utils",
+    "librdmacm-utils",
+    "net-snmp",
+    "net-snmp-utils",
+    "openssl",
+    "openssl-libs",
     "perl",
-    "pkgconfig",
+    "rdma-core",
+    "tcl",
+);
+$comp_prereq_hash{'eth_tools_prereq'} = \@eth_tools_prereq;
+
+my @fastfabric_prereq = (
+    "bash",
+    "cronie",
+    "expat",
+    "expect",
+    "glibc",
+    "libgcc",
+    "libibumad",
+    "libibverbs",
+    "libstdc++",
+    "ncurses-libs",
+    "net-snmp-libs",
+    "openssl-libs",
+    "openblas-devel",
+    "perl",
+    "tcl",
     "zlib",
 );
-$comp_prereq_hash{'openmpi_gcc_ofi_prereq'} = \@openmpi_gcc_ofi_prereq;
-
-my @openmpi_intel_ofi_prereq = (
-    "bash",
-);
-$comp_prereq_hash{'openmpi_intel_ofi_prereq'} = \@openmpi_intel_ofi_prereq;
+$comp_prereq_hash{'fastfabric_prereq'} = \@fastfabric_prereq;

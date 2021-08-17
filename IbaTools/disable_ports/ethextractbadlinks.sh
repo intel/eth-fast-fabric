@@ -85,7 +85,7 @@ line1=
 /usr/sbin/ethreport -o errors -x -Q "$@" > $tempfile
 if [ -s $tempfile ]
 then
-	cat $tempfile| /usr/sbin/ethxmlextract -H -d \; -e LinkErrors.Link.Port.IfAddr -e LinkErrors.Link.Port.PortNum -e LinkErrors.Link.Port.NodeType -e LinkErrors.Link.Port.NodeDesc|while read line
+	cat $tempfile| /usr/sbin/ethxmlextract -H -d \; -e LinkErrors.Link.Port.IfAddr -e LinkErrors.Link.Port.PortNum -e LinkErrors.Link.Port.PortId -e LinkErrors.Link.Port.NodeType -e LinkErrors.Link.Port.NodeDesc|while read line
 	do
 		if [ x"$line1" = x ]
 		then

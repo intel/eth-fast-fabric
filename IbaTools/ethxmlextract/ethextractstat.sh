@@ -123,7 +123,7 @@ fi
   #    1 Link ID (CSV 1) LinkID
   #    2 Link values (CSV 2-3) (Rate, LinkDetails)
   #    3 Cable values (CSV 4-6) (CableLength, CableLabel, CableDetails)
-  #    3 Port values (CSV 7-9) (NodeDesc, PortNum, LinkQualityIndicator)
+  #    4 Port values (CSV 7-10) (NodeDesc, PortNum, PortId, LinkQualityIndicator)
   # due to the nesting of tags, ethxmlextract will output the following
   #    All lines have LinkID and Rate and one set of Cable values or Port Values
 
@@ -139,7 +139,7 @@ CableValuesStr=";;"
 Port1ValuesStr=";;"
 Port2ValuesStr=";;"
 
-header="Rate;LinkDetails;CableLength;CableLabel;CableDetails;Port.NodeDesc;Port.PortNum;Port.NodeDesc;Port.PortNum"
+header="Rate;LinkDetails;CableLength;CableLabel;CableDetails;Port.NodeDesc;Port.PortNum;Port.PortId;Port.NodeDesc;Port.PortNum;Port.PortId"
 
 
 /usr/sbin/ethreport -x -Q -d 10 -o errors -T "$@" > $tempfile
@@ -221,7 +221,7 @@ do
 
 done < <(cat $tempfile | \
         /usr/sbin/ethxmlextract -H -d \; -e Link:id -e Rate -e LinkDetails -e CableLength \
-        -e CableLabel -e CableDetails -e Port.NodeDesc -e Port.PortNum)
+        -e CableLabel -e CableDetails -e Port.NodeDesc -e Port.PortNum -e Port.PortId)
 
 if [ $printHeader -eq 1 ]
 then

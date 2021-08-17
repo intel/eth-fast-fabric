@@ -61,6 +61,22 @@ PortData * FindNodePort(NodeData *nodep, uint8 port)
 	return PARENT_STRUCT(mi, PortData, NodePortsEntry);
 }
 
+// search for the PortData corresponding to the given node and port id
+PortData * FindNodePortId(NodeData *nodep, char* portid)
+{
+	cl_map_item_t *p;
+	for (p=cl_qmap_head(&nodep->Ports); p != cl_qmap_end(&nodep->Ports); p = cl_qmap_next(p)) {
+		PortData *portp = PARENT_STRUCT(p, PortData, NodePortsEntry);
+		if (strncmp(portp->PortInfo.LocalPortId,
+					portid, TINY_STR_ARRAY_SIZE) == 0)
+		{
+			return portp;
+		}
+	}
+
+	return NULL;
+}
+
 // a cl_pfm_qmap_item_compare_t function
 // compare a LID (in key) against the range of Lids assigned to the
 // given PortData item

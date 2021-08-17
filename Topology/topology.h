@@ -173,6 +173,7 @@ typedef struct PortSelector_s {
 	EUI64 PortGUID;					// 0 if not specified
 	EUI64 NodeGUID;					// 0 if not specified
 	uint8 PortNum;					// 0-255 are valid port numbers
+	char* PortId;					// NULL if not specified
 	uint8 gotPortNum;				// 0 if PortNum not specified
 	uint8 NodeType;					// 0 if not specified
 	char *NodeDesc;					// NULL if not specified
@@ -209,8 +210,8 @@ typedef struct ExpectedLink_s {
  */
 typedef struct ExpectedPort_s {
 	uint8 PortNum;
+	char* PortId;
 	STL_LID lid;
-	uint8 lmc;
 	EUI64 PortGuid;
 	ExpectedLink *elinkp;
 } ExpectedPort;
@@ -1002,6 +1003,8 @@ extern void CLDijkstraFreeDistancesAndRoutes(clDijkstraDistancesAndRoutes_t *drp
 
 // search for the PortData corresponding to the given node and port number
 extern PortData * FindNodePort(NodeData *nodep, uint8 port);
+// search for the PortData corresponding to the given node and port id
+extern PortData * FindNodePortId(NodeData *nodep, char* portid);
 // search for the PortData corresponding to the given lid
 extern PortData * FindLid(FabricData_t* fabricp, STL_LID lid);
 extern PortData * FindEndLid(FabricData_t* fabricp, STL_LID lid);

@@ -53,9 +53,9 @@ $FirstIPoIBInterface=0; # first device is ib0
 	# delta_debug must be last
 
 my @EthAllComponents = (
-	"eth_tools", "psm3", "fastfabric",
-	"eth_rdma", "openmpi_gcc_ofi", "openmpi_intel_ofi",
-	"openmpi_gcc_cuda_ofi", "openmpi_gcc", #"mpiRest",
+	"eth_tools", "psm3", "eth_module", "fastfabric",
+	"eth_rdma", "openmpi_gcc_ofi",
+	"openmpi_gcc_cuda_ofi", #"openmpi_gcc", "openmpi_intel_ofi", "mpiRest",
 	"mpisrc", "delta_debug"	);
 
 my @Components_sles12_sp4 = ( @EthAllComponents );
@@ -69,6 +69,7 @@ my @Components_rhel8 = ( @EthAllComponents );
 my @Components_rhel81 = ( @EthAllComponents );
 my @Components_rhel82 = ( @EthAllComponents );
 my @Components_rhel83 = ( @EthAllComponents );
+my @Components_rhel84 = ( @EthAllComponents );
 
 @Components = ( );
 
@@ -230,6 +231,22 @@ $WrapperComponent = "iefsconfig";
 					  StartupScript => "",
 					  StartupParams => [ ]
 					},
+	"psm3" =>	{ Name => "PSM3",
+					  DefaultInstall => $State_Install,
+					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
+					  PreReq => "", CoReq => "",
+					  Hidden => 0, Disabled => 0, IsOFA => 0,
+					  KernelRpms => [ ],
+					  KernelDkms => [ ],
+					  FirmwareRpms => [ ],
+					  UserRpms => [ "libpsm3-fi" ],
+					  DebugRpms =>  [ "libpsm3-fi-debuginfo" ],
+					  HasStart => 0, HasFirmware => 0, DefaultStart => 0,
+					  StartPreReq => " ",
+					  StartComponents => [ ],
+					  StartupScript => "",
+					  StartupParams => [ ]
+	},
 	"openmpi_gcc" =>	{ Name => "OpenMPI (verbs,gcc)",
 					  DefaultInstall => $State_DoNotInstall,
 					  SrcDir => file_glob ("./OFA_MPIS.*"),
@@ -404,39 +421,39 @@ my %ibacm_comp_info = (
 );
 
 
-my %psm3_rhel_comp_info = (
-	"psm3" =>	{ Name => "PSM3",
+my %eth_module_rhel_comp_info = (
+	"eth_module" =>	{ Name => "Eth Module",
 					  DefaultInstall => $State_Install,
 					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
-					  PreReq => "", CoReq => " eth_tools ",
+					  PreReq => " psm3 ", CoReq => " ",
 					  Hidden => 0, Disabled => 0, IsOFA => 1,
 					  KernelRpms => [ "kmod-iefs-kernel-updates", "iefs-kernel-updates-devel" ],
 					  KernelDkms => [ "iefs-kernel-updates-dkms", "iefs-kernel-updates-devel" ],
 					  FirmwareRpms => [ ],
-					  UserRpms => [ "libpsm3-fi" ],
-					  DebugRpms =>  [ "libpsm3-fi-debuginfo" ],
+					  UserRpms => [ ],
+					  DebugRpms =>  [ ],
 					  HasStart => 1, HasFirmware => 0, DefaultStart => 1,
 					  StartPreReq => " iefsconfig ",
-					  StartComponents => [ "psm3" ],
+					  StartComponents => [ "eth_module" ],
 					  StartupScript => "Rendezvous",
 					  StartupParams => [ ]
 					},
 );
 
-my %psm3_sles_comp_info = (
-	"psm3" =>	{ Name => "PSM3",
+my %eth_module_sles_comp_info = (
+	"eth_module" =>	{ Name => "Eth Module",
 					  DefaultInstall => $State_Install,
 					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
-					  PreReq => "", CoReq => " eth_tools ",
+					  PreReq => " psm3 ", CoReq => " ",
 					  Hidden => 0, Disabled => 0, IsOFA => 1,
 					  KernelRpms => [ "iefs-kernel-updates-kmp-default", "iefs-kernel-updates-devel" ],
 					  KernelDkms => [ "iefs-kernel-updates-dkms", "iefs-kernel-updates-devel" ],
 					  FirmwareRpms => [ ],
-					  UserRpms => [ "libpsm3-fi" ],
-					  DebugRpms =>  [ "libpsm3-fi-debuginfo" ],
+					  UserRpms => [ ],
+					  DebugRpms =>  [ ],
 					  HasStart => 1, HasFirmware => 0, DefaultStart => 1,
 					  StartPreReq => " iefsconfig ",
-					  StartComponents => [ "psm3" ],
+					  StartComponents => [ "eth_module" ],
 					  StartupScript => "Rendezvous",
 					  StartupParams => [ ]
 					},
@@ -469,67 +486,73 @@ sub init_components
 		@Components = ( @Components_sles12_sp4 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_sles_comp_info,
+						%eth_module_sles_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES125" ) {
 		@Components = ( @Components_sles12_sp5 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_sles_comp_info,
+						%eth_module_sles_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES78" ) {
 		@Components = ( @Components_rhel78 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_rhel_comp_info,
+						%eth_module_rhel_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES79" ) {
 		@Components = ( @Components_rhel79 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_rhel_comp_info,
+						%eth_module_rhel_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
 		@Components = ( @Components_rhel8 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_rhel_comp_info,
+						%eth_module_rhel_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
 		@Components = ( @Components_rhel81 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_rhel_comp_info,
+						%eth_module_rhel_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
 		@Components = ( @Components_rhel82 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_rhel_comp_info,
+						%eth_module_rhel_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
 		@Components = ( @Components_rhel83 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_rhel_comp_info,
+						%eth_module_rhel_comp_info,
+						);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
+		@Components = ( @Components_rhel84 );
+		@SubComponents = ( @SubComponents_newer );
+		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
+						%eth_module_rhel_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
 		@Components = ( @Components_sles15 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_sles_comp_info,
+						%eth_module_sles_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {
 		@Components = ( @Components_sles15_sp1 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_sles_comp_info,
+						%eth_module_sles_comp_info,
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES152" ) {
 		@Components = ( @Components_sles15_sp2 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%psm3_sles_comp_info,
+						%eth_module_sles_comp_info,
 						);
 	} else {
 		# unknown or unsupported distro, leave lists empty
@@ -628,12 +651,6 @@ sub install_iefsconfig
 
 	# all meta pkgs depend on iefsconfig. We may directly upgrade iefsconfig, so we remove them first.
 	rpm_uninstall_matches("ethmeta_", "ethmeta_", "", "");
-
-	# do the following before we set any system env vars
-	if ( $Default_SameAutostart ) {
-		# set env vars to -1, so we do not change them during rpm installation
-		setup_env("ETH_ROCE_ON", -1);
-	}
 
 	#override the udev permissions.
 	#install_udev_permissions("$srcdir/config");
@@ -738,6 +755,7 @@ sub uninstall_iefsconfig
 
 	system("rm -rf $BASE_DIR/version_wrapper");
 	system("rm -rf $BASE_DIR/osid_wrapper");
+	system("rm -rf $ETH_CONFIG");
 	# remove the old style version file
 	system("rm -rf /$BASE_DIR/version");
 	system("rm -rf /sbin/iefsconfig");
@@ -853,11 +871,11 @@ sub translate_comp
 {
 	my($arg)=$_[0];
 	if ("$arg" eq "eth"){
-		return ("eth_tools", "psm3", "openmpi_gcc_ofi");
+		return ("eth_tools", "psm3", "eth_module", "openmpi_gcc_ofi");
 	} elsif ("$arg" eq "mpi"){
 		return ( "openmpi_gcc_ofi");
 	} elsif ("$arg" eq "psm_mpi"){
-		return ( "psm3", "openmpi_gcc_ofi");
+		return ( "psm3", "eth_module", "openmpi_gcc_ofi");
 	} elsif ("$arg" eq "delta_mpisrc"){
 		return ( "mpisrc" ); # legacy
 		# no ibaccess argument equivalent for:

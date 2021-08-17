@@ -78,6 +78,7 @@ usage()
 	echo "    -z : enable typical options for data integrity (-drx)" >&2
 	echo "       : (for stronger integrity checking try using -drc instead)" >&2
 	echo "    -Z : zero receive buffers at init and after each receive" >&2
+	echo "    send recv : send and receive devices (H=Host, D=GPU)" >&2
 	echo "This an an MPI stress test program designed to load up an MPI" >&2
 	echo "interconnect with point-to-point messages while optionally" >&2
 	echo "checking for data integrity. By default, it runs with all-to-all" >&2

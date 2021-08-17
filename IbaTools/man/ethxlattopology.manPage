@@ -17,7 +17,7 @@ Generates a topology XML file of a cluster using your customized <topologyfile>.
 ethxlattopology [-d  \fIlevel\fR] [-v  \fIlevel\fR] [-i  \fIlevel\fR] [-K] [-f  \fIlinkfiles\fR]
 .br
 
-[-o  \fIreport\fR] [source [dest]]
+[-o  \fIreport\fR] [-p  \fIplane\fR] [source [dest]]
 .SH Options
 
 .TP 10
@@ -151,6 +151,10 @@ Creates the <LinkSummary> section xml for the csv input.
 
 .RE
 
+.TP 10
+-p plane
+
+Plane name (default \[aq]plane\[aq]).
 .TP 10
 source
 

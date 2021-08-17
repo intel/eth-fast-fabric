@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "iba/stl_sd.h"
 #include "hpnmgt_snmp_priv.h"
 #include "hpnmgt_snmp.h"
+#include "port_num_gen.h"
 
 // turn on DISPLAY_TIMESTAMP to trace time spent on tasks
 #define DISPLAY_TIMESTAMP 0
@@ -406,9 +407,6 @@ boolean is_supported_interface(SNMPHost *host, char* ifName, size_t len) {
  */
 SNMPResult * create_snmp_result() {
 	SNMPResult* res = MemoryAllocate2AndClear(sizeof(SNMPResult), IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
-	if (res) {
-		MemoryFill(res, 0, sizeof(SNMPResult));
-	}
 	return res;
 }
 
@@ -508,7 +506,6 @@ cl_map_obj_t *create_map_obj(const void *obj) {
 		fprintf(stderr, "ERROR - cannot allocate memory for map obj\n");
 		return NULL;
 	}
-	MemoryFill(res, 0, sizeof(cl_map_obj_t));
 	res->p_object = obj;
 	return res;
 }
@@ -655,7 +652,6 @@ LIST_ITEM *create_node_item() {
 		fprintf(stderr, "ERROR - couldn't allocate memory for Node record!\n");
 		return NULL;
 	}
-	MemoryFill(node, 0, sizeof(STL_NODE_RECORD));
 
 	RAW_NODE *rawNode = MemoryAllocate2AndClear(sizeof(RAW_NODE), IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
 	if (rawNode == NULL) {
@@ -663,7 +659,6 @@ LIST_ITEM *create_node_item() {
 		MemoryDeallocate(node);
 		return NULL;
 	}
-	MemoryFill(rawNode, 0, sizeof(RAW_NODE));
 	rawNode->node = node;
 
 	LIST_ITEM *item = MemoryAllocate2AndClear(sizeof(LIST_ITEM), IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
@@ -673,7 +668,6 @@ LIST_ITEM *create_node_item() {
 		MemoryDeallocate(rawNode);
 		return NULL;
 	}
-	MemoryFill(item, 0, sizeof(LIST_ITEM));
 	item->pObject = rawNode;
 
 	return item;
@@ -714,7 +708,6 @@ LIST_ITEM *create_port_item() {
 		fprintf(stderr, "ERROR - couldn't allocate memory for Port record!\n");
 		return NULL;
 	}
-	MemoryFill(port, 0, sizeof(STL_PORTINFO_RECORD));
 
 	LIST_ITEM *item = MemoryAllocate2AndClear(sizeof(LIST_ITEM), IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
 	if (item == NULL) {
@@ -722,7 +715,6 @@ LIST_ITEM *create_port_item() {
 		MemoryDeallocate(port);
 		return NULL;
 	}
-	MemoryFill(item, 0, sizeof(LIST_ITEM));
 	item->pObject = port;
 
 	return item;
@@ -1054,6 +1046,9 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 	cl_qmap_t portIdMap;
 	cl_qmap_init(&portIdMap, NULL);
 
+	pn_gen_t png_model;
+	pn_gen_init(&png_model);
+
 	// switch port zero
 	LIST_ITEM *item = create_port_item();
 	if (item == NULL) {
@@ -1207,6 +1202,8 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 			TRACEPRINT("..ifName\n");
 			// transfer from port number map to interface index map
 			char* portName = (char*) rp->val.string;
+			portName[rp->valLen] = 0;
+			pn_gen_register(&png_model, portName);
 
 			cl_map_item_t *mItem = cl_qmap_head(&portNumMap);
 			cl_map_obj_t *mapObj = NULL;
@@ -1239,8 +1236,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 
 			int portId = get_oid_num(rp, ifName.oidLen);
 			portRec->PortInfo.LID = portId;
-			TRACEPRINT("Map %s PortNum=%d to IfIndex=%d\n",
-					portRec->PortInfo.LocalPortId, portRec->RID.PortNum, portId);
+			TRACEPRINT("Map %s to IfIndex=%d\n", portRec->PortInfo.LocalPortId, portId);
 			cl_qmap_remove_item(&portNumMap, mItem);
 			MemoryDeallocate(mapObj);
 
@@ -1289,15 +1285,6 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				STL_PORTINFO_RECORD *portRec = lItem->pObject;
 				int state = *(rp->val.integer);
 				portRec->PortInfo.PortStates.s.PortState = state;
-			}
-		} else if (is_oid(rp, dot1dBasePortIfIndex)) {
-			TRACEPRINT("..dot1dBasePortIfIndex\n");
-			int portNum = get_oid_num(rp, dot1dBasePortIfIndex.oidLen);
-			int portId = *(rp->val.integer);
-			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
-			if (lItem) {
-				STL_PORTINFO_RECORD *portRec = lItem->pObject;
-				portRec->RID.PortNum = portNum;
 			}
 		} else if (is_oid(rp, ifMauStatus)) {
 			TRACEPRINT("..ifMauStatus\n");
@@ -1356,6 +1343,17 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 next_loop:
 		rp = rp->next;
 	}
+
+	STL_PORTINFO_RECORD *portRec;
+	for (item = QListHead(rawNode->ports); item!=NULL;
+			item = QListNext(rawNode->ports, item)) {
+		portRec = item->pObject;
+		if (*portRec->PortInfo.LocalPortId) {
+			portRec->RID.PortNum = pn_gen_get_port(&png_model, (char* const)portRec->PortInfo.LocalPortId);
+		}
+	}
+	pn_gen_cleanup(&png_model);
+
 	// portNumMap shall be empty and all related cl_map_obj_t shall be already
 	// freed. We call cleanup_map here just to play safe.
 	cleanup_map(&portNumMap);
@@ -1400,7 +1398,6 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 					fstatus = HMGT_STATUS_INSUFFICIENT_MEMORY;
 					break;
 				}
-				MemoryFill(port, 0, sizeof(STL_PORTINFO_RECORD));
 
 				// TODO: support NIC with multiple ports
 				port->RID.PortNum = 1;
@@ -1422,14 +1419,14 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 			}
 		} else if (is_oid(rp, ifMTU)) {
 			TRACEPRINT("..ifMTU\n");
-			int portId = get_oid_num(rp, ifOperStatus.oidLen);
+			int portId = get_oid_num(rp, ifMTU.oidLen);
 			STL_PORTINFO_RECORD *portRec = get_map_obj(&portIdMap, portId);
 			if (portRec) {
 				portRec->PortInfo.MTU2 = (uint16) *(rp->val.integer);
 			}
 		} else if (is_oid(rp, ifSpeed)) {
 			TRACEPRINT("..ifSpeed\n");
-			int portId = get_oid_num(rp, ifOperStatus.oidLen);
+			int portId = get_oid_num(rp, ifSpeed.oidLen);
 			STL_PORTINFO_RECORD *portRec = get_map_obj(&portIdMap, portId);
 			if (portRec) {
 				// transfer from bit/s to mbit/s to be consistent with ifHighSpeed
@@ -1548,7 +1545,6 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 					fstatus = HMGT_STATUS_INSUFFICIENT_MEMORY;
 					break;
 				}
-				MemoryFill(pItem, 0, sizeof(LIST_ITEM));
 				pItem->pObject = port;
 				QListInsertTail(rawNode->ports, pItem);
 				break;
@@ -1975,24 +1971,21 @@ int asynch_response(int operation, struct snmp_session *sp, int reqid,
 						state = Q_END_NEXT;
 						break;
 					}
-					if ((vars->type != SNMP_ENDOFMIBVIEW)
-							&& (vars->type != SNMP_NOSUCHOBJECT)
-							&& (vars->type != SNMP_NOSUCHINSTANCE)) {
-						memmove((char *) name, (char *) vars->name,
-								vars->name_length * sizeof(oid));
-						name_length = vars->name_length;
-						state = Q_NEXT;
-					} else if (vars->type != SNMP_ENDOFMIBVIEW) {
-						if (vars->type == SNMP_NOSUCHOBJECT) {
-							PRINT_NOSUCHOBJECT(context->current_oid->name,
-									   sp->peername);
-						}
-						if (vars->type == SNMP_NOSUCHINSTANCE) {
-							PRINT_NOSUCHINSTANCE(context->current_oid->name,
-									     sp->peername);
-						}
+					if (vars->type == SNMP_ENDOFMIBVIEW || vars->type == SNMP_NOSUCHOBJECT) {
+						PRINT_NOSUCHOBJECT(context->current_oid->name,
+                                                		   sp->peername);
 						state = Q_WARN;
 						break;
+					} else if (vars->type == SNMP_NOSUCHINSTANCE) {
+						PRINT_NOSUCHINSTANCE(context->current_oid->name,
+								     sp->peername);
+						state = Q_WARN;
+						break;
+					} else {
+						memmove((char *) name, (char *) vars->name,
+							vars->name_length * sizeof(oid));
+						name_length = vars->name_length;
+						state = Q_NEXT;
 					}
 				}
 			} else {
@@ -2738,7 +2731,7 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 			dot3StatsCarrierSenseErrors, dot3HCStatsAlignmentErrors,
 			dot3HCStatsFCSErrors, dot3HCStatsInternalMacTransmitErrors,
 			dot3HCStatsFrameTooLongs, dot3HCStatsInternalMacReceiveErrors,
-			dot3HCStatsSymbolErrors, dot1dBasePortIfIndex,
+			dot3HCStatsSymbolErrors,
 			ifMauStatus, ifMauMediaAvailable, ifMauTypeListBits,
 			ifMauAutoNegAdminStatus,
 			ifHCInOctets, ifHCInUcastPkts, ifHCInMulticastPkts, ifHCOutOctets,
@@ -2760,12 +2753,14 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 			ifInUnknownProtos, ifOutDiscards, ifOutErrors,
 			ipAdEntIfIndex,
 //			dot3StatsSingleCollisionFrames, dot3StatsMultipleCollisionFrames,
-//			dot3StatsSQETestErrors, dot3StatsDeferredTransmissions,
+//			dot3StatsSQETestErrors,
+			dot3StatsDeferredTransmissions,
 //			dot3StatsLateCollisions, dot3StatsExcessiveCollisions,
-//			dot3StatsCarrierSenseErrors, dot3HCStatsAlignmentErrors,
+			dot3StatsCarrierSenseErrors,
+//			dot3HCStatsAlignmentErrors,
 //			dot3HCStatsFCSErrors, dot3HCStatsInternalMacTransmitErrors,
 //			dot3HCStatsFrameTooLongs, dot3HCStatsInternalMacReceiveErrors,
-//			dot3HCStatsSymbolErrors, dot1dBasePortIfIndex,
+//			dot3HCStatsSymbolErrors,
 //			ifMauStatus, ifMauMediaAvailable, ifMauTypeListBits,
 //			ifMauAutoNegAdminStatus,
 			ifHCInOctets, ifHCInUcastPkts, ifHCInMulticastPkts, ifHCOutOctets,

@@ -56,6 +56,7 @@ ifneq "$(BUILD_TARGET_OS)" "VXWORKS"
 CFILES 			+= \
 				sweep.c \
 				hpnmgt.c \
+				port_num_gen.c \
 				hpnmgt_snmp.c
 # CFILES 			+= route.c
 endif
@@ -77,7 +78,8 @@ DEFFILE			=
 # targets to build during INCLUDES phase (add public includes here)
 INCLUDE_TARGETS	= \
 				topology.h \
-				hpnmgt.h
+				hpnmgt.h \
+				port_num_gen.h
 				# Add more h hpp files here
 # Non-compiled files
 MISC_FILES		= 
