@@ -1,0 +1,8 @@
+# [ICS VERSION STRING: unknown]
+# This file lists the TCP/IP names of the Managed Switches in the cluster.
+#
+# Each line may specify a single switch, a comment, or another switch list
+# file to include. A switch may be specified by switch management network
+# IP address or a resolvable TCP/IP name.
+# This file will be used by FastFabric to indicate which switch should be
+# operated on by various fastfabric menus and CLI commands.
