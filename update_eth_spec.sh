@@ -54,7 +54,7 @@ then
 	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
-	sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, tcl-devel, net-snmp-devel/g" eth-tools.spec
+	sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, tcl-devel, rdma-core-devel, net-snmp-devel/g" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
 
 	# __RPM_DEBUG same for all RHEL versions
@@ -68,7 +68,7 @@ then
 	sed -i "s/__RPM_DEBUG_PKG/%debug_package/g" eth-tools.spec
 
 	sed -i "s/__RPM_REQ_BASIC1/libibverbs-utils, librdmacm-utils, expect, tcl/g" eth-tools.spec
-	sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, tcl-devel, net-snmp-devel/g" eth-tools.spec
+	sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, tcl-devel, rdma-core-devel, net-snmp-devel/g" eth-tools.spec
 
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
@@ -86,6 +86,7 @@ then
 BuildRequires: expat-devel\n\
 BuildRequires: gcc-c++\n\
 BuildRequires: tcl-devel\n\
+BuildRequires: rdma-core-devel\n\
 BuildRequires: net-snmp-devel\n"
 	sed -i "s/^BuildRequires: __RPM_BLDREQ1/${buildreqs}/g" eth-tools.spec
 	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
