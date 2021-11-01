@@ -57,7 +57,7 @@ CC			= gcc
 CCC			= g++
 LD			= ld
 LINT			= lint
-AR			= ar
+AR			= gcc-ar
 NM			= nm
 OBJCOPY			= objcopy
 GZIP		= gzip
@@ -77,14 +77,20 @@ SHLIB_SONAME=$(notdir $(CMD_TARGETS_SHLIB))
 # ----------------------------
 # -fcheck-new does the opposite of what the manual implies.
 # -fcheck-new DISABLES the run-time test of return value from new
-CMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -Wall -Werror=format-security -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector
-CCMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -Wall -Werror=format-security -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector -fcheck-new -Wno-ctor-dtor-privacy
+CMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -Wall -Werror=format-security -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector-all -fstack-clash-protection -flto
+CCMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -Wall -Werror=format-security -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector-all -fstack-clash-protection -flto -fcheck-new -Wno-ctor-dtor-privacy
 ifeq ($(shell expr $(GCC_MAJOR_VERSION) \>= 7), 1)
 ifeq ($(shell expr $(GCC_MINOR_VERSION) \>= 0), 1)
 CMACH+= -std=gnu90 -Wno-misleading-indentation -Wno-format-truncation
 endif
 endif
-CSYS		= -DLINUX -Dlinux -D__LINUX__ 
+ifeq ($(shell expr $(GCC_MAJOR_VERSION) \>= 8), 1)
+ifeq ($(shell expr $(GCC_MINOR_VERSION) \>= 0), 1)
+CMACH+= -fcf-protection=full
+CCMACH+= -fcf-protection=full
+endif
+endif
+CSYS		= -DLINUX -Dlinux -D__LINUX__
 CCSYS		= $(CSYS)
 CCLIBS		= 
 release_CCOPT_Flags	=-O3 -fno-strength-reduce -D_FORTIFY_SOURCE=2

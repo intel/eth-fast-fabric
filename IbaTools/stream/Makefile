@@ -111,7 +111,7 @@ INCLUDE_SUBDIR		=
 #LOCAL_LIB_DIRS	= User library directories for libpaths [Empty]
 
 CLOCAL = $(CPIE) -mcmodel=medium -DSTREAM_ARRAY_SIZE=353783808 -fopenmp
-LDLOCAL = -fopenmp
+LDLOCAL = -fopenmp -pie
 
 # Include Make Rules definitions and rules
 include $(TL_DIR)/IbaTools/Makerules.module
