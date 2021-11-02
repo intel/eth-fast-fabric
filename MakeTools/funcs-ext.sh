@@ -838,7 +838,7 @@ function os_vendor_version()
 			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
 		elif grep -qi rocky /etc/redhat-release
 		then
-			# Rocky
+			# Rocky Linux
 			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
 		elif grep -qi scientific /etc/redhat-release
 		then

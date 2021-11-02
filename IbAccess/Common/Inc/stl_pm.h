@@ -487,6 +487,7 @@ typedef struct _STL_Error_Info_Rsp {
 	struct _port_error_info Port[1]; /* x defined by number of ports in attribute modifier */
 } PACK_SUFFIX STLErrorInfoRsp, STL_ERROR_INFO_RSP;
 
+
 #include "iba/public/ipackoff.h"
 
 #if defined (__cplusplus)

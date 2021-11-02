@@ -211,7 +211,7 @@ sub os_vendor_version($)
 		chop($rval);
 		$rval="ES".$rval;
 		if ( -e "/etc/redhat-release" ) {
-			if (!system("grep -qi centos /etc/redhat-release")) {
+			if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release")) {
 				$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
 				$rval =~ m/(\d+).(\d+)/;
 				if ($2 eq "0") {
@@ -219,15 +219,7 @@ sub os_vendor_version($)
 				} else {
 					$rval="ES".$1.$2;
 				}
-			} elsif (!system("grep -qi rocky /etc/redhat-release")) {
-				$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
-				$rval =~ m/(\d+).(\d+)/;
-				if ($2 eq "0") {
-					$rval="ES".$1;
-				} else {
-					$rval="ES".$1.$2;
-				}
-			}
+			}	
 		}
 	} elsif ($vendor eq "apple") {
 		$rval=`sw_vers -productVersion|cut -f1-2 -d.`;

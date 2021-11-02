@@ -169,7 +169,7 @@ tclIndex: $(TCL_SOURCES)
 
 front: front.exp
 	cat $< > $@
-	chmod a+x $@
+	chmod a+x   $@
 
 # install for includes, libs and cmds phases
 include $(TL_DIR)/Makerules/Maketargets.install
