@@ -266,9 +266,9 @@ then
 		fi
 		cmds="type ibv_devinfo > /dev/null 2>&1 || exit 1
 			$cmds
-				slot=\$(ls -l /sys/class/net | grep \$port | awk '{print \$11}' | cut -d '/' -f 6)
+				slot=\$(ls -l /sys/class/net | grep \"\$port \" | awk '{print \$11}' | cut -d '/' -f 6)
 				[ -z \$slot ] && exit 1
-				irdma_dev=\$(ls \$(find /sys/devices/ -name \$slot)/infiniband 2> /dev/null)
+				irdma_dev=\$(ls \$(find /sys/devices/ -path */\$slot/infiniband) 2> /dev/null)
 				[ -z \$irdma_dev ] && exit 1
 				ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 || exit 1
 			done
