@@ -254,28 +254,41 @@ then
 		host=${line%%:*}
 		ports="$(get_node_ports "$host")"
 		if [[ -z $ports ]]; then
+			# check the node has at least one active RDMA port
 			cmds="
 				ports=\"\$(ls -l /sys/class/net/*/device/driver | grep 'ice$' | awk '{print \$9}' | cut -d '/' -f5)\"
 				[ -z \"\$ports\" ] && exit 1
 				for port in \$ports; do
+					slot=\$(ls -l /sys/class/net | grep \"\$port \" | awk '{print \$11}' | cut -d '/' -f 6)
+					[ -z \$slot ] && continue
+					irdma_dev=\$(ls \$(find /sys/devices/ -path */\$slot/infiniband) 2> /dev/null)
+					[ -z \$irdma_dev ] && continue
+					ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 && exit 0
+				done
+				exit 1
 			"
 		else
+			# check all ports are active RDMA ports
 			cmds="
 				for port in $ports; do
+					slot=\$(ls -l /sys/class/net | grep \"\$port \" | awk '{print \$11}' | cut -d '/' -f 6)
+					[ -z \$slot ] && exit 1
+					irdma_dev=\$(ls \$(find /sys/devices/ -path */\$slot/infiniband) 2> /dev/null)
+					[ -z \$irdma_dev ] && exit 1
+					ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 || exit 1
+				done
 			"
 		fi
 		cmds="type ibv_devinfo > /dev/null 2>&1 || exit 1
 			$cmds
-				slot=\$(ls -l /sys/class/net | grep \"\$port \" | awk '{print \$11}' | cut -d '/' -f 6)
-				[ -z \$slot ] && exit 1
-				irdma_dev=\$(ls \$(find /sys/devices/ -path */\$slot/infiniband) 2> /dev/null)
-				[ -z \$irdma_dev ] && exit 1
-				ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 || exit 1
-			done
 		"
 		ssh $host "$cmds" && echo $line
 	done | ff_filter_dups|ethsorthosts > $dir/active
-	append_punchlist $good_file $dir/active "Has inactive RDMA port(s)"
+	if [[ -z $ports ]]; then
+		append_punchlist $good_file $dir/active "Has no active RDMA port(s)"
+	else
+		append_punchlist $good_file $dir/active "Has inactive RDMA port(s)"
+	fi
 	# put in alphabetic order for "comm" command
 	mycomm12 <(to_canon < $good_file)  <(to_canon < $dir/active) | ethsorthosts > $dir/good
 	good_meaning="$good_meaning, active"

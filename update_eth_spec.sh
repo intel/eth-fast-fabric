@@ -51,7 +51,7 @@ source ./OpenIb_Host/ff_filegroups.sh
 if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" ]
 then
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
 	sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, tcl-devel, rdma-core-devel, net-snmp-devel/g" eth-tools.spec
@@ -67,7 +67,7 @@ elif [ "$id" = "sles" ]
 then
 	sed -i "s/__RPM_DEBUG_PKG/%debug_package/g" eth-tools.spec
 
-	sed -i "s/__RPM_REQ_BASIC1/libibverbs-utils, librdmacm-utils, expect, tcl/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/libibverbs-utils, librdmacm-utils, expect, tcl, net-snmp/g" eth-tools.spec
 	sed -i "s/__RPM_BLDREQ1/make, libexpat-devel, gcc-c++, tcl-devel, rdma-core-devel, net-snmp-devel/g" eth-tools.spec
 
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
@@ -79,7 +79,7 @@ then
 elif [ "$id" = "fedora" ]
 then
 	# __RPM_REQ_BASIC -
-	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
+	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
 	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
 
 	buildreqs="BuildRequires: make\n\
