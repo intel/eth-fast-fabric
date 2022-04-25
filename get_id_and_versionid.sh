@@ -32,6 +32,9 @@ else
 			elif [ $rval = 'rocky' ]
 			then
 				rval=redhat
+			elif [ $rval = 'almalinux' ]
+			then
+				rval=redhat
 			elif [ $rval != 'os' ]
 			then
 				break
@@ -73,6 +76,10 @@ else
 		elif grep -qi rocky /etc/redhat-release
 		then
 			# Rocky Linux
+			rval=`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1.\2/'`
+		elif grep -qi almalinux /etc/redhat-release
+		then
+			# AlmaLinux
 			rval=`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1.\2/'`
 		elif grep -qi scientific /etc/redhat-release
 		then

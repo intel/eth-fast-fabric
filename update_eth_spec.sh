@@ -48,7 +48,7 @@ fi
 
 source ./OpenIb_Host/ff_filegroups.sh
 
-if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" ]
+if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" -o "$id" = "almalinux" ]
 then
 	# __RPM_REQ_BASIC -
 	sed -i "s/__RPM_REQ_BASIC1/expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}/g" eth-tools.spec
