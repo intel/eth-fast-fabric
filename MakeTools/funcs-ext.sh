@@ -728,6 +728,9 @@ function os_vendor()
             rocky)
                 rval=redhat
                 ;;
+            almalinux)
+                rval=redhat
+                ;;
             fedora)
                 rval=redhat
                 ;;
@@ -760,6 +763,9 @@ function os_vendor()
 		then
 			rval=redhat
 		elif [ $rval = 'rocky' ]
+		then
+			rval=redhat
+		elif [ $rval = 'almalinux' ]
 		then
 			rval=redhat
 		elif [ $rval != 'os' ]
@@ -839,6 +845,10 @@ function os_vendor_version()
 		elif grep -qi rocky /etc/redhat-release
 		then
 			# Rocky Linux
+			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
+		elif grep -qi almalinux /etc/redhat-release
+		then
+			# AlmaLinux
 			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
 		elif grep -qi scientific /etc/redhat-release
 		then

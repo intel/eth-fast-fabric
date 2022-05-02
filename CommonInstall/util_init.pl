@@ -211,7 +211,7 @@ sub os_vendor_version($)
 		chop($rval);
 		$rval="ES".$rval;
 		if ( -e "/etc/redhat-release" ) {
-			if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release")) {
+			if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release") || !system("grep -qi almalinux /etc/redhat-release")) {
 				$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
 				$rval =~ m/(\d+).(\d+)/;
 				if ($2 eq "0") {
@@ -247,6 +247,12 @@ sub os_vendor_version($)
 			$rval =~ m/(\d+).(\d+)/;
 			$rval="ES".$1.$2;
 		} elsif (!system("grep -qi rocky /etc/redhat-release")) {
+			# Find a number of the form "#.#" and output the portion
+			# to the left of the decimal point.
+			$rval = `cat /etc/redhat-release`;
+			$rval =~ m/(\d+).(\d+)/;
+			$rval="ES".$1.$2;
+		} elsif (!system("grep -qi almalinux /etc/redhat-release")) {
 			# Find a number of the form "#.#" and output the portion
 			# to the left of the decimal point.
 			$rval = `cat /etc/redhat-release`;
@@ -307,6 +313,8 @@ sub determine_os_version()
 		$CUR_DISTRO_VENDOR = "redhat";
 	} elsif ( -s "/etc/rocky-release" ) {
 		$CUR_DISTRO_VENDOR = "redhat";
+	} elsif ( -s "/etc/almalinux-release" ) {
+		$CUR_DISTRO_VENDOR = "redhat";
 	} elsif ( -s "/etc/UnitedLinux-release" ) {
 		$CUR_DISTRO_VENDOR = "UnitedLinux";
 		$NETWORK_CONF_DIR = "/etc/sysconfig/network";
@@ -325,6 +333,7 @@ sub determine_os_version()
 			"rhel" => "redhat",
 			"centos" => "redhat",
 			"rocky" => "redhat",
+			"almalinux" => "redhat"
 			"sles" => "SuSE",
 			"sle_hpc" => "SuSE"
 		);
@@ -332,6 +341,7 @@ sub determine_os_version()
 			"rhel" => $NETWORK_CONF_DIR,
 			"centos" => $NETWORK_CONF_DIR,
 			"rocky" => $NETWORK_CONF_DIR,
+			"almalinux" => $NETWORK_CONF_DIR,
 			"sles" => "/etc/sysconfig/network",
 			"sle_hpc" => "/etc/sysconfig/network"
 		);
@@ -362,6 +372,8 @@ sub determine_os_version()
 		} elsif ($CUR_DISTRO_VENDOR eq "centos") {
 			$CUR_DISTRO_VENDOR = "redhat";
 		} elsif ($CUR_DISTRO_VENDOR eq "rocky") {
+			$CUR_DISTRO_VENDOR = "redhat";
+		} elsif ($CUR_DISTRO_VENDOR eq "almalinux") {
 			$CUR_DISTRO_VENDOR = "redhat";
 		}
 	}
