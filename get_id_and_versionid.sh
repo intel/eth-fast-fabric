@@ -35,6 +35,9 @@ else
 			elif [ $rval = 'almalinux' ]
 			then
 				rval=redhat
+			elif [ $rval = 'circle' ]
+			then
+				rval=redhat
 			elif [ $rval != 'os' ]
 			then
 				break
@@ -80,6 +83,10 @@ else
 		elif grep -qi almalinux /etc/redhat-release
 		then
 			# AlmaLinux
+			rval=`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1.\2/'`
+		elif grep -qi circle /etc/redhat-release
+		then
+			# Circle Linux
 			rval=`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1.\2/'`
 		elif grep -qi scientific /etc/redhat-release
 		then
