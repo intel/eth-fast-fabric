@@ -731,6 +731,9 @@ function os_vendor()
             almalinux)
                 rval=redhat
                 ;;
+            circle)
+                rval=redhat
+                ;;
             fedora)
                 rval=redhat
                 ;;
@@ -766,6 +769,9 @@ function os_vendor()
 		then
 			rval=redhat
 		elif [ $rval = 'almalinux' ]
+		then
+			rval=redhat
+		elif [ $rval = 'circle' ]
 		then
 			rval=redhat
 		elif [ $rval != 'os' ]
@@ -849,6 +855,10 @@ function os_vendor_version()
 		elif grep -qi almalinux /etc/redhat-release
 		then
 			# AlmaLinux
+			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
+		elif grep -qi circle /etc/redhat-release
+		then
+			# Circle Linux 
 			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
 		elif grep -qi scientific /etc/redhat-release
 		then
