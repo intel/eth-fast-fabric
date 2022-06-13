@@ -57,7 +57,7 @@ then
 	exit 1
 fi
 
-BASE_DIR="osu-micro-benchmarks-5.6.3/mpi/"
+BASE_DIR="osu-micro-benchmarks-5.9/mpi/"
 NUM_PROCESSES=$1
 shift
 

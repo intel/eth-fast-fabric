@@ -58,7 +58,10 @@ export MPI_CMD_ARGS=
 # It is recommended to use the OFI interface over PSM3 within IntelMPI
 # These variables are passed to the Intel mpirun command.
 export I_MPI_FABRICS=shm:ofi
-export I_MPI_OFI_PROVIDER=psm3
+
+# Replace I_MPI_OFI_PROVIDER with FI_PROVIDER for v2021.6.0
+#export I_MPI_OFI_PROVIDER=psm3
+export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv FI_PROVIDER=psm3"
 
 # This defines how many processes should be assigned to each host in
 # the mpi_hosts file.

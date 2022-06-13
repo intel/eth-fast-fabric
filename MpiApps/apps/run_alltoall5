@@ -52,10 +52,10 @@ APP=osu_alltoall
 LOGFILE=
 . ./prepare_run
 
-CMD="osu-micro-benchmarks-5.6.3/mpi/collective/osu_alltoall"
+CMD="osu-micro-benchmarks-5.9/mpi/collective/osu_alltoall"
 
 (
-	echo " Running AlltoAll 5.6.3 ..."
+	echo " Running AlltoAll 5.9 ..."
 	show_mpi_hosts
 	set -x
 	$MPI_RUN_CMD $CMD

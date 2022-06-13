@@ -43,10 +43,10 @@ APP=osu_bw
 LOGFILE=
 . ./prepare_run
 
-CMD="osu-micro-benchmarks-5.6.3/mpi/pt2pt/osu_bw"
+CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_bw"
 
 (
-	echo " Running Bandwidth 5.6.3 ..."
+	echo " Running Bandwidth 5.9 ..."
 	show_mpi_hosts
 	set -x
 	$MPI_RUN_CMD $CMD

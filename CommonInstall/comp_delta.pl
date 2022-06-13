@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # BEGIN_ICS_COPYRIGHT8
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -81,6 +81,7 @@ my @delta_kernel_srpms_rhel82 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel83 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel84 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel85 = ( 'kmod-iefs-kernel-updates' );
+my @delta_kernel_srpms_rhel86 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms = ( );
 
 # This provides information for all kernel srpms
@@ -160,6 +161,8 @@ sub init_delta_info($)
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel84 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel85 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
+		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel86 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel8 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES78" ) {
@@ -779,6 +782,8 @@ sub installed_delta_eth_module()
 	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
+		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES124" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
