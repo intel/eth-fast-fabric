@@ -56,6 +56,7 @@ DIRS			= \
 				$(shell ls -d nodeverify 2>/dev/null) \
 				$(shell ls -d usemem 2>/dev/null) \
 				$(shell ls -d ethudstress 2>/dev/null) \
+				$(shell ls -d ethshmcleanup 2>/dev/null) \
 				$(shell ls -d man 2>/dev/null)
 # 				$(shell ls -d chassis_setup 2>/dev/null) \
 # 				$(shell ls -d switch_setup 2>/dev/null) \
@@ -93,4 +94,3 @@ STAGE::
 
 clobber::
 	rm -rf modules builtlibs
-	

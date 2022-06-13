@@ -1,6 +1,6 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -29,10 +29,10 @@
 
 # Makefile for MPI application/benchmark source for end user system
 # targets:
-# 	full 	- build all targets.
-#   basic   - build all applications provivded in opa-fastfabric package
-# 	quick 	- build commonly used apps.
-# 	all		- synonym for quick
+# 	full    - build all targets.
+#	basic   - build all applications provivded in opa-fastfabric package
+# 	quick   - build commonly used apps.
+# 	all     - synonym for quick
 # 	clobber - remove all built files.
 #
 # 	The following targets build the matching applications. If the
@@ -44,10 +44,13 @@
 # 	LAT (latency)
 #	BW (bandwidth)
 #	MULTIBW (multi-pair bandwidth)
-#	IMB
-#	OSU563 (version 5.6.3 of the OSU benchmarks)
+#	IMB (v2021.3)
+#	OSU (v5.9)
 #	XHPL2 (hpl v2)
 #
+ifndef OSU_VER
+export OSU_VER="5.9"
+endif
 
 ifndef MPICH_PREFIX
 export MPICH_PREFIX=$(shell . ./select_mpi 2>/dev/null; echo $$MPICH_PREFIX)
@@ -129,6 +132,9 @@ STRESS: SHOWMPI
 ifeq "$(MPI_APPS_CUDA)" "y"
 	cd mpi_stress;\
 	$(MPICC) -DMPI_STRESS_CUDA -I$(MPI_INCLUDE_DIR) -I$(CUDA_DIR)/include -L$(CUDA_DIR)/lib64 -o mpi_stress mpi_stress.c -lcuda -lcudart -lz;
+else ifeq "$(MPI_APPS_ONEAPI)" "y"
+	cd mpi_stress;\
+	$(MPICC) -DMPI_STRESS_ONEAPI -I$(MPI_INCLUDE_DIR) -o mpi_stress mpi_stress.c -lze_loader -lz;
 else
 	cd mpi_stress;\
 	$(MPICC) -I$(MPI_INCLUDE_DIR) -o mpi_stress mpi_stress.c -lz;
@@ -143,28 +149,33 @@ else
 OSU_CONFIG=
 OSU_PATH="$(PATH)"
 endif
-OSU563: SHOWMPI
-	@echo "Building OSU 5.6.3 benchmarks..."
-	cd osu-micro-benchmarks-5.6.3; \
+OSU: SHOWMPI
+	@echo "Building OSU $(OSU_VER) benchmarks..."
+	cd osu-micro-benchmarks-$(OSU_VER); \
 		find . -name aclocal.m4 |xargs -r touch; \
 		find . -name Makefile.in |xargs -r touch; \
 		find . -name configure |xargs -r touch
-	cd osu-micro-benchmarks-5.6.3; \
+	cd osu-micro-benchmarks-$(OSU_VER); \
 	export PATH=$(OSU_PATH); \
 	if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" || "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
 		# intel compiler \
-		./configure $(OSU_CONFIG) CC=$(REAL_MPICC) CXX=$(REAL_MPICXX) LIBS="-lirc"; make; \
+		./configure $(OSU_CONFIG) CC=$(REAL_MPICC) CXX=$(REAL_MPICXX) LIBS="-lirc -lsvml"; make; \
 	else \
 		# gcc compiler \
 		./configure $(OSU_CONFIG) CC=$(REAL_MPICC) CXX=$(REAL_MPICXX); make; \
 	fi
 	@echo
-.PHONY: OSU563
+.PHONY: OSU
 
 IMB: SHOWMPI
 	@echo "Building Intel Micro Benchmarks..."
-	cd imb; make CC=$(MPICC) CXX=$(MPICXX)
+ifeq "$(MPI_APPS_ONEAPI)" "y"
+	cd imb; make CC=$(MPICC) CXX=$(MPICXX) all IMB-MPI1-GPU
+else
+	cd imb; make CC=$(MPICC) CXX=$(MPICXX) all
+endif
 	@echo
+
 .PHONY: IMB
 
 HPL_VER=hpl-2.3
@@ -202,7 +213,7 @@ clobber::
 	make -C groupstress clean;
 	rm -f mpi_multibw/mpi_multibw mpi_multibw/*.o
 	rm -f mpi_stress/mpi_stress mpi_stress/*.o
-	if [ -f osu-micro-benchmarks-5.6.3/Makefile ]; then make -C osu-micro-benchmarks-5.6.3 clean; rm -f osu-micro-benchmarks-5.6.3/Makefile; fi
+	if [ -f osu-micro-benchmarks-$(OSU_VER)/Makefile ]; then make -C osu-micro-benchmarks-$(OSU_VER) clean; rm -f osu-micro-benchmarks-$(OSU_VER)/Makefile; fi
 	rm -f .prefix
 .PHONY: clobber
 
@@ -222,7 +233,7 @@ eth-base:: DEVIATION CHECK GROUPSTRESS
 	@echo "build base sample applications"
 .PHONY: eth-base
 
-quick:: BW LAT MULTIBW OSU563 IMB XHPL2 STRESS eth-base
+quick:: BW LAT MULTIBW OSU IMB XHPL2 STRESS eth-base
 	@echo "Built subset of sample applications"
 .PHONY: quick
 

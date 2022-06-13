@@ -1,0 +1,27 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2022, Intel Corporation                     *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethshmcleanup 1 "Intel Corporation" "Copyright(C) 2022" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethshmcleanup
+
+
+.PP
+Cleans up not used POSIX shared memory files in /dev/shm directory.
+	
+.SH Syntax
+ethshmcleanup
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.SH Example
+ethshmcleanup

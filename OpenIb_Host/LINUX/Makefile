@@ -1,6 +1,6 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -115,6 +115,9 @@ ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES84"
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES85"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL85.pl
+endif
+ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES86"
+        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL86.pl
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES124"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES124.pl

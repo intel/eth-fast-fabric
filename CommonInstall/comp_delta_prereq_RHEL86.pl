@@ -1,7 +1,7 @@
-#!/bin/bash
-# BEGIN_ICS_COPYRIGHT8 ****************************************
+#!/usr/bin/perl
+## BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,34 +26,70 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# END_ICS_COPYRIGHT8   ****************************************
+## END_ICS_COPYRIGHT8   ****************************************
+#
+## [ICS VERSION STRING: unknown]
+#use strict;
+##use Term::ANSIColor;
+##use Term::ANSIColor qw(:constants);
+##use File::Basename;
+##use Math::BigInt;
+#
+## ==========================================================================
+#
+#Installation Prequisites array for delta components
+my @eth_module_prereq = (
+    "bash",
+    "kernel-core",
+    "kmod",
+);
+$comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
 
-#[ICS VERSION STRING: unknown]
+my @psm3_prereq = (
+    "bash",
+    "glibc",
+    "libfabric",
+    "libgcc",
+    "libibverbs",
+    "numactl-libs",
+    "libuuid",
+    "rdma-core",
+);
+$comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;
 
-id=$(./get_id_and_versionid.sh | cut -f1 -d' ')
-versionid=$(./get_id_and_versionid.sh | cut -f2 -d' ')
+my @openmpi_prereq = (
+    "bash",
+    "glibc",
+    "libgcc",
+    "libgfortran",
+    "gcc-gfortran",
+    "libgomp",
+    "libibverbs",
+    "libquadmath",
+    "librdmacm",
+    "libstdc++",
+    "libstdc++-devel",
+    "opensm-libs",
+    "pkgconf",
+    "zlib",
+);
+$comp_prereq_hash{'openmpi_prereq'} = \@openmpi_prereq;
 
-if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" -o "$id" = "almalinux" -o "$id" = "circle" ]
-then
-	GE_8_0=$(echo "$versionid >= 8.0" | bc)
-	sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
-	if [ $GE_8_0 = 1 ]
-	then
-		sed -i "s/__RPM_DBG/%global debug_package %{nil}/" mpi-apps.spec
-	else
-		sed -i "/__RPM_DBG/,+1d" mpi-apps.spec
-	fi
-elif [ "$id" = "fedora" ]
-then
-	sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
-	sed -i "s/__RPM_DBG/%global debug_package %{nil}/" mpi-apps.spec
-elif [ "$id" = "sles" ]
-then
-	sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
-	sed -i "/__RPM_DBG/,+1d" mpi-apps.spec
-else
-	echo ERROR: Unsupported distribution: $id $versionid
-	exit 1
-fi
+my @openmpi_gcc_ofi_prereq = (
+    "bash",
+    "glibc",
+    "libfabric",
+    "libgcc",
+    "libgfortran",
+    "libnl3",
+    "libquadmath",
+    "perl",
+    "pkgconf-pkg-config",
+    "zlib",
+);
+$comp_prereq_hash{'openmpi_gcc_ofi_prereq'} = \@openmpi_gcc_ofi_prereq;
 
-exit 0
+my @openmpi_intel_ofi_prereq = (
+    "bash",
+);
+$comp_prereq_hash{'openmpi_intel_ofi_prereq'} = \@openmpi_intel_ofi_prereq;

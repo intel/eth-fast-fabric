@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -88,6 +88,11 @@ my @delta_Components_rhel85 = (
 	"eth_rdma",
 	"delta_debug",
 	);
+my @delta_Components_rhel86 = (
+	"psm3",
+	"eth_rdma",
+	"delta_debug",
+	);
 my @delta_Components_sles15 = (
 	"psm3",
 	"eth_rdma",
@@ -133,6 +138,8 @@ sub overrides()
 		@Components = ( @delta_Components_rhel84 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
 		@Components = ( @delta_Components_rhel85 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
+		@Components = ( @delta_Components_rhel86 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
 		@Components = ( @delta_Components_sles15 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {

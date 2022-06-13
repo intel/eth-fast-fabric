@@ -52,10 +52,10 @@ APP=osu_bcast
 LOGFILE=
 . ./prepare_run
 
-CMD="osu-micro-benchmarks-5.6.3/mpi/collective/osu_bcast"
+CMD="osu-micro-benchmarks-5.9/mpi/collective/osu_bcast"
 
 (
-	echo " Running Broadcast 5.6.3 ..."
+	echo " Running Broadcast 5.9 ..."
 	show_mpi_hosts
 	set -x
 	$MPI_RUN_CMD $CMD

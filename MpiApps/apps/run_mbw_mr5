@@ -65,14 +65,14 @@ fi
 
 MULT_PROCESSES=2
 
-CMD="osu-micro-benchmarks-5.6.3/mpi/pt2pt/osu_mbw_mr $@"
+CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_mbw_mr $@"
 
 APP=osu_mbw_mr
 LOGFILE=
 . ./prepare_run
 
 (
-	echo " Running Multi-Bandwidth 5.6.3 ..."
+	echo " Running Multi-Bandwidth 5.9 ..."
 	show_mpi_hosts
 	set -x
 	$MPI_RUN_CMD $CMD

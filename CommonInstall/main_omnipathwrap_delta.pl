@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -72,6 +72,7 @@ my @Components_rhel82 = ( @EthAllComponents );
 my @Components_rhel83 = ( @EthAllComponents );
 my @Components_rhel84 = ( @EthAllComponents );
 my @Components_rhel85 = ( @EthAllComponents );
+my @Components_rhel86 = ( @EthAllComponents );
 
 @Components = ( );
 
@@ -540,6 +541,12 @@ sub init_components
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
 		@Components = ( @Components_rhel85 );
+		@SubComponents = ( @SubComponents_newer );
+		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
+						%eth_module_rhel_comp_info,
+						);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
+		@Components = ( @Components_rhel86 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
 						%eth_module_rhel_comp_info,

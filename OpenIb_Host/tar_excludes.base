@@ -15,7 +15,7 @@ MpiApps/apps/bandwidth
 MpiApps/apps/latency
 MpiApps/apps/mpi_multibw
 MpiApps/apps/mpi_stress
-MpiApps/apps/osu-micro-benchmarks-5.6.3
+MpiApps/apps/osu-micro-benchmarks-5.9
 MpiApps/apps/hpl-2.3
 MpiApps/apps/imb
 MpiApps/debian
