@@ -66,9 +66,9 @@ typedef struct MyConfig_s {
 // dynamically allocated
 MyConfig_t g_config;
 
-void InitConfig(void)
+boolean InitConfig(void)
 {
-	QListInit(&g_config.SmInstances);
+	return QListInit(&g_config.SmInstances);
 }
 
 // fields within "SM" tag
@@ -305,7 +305,12 @@ int main(int argc, char **argv)
 	if (argc > optind)
 		Usage();
 
-	InitConfig();	// initialize g_config
+	// initialize g_config
+	if (!InitConfig()) {
+		fprintf(stderr, "Error: init config failed\n");
+		exit_code = 1;
+		goto fail;
+	}
 
 	// parse input_file
 	fprintf(stderr, "Parsing %s...\n", input_file);

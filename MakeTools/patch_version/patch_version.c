@@ -472,24 +472,19 @@ boolean PatchFilename(const char* filename, const char* pattern, int patlen,
 				fprintf(stderr,"\nPremature EOF: %s\n",filename);
 				goto patch_error;
 			}
-			while ((bufp-buffer)+patlen<=nbytes)
+			while ((bufp - buffer) + patlen <= nbytes)
 			{
-			  i = 0;
-			  patp = pattern;
-			  bufp2 = bufp;
-			  while ((*bufp++ == *patp++) && (i < patlen)) i++; 
-
-			  if (i == patlen)
+			  if (0 == memcmp(bufp, pattern, patlen))
 			  {
-				long match_offset=(ftell(fp)-nbytes)+(bufp2-buffer)+patlen;
-				if (!PerformPatch(fp,match_offset,version, verlen)) 
+				long match_offset=(ftell(fp) - nbytes) + (bufp - buffer) + patlen;
+				if (!PerformPatch(fp, match_offset, version, verlen))
 				{
 				  goto patch_error;
 				}
 				patched=B_TRUE;
 			  }
 
-			  bufp = bufp2 + 1;
+			  bufp++;
 			}
 			if (nbytes <= patlen)
 			{

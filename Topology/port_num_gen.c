@@ -441,28 +441,30 @@ int pn_gen_process(pn_gen_t* const model) {
         			fprintf(stderr, "ERROR - no segment count found!\n");
         		}
         	}
-        	if (pn_index < MAX_SEGS) {
-        		port->port_num = (uint8)(port->segments[pn_index].num);
-        		// check port confliction
-        		if (port->port_num < MAX_PORT_NUM) {
-        			if (full_ports[port->port_num] || port->port_num == 0) {
-        				has_confliction = TRUE;
-        			} else {
-					full_ports[port->port_num] = port;
-        			}
-        		} else {
-        			// shouldn't happen
-        			fprintf(stderr, "ERROR - port number %d is out of range (0, %d)\n",
-        				port->port_num, MAX_PORT_NUM);
-        			MemoryDeallocate(full_ports);
+		if (pn_index < MAX_SEGS) {
+			const int pn = port->segments[pn_index].num;
+			// check port confliction
+			// pn is not equal to -1 as previous loop filtered it already
+			if (pn < MAX_PORT_NUM) {
+				port->port_num = (uint8)(pn);
+				if (full_ports[pn] || pn == 0) {
+					has_confliction = TRUE;
+				} else {
+					full_ports[pn] = port;
+				}
+			} else {
+				// shouldn't happen
+				fprintf(stderr, "ERROR - port number %d is out of range (0, %d)\n",
+					pn, MAX_PORT_NUM);
+				MemoryDeallocate(full_ports);
 				if (group_head) {
 					free_group_item(group_head);
 				}
-        			return PNG_INVALID_PORT_NAME;
-        		}
-        		DBGPRINT("  port<%"PRIu64">: index=%d portNum=%d\n", port_item->key, pn_index, port->port_num);
-        		// calculate group key. Please note the key is based on
-        		// seg key that already includes seg index info.
+				return PNG_INVALID_PORT_NAME;
+			}
+			DBGPRINT("  port<%"PRIu64">: index=%d portNum=%d\n", port_item->key, pn_index, port->port_num);
+			// calculate group key. Please note the key is based on
+			// seg key that already includes seg index info.
 			uint64 g_key = 0;
 			for (i = 0; i < port->seg_count; i++) {
 				if (i != pn_index) {
@@ -490,11 +492,11 @@ int pn_gen_process(pn_gen_t* const model) {
 				// new group
 				pn_group_item* g_item = create_group_item();
 				if (!g_item) {
-	        			MemoryDeallocate(full_ports);
+					MemoryDeallocate(full_ports);
 					if (group_head) {
 						free_group_item(group_head);
 					}
-        				return PNG_NO_MEMORY;
+					return PNG_NO_MEMORY;
 				}
 				g_item->key = g_key;
 				g_item->min = g_item->max = port->port_num;

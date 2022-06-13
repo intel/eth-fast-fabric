@@ -58,6 +58,8 @@ set min_msg_size 1024
 set conn_timeout_s 10
 set stress_tool /usr/lib/eth-tools/ethudstress
 set driver "ice"
+# the key is hostname, and the value is a list of port, ip pairs in format <port>:<ip>
+array set host_port_ip {}
 
 proc suite_setup {} {
 	# example of conditional setup
@@ -108,8 +110,9 @@ proc get_app_lost_count_file {host port} {
 proc collect_counters {counters host port delta} {
 # collect port counters
 # Usage:
-#       collect_counter host_ports delta
+#       collect_counter counters host port delta
 # Arguments:
+#	counters - an array stores counters
 #       host - hsot name
 #       port - port name
 #       delta - indicator of whether calculation delta count
@@ -121,7 +124,7 @@ proc collect_counters {counters host port delta} {
 		unix_cmd 10 0 "echo 'Lost:0' > $app_count_file"
 	}
 
-	send_unix_cmd "ethtool -S $port | egrep --color=never 'tx_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/hw_counters/ && grep --color=never . *Discards; cat $app_count_file"
+	send_unix_cmd "ethtool -S $port | egrep --color=never '?x_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/hw_counters/ && grep --color=never . *Discards; cat $app_count_file"
 	expect_unix_prompt 5 out
 	foreach line $out {
 		if { [string match {[tr]x_*} $line] || [string match {ip*} $line] || [string match {Lost*} $line]} {
@@ -142,22 +145,17 @@ proc collect_counters {counters host port delta} {
 	target_root_sh_exit
 }
 
-proc run_ethudstress {server_host server_port senders} {
+proc run_ethudstress {server_host server_port server_ip senders} {
 	global env
 	global num_conns
 	global msg_count
 	global msg_size
 	global conn_timeout_s
 	global stress_tool
+	global host_port_ip
 
 	target_root_sh $server_host
 	unix_cmd 30 "" "killall $stress_tool"
-	send_unix_cmd "ip a show dev $server_port"
-	set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
-	if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy ip_addr]} {
-		fail_test "Couldn't find ip address for $server_host:$server_port"
-	}
-	check_exit_status 30 0
 	target_root_sh_exit
 
 	set rec_num_conns [expr $num_conns * [llength $senders]]
@@ -169,27 +167,41 @@ proc run_ethudstress {server_host server_port senders} {
 	init_subprocesses
 	subprocess {
 		target_root_sh $server_host
-		send_unix_cmd "$stress_tool -b $ip_addr -c $rec_num_conns -C $msg_count -S $msg_size -T $conn_timeout_s | tee >(grep ' Lost: '|cut -d' ' -f4-5|tr -d ' '> $app_count_file)"
+		send_unix_cmd "$stress_tool -b $server_ip -c $rec_num_conns -C $msg_count -S $msg_size -T $conn_timeout_s | tee >(grep ' Lost: '|cut -d' ' -f4-5|tr -d ' '> $app_count_file)"
 		expect_list $exp_timeout {"Test complete"} {"Error"}
 		target_root_sh_exit
 	}
 
 	after 1000
 	foreach client $senders {
-		subprocess {
-			target_root_sh $client
-			after 1000
-			send_unix_cmd "$stress_tool -s $ip_addr -c $num_conns -C $msg_count -S $msg_size -T $conn_timeout_s"
-			expect_list $exp_timeout {"Test complete"} {"Error"}
-			target_root_sh_exit
+		set step [expr $num_conns / [llength $host_port_ip($client)]]
+		set conns [expr ($num_conns % [llength $host_port_ip($client)]) + $step]
+		foreach port_ip $host_port_ip($client) {
+			set port_ip [split $port_ip ":"]
+			subprocess {
+				target_root_sh $client
+				after 1000
+				send_unix_cmd "$stress_tool -s $server_ip -b [lindex $port_ip 1] -c $conns -C $msg_count -S $msg_size -T $conn_timeout_s"
+				expect_list $exp_timeout {"Test complete"} {"Error"}
+				target_root_sh_exit
+			}
+			set conns $step
 		}
 	}
 	wait_subprocesses
+
+# We sleep for some time in order to capture all the dropped packets
+# If we count them immediate, we may miss some packets
+
+	sleep [ calc_timeout 2 ]
+
 	collect_counters counters $server_host $server_port 1
 
 	set has_tx_pause 0
+	set has_rx_pause 0
 	set has_dropped 0
 	set app_lost_pkts 0
+
 	foreach {k v} [array get counters] {
 		if {([string match {*dropped*} $k] || [string match {*Discards} $k]) && [string compare $v 0] } {
 			set has_dropped 1
@@ -197,13 +209,16 @@ proc run_ethudstress {server_host server_port senders} {
 		if {[string match {tx_priority*} $k] && [string compare $v 0] } {
 			set has_tx_pause 1
 		}
+		if {[string match {rx_priority*} $k] && [string compare $v 0] } {
+			set has_rx_pause 1
+		}
 		if {[string match {Lost} $k] && [string compare $v 0] } {
 			set app_lost_pkts 1
 		}
 	}
 	set err_msg_body ""
-	if { !$has_tx_pause } {
-		append err_msg_body "Has no pause frames. "
+	if { !$has_tx_pause && !$has_rx_pause } {
+		append err_msg_body "Has no Tx or Rx pause frames. "
 	}
 	if { $has_dropped } {
 		append err_msg_body "Has dropped packages."
@@ -220,7 +235,7 @@ proc run_ethudstress {server_host server_port senders} {
 	}
 }
 
-proc test_case_pfc {receiver receiver_ports senders {punchlist 0}} {
+proc test_case_pfc {receiver senders {punchlist 0}} {
 ##
 ## test_case_pfc
 ## -------------------
@@ -230,7 +245,6 @@ proc test_case_pfc {receiver receiver_ports senders {punchlist 0}} {
 ##	test_case_pfc receiver receiver_ports senders [punchlist]
 ## Arguments:
 ##	receiver - the receiver host to run as ethudstress server
-##	reeiver_ports - the network interfaces for the ethudstress server
 ##	senders - hosts to run as ethudstress clients
 ##	punchlist - should punchlist be updated on failure (default=0=no)
 ## Returns:
@@ -241,25 +255,24 @@ proc test_case_pfc {receiver receiver_ports senders {punchlist 0}} {
 ##	no item_setup nor item_cleanup used
 	global env
 
-	test_case "$receiver" "In-cast $receiver<--($senders)" "test PFC of $receiver
-confirm $receiver can generate pause frames when other hosts send data to it
+	test_case "$receiver" "In-cast $receiver<--($senders)" "test PFC of $receiver confirm $receiver can generate pause frames when other hosts send data to it
 File: /usr/lib/eth-tools/pfctest.exp" case_setup case_cleanup {
+		global host_port_ip
 		upvar receiver receiver
 		upvar receiver_ports receiver_ports
 		upvar senders senders
 		upvar punchlist punchlist
 
-		if {"$receiver_ports" == ""} {
-			# shouldn't happen
-			fail_test "No ports on $receiver"
-		}
-		foreach port $receiver_ports {
+		foreach port_ip $host_port_ip($receiver) {
+                        set port_ip [split $port_ip ":"]
+                        set port [lindex $port_ip 0]
+                        set ip [lindex $port_ip 1]
 			if { [ catch { set res [
 				test_item ":$port<--($senders)" \
 				          "In-cast $receiver:$port<--($senders)" \
 				          "ethudstress send data from $senders to $receiver:$port" \
 				          noop cleanup_all_children {
-					run_ethudstress $receiver $port $senders
+					run_ethudstress $receiver $port $ip $senders
 			} ] } err_str ] != 0  || $res != 0 } {
 				if { $punchlist } {
 					append_punchlist "$receiver" "PFC test failed on $receiver:$port<--($senders): $err_str"
@@ -295,6 +308,7 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 	global msg_size
 	global min_msg_size
 	global driver
+	global host_port_ip
 
 	set hrange {}
 	set hindex -1
@@ -304,7 +318,9 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 		set HOST_PORTS([lindex $key_value 0]) [lindex $key_value 1]
 		lappend hrange $hindex
 	}
-	set mtu_file "/tmp/hostsmtu_[pid]"
+	set port_file "/tmp/ff_port_[pid]"
+	set mtu_file "/tmp/ff_mtu_[pid]"
+	set hpi_file "/tmp/ff_hpi_[pid]"
 	parallel host [array names HOST_PORTS]  {
 		set ports $HOST_PORTS($host)
 		target_root_sh $host
@@ -315,17 +331,36 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 				fail_test "No $driver interfaces found"
 			}
 			check_exit_status 20 0
-			set HOST_PORTS($host) $ports
+			exec echo "$host: $ports" >> $port_file
+			set user_ports 0
+		} else {
+			set user_ports 1
 		}
 
 		set desired_mtu $msg_size
-		foreach port $HOST_PORTS($host) {
-			send_unix_cmd "ip addr show dev $port"
-			set out [expect_list 20 {" mtu [0-9]+"}]
-			if {![regexp {([0-9]+)} $out dummy mtu]} {
+		set port_ips ""
+		foreach port $ports {
+			send_unix_cmd "ip addr show dev $port | egrep --color=never 'mtu |inet '; echo DONE"
+			expect_list 20 {"(?n)^DONE"} {} out
+			set out [split $out "\n"]
+			# if a command already ran, the output may starts with a new line
+			if {[lindex $out 0] eq ""} {
+				set out [lreplace $out 0 0]
+			}
+
+			if { [llength $out] > 1 && [regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} [lindex $out 2] dummy ip_addr]} {
+				append port_ips " $port:$ip_addr"
+			} elseif {$user_ports == 0} {
+				# auto detected port, ignore it if it has no IP address
+				continue
+			} else {
+				# user specified port that has no IP address
+				fail_test "$host: No IP address found on interface $port"
+			}
+
+			if {![regexp {mtu ([0-9]+)} [lindex $out 1] dummy mtu]} {
 				fail_test "$host: No mtu found on interface $port"
 			}
-			check_exit_status 20 0
 			if {[expr $mtu < $min_msg_size]} {
 				fail_test "$host: Mtu $mtu is less then minimum message size $min_msg_size"
 			}
@@ -333,17 +368,39 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 				set desired_mtu $min_msg_size
 			}
 		}
+		if {$port_ips == ""} {
+			fail_test "$host: No valid interfaces with IP address"
+		}
 
 		target_root_sh_exit
 		# echo is safe on parallel when the string size if less than buffer size
+		exec echo "$host;$port_ips" >> $hpi_file
 		exec echo "$desired_mtu" >> $mtu_file
 	}
-	set new_msg_size [exec sh -c "grep $min_msg_size $mtu_file >/dev/null && echo $min_msg_size || echo $msg_size"]
-	if {$new_msg_size != $msg_size} {
-		show_message "Adjusted message size from $msg_size to $new_msg_size due to small MTU"
-		set msg_size $new_msg_size
+	if { [ file exists $port_file ] } {
+		foreach line [split [exec cat $port_file] '\n'] {
+			set line [split $line ":"]
+			set HOST_PORTS([lindex $line 0]) [lindex $line 1]
+		}
+		exec rm -f $port_file
 	}
-	exec rm -f $mtu_file
+
+	if { [ file exists $hpi_file ] } {
+		foreach line [split [exec cat $hpi_file] '\n'] {
+			set line [split $line ";"]
+			set host_port_ip([lindex $line 0]) [lindex $line 1]
+		}
+		exec rm -f $hpi_file
+	}
+
+	if { [ file exists $mtu_file ] } {
+		set new_msg_size [exec sh -c "grep $min_msg_size $mtu_file >/dev/null && echo $min_msg_size || echo $msg_size"]
+		if {$new_msg_size != $msg_size} {
+			show_message "Adjusted message size from $msg_size to $new_msg_size due to small MTU"
+			set msg_size $new_msg_size
+		}
+		exec rm -f $mtu_file
+	}
 
 	# run ethudstress between one host and its next 2 hosts in host list
 	# to ensure the first host can generate pause frames, and the other two
@@ -365,6 +422,6 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 			set index [expr ($hindex + $i) % [llength $hrange]]
 			lappend senders [lindex [array names HOST_PORTS] $index]
                 }
-		test_case_pfc $receiver $HOST_PORTS($receiver) $senders 1
+		test_case_pfc $receiver $senders 1
 	}
 }

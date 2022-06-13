@@ -602,7 +602,7 @@ static FSTATUS ParseNodePairPatFilePoint(FabricData_t *fabricp, char *arg, Point
 	char nodePatFileName[FILENAME] = {0};
 	struct stat fileStat;
 	FILE *fp;
-	NodePairList_t nodePatPairs;
+	NodePairList_t nodePatPairs = {};
 
 	ASSERT(PointIsInInit(pPoint));
 

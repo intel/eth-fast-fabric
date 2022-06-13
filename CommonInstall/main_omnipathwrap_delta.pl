@@ -71,6 +71,7 @@ my @Components_rhel81 = ( @EthAllComponents );
 my @Components_rhel82 = ( @EthAllComponents );
 my @Components_rhel83 = ( @EthAllComponents );
 my @Components_rhel84 = ( @EthAllComponents );
+my @Components_rhel85 = ( @EthAllComponents );
 
 @Components = ( );
 
@@ -537,6 +538,12 @@ sub init_components
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
 						%eth_module_rhel_comp_info,
 						);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
+		@Components = ( @Components_rhel85 );
+		@SubComponents = ( @SubComponents_newer );
+		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
+						%eth_module_rhel_comp_info,
+						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
 		@Components = ( @Components_sles15 );
 		@SubComponents = ( @SubComponents_newer );
@@ -878,11 +885,23 @@ sub translate_comp
 {
 	my($arg)=$_[0];
 	if ("$arg" eq "eth"){
-		return ("eth_tools", "psm3", "eth_module", "openmpi_gcc_ofi");
+		my @res = ("eth_tools", "psm3", "eth_module", "openmpi_gcc_ofi");
+		if ($GPU_Install == 1) {
+			push(@res, "openmpi_gcc_cuda_ofi");
+		}
+		return @res;
 	} elsif ("$arg" eq "mpi"){
-		return ( "openmpi_gcc_ofi");
+		my @res = ("openmpi_gcc_ofi");
+		if ($GPU_Install == 1) {
+			push(@res, "openmpi_gcc_cuda_ofi");
+		}
+		return @res;
 	} elsif ("$arg" eq "psm_mpi"){
-		return ( "psm3", "eth_module", "openmpi_gcc_ofi");
+		my @res = ("psm3", "eth_module", "openmpi_gcc_ofi");
+		if ($GPU_Install == 1) {
+			push(@res, "openmpi_gcc_cuda_ofi");
+		}
+		return @res;
 	} elsif ("$arg" eq "delta_mpisrc"){
 		return ( "mpisrc" ); # legacy
 		# no ibaccess argument equivalent for:

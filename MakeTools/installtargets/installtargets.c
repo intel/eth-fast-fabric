@@ -48,7 +48,7 @@ typedef int boolean;
 
 int  Mkdir(const char* dir);
 int  InstallTarget(const char* targetDir, const char* srcFileName, const boolean forceFlag, unsigned modeMask);
-boolean CopyFile( const char* targetFileName, const char* srcFileName, struct stat srcStat, unsigned modeMask );
+boolean CopyFile( const char* targetFileName, const char* srcFileName, const struct stat* srcStat, unsigned modeMask );
 boolean CompareFiles( const char* targetFileName, const char* srcFileName );
 
 void Usage(const char* progname)
@@ -213,14 +213,14 @@ int InstallTarget(const char* targetDir, const char* srcFileName, const boolean 
         srcStat.st_size  != targetStat.st_size )
 #endif
     {
-        copyResult = CopyFile( targetFileName, srcFileName, srcStat, modeMask);
+        copyResult = CopyFile( targetFileName, srcFileName, &srcStat, modeMask);
     }
     else
     {
         /* If the compare says the source and target files are different, do the copy */
         if( CompareFiles(targetFileName, srcFileName) )
         {
-            copyResult = CopyFile( targetFileName, srcFileName, srcStat, modeMask );
+            copyResult = CopyFile( targetFileName, srcFileName, &srcStat, modeMask );
         }
     }
 
@@ -235,17 +235,19 @@ int InstallTarget(const char* targetDir, const char* srcFileName, const boolean 
 }
 
 
-boolean CopyFile( const char* targetFileName, const char* srcFileName, struct stat srcStat, const unsigned modeMask )
+boolean CopyFile( const char* targetFileName, const char* srcFileName, const struct stat* srcStat, const unsigned modeMask )
 {
     FILE *srcFile = NULL;
     FILE *targetFile = NULL;
     boolean copyResult = TRUE;
     int  srcChr;
-	unsigned mode = srcStat.st_mode & modeMask;
+	unsigned mode = srcStat->st_mode & modeMask;
         
     printf("Copying %s to %s...", srcFileName, targetFileName);
     srcFile = fopen(srcFileName, "rb");
-	chmod(targetFileName, mode|(S_IWUSR|S_IWGRP));
+    // preventively try to make target writable, not a problem if target does not exist
+    // or any other failure during chmod
+    (void)chmod(targetFileName, mode|(S_IWUSR|S_IWGRP));
     targetFile = fopen(targetFileName, "wb");
     if( srcFile != NULL && targetFile != NULL )
     {
@@ -271,7 +273,9 @@ boolean CopyFile( const char* targetFileName, const char* srcFileName, struct st
     if( targetFile )
 	{
 		fclose(targetFile);
-		chmod(targetFileName, mode);
+		if ( 0 != chmod(targetFileName, mode)) {
+	                fprintf(stderr, "Could not set mode 0x%x for %s, error %s\n", mode, targetFileName, strerror(errno));
+		}
 	}
 
 	if ( copyResult )
@@ -280,14 +284,14 @@ boolean CopyFile( const char* targetFileName, const char* srcFileName, struct st
 		int rval;
 
 #if defined(__DARWIN__)
-		utb.actime = srcStat.st_atimespec.tv_sec;
-		utb.modtime = srcStat.st_mtimespec.tv_sec;
+		utb.actime = srcStat->st_atimespec.tv_sec;
+		utb.modtime = srcStat->st_mtimespec.tv_sec;
 #else
-		utb.actime = srcStat.st_atime;
-		utb.modtime = srcStat.st_mtime;
+		utb.actime = srcStat->st_atime;
+		utb.modtime = srcStat->st_mtime;
 #endif
 		if ((rval=utime(targetFileName,&utb))) {
-			printf("Could not set utime: %d/%s..",rval,strerror(errno));
+			fprintf(stderr, "Could not set utime: %d/%s..", rval, strerror(errno));
 		} 
 	}
 
