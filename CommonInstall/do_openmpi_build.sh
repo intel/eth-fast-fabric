@@ -190,7 +190,8 @@ skip_prompt=n
 iflag=n	# undocumented option, build in context of install
 Oflag=n
 Cflag=n
-while getopts "idOC" o
+bflag=n # undocumented option, include build-id (default disabled)
+while getopts "idOCb" o
 do
 	case "$o" in
 	i)
@@ -204,6 +205,8 @@ do
 	d)
 		check_arg $o
 		skip_prompt=y;;
+	b)
+		bflag=y;;
 	*)
 		Usage;;
 	esac
@@ -414,6 +417,10 @@ fi
 	disable_auto_requires=""
 	openmpi_ldflags=""
 	openmpi_wrapper_cxx_flags=""
+
+	if [ "$bflag" = "n" ]; then
+		openmpi_ldflags="LDFLAGS=-Wl,--build-id=none"
+	fi
 
 	# need to create proper openmpi_comp_env value for OpenMPI builds
 	openmpi_comp_env=""

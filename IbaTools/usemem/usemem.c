@@ -38,6 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <sys/mman.h>
 
+#ifdef VERBOSE
+#define VERBOSE_PRINT(...) do { printf(__VA_ARGS__); } while (0)
+#else
+#define VERBOSE_PRINT(...)
+#endif
+
 void a(int *f)
 {
 #ifdef USE__STACK
@@ -68,7 +74,6 @@ main(int cnt, char **args)
 	// volatile int val;
 	volatile char *p;
 	int zfirst[16384];
-	int verbose=0;
 
 	if(cnt < 2 || (mem = strtoul(args[1], NULL, 0)) <= 0) {
 		printf("Usage: %s mem_incr [totmem]\n", args[0]);
@@ -99,8 +104,7 @@ main(int cnt, char **args)
 				mem, passes, tot, strerror(errno));
 				break;
 		}
-		else if(verbose)
-			printf("calloc'ed (%lx) bytes at %p, tot %lu\n", mem, p, tot);
+		VERBOSE_PRINT("calloc'ed (%lx) bytes at %p, tot %lu\n", mem, p, tot);
 
 		// calloc isn't good enough, since with mmap'ed based calloc,
 		// it "knows" the pages are zero-filled, so you have to actuall

@@ -156,12 +156,12 @@ boolean match_oid(oid *oid1, size_t oid1Len, oid *oid2, size_t oid2Len) {
  * @param oid	the OID to check
  * @return TRUE if the SNMP data matches the specified OID
  */
-boolean is_oid(SNMPResult* res, SNMPOid oid) {
-	if (res->oidLen < oid.oidLen) {
+boolean is_oid(const SNMPResult* res, const SNMPOid* oid) {
+	if (res->oidLen < oid->oidLen) {
 		return FALSE;
 	}
 
-	return snmp_oid_compare(oid.oid, oid.oidLen, res->oid, oid.oidLen) == 0;
+	return snmp_oid_compare(oid->oid, oid->oidLen, res->oid, oid->oidLen) == 0;
 }
 
 /*
@@ -721,8 +721,8 @@ LIST_ITEM *create_port_item() {
 }
 
 STL_PORT_COUNTERS_DATA *get_port_counters(cl_qmap_t *map, SNMPResult *res,
-		SNMPOid oid) {
-	int id = get_oid_num(res, oid.oidLen);
+		const SNMPOid* oid) {
+	int id = get_oid_num(res, oid->oidLen);
 	PortData *pData = get_map_obj(map, id);
 	if (pData) {
 		return pData->pPortCounters;
@@ -758,13 +758,13 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 			TRACEPRINT("\n");
 		}
 
-		if (is_oid(rp, lldpLocChassisId)) {
+		if (is_oid(rp, &lldpLocChassisId)) {
 			TRACEPRINT("..lldpLocChassisId\n");
 			uint64 guid = get_guid(rp->val.string, rp->valLen);
 			node->NodeInfo.SystemImageGUID = guid;
 			//TODO: extend to support director switch
 			node->NodeInfo.NodeGUID = guid;
-		} else if (is_oid(rp, lldpLocManAddrIfId)) {
+		} else if (is_oid(rp, &lldpLocManAddrIfId)) {
 			TRACEPRINT("..lldpLocManAddrIfId\n");
 			if (manAddrProcessed) {
 				// only pick the first entry
@@ -799,24 +799,24 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 				// break because we have no LID. Doesn't make sense to continue;
 				break;
 			}
-		} else if (is_oid(rp, sysName)) {
+		} else if (is_oid(rp, &sysName)) {
 			TRACEPRINT("..sysName\n");
 			size_t len =
 					rp->valLen + 1 < STL_NODE_DESCRIPTION_ARRAY_SIZE ?
 							rp->valLen + 1 : STL_NODE_DESCRIPTION_ARRAY_SIZE;
 			snprintf((char*) node->NodeDesc.NodeString, len, "%s",
 					rp->val.string);
-		} else if (is_oid(rp, ifNumber)) {
+		} else if (is_oid(rp, &ifNumber)) {
 			TRACEPRINT("..ifNumber\n");
 			node->NodeInfo.NumPorts = (uint8) *(rp->val.integer);
-		} else if (is_oid(rp, ifPhysAddress)) {
+		} else if (is_oid(rp, &ifPhysAddress)) {
 			TRACEPRINT("..ifPhysAddress\n");
 			int ifId = get_oid_num(rp, ifPhysAddress.oidLen);
 			if (ifId == node->NodeInfo.u1.s.LocalPortNum) {
 				uint64 guid = get_guid(rp->val.string, rp->valLen);
 				node->NodeInfo.PortGUID = guid;
 			}
-		} else if (is_oid(rp, entPhysicalClass)) {
+		} else if (is_oid(rp, &entPhysicalClass)) {
 			TRACEPRINT("..entPhysicalClass\n");
 			// Note: other ent data processing depends on modulePhyId, we shall
 			// ensure we query entPhysicalClass before other ent queries.
@@ -827,48 +827,48 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 				}
 				TRACEPRINT("....modulePhyId=%d\n", modulePhyId);
 			}
-		} else if (is_oid(rp, entPhysicalDescr)) {
+		} else if (is_oid(rp, &entPhysicalDescr)) {
 			TRACEPRINT("..entPhysicalDescr\n");
 			int phyId = get_oid_num(rp, entPhysicalDescr.oidLen);
 			if (phyId == modulePhyId) {
 				copy_snmp_string(rp, (char*) node->NodeInfo.DeviceName,
 						SMALL_STR_ARRAY_SIZE, FALSE);
 			}
-		} else if (is_oid(rp, entPhysicalVendorType)) {
+		} else if (is_oid(rp, &entPhysicalVendorType)) {
 			TRACEPRINT("..entPhysicalVendorType\n");
 			int phyId = get_oid_num(rp, entPhysicalVendorType.oidLen);
 			if (phyId == modulePhyId && rp->val.objid[0]) {
 				node->NodeInfo.u1.s.VendorID = (uint16) *(rp->val.objid + 6);
 			}
-		} else if (is_oid(rp, entPhysicalHardwareRev)) {
+		} else if (is_oid(rp, &entPhysicalHardwareRev)) {
 			TRACEPRINT("..entPhysicalHardwareRev\n");
 			int phyId = get_oid_num(rp, entPhysicalHardwareRev.oidLen);
 			if (phyId == modulePhyId) {
 				copy_snmp_string(rp, (char*) node->NodeInfo.HardwareRev,
 						SMALL_STR_ARRAY_SIZE, FALSE);
 			}
-		} else if (is_oid(rp, entPhysicalFirmwareRev)) {
+		} else if (is_oid(rp, &entPhysicalFirmwareRev)) {
 			TRACEPRINT("..entPhysicalFirmwareRev\n");
 			int phyId = get_oid_num(rp, entPhysicalFirmwareRev.oidLen);
 			if (phyId == modulePhyId) {
 				copy_snmp_string(rp, (char*) node->NodeInfo.FirmwareRev,
 						SMALL_STR_ARRAY_SIZE, FALSE);
 			}
-		} else if (is_oid(rp, entPhysicalSerialNum)) {
+		} else if (is_oid(rp, &entPhysicalSerialNum)) {
 			TRACEPRINT("..entPhysicalSerialNum\n");
 			int phyId = get_oid_num(rp, entPhysicalSerialNum.oidLen);
 			if (phyId == modulePhyId) {
 				copy_snmp_string(rp, (char*) node->NodeInfo.SerialNum,
 						SMALL_STR_ARRAY_SIZE, FALSE);
 			}
-		} else if (is_oid(rp, entPhysicalMfgName)) {
+		} else if (is_oid(rp, &entPhysicalMfgName)) {
 			TRACEPRINT("..entPhysicalMfgName\n");
 			int phyId = get_oid_num(rp, entPhysicalMfgName.oidLen);
 			if (phyId == modulePhyId) {
 				copy_snmp_string(rp, (char*) node->NodeInfo.MfgName,
 						SMALL_STR_ARRAY_SIZE, FALSE);
 			}
-		} else if (is_oid(rp, entPhysicalModelName)) {
+		} else if (is_oid(rp, &entPhysicalModelName)) {
 			TRACEPRINT("..entPhysicalModelName\n");
 			int phyId = get_oid_num(rp, entPhysicalModelName.oidLen);
 			if (phyId == modulePhyId) {
@@ -903,10 +903,10 @@ HMGT_STATUS_T populate_host_node_record(SNMPHost *host, SNMPResult *res,
 			TRACEPRINT("\n");
 		}
 
-		if (is_oid(rp, sysName)) {
+		if (is_oid(rp, &sysName)) {
 			TRACEPRINT("..sysName\n");
 			sysNameRes = rp;
-		} else if (is_oid(rp, ifName)) {
+		} else if (is_oid(rp, &ifName)) {
 			TRACEPRINT("..ifName\n");
 			if (!is_supported_interface(host, (char*)rp->val.string, rp->valLen)) {
 				goto next_loop;
@@ -956,7 +956,7 @@ HMGT_STATUS_T populate_host_node_record(SNMPHost *host, SNMPResult *res,
 				size_t delta = rp->valLen + 2 - len;
 				snprintf(pos, len, "-%s", rp->val.string + delta);
 			}
-		} else if (is_oid(rp, ifType)) {
+		} else if (is_oid(rp, &ifType)) {
 			TRACEPRINT("..ifType\n");
 			uint8 type = (uint8) *(rp->val.integer);
 			// ignore software loopback
@@ -971,7 +971,7 @@ HMGT_STATUS_T populate_host_node_record(SNMPHost *host, SNMPResult *res,
 					MemoryDeallocate(mapObj);
 				}
 			}
-		} else if (is_oid(rp, ifPhysAddress)) {
+		} else if (is_oid(rp, &ifPhysAddress)) {
 			TRACEPRINT("..ifPhysAddress\n");
 			int portNum = get_oid_num(rp, ifPhysAddress.oidLen);
 			STL_NODE_RECORD *node = _get_node_rec(&nodeMap, portNum);
@@ -986,7 +986,7 @@ HMGT_STATUS_T populate_host_node_record(SNMPHost *host, SNMPResult *res,
 				node->NodeInfo.PortGUID = guid;
 				node->NodeInfo.SystemImageGUID = systemImgGuid;
 			}
-		} else if (is_oid(rp, ipAdEntIfIndex)) {
+		} else if (is_oid(rp, &ipAdEntIfIndex)) {
 			TRACEPRINT("..ipAdEntIfIndex\n");
 			int portNum = *(rp->val.integer);
 			STL_NODE_RECORD *node = _get_node_rec(&nodeMap, portNum);
@@ -1072,15 +1072,15 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 			TRACEPRINT("\n");
 		}
 
-		if (is_oid(rp, lldpLocSysCapSupported)) {
+		if (is_oid(rp, &lldpLocSysCapSupported)) {
 			TRACEPRINT("..lldpLocSysCapSupported\n");
 			portZeroRec->PortInfo.CapabilityMask.AsReg32 = get_capability(
 					rp->val.string, rp->valLen);
-		} else if (is_oid(rp, lldpLocSysCapEnabled)) {
+		} else if (is_oid(rp, &lldpLocSysCapEnabled)) {
 			TRACEPRINT("..lldpLocSysCapEnabled\n");
 			portZeroRec->PortInfo.CapabilityMask3.AsReg16 = get_capability(
 					rp->val.string, rp->valLen);
-		} else if (is_oid(rp, lldpLocManAddrIfId)) {
+		} else if (is_oid(rp, &lldpLocManAddrIfId)) {
 			TRACEPRINT("..lldpLocManAddrIfId\n");
 			// only pick the first one
 			if (manAddrProcessed) {
@@ -1112,7 +1112,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				fstatus = HMGT_STATUS_ERROR;
 			}
 			manAddrProcessed = TRUE;
-		} else if (is_oid(rp, lldpRemChassisId)) {
+		} else if (is_oid(rp, &lldpRemChassisId)) {
 			TRACEPRINT("..lldpRemChassisId\n");
 			LIST_ITEM *item = create_port_item();
 			if (item == NULL) {
@@ -1140,7 +1140,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				fstatus = HMGT_STATUS_INSUFFICIENT_MEMORY;
 				break;
 			}
-		} else if (is_oid(rp, lldpRemPortIdSubtype)) {
+		} else if (is_oid(rp, &lldpRemPortIdSubtype)) {
 			TRACEPRINT("..lldpRemPortIdSubtype\n");
 			int portNum = get_oid_num(rp, lldpRemPortIdSubtype.oidLen + 1);
 			LIST_ITEM *lItem = get_map_obj(&portNumMap, portNum);
@@ -1148,7 +1148,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				STL_PORTINFO_RECORD *portRec = lItem->pObject;
 				portRec->PortInfo.NeighborPortIdSubtype = (uint8) *(rp->val.integer);
 			}
-		} else if (is_oid(rp, lldpRemPortId)) {
+		} else if (is_oid(rp, &lldpRemPortId)) {
 			TRACEPRINT("..lldpRemPortId\n");
 			int portNum = get_oid_num(rp, lldpRemPortId.oidLen + 1);
 			LIST_ITEM *lItem = get_map_obj(&portNumMap, portNum);
@@ -1158,7 +1158,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 						TINY_STR_ARRAY_SIZE,
 						portRec->PortInfo.NeighborPortIdSubtype == PORTID_SUBTYPE_MAC);
 			}
-		} else if (is_oid(rp, lldpRemSysCapEnabled)) {
+		} else if (is_oid(rp, &lldpRemSysCapEnabled)) {
 			TRACEPRINT("..lldpRemSysCapEnabled\n");
 			int portNum = get_oid_num(rp, lldpRemSysCapEnabled.oidLen + 1);
 			LIST_ITEM *lItem = get_map_obj(&portNumMap, portNum);
@@ -1173,7 +1173,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 							STL_NEIGH_NODE_TYPE_HFI;
 				}
 			}
-		} else if (is_oid(rp, lldpLocPortIdSubtype)) {
+		} else if (is_oid(rp, &lldpLocPortIdSubtype)) {
 			TRACEPRINT("..lldpLocPortIdSubtype\n");
 			int portNum = get_oid_num(rp, lldpLocPortIdSubtype.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portNumMap, portNum);
@@ -1189,7 +1189,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				}
 				portRec->PortInfo.LocalPortIdSubtype = type;
 			}
-		} else if (is_oid(rp, lldpLocPortId)) {
+		} else if (is_oid(rp, &lldpLocPortId)) {
 			TRACEPRINT("..lldpLocPortId\n");
 			int portNum = get_oid_num(rp, lldpLocPortId.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portNumMap, portNum);
@@ -1198,7 +1198,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				copy_snmp_string(rp, (char*) portRec->PortInfo.LocalPortId,
 						TINY_STR_ARRAY_SIZE, FALSE);
 			}
-		} else if (is_oid(rp, ifName)) {
+		} else if (is_oid(rp, &ifName)) {
 			TRACEPRINT("..ifName\n");
 			// transfer from port number map to interface index map
 			char* portName = (char*) rp->val.string;
@@ -1248,7 +1248,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				fstatus = HMGT_STATUS_INSUFFICIENT_MEMORY;
 				break;
 			}
-		} else if (is_oid(rp, ifType)) {
+		} else if (is_oid(rp, &ifType)) {
 			TRACEPRINT("..ifType\n");
 			int portId = get_oid_num(rp, ifOperStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1257,7 +1257,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				portRec->PortInfo.PortPhysConfig.s.PortType =
 						(uint8) *(rp->val.integer);
 			}
-		} else if (is_oid(rp, ifMTU)) {
+		} else if (is_oid(rp, &ifMTU)) {
 			TRACEPRINT("..ifMTU\n");
 			int portId = get_oid_num(rp, ifOperStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1265,7 +1265,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				STL_PORTINFO_RECORD *portRec = lItem->pObject;
 				portRec->PortInfo.MTU2 = (uint16) *(rp->val.integer);
 			}
-		} else if (is_oid(rp, ifSpeed)) {
+		} else if (is_oid(rp, &ifSpeed)) {
 			TRACEPRINT("..ifSpeed\n");
 			int portId = get_oid_num(rp, ifOperStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1277,7 +1277,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				portRec->PortInfo.LinkSpeed.Active =
 						ifspeed_to_active_linkspeed(portRec->PortInfo.IfSpeed);
 			}
-		} else if (is_oid(rp, ifOperStatus)) {
+		} else if (is_oid(rp, &ifOperStatus)) {
 			TRACEPRINT("..ifOperStatus\n");
 			int portId = get_oid_num(rp, ifOperStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1286,7 +1286,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				int state = *(rp->val.integer);
 				portRec->PortInfo.PortStates.s.PortState = state;
 			}
-		} else if (is_oid(rp, ifMauStatus)) {
+		} else if (is_oid(rp, &ifMauStatus)) {
 			TRACEPRINT("..ifMauStatus\n");
 			int portId = get_oid_num(rp, ifMauStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1295,7 +1295,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				uint8 state = (uint8) *(rp->val.integer);
 				portRec->PortInfo.PortStates.s.PortPhysicalState = state;
 			}
-		} else if (is_oid(rp, ifMauMediaAvailable)) {
+		} else if (is_oid(rp, &ifMauMediaAvailable)) {
 			TRACEPRINT("..ifMauMediaAvailable\n");
 			int portId = get_oid_num(rp, ifMauMediaAvailable.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1304,7 +1304,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				uint8 state = (uint8) *(rp->val.integer);
 				portRec->PortInfo.LinkDownReason = state;
 			}
-		} else if (is_oid(rp, ifMauTypeListBits)) {
+		} else if (is_oid(rp, &ifMauTypeListBits)) {
 			TRACEPRINT("..ifMauTypeListBits\n");
 			int portId = get_oid_num(rp, ifMauTypeListBits.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1316,7 +1316,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 						get_link_speed_supported(rp->val.bitstring, rp->valLen);
 				portRec->PortInfo.LinkModeSupLen = (uint16) rp->valLen;
 			}
-		} else if (is_oid(rp, ifMauAutoNegAdminStatus)) {
+		} else if (is_oid(rp, &ifMauAutoNegAdminStatus)) {
 			TRACEPRINT("..ifMauAutoNegAdminStatus\n");
 			int portId = get_oid_num(rp, ifMauAutoNegAdminStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1326,7 +1326,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 				portRec->PortInfo.PortStates.s.IsSMConfigurationStarted =
 						state == 1 ? 1 : 0;
 			}
-		} else if (is_oid(rp, ifHighSpeed)) {
+		} else if (is_oid(rp, &ifHighSpeed)) {
 			TRACEPRINT("..ifHighSpeed\n");
 			// query ifHighSpeed later than ifSpeed. If it's available, we
 			// replace the value we get from ifSpeed.
@@ -1384,7 +1384,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 			TRACEPRINT("\n");
 		}
 
-		if (is_oid(rp, ifType)) {
+		if (is_oid(rp, &ifType)) {
 			TRACEPRINT("..ifType\n");
 			uint8 type = (uint8) *(rp->val.integer);
 			// ignore software loop back
@@ -1417,14 +1417,14 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 					break;
 				}
 			}
-		} else if (is_oid(rp, ifMTU)) {
+		} else if (is_oid(rp, &ifMTU)) {
 			TRACEPRINT("..ifMTU\n");
 			int portId = get_oid_num(rp, ifMTU.oidLen);
 			STL_PORTINFO_RECORD *portRec = get_map_obj(&portIdMap, portId);
 			if (portRec) {
 				portRec->PortInfo.MTU2 = (uint16) *(rp->val.integer);
 			}
-		} else if (is_oid(rp, ifSpeed)) {
+		} else if (is_oid(rp, &ifSpeed)) {
 			TRACEPRINT("..ifSpeed\n");
 			int portId = get_oid_num(rp, ifSpeed.oidLen);
 			STL_PORTINFO_RECORD *portRec = get_map_obj(&portIdMap, portId);
@@ -1435,7 +1435,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				portRec->PortInfo.LinkSpeed.Active =
 						ifspeed_to_active_linkspeed(portRec->PortInfo.IfSpeed);
 			}
-		} else if (is_oid(rp, ifPhysAddress)) {
+		} else if (is_oid(rp, &ifPhysAddress)) {
 			TRACEPRINT("..ifPhysAddress\n");
 			int portId = get_oid_num(rp, ifPhysAddress.oidLen);
 			STL_PORTINFO_RECORD *portRec = get_map_obj(&portIdMap, portId);
@@ -1444,7 +1444,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 					TINY_STR_ARRAY_SIZE, TRUE);
 				portRec->PortInfo.LocalPortIdSubtype = PORTID_SUBTYPE_MAC;
 			}
-		} else if (is_oid(rp, ifOperStatus)) {
+		} else if (is_oid(rp, &ifOperStatus)) {
 			TRACEPRINT("..ifOperStatus\n");
 			int portId = get_oid_num(rp, ifOperStatus.oidLen);
 			STL_PORTINFO_RECORD *portRec = get_map_obj(&portIdMap, portId);
@@ -1452,7 +1452,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				int state = *(rp->val.integer);
 				portRec->PortInfo.PortStates.s.PortState = state;
 			}
-		} else if (is_oid(rp, ifMauStatus)) {
+		} else if (is_oid(rp, &ifMauStatus)) {
 			TRACEPRINT("..ifMauStatus\n");
 			int portId = get_oid_num(rp, ifMauStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1461,7 +1461,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				uint8 state = (uint8) *(rp->val.integer);
 				portRec->PortInfo.PortStates.s.PortPhysicalState = state;
 			}
-		} else if (is_oid(rp, ifMauMediaAvailable)) {
+		} else if (is_oid(rp, &ifMauMediaAvailable)) {
 			TRACEPRINT("..ifMauMediaAvailable\n");
 			int portId = get_oid_num(rp, ifMauMediaAvailable.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1470,7 +1470,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				uint8 state = (uint8) *(rp->val.integer);
 				portRec->PortInfo.LinkDownReason = state;
 			}
-		} else if (is_oid(rp, ifMauTypeListBits)) {
+		} else if (is_oid(rp, &ifMauTypeListBits)) {
 			TRACEPRINT("..ifMauTypeListBits\n");
 			int portId = get_oid_num(rp, ifMauTypeListBits.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1482,7 +1482,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 						get_link_speed_supported(rp->val.bitstring, rp->valLen);
 				portRec->PortInfo.LinkModeSupLen = (uint16) rp->valLen;
 			}
-		} else if (is_oid(rp, ifMauAutoNegAdminStatus)) {
+		} else if (is_oid(rp, &ifMauAutoNegAdminStatus)) {
 			TRACEPRINT("..ifMauAutoNegAdminStatus\n");
 			int portId = get_oid_num(rp, ifMauAutoNegAdminStatus.oidLen);
 			LIST_ITEM *lItem = get_map_obj(&portIdMap, portId);
@@ -1492,7 +1492,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				portRec->PortInfo.PortStates.s.IsSMConfigurationStarted =
 						state == 1 ? 1 : 0;
 			}
-		} else if (is_oid(rp, ifHighSpeed)) {
+		} else if (is_oid(rp, &ifHighSpeed)) {
 			TRACEPRINT("..ifHighSpeed\n");
 			// query ifHighSpeed later than ifSpeed. If it's available, we
 			// replace the value we get from ifSpeed.
@@ -1504,7 +1504,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				portRec->PortInfo.LinkSpeed.Active =
 						ifspeed_to_active_linkspeed(portRec->PortInfo.IfSpeed);
 			}
-		} else if (is_oid(rp, ipAdEntIfIndex)) {
+		} else if (is_oid(rp, &ipAdEntIfIndex)) {
 			TRACEPRINT("..ipAdEntIfIndex\n");
 			int portId = *(rp->val.integer);
 			STL_PORTINFO_RECORD *port = get_map_obj(&portIdMap, portId);
@@ -1572,184 +1572,184 @@ HMGT_STATUS_T populate_port_counters(SNMPResult *res,
 			TRACEPRINT("\n");
 		}
 
-		if (is_oid(rp, ifInDiscards)) {
+		if (is_oid(rp, &ifInDiscards)) {
 			TRACEPRINT("..ifInDiscards\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifInDiscards);
+					rp, &ifInDiscards);
 			if (pCounters) {
 				pCounters->portRcvBECN = *rp->val.integer;
 			}
-		} else if (is_oid(rp, ifInErrors)) {
+		} else if (is_oid(rp, &ifInErrors)) {
 			TRACEPRINT("..ifInErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifInErrors);
+					rp, &ifInErrors);
 			if (pCounters) {
 				pCounters->ifInErrors = *rp->val.integer;
 			}
-		} else if (is_oid(rp, ifInUnknownProtos)) {
+		} else if (is_oid(rp, &ifInUnknownProtos)) {
 			TRACEPRINT("..ifInUnknownProtos\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(
 					ifIndexMap,
-					rp, ifInUnknownProtos);
+					rp, &ifInUnknownProtos);
 			if (pCounters) {
 				pCounters->ifInUnknownProtos = *rp->val.integer;
 			}
-		} else if (is_oid(rp, ifOutDiscards)) {
+		} else if (is_oid(rp, &ifOutDiscards)) {
 			TRACEPRINT("..ifOutDiscards\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(
 					ifIndexMap,
-					rp, ifOutDiscards);
+					rp, &ifOutDiscards);
 			if (pCounters) {
 				pCounters->portXmitDiscards = *rp->val.integer;
 			}
-		} else if (is_oid(rp, ifOutErrors)) {
+		} else if (is_oid(rp, &ifOutErrors)) {
 			TRACEPRINT("..ifOutErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifOutErrors);
+					rp, &ifOutErrors);
 			if (pCounters) {
 				pCounters->ifOutErrors = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsSingleCollisionFrames)) {
+		} else if (is_oid(rp, &dot3StatsSingleCollisionFrames)) {
 			TRACEPRINT("..dot3StatsSingleCollisionFrames\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsSingleCollisionFrames);
+					rp, &dot3StatsSingleCollisionFrames);
 			if (pCounters) {
 				pCounters->dot3StatsSingleCollisionFrames = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsMultipleCollisionFrames)) {
+		} else if (is_oid(rp, &dot3StatsMultipleCollisionFrames)) {
 			TRACEPRINT("..dot3StatsMultipleCollisionFrames\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsMultipleCollisionFrames);
+					rp, &dot3StatsMultipleCollisionFrames);
 			if (pCounters) {
 				pCounters->dot3StatsMultipleCollisionFrames = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsSQETestErrors)) {
+		} else if (is_oid(rp, &dot3StatsSQETestErrors)) {
 			TRACEPRINT("..dot3StatsSQETestErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsSQETestErrors);
+					rp, &dot3StatsSQETestErrors);
 			if (pCounters) {
 				pCounters->dot3StatsSQETestErrors = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsDeferredTransmissions)) {
+		} else if (is_oid(rp, &dot3StatsDeferredTransmissions)) {
 			TRACEPRINT("..dot3StatsDeferredTransmissions\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsDeferredTransmissions);
+					rp, &dot3StatsDeferredTransmissions);
 			if (pCounters) {
 				pCounters->dot3StatsDeferredTransmissions = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsLateCollisions)) {
+		} else if (is_oid(rp, &dot3StatsLateCollisions)) {
 			TRACEPRINT("..dot3StatsLateCollisions\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsLateCollisions);
+					rp, &dot3StatsLateCollisions);
 			if (pCounters) {
 				pCounters->dot3StatsLateCollisions = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsExcessiveCollisions)) {
+		} else if (is_oid(rp, &dot3StatsExcessiveCollisions)) {
 			TRACEPRINT("..dot3StatsExcessiveCollisions\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsExcessiveCollisions);
+					rp, &dot3StatsExcessiveCollisions);
 			if (pCounters) {
 				pCounters->dot3StatsExcessiveCollisions = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3StatsCarrierSenseErrors)) {
+		} else if (is_oid(rp, &dot3StatsCarrierSenseErrors)) {
 			TRACEPRINT("..dot3StatsCarrierSenseErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3StatsCarrierSenseErrors);
+					rp, &dot3StatsCarrierSenseErrors);
 			if (pCounters) {
 				pCounters->dot3StatsCarrierSenseErrors = *rp->val.integer;
 			}
-		} else if (is_oid(rp, dot3HCStatsAlignmentErrors)) {
+		} else if (is_oid(rp, &dot3HCStatsAlignmentErrors)) {
 			TRACEPRINT("..dot3HCStatsAlignmentErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3HCStatsAlignmentErrors);
+					rp, &dot3HCStatsAlignmentErrors);
 			if (pCounters) {
 				pCounters->dot3HCStatsAlignmentErrors =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, dot3HCStatsFCSErrors)) {
+		} else if (is_oid(rp, &dot3HCStatsFCSErrors)) {
 			TRACEPRINT("..dot3HCStatsFCSErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3HCStatsFCSErrors);
+					rp, &dot3HCStatsFCSErrors);
 			if (pCounters) {
 				pCounters->dot3HCStatsFCSErrors =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, dot3HCStatsInternalMacTransmitErrors)) {
+		} else if (is_oid(rp, &dot3HCStatsInternalMacTransmitErrors)) {
 			TRACEPRINT("..dot3HCStatsInternalMacTransmitErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3HCStatsInternalMacTransmitErrors);
+					rp, &dot3HCStatsInternalMacTransmitErrors);
 			if (pCounters) {
 				pCounters->dot3HCStatsInternalMacTransmitErrors =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, dot3HCStatsFrameTooLongs)) {
+		} else if (is_oid(rp, &dot3HCStatsFrameTooLongs)) {
 			TRACEPRINT("..dot3HCStatsFrameTooLongs\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3HCStatsFrameTooLongs);
+					rp, &dot3HCStatsFrameTooLongs);
 			if (pCounters) {
 				pCounters->excessiveBufferOverruns =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, dot3HCStatsInternalMacReceiveErrors)) {
+		} else if (is_oid(rp, &dot3HCStatsInternalMacReceiveErrors)) {
 			TRACEPRINT("..dot3HCStatsInternalMacReceiveErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3HCStatsInternalMacReceiveErrors);
+					rp, &dot3HCStatsInternalMacReceiveErrors);
 			if (pCounters) {
 				pCounters->portRcvErrors =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, dot3HCStatsSymbolErrors)) {
+		} else if (is_oid(rp, &dot3HCStatsSymbolErrors)) {
 			TRACEPRINT("..dot3HCStatsSymbolErrors\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, dot3HCStatsSymbolErrors);
+					rp, &dot3HCStatsSymbolErrors);
 			if (pCounters) {
 				pCounters->localLinkIntegrityErrors =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, ifHCInOctets)) {
+		} else if (is_oid(rp, &ifHCInOctets)) {
 			TRACEPRINT("..ifHCInOctets\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifHCInOctets);
+					rp, &ifHCInOctets);
 			if (pCounters) {
 				pCounters->portRcvData =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, ifHCInUcastPkts)) {
+		} else if (is_oid(rp, &ifHCInUcastPkts)) {
 			TRACEPRINT("..ifHCInUcastPkts\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifHCInUcastPkts);
+					rp, &ifHCInUcastPkts);
 			if (pCounters) {
 				pCounters->portRcvPkts =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, ifHCInMulticastPkts)) {
+		} else if (is_oid(rp, &ifHCInMulticastPkts)) {
 			TRACEPRINT("..ifHCInMulticastPkts\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifHCInMulticastPkts);
+					rp, &ifHCInMulticastPkts);
 			if (pCounters) {
 				pCounters->portMulticastRcvPkts =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, ifHCOutOctets)) {
+		} else if (is_oid(rp, &ifHCOutOctets)) {
 			TRACEPRINT("..ifHCOutOctets\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifHCOutOctets);
+					rp, &ifHCOutOctets);
 			if (pCounters) {
 				pCounters->portXmitData =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, ifHCOutUcastPkts)) {
+		} else if (is_oid(rp, &ifHCOutUcastPkts)) {
 			TRACEPRINT("..ifHCOutUcastPkts\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifHCOutUcastPkts);
+					rp, &ifHCOutUcastPkts);
 			if (pCounters) {
 				pCounters->portXmitPkts =
 						COUNTER64_TO_UINT64(rp->val.counter64);
 			}
-		} else if (is_oid(rp, ifHCOutMulticastPkts)) {
+		} else if (is_oid(rp, &ifHCOutMulticastPkts)) {
 			TRACEPRINT("..ifHCOutMulticastPkts\n");
 			STL_PORT_COUNTERS_DATA *pCounters = get_port_counters(ifIndexMap,
-					rp, ifHCOutMulticastPkts);
+					rp, &ifHCOutMulticastPkts);
 			if (pCounters) {
 				pCounters->portMulticastXmitPkts =
 						COUNTER64_TO_UINT64(rp->val.counter64);
@@ -1965,7 +1965,7 @@ int asynch_response(int operation, struct snmp_session *sp, int reqid,
 							vars->name_length)) {
 						TRACEPRINT("  No OID match\n");
 						if ((! context->resultTail) ||
-						    (! is_oid(context->resultTail, *context->current_oid)))
+						    (! is_oid(context->resultTail, context->current_oid)))
 							PRINT_NOSUCHOBJECT(context->current_oid->name, sp->peername);
 						// not part of this subtree
 						state = Q_END_NEXT;
@@ -2106,6 +2106,8 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 	int secLevel = 0;
 	oid *authProtocol = NULL;
 	oid *encrypProtocol = NULL;
+	size_t authProtocolLength = 0;
+	size_t encrypProtocolLength = 0;
 	int configParseError = 0;
 
 	HMGT_STATUS_T fstatus = HMGT_STATUS_SUCCESS;
@@ -2124,10 +2126,10 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
                 secLevel = SNMP_SEC_LEVEL_NOAUTH;
                 DBGPRINT("Running with no authentication or encryption\n");
         } else if (strcmp(fabric->SnmpSecurityLevel, "AUTHNOPRIV") == 0) {
-                version = SNMP_SEC_LEVEL_AUTHNOPRIV;
+                secLevel = SNMP_SEC_LEVEL_AUTHNOPRIV;
                 DBGPRINT("Running with authentication, but no encryption\n");
         } else if (strcmp(fabric->SnmpSecurityLevel, "AUTHPRIV") == 0) {
-                version = SNMP_SEC_LEVEL_AUTHPRIV;
+                secLevel = SNMP_SEC_LEVEL_AUTHPRIV;
                 DBGPRINT("Running with both authentication and encryption\n");
         } else {
                 fprintf(stderr, "%s: Error parsing SnmpSecurityLevel\n", __func__);
@@ -2138,9 +2140,11 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 	if ( (secLevel == SNMP_SEC_LEVEL_AUTHNOPRIV) || (secLevel == SNMP_SEC_LEVEL_AUTHPRIV) ) {
 		if (strcmp(fabric->SnmpAuthenticationProtocol, "MD5") == 0) {
 			authProtocol = usmHMACMD5AuthProtocol;
+			authProtocolLength = USM_AUTH_PROTO_MD5_LEN;
 			DBGPRINT("Running MD5 authentication \n");
 		} else if (strcmp(fabric->SnmpAuthenticationProtocol, "SHA") == 0) {
 			authProtocol = usmHMACSHA1AuthProtocol;
+			authProtocolLength = USM_AUTH_PROTO_SHA_LEN;
 			DBGPRINT("Running SHA authentication\n");
 		} else {
 			fprintf(stderr, "%s: Error parsing SnmpAuthenticationProtocol\n", __func__);
@@ -2152,6 +2156,7 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 	if (secLevel == SNMP_SEC_LEVEL_AUTHPRIV) {
 		if (strcmp(fabric->SnmpEncryptionProtocol, "AES") == 0) {
 				encrypProtocol = usmAESPrivProtocol;
+				encrypProtocolLength = USM_PRIV_PROTO_AES_LEN;
 				DBGPRINT("Running AES encryption\n");
 		} else {
 				DBGPRINT("Error parsing SnmpEncryptionProtocol\n");
@@ -2175,7 +2180,7 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 	for (cs = contexts, count = 0; count < numHosts; count++, cs++) {
 
 		struct snmp_pdu *req;
-		struct snmp_session sess;
+		struct snmp_session sess = {0};
 
 		if (!hosts[count].name) {
 			fprintf(stderr, "WARNING - no host name defined. Skip.\n");
@@ -2220,13 +2225,13 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 
 			if (authProtocol) {
 				sess.securityAuthProto = authProtocol;
-				sess.securityAuthProtoLen = OID_LENGTH(authProtocol);
+				sess.securityAuthProtoLen = authProtocolLength;
 				sess.securityAuthKeyLen = USM_AUTH_KU_LEN;
 			}
 
 			if (encrypProtocol) {
 				sess.securityPrivProto = encrypProtocol;
-				sess.securityPrivProtoLen = OID_LENGTH(encrypProtocol);
+				sess.securityPrivProtoLen = encrypProtocolLength;
 				sess.securityPrivKeyLen = USM_PRIV_KU_LEN;
 			}
 

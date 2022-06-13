@@ -105,11 +105,11 @@ static const char *FormatPortSelector(PortSelector *portselp)
 	}
 
 	if (! portselp) {
-		offset += sprintf(&format[offset], "%*sunspecified", offset?1:0, "");
+		(void)sprintf(format, "unspecified");
 		return format;
 	}
 	if (portselp->NodeDesc) {
-		offset += sprintf(&format[offset], "%*sNodeDesc: %s", offset?1:0, "", portselp->NodeDesc);
+		offset += sprintf(format, "NodeDesc: %s", portselp->NodeDesc);
 	}
 	if (portselp->NodeGUID) {
 		offset += sprintf(&format[offset], "%*sNodeGUID: 0x%016"PRIx64, offset?1:0, "", portselp->NodeGUID);
@@ -131,8 +131,9 @@ static const char *FormatPortSelector(PortSelector *portselp)
 		offset += sprintf(&format[offset], "%*sPortDetails: %s", offset?1:0, "",
 			portselp->details);
 	}
-	if (! offset)
-		offset += sprintf(&format[offset], "%*sunspecified", offset?1:0, "");
+	if (! offset) {
+		(void)sprintf(format, "unspecified");
+	}
 	return format;
 }
 
@@ -623,11 +624,11 @@ static const char *FormatExpectedNode(ExpectedNode *enodep)
 
 
 	if (! enodep) {
-		offset += sprintf(&format[offset], "%*sunspecified", offset?1:0, "");
+		(void)sprintf(format, "unspecified");
 		return format;
 	}
 	if (enodep->NodeDesc) {
-		offset += sprintf(&format[offset], "%*sNodeDesc: %s", offset?1:0, "", enodep->NodeDesc);
+		offset += sprintf(format, "NodeDesc: %s", enodep->NodeDesc);
 	}
 	if (enodep->NodeGUID) {
 		offset += sprintf(&format[offset], "%*sNodeGUID: 0x%016"PRIx64, offset?1:0, "", enodep->NodeGUID);
@@ -640,8 +641,9 @@ static const char *FormatExpectedNode(ExpectedNode *enodep)
 		offset += sprintf(&format[offset], "%*sNodeDetails: %s", offset?1:0, "",
 			enodep->details);
 	}
-	if (! offset)
-		offset += sprintf(&format[offset], "%*sunspecified", offset?1:0, "");
+	if (! offset) {
+		(void)sprintf(format, "unspecified");
+	}
 	return format;
 }
 

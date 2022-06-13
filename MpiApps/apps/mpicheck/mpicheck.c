@@ -163,14 +163,7 @@ typedef struct {
 static void
 initrandom(  )
 {
-	unsigned int seed = 0;
-	FILE *f = fopen( "/dev/random", "r" );
-
-	if ( f ) {
-		fread( &seed, sizeof( seed ), 1, f );
-		fclose( f );
-	}
-	srandom( seed );
+	srandom(time(NULL));
 }
 
 /* 

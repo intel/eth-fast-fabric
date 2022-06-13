@@ -1755,6 +1755,7 @@ FSTATUS FindCabinfCableTypePoint(FabricData_t *fabricp, char *pattern, Point *pP
 			STL_CABLE_INFO_UP0_DD *pCableInfoDD;
 			uint8 xmit_tech;
 			boolean qsfp_dd;
+			boolean good_to_append;
 
 			/* omit switch port 0, no cable connected to port0 */
 			if (portp->PortNum == 0)
@@ -1766,34 +1767,46 @@ FSTATUS FindCabinfCableTypePoint(FabricData_t *fabricp, char *pattern, Point *pP
 			pCableInfo = (STL_CABLE_INFO_STD *)(portp->pCableInfoData + cableInfoHighPageAddressOffset);
 			pCableInfoDD = (STL_CABLE_INFO_UP0_DD *)(portp->pCableInfoData + cableInfoHighPageAddressOffset);
 			qsfp_dd = (portp->pCableInfoData[0] == STL_CIB_STD_QSFP_DD);
-			if (!qsfp_dd)
+			if (!qsfp_dd) {
 				xmit_tech = pCableInfo->dev_tech.s.xmit_tech;
-			else
+			} else {
 				xmit_tech = pCableInfoDD->cable_type;
-			if (strncmp(pattern, "optical", len) == 0) // this includes AOL and Optical Transceiver
-				if (xmit_tech <= STL_CIB_STD_TXTECH_1490_DFB && (xmit_tech >= STL_CIB_STD_TXTECH_850_VCSEL)
-						&& (xmit_tech != STL_CIB_STD_TXTECH_OTHER)) {
-				status = PointListAppend(pPoint, POINT_TYPE_PORT_LIST, portp);
-				if (FSUCCESS != status)
-					return status;
 			}
-			if (strncmp(pattern, "unknown", len) == 0)
-				if (xmit_tech == STL_CIB_STD_TXTECH_OTHER) {
-					status = PointListAppend(pPoint, POINT_TYPE_PORT_LIST, portp);
-					if (FSUCCESS != status)
-						return status;
+
+			switch(xmit_tech) {
+			case STL_CIB_STD_TXTECH_850_VCSEL:
+			case STL_CIB_STD_TXTECH_1310_VCSEL:
+			case STL_CIB_STD_TXTECH_1550_VCSEL:
+			case STL_CIB_STD_TXTECH_1310_FP:
+			case STL_CIB_STD_TXTECH_1310_DFB:
+			case STL_CIB_STD_TXTECH_1550_DFB:
+			case STL_CIB_STD_TXTECH_1310_EML:
+			case STL_CIB_STD_TXTECH_1550_EML:
+			case STL_CIB_STD_TXTECH_1490_DFB:
+				good_to_append = (strncmp(pattern, "optical", len) == 0);
+				break;
+			case STL_CIB_STD_TXTECH_OTHER:
+				good_to_append = (strncmp(pattern, "unknown", len) == 0);
+				break;
+			case STL_CIB_STD_TXTECH_CU_UNEQ:
+			case STL_CIB_STD_TXTECH_CU_PASSIVEQ:
+				good_to_append = (strncmp(pattern, "passive_copper", len) == 0);
+				break;
+			case STL_CIB_STD_TXTECH_CU_NFELIMACTEQ:
+			case STL_CIB_STD_TXTECH_CU_FELIMACTEQ:
+			case STL_CIB_STD_TXTECH_CU_NELIMACTEQ:
+			case STL_CIB_STD_TXTECH_CU_LINACTEQ:
+				good_to_append = (strncmp(pattern, "active_copper", len) == 0);
+				break;
+			default:
+				good_to_append = FALSE;
+				break;
 			}
-			if (strncmp(pattern, "passive_copper", len) == 0)
-				if (xmit_tech == STL_CIB_STD_TXTECH_CU_UNEQ || (xmit_tech == STL_CIB_STD_TXTECH_CU_PASSIVEQ)) {
+			if (good_to_append) {
 				status = PointListAppend(pPoint, POINT_TYPE_PORT_LIST, portp);
-				if (FSUCCESS != status)
+				if (FSUCCESS != status) {
 					return status;
-			}
-			if (strncmp(pattern, "active_copper", len) == 0)
-				if (xmit_tech <= STL_CIB_STD_TXTECH_CU_LINACTEQ && (xmit_tech >= STL_CIB_STD_TXTECH_CU_NFELIMACTEQ)) {
-				status = PointListAppend(pPoint, POINT_TYPE_PORT_LIST, portp);
-				if (FSUCCESS != status)
-					return status;
+				}
 			}
 		}
 	}

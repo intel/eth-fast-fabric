@@ -1518,7 +1518,6 @@ fail:
 
 FSTATUS NodeDataSwitchResizeLinearFDB(NodeData * nodep, uint32 newLfdbSize)
 {
-	int errStatus = FINSUFFICIENT_MEMORY;
 	uint32 newPgdbSize;
 	STL_LINEAR_FORWARDING_TABLE * newLfdb = NULL;
 	STL_PORT_GROUP_FORWARDING_TABLE * newPgdb = NULL;
@@ -1576,17 +1575,10 @@ FSTATUS NodeDataSwitchResizeLinearFDB(NodeData * nodep, uint32 newLfdbSize)
 
 	return FSUCCESS;
 fail:
-	if (newLfdb) {
-		MemoryDeallocate(newLfdb);
-		newLfdb = NULL;
-	}
-
-	if (newPgdb) {
-		MemoryDeallocate(newPgdb);
-		newPgdb = NULL;
-	}
-
-	return errStatus;
+	// MemoryDeallocate perfectly handles NULL input.
+	MemoryDeallocate(newLfdb);
+	MemoryDeallocate(newPgdb);
+	return FINSUFFICIENT_MEMORY;
 }
 
 FSTATUS NodeDataSwitchResizeFDB(NodeData * nodep, uint32 newLfdbSize, uint32 newMfdbSize)

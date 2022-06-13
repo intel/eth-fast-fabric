@@ -61,15 +61,19 @@ __ThreadMakeKey()
 // Internal function to initialize the thread data structure. This
 // function is typically called before a call to kernel_thread().
 //----------------------------------------------------------------
-static void 
+static boolean
 __InitializeThreadData(IN THREAD *pThread, IN THREAD_CALLBACK Callback, 
                        IN void *Context, IN char *Name)
 {
-  	pThread->m_Private.m_Osd.tr_flags 	= 0;
-  	pThread->m_Private.m_Callback 		= Callback;
-  	pThread->m_Private.m_Context 		= Context;
+	if (pThread == NULL)
+	{
+		return FALSE;
+	}
+	pThread->m_Private.m_Osd.tr_flags 	= 0;
+	pThread->m_Private.m_Callback 		= Callback;
+	pThread->m_Private.m_Context 		= Context;
 	memcpy(pThread->m_Private.m_Osd.tr_name, Name, THREAD_NAME_SIZE);
-  	EventInit( &pThread->m_Private.m_Osd.tr_RunningEvent );
+	return EventInit( &pThread->m_Private.m_Osd.tr_RunningEvent );
 }
 
 //
@@ -132,17 +136,14 @@ ThreadInitState ( IN THREAD *pThread )
 boolean
 ThreadCreate( IN THREAD *pThread, IN char* Name, IN THREAD_CALLBACK Callback, IN void *Context )
 {
-  	int ret;
+	int ret;
 
-	if (pThread == NULL)
-	{
+	//
+	// Initialize the thread structure 
+	//
+	if (!__InitializeThreadData(pThread, Callback, Context, Name)) {
 		return FALSE;
 	}
-
-	//
-  	// Initialize the thread structure 
-	//
-  	__InitializeThreadData(pThread, Callback, Context, Name);
 
 #if DEBUG_THREAD
 	DbgOut("__ThreadCreate( %p )[\n",pThread );
@@ -153,20 +154,20 @@ ThreadCreate( IN THREAD *pThread, IN char* Name, IN THREAD_CALLBACK Callback, IN
 				(void *)__UserThreadStartup,
 				(void *)pThread);
 
-  	if (ret != 0)	// pthread_create returns a "0" for success
-  	{
-			return FALSE;
-  	}
+	if (ret != 0)	// pthread_create returns a "0" for success
+	{
+		return FALSE;
+	}
 	
 	// TBD - any way to set name of thread?
 	
 	//
-  	// Wait for the "child" thread to indicate that it is up and running
+	// Wait for the "child" thread to indicate that it is up and running
 	// It assumes that the spawned thread will signal Running Event when it starts up
 	//
-  	EventWaitOn( &pThread->m_Private.m_Osd.tr_RunningEvent, EVENT_NO_TIMEOUT);
+	EventWaitOn( &pThread->m_Private.m_Osd.tr_RunningEvent, EVENT_NO_TIMEOUT);
 	
-  	pThread->m_Private.m_Osd.tr_state = Started;
+	pThread->m_Private.m_Osd.tr_state = Started;
 	
 #if DEBUG_THREAD
 	DbgOut("__ThreadCreate( %p )]\n",pThread );

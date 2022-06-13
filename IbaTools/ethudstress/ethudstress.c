@@ -270,11 +270,14 @@ job* create_job() {
 	res->channel = rdma_create_event_channel();
 	if (!res->channel) {
 		PSERROR("failed to create event channel");
+		free(res);
 		return NULL;
 	}
 
 	res->conns = create_conns(num_conns, res->channel);
 	if (!res->conns) {
+		rdma_destroy_event_channel(res->conns);
+		free(res);
 		return NULL;
 	}
 	res->conn_index = 0;
@@ -797,11 +800,11 @@ out:
 
 int launch_client(job *the_job) {
 	int i, ret;
+	struct rdma_addrinfo *src_ai = NULL;
 
 	FPRINT("Starting client\n");
 
 	if (src_addr) {
-		struct rdma_addrinfo *src_ai;
 		hint.ai_flags |= RAI_PASSIVE;
 		ret = rdma_getaddrinfo(src_addr, NULL, &hint, &src_ai);
 		if (ret) {
@@ -811,12 +814,14 @@ int launch_client(job *the_job) {
 		hint.ai_src_addr = src_ai->ai_src_addr;
 		hint.ai_src_len = src_ai->ai_src_len;
 		hint.ai_flags &= ~RAI_PASSIVE;
-		rdma_freeaddrinfo(src_ai);
 	}
 	ret = rdma_getaddrinfo(dst_addr, port, &hint, &the_job->addr_info);
 	if (ret) {
 		PFERROR("failed to get address info: %s\n", gai_strerror(ret));
 		return ret;
+	}
+	if (src_ai) {
+		rdma_freeaddrinfo(src_ai);
 	}
 
 	FPRINT("Connecting to server\n");
@@ -824,7 +829,7 @@ int launch_client(job *the_job) {
 		ret = rdma_resolve_addr(the_job->conns[i].cma_id, the_job->addr_info->ai_src_addr,
 					the_job->addr_info->ai_dst_addr, OP_TIMEOUT_MS);
 		if (ret) {
-			PFERROR("failed to get addr: ret=%d", ret);
+			PFERROR("failed to get addr: ret=%d\n", ret);
 			the_job->conn_left -= 1;
 			return ret;
 		}
