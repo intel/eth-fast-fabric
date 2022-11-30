@@ -93,10 +93,10 @@ void print_timestamp(FILE *out) {
 // used for performance test
 static inline void time_print(const char *format, ...) {
 	if (DISPLAY_TIMESTAMP) {
-		print_timestamp(stdout);
+		print_timestamp(verbose_file?verbose_file:stderr);
 		va_list args;
 		va_start(args, format);
-		vprintf(format, args);
+		vfprintf(verbose_file?verbose_file:stderr, format, args);
 		va_end(args);
 	}
 }
@@ -808,7 +808,7 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 					rp->val.string);
 		} else if (is_oid(rp, &ifNumber)) {
 			TRACEPRINT("..ifNumber\n");
-			node->NodeInfo.NumPorts = (uint8) *(rp->val.integer);
+			node->NodeInfo.NumPorts = (uint16) *(rp->val.integer);
 		} else if (is_oid(rp, &ifPhysAddress)) {
 			TRACEPRINT("..ifPhysAddress\n");
 			int ifId = get_oid_num(rp, ifPhysAddress.oidLen);
@@ -838,7 +838,7 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 			TRACEPRINT("..entPhysicalVendorType\n");
 			int phyId = get_oid_num(rp, entPhysicalVendorType.oidLen);
 			if (phyId == modulePhyId && rp->val.objid[0]) {
-				node->NodeInfo.u1.s.VendorID = (uint16) *(rp->val.objid + 6);
+				node->NodeInfo.u1.s.VendorID = (uint32) *(rp->val.objid + 6);
 			}
 		} else if (is_oid(rp, &entPhysicalHardwareRev)) {
 			TRACEPRINT("..entPhysicalHardwareRev\n");
@@ -2013,7 +2013,7 @@ int asynch_response(int operation, struct snmp_session *sp, int reqid,
 
 			if (addResult) {
 				if (TRACE)
-					print_result(stdout, STAT_SUCCESS, context->sess, pdu);
+					print_result(verbose_file, STAT_SUCCESS, context->sess, pdu);
 				boolean fillFirst = FALSE;
 				if (!context->result) {
 					context->result = context->resultTail = create_snmp_result();

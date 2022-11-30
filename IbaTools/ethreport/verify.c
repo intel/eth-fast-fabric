@@ -96,7 +96,7 @@ boolean PortVerify(PortData *portp, Format_t format, int indent, int detail)
 		if (portselp->gotPortNum && portselp->PortNum != portp->PortNum) {
 			ret = FALSE;
 			ShowProblem(format, indent, detail,
-				"PortNum mismatch: expected: %3u found: %3u",
+				"PortNum mismatch: expected: %4u found: %4u",
 				portselp->PortNum, portp->PortNum);
 		}
 		if (portselp->PortGUID && portselp->PortGUID != portp->PortGUID) {

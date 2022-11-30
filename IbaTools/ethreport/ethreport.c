@@ -264,7 +264,7 @@ void ShowLinkBriefSummaryHeader(Format_t format, int indent, int detail)
 {
 	switch (format) {
 	case FORMAT_TEXT:
-		printf("%*sRate IfAddr             Port PortId           Type Name\n", indent, "");
+		printf("%*sRate IfAddr             Port  PortId           Type Name\n", indent, "");
 		break;
 	case FORMAT_XML:
 		break;
@@ -282,7 +282,7 @@ void ShowLinkPortBriefSummary(PortData *portp, const char *prefix,
 	case FORMAT_TEXT:
 		printf("%*s%4s ", indent, "", prefix);
 		
-		printf("0x%016"PRIx64" %3u  %-*s %2s   %.*s\n",
+		printf("0x%016"PRIx64" %4u  %-*s %2s   %.*s\n",
 			portp->nodep->NodeInfo.NodeGUID,
 			portp->PortNum, TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId,
 			StlNodeTypeToText(portp->nodep->NodeInfo.NodeType),
@@ -347,7 +347,7 @@ void ShowLinkPortSummary(PortData *portp, const char *prefix,
 			indent, "", prefix,
 			NODE_DESCRIPTION_ARRAY_SIZE,
 			g_noname?g_name_marker:(char*)portp->nodep->NodeDesc.NodeString);
-		printf("%*sIfAddr: 0x%016"PRIx64" Type: %s PortNum: %3u PortId: %.*s\n",
+		printf("%*sIfAddr: 0x%016"PRIx64" Type: %s PortNum: %4u PortId: %.*s\n",
 			indent+4, "",
 			portp->nodep->NodeInfo.NodeGUID,
 			StlNodeTypeToText(portp->nodep->NodeInfo.NodeType),
@@ -506,7 +506,7 @@ void ShowPointPortBriefSummary(const char* prefix, PortData *portp, Format_t for
 				portp->PortInfo.LocalPortId,
 				portp->PortGUID);
 		else
-			printf("%*s%s%3u %s\n",
+			printf("%*s%s%4u %s\n",
 				indent, "", prefix,
 				portp->PortNum, portp->PortInfo.LocalPortId);
 		ShowPointNodeBriefSummary("in Node: ", portp->nodep, format,
@@ -560,7 +560,7 @@ void ShowExpectedLinkPortSelBriefSummary(const char* prefix,
 			else
 				printf("                  ");
 			if (portselp->gotPortNum)
-				printf(" %3u            ",portselp->PortNum);
+				printf(" %4u            ",portselp->PortNum);
 			else if (portselp->PortGUID)
 				printf(" 0x%016"PRIx64, portselp->PortGUID);
 			else
@@ -1130,15 +1130,15 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 	case FORMAT_TEXT:
 		if (portp->PortGUID)
 			if (g_persist || g_hard)
-				printf("%*sPortNum: %3u EndMgmtIfID: xxxxxxxxxx MgmtIfAddr: 0x%016"PRIx64"\n",
+				printf("%*sPortNum: %4u EndMgmtIfID: xxxxxxxxxx MgmtIfAddr: 0x%016"PRIx64"\n",
 					indent, "", portp->PortNum, portp->PortGUID);
 			else
-				printf("%*sPortNum: %3u EndMgmtIfID: 0x%.*x MgmtIfAddr: 0x%016"PRIx64" LclMgmtIfID: %-3d\n",
+				printf("%*sPortNum: %4u EndMgmtIfID: 0x%.*x MgmtIfAddr: 0x%016"PRIx64" LclMgmtIfID: %-4d\n",
 					indent, "", portp->PortNum,
 					(portp->EndPortLID <= IB_MAX_UCAST_LID ? 4:8),
 					portp->EndPortLID, portp->PortGUID, pPortInfo->LocalPortNum);
 		else
-			printf("%*sPortNum: %3u    PortId: %.*s\n",
+			printf("%*sPortNum: %4u    PortId: %.*s\n",
 				indent, "", portp->PortNum, TINY_STR_ARRAY_SIZE, pPortInfo->LocalPortId);
 		{
 			PortSelector* portselp = GetPortSelector(portp);
@@ -1153,7 +1153,7 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 		}
 		if (detail) {
 			if (g_hard) {
-				printf( "%*sLclMgmtIfID: %-3d PortState: xxxxxx           PhysState: xxxxxxxx\n",
+				printf( "%*sLclMgmtIfID: %-4d PortState: xxxxxx           PhysState: xxxxxxxx\n",
 					indent+4, "", pPortInfo->LocalPortNum);
 			}
 			else {
@@ -1164,14 +1164,14 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 					ldr = pPortInfo->NeighborLinkDownReason;
 
 				if (pPortInfo->PortStates.s.PortState == ETH_PORT_DOWN && ldr && ! g_persist) {
-					printf( "%*sLclMgmtIfID: %-3d PortState: %-6s (%-13s) PhysState: %-8s\n",
+					printf( "%*sLclMgmtIfID: %-4d PortState: %-6s (%-13s) PhysState: %-8s\n",
 							indent+4, "",
 							pPortInfo->LocalPortNum,
 							EthPortStateToText(pPortInfo->PortStates.s.PortState),
 							EthMauMediaAvailableToText(ldr),
 							EthMauStatusToText(pPortInfo->PortStates.s.PortPhysicalState));
 				} else {
-					printf( "%*sLclMgmtIfID: %-3d PortState: %-6s                 PhysState: %-8s\n",
+					printf( "%*sLclMgmtIfID: %-4d PortState: %-6s                 PhysState: %-8s\n",
 						indent+4, "",
 						pPortInfo->LocalPortNum,
 						EthPortStateToText(pPortInfo->PortStates.s.PortState),
@@ -1934,7 +1934,7 @@ void ShowOtherPortSummaryHeader(Format_t format, int indent, int detail)
 {
 	switch (format) {
 	case FORMAT_TEXT:
-		printf("%*sIfAddr          Port Type Name\n", indent, "");
+		printf("%*sIfAddr          Port  Type Name\n", indent, "");
 		break;
 	case FORMAT_XML:
 		break;
@@ -1944,12 +1944,12 @@ void ShowOtherPortSummaryHeader(Format_t format, int indent, int detail)
 }
 
 // show a non-connected port in a node
-void ShowOtherPortSummary(NodeData *nodep, uint8 portNum,
+void ShowOtherPortSummary(NodeData *nodep, uint16 portNum,
 			Format_t format, int indent, int detail)
 {
 	switch (format) {
 	case FORMAT_TEXT:
-		printf("%*s0x%016"PRIx64" %3u %s %.*s\n",
+		printf("%*s0x%016"PRIx64" %4u %s %.*s\n",
 			indent, "",
 			nodep->NodeInfo.NodeGUID,
 			portNum,
@@ -1985,7 +1985,7 @@ void ShowNodeOtherPortSummary(NodeData *nodep,
 			Format_t format, int indent, int detail)
 {
 	cl_map_item_t *p;
-	uint8 port;
+	uint16 port;
 
 	for (port=1, p=cl_qmap_head(&nodep->Ports); p != cl_qmap_end(&nodep->Ports);)
 	{
@@ -2178,17 +2178,17 @@ void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int deta
 	case FORMAT_TEXT:
 		if (portp->PortGUID)
 			if (g_hard || g_persist)
-				printf("%*s%3u xxxxxx %-*s 0x%016"PRIx64,
+				printf("%*s%4u xxxxxx %-*s 0x%016"PRIx64,
 					indent, "", portp->PortNum,
 					TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId,
 					portp->PortGUID);
 			else
-				printf("%*s%3u 0x%06x   %-*s 0x%016"PRIx64,
+				printf("%*s%4u 0x%06x   %-*s 0x%016"PRIx64,
 					indent, "", portp->PortNum, portp->EndPortLID,
 					TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId,
 					portp->PortGUID);
 		else
-			printf("%*s%3u          %-*s                   ",
+			printf("%*s%4u          %-*s                   ",
 				indent, "", portp->PortNum, TINY_STR_ARRAY_SIZE,
 				portp->PortInfo.LocalPortId);
 		if (g_hard)
@@ -3467,7 +3467,7 @@ void ShowLinkInfoReport(Point *focus, Format_t format, int indent, int detail)
 	printf( "%*s%u Links in Fabric%s\n", indent, "",g_Fabric.LinkCount, detail?":":"" );
 	if (detail) {
 		printf("%*s   IfAddr         Type MgmtIfID       Name          \n", indent, "");
-		printf("%*sEgress EgressId       LinkSpeed  Type      IfAddr        Port PortId           MgmtIfID      Name       \n", indent, "");
+		printf("%*sEgress EgressId       LinkSpeed  Type      IfAddr        Port  PortId           MgmtIfID      Name       \n", indent, "");
 	}
 
 	// First the switches
@@ -3493,7 +3493,7 @@ void ShowLinkInfoReport(Point *focus, Format_t format, int indent, int detail)
 			if (!portp2)
 				continue;
 			if (portp2->neighbor) {
-				printf("%3u   %-*s %s      %s  0x%016"PRIx64" %3u   %-*s %5u  %.*s \n", portp2->PortNum,
+				printf("%4u   %-*s %s      %s  0x%016"PRIx64" %4u   %-*s %5u  %.*s \n", portp2->PortNum,
 					TINY_STR_ARRAY_SIZE, portp2->PortInfo.LocalPortId,
 					EthStaticRateToText(portp2->rate), StlNodeTypeToText(portp2->neighbor->nodep->NodeInfo.NodeType),
 					portp2->neighbor->nodep->NodeInfo.NodeGUID, portp2->neighbor->PortNum,
@@ -3526,7 +3526,7 @@ void ShowLinkInfoReport(Point *focus, Format_t format, int indent, int detail)
 				g_noname?g_name_marker:(char*)portp1->nodep->NodeDesc.NodeString);
 
 			if (portp1->neighbor){
-				printf("%3u   %-*s %s      %s  0x%016"PRIx64" %3u   %-*s %5u  %.*s\n", portp1->PortNum,
+				printf("%4u   %-*s %s      %s  0x%016"PRIx64" %4u   %-*s %5u  %.*s\n", portp1->PortNum,
 					TINY_STR_ARRAY_SIZE, portp1->PortInfo.LocalPortId,
 					EthStaticRateToText(portp1->rate), StlNodeTypeToText(portp1->neighbor->nodep->NodeInfo.NodeType),
 					portp1->neighbor->nodep->NodeInfo.NodeGUID, portp1->neighbor->PortNum,
@@ -3706,7 +3706,7 @@ void ShowAllIPReport(Point *focus, Format_t format, int indent, int detail)
 			if (!ct_lid) {
 				switch (format) {
 				case FORMAT_TEXT:
-					printf("%*s   IfID           IfAddr            Port Type Name\n", indent, "");
+					printf("%*s   IfID           IfAddr            Port  Type Name\n", indent, "");
 					if (g_topology_in_file)
 						printf("%*s              NodeDetails          PortDetails\n", indent, "");
 					break;
@@ -3721,7 +3721,7 @@ void ShowAllIPReport(Point *focus, Format_t format, int indent, int detail)
 				printf( "%*s0x%.*x", indent, "", (portp->EndPortLID <= IB_MAX_UCAST_LID ? 4:8),
 					portp->EndPortLID);
 				printf("       ");
-				printf( " 0x%016"PRIx64" %3u   %s  %s\n",
+				printf( " 0x%016"PRIx64" %4u   %s  %s\n",
 					nodep->NodeInfo.NodeGUID, portp->PortNum,
 					StlNodeTypeToText(nodep->NodeInfo.NodeType),
 					g_noname?g_name_marker:(char*)nodep->NodeDesc.NodeString );

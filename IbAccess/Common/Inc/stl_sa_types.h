@@ -310,9 +310,13 @@ static __inline__ int STL_LINKDOWN_REASON_LAST_INDEX(STL_LINKDOWN_REASON* ldr) {
 
 typedef struct {
 	struct {
-		STL_LID	EndPortLID;				
+		STL_LID	EndPortLID;
+#ifdef HPN_OPA
 		uint8	PortNum;			/* for switch or HFI: port numnber */
 		uint8	Reserved;
+#else
+		uint16	PortNum;			/* for switch or HFI: port numnber */
+#endif
 	} PACK_SUFFIX RID;
 	
 	uint16		Reserved;	
@@ -857,13 +861,21 @@ typedef struct {
  *		ErrorMask field added to provide detailed information on the particular errors that led to the LinkCondition error.
  */
 typedef struct _STL_LINK_RECORD {
+#ifdef HPN_OPA
 	struct {
 		STL_LID	FromLID;		
 		uint8	FromPort;		/* for switch or HFI: port number */
 	} PACK_SUFFIX RID;
 	
 	uint8		ToPort;			/* for switch or HFI: port number */
-
+#else
+	struct {
+		STL_LID	FromLID;
+		uint16	FromPort;		/* for switch or HFI: port number */
+	} PACK_SUFFIX RID;
+	uint16		ToPort;			/* for switch or HFI: port number */
+	uint16		Reserved2;
+#endif
 	uint16		Reserved;
 	
 	STL_LID		ToLID;	
@@ -1190,7 +1202,12 @@ typedef struct {
 typedef struct {
 	struct {
 		STL_LID	LID;
+#ifdef HPN_OPA
 		uint8	Port;				/* for switch or HFI: port numnber */
+#else
+		uint16	Port;				/* for switch or HFI: port numnber */
+		uint8	Reserved2[3];
+#endif
 		IB_BITFIELD2(uint8,
 				Length:7,
 				Reserved:1);
@@ -1482,9 +1499,11 @@ typedef struct {
 	uint32	rsvd5[92];
 } PACK_SUFFIX STL_FABRICINFO_RECORD;
 
+#ifndef HPN_OPA
 typedef struct {
 	void * FabricData;
 } PACK_SUFFIX HPN_FABRICDATA_RECORD;
+#endif
 
 
 #define MAX_DG_NAME 64

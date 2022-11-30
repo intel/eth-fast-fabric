@@ -110,7 +110,7 @@ typedef struct PortData_s {
 	EUI64 PortGUID;					// 0 for all but port 0 of a switch
 	struct PortData_s *neighbor;	// adjacent port this is cabled to
 	struct NodeData_s *nodep;		// parent node
-	uint8 PortNum;					// port number within Node
+	uint16 PortNum;					// port number within Node
 	uint8	from:1;					// is this the from port in link record
 									// (avoids double reporting of links)
 	uint8	PmaGotClassPortInfo:1;	// have issued a ClassPortInfo
@@ -172,7 +172,7 @@ typedef struct ExpectedNode_s ExpectedNode;
 typedef struct PortSelector_s {
 	EUI64 PortGUID;					// 0 if not specified
 	EUI64 NodeGUID;					// 0 if not specified
-	uint8 PortNum;					// 0-255 are valid port numbers
+	uint16 PortNum;					// 0-255 are valid port numbers
 	char* PortId;					// NULL if not specified
 	uint8 gotPortNum;				// 0 if PortNum not specified
 	uint8 NodeType;					// 0 if not specified
@@ -209,7 +209,7 @@ typedef struct ExpectedLink_s {
  * full PortData.
  */
 typedef struct ExpectedPort_s {
-	uint8 PortNum;
+	uint16 PortNum;
 	char* PortId;
 	STL_LID lid;
 	EUI64 PortGuid;
@@ -227,7 +227,7 @@ struct ExpectedNode_s {
 	uint8 NodeType;					// 0 if not specified
 	char *NodeDesc;					// NULL if not specified
 	char *details;					// user description of node
-	uint8 portsSize;
+	uint16 portsSize;
 	ExpectedPort **ports;
 	uint8 connected; //internally used to validate node is reachable, set by TopologyValidate
 	void *context;					// application specific field
@@ -1002,7 +1002,7 @@ extern void CLDijkstraFreeDistancesAndRoutes(clDijkstraDistancesAndRoutes_t *drp
 // only considering fabric objects.
 
 // search for the PortData corresponding to the given node and port number
-extern PortData * FindNodePort(NodeData *nodep, uint8 port);
+extern PortData * FindNodePort(NodeData *nodep, uint16 port);
 // search for the PortData corresponding to the given node and port id
 extern PortData * FindNodePortId(NodeData *nodep, char* portid);
 // search for the PortData corresponding to the given lid
@@ -1053,11 +1053,11 @@ extern SMData * FindSMPort(FabricData_t *fabricp,EUI64 PortGUID);
 // search for the PortData corresponding to the given lid and port number
 // For NICs lid completely defines the port
 // For Switches, lid will identify the switch and port is used to select port
-extern PortData * FindLidPort(FabricData_t *fabricp, STL_LID lid, uint8 port);
-extern PortData * FindNodeGuidPort(FabricData_t *fabricp,EUI64 nodeguid, uint8 port);
+extern PortData * FindLidPort(FabricData_t *fabricp, STL_LID lid, uint16 port);
+extern PortData * FindNodeGuidPort(FabricData_t *fabricp,EUI64 nodeguid, uint16 port);
 extern ExpectedNode* FindExpectedNodeByNodeGuid(const FabricData_t* fabricp, EUI64 nodeGuid);
 extern ExpectedNode* FindExpectedNodeByNodeDesc(const FabricData_t* fabricp, const char* nodeDesc, uint8 NodeType);
-extern ExpectedLink* FindExpectedLinkByOneSide(const FabricData_t* fabricp, EUI64 nodeGuid, uint8 portNum, uint8* side);
+extern ExpectedLink* FindExpectedLinkByOneSide(const FabricData_t* fabricp, EUI64 nodeGuid, uint16 portNum, uint8* side);
 extern FSTATUS FindLinkCRCPoint(FabricData_t *fabricp, uint16 crc, LinkCRCCompare comp, Point *pPoint, uint8 find_flag);
 extern FSTATUS FindLinkQualityPoint(FabricData_t *fabricp, uint16 quality, LinkQualityCompare comp, Point *pPoint, uint8 find_flag);
 extern FSTATUS FindLinkDownReasonPoint(FabricData_t *fabricp, uint8 ldr, Point *pPoint, uint8 find_flag);
@@ -1352,7 +1352,7 @@ typedef void (*ValidateCallback2_t)(PortData *portp, uint8 vl, void *context);
 extern FSTATUS ValidateRoutes(FabricData_t *fabricp,
 			   		PortData *portp1, PortData *portp2,
 					uint32 *totalPaths, uint32 *badPaths,
-					uint32 usedSLs, uint8,
+					uint32 usedSLs, uint8 rc,
 				   	ValidateCallback_t callback, void *context,
 				   	ValidateCallback2_t callback2, void *context2);
 // validate all the routes between all LIDs

@@ -73,7 +73,7 @@ main(int cnt, char **args)
 	uint64_t tot, totmem=0x1000000000; // 64GB
 	// volatile int val;
 	volatile char *p;
-	int zfirst[16384];
+//	int zfirst[16384];
 
 	if(cnt < 2 || (mem = strtoul(args[1], NULL, 0)) <= 0) {
 		printf("Usage: %s mem_incr [totmem]\n", args[0]);

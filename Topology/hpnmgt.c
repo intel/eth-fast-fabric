@@ -49,7 +49,9 @@ extern SnmpNodeConfigParamData_t* snmpDataAddNodeConfig(FabricData_t *fabricp, S
 
 #define HPN_CONF_IS_VALID_FN(d, f, b)   ((strlen(d) + strlen(f) + 1) < (sizeof(b) - 1))
 #define HPN_CONF_GET_FN(d, f, b) { \
-    if (strlen(d) == 0 || d[strlen(d)-1] == '/') \
+    if (*f == '/' ) \
+        snprintf(b, sizeof(b), "%s", f); \
+    else if (strlen(d) == 0 || d[strlen(d)-1] == '/') \
         snprintf(b, sizeof(b), "%s%s", d, f); \
     else \
         snprintf(b, sizeof(b), "%s/%s", d, f); \

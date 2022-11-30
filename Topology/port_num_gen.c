@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define PNGTAG MAKE_MEM_TAG('p','n', 'g', 'e')
 #define MAX_SEGS 8
-#define MAX_PORT_NUM 256
+#define MAX_PORT_NUM 65535
 
 // segment data structure
 typedef struct {
@@ -60,7 +60,7 @@ typedef struct {
 	// port number adjustment
 	int offset;
 	// port number
-	uint8 port_num;
+	uint16 port_num;
 } pn_port_item;
 
 // double linked group data structure
@@ -68,9 +68,9 @@ typedef struct pn_group_s {
 	// group key
 	uint64 key;
 	// the min port number in a group
-	uint8 min;
+	uint16 min;
 	// the max port number in a group
-	uint8 max;
+	uint16 max;
 	// occurrence of the group
 	int count;
 	// port number adjustment
@@ -403,8 +403,8 @@ int pn_gen_process(pn_gen_t* const model) {
 	const cl_map_item_t* seg_end_item = cl_qmap_end(&(model->seg_map));
 	boolean has_confliction = FALSE;
 
-	// Port array stores port items from port number 0 to 255. We support
-	// up to 255 ports since we are using unit8 as port number. This array
+	// Port array stores port items from port number 0 to 65535. We support
+	// up to 65535 ports since we are using unit16 as port number. This array
 	// is used to help us figure out whether there is port number conflication
 	pn_port_item** full_ports =
 		MemoryAllocate2AndClear(sizeof(pn_port_item*) * MAX_PORT_NUM, IBA_MEM_FLAG_PREMPTABLE, PNGTAG);
@@ -446,7 +446,7 @@ int pn_gen_process(pn_gen_t* const model) {
 			// check port confliction
 			// pn is not equal to -1 as previous loop filtered it already
 			if (pn < MAX_PORT_NUM) {
-				port->port_num = (uint8)(pn);
+				port->port_num = (uint16)(pn);
 				if (full_ports[pn] || pn == 0) {
 					has_confliction = TRUE;
 				} else {
@@ -561,7 +561,7 @@ int pn_gen_process(pn_gen_t* const model) {
 	return PNG_OK;
 }
 
-uint8 pn_gen_get_port(pn_gen_t* const model, char* const port_name) {
+uint16 pn_gen_get_port(pn_gen_t* const model, char* const port_name) {
 	if (!model->processed) {
 		DBGPRINT("Process data\n");
 		pn_gen_process(model);
@@ -577,7 +577,7 @@ uint8 pn_gen_get_port(pn_gen_t* const model, char* const port_name) {
 			// shouldn't happen. check just in case.
 			fprintf(stderr, "WARNING - port number %d overflow\n", port_num);
 		}
-		return (uint8)port_num;
+		return (uint16)port_num;
 	} else {
 		fprintf(stderr, "ERROR - couldn't find port '%s'\n", port_name);
 		return 0;
@@ -661,7 +661,7 @@ boolean test_port_num(char* test_name, char names[][TST_MAX_NAME], int* ports, i
 	}
 
 	for (i = 0; i< size; i++) {
-		uint8 port_num = pn_gen_get_port(&model, names[i]);
+		uint16 port_num = pn_gen_get_port(&model, names[i]);
 		printf("  '%s' -> %d\t- ", names[i], port_num);
 		if (port_num != ports[i]) {
 			printf("Failed: expect %d\n", ports[i]);

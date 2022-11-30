@@ -30,8 +30,8 @@
 # Makefile for MPI application/benchmark source for end user system
 # targets:
 # 	full    - build all targets.
-#	basic   - build all applications provivded in opa-fastfabric package
-# 	quick   - build commonly used apps.
+#	eth-base- build applications provivded in eth-tools-fastfabric package
+# 	quick   - build commonly used apps. (superset of eth-base)
 # 	all     - synonym for quick
 # 	clobber - remove all built files.
 #
@@ -44,6 +44,7 @@
 # 	LAT (latency)
 #	BW (bandwidth)
 #	MULTIBW (multi-pair bandwidth)
+#	STRESS (mpi_stress)
 #	IMB (v2021.3)
 #	OSU (v5.9)
 #	XHPL2 (hpl v2)
@@ -99,6 +100,7 @@ GROUPSTRESS: SHOWMPI
 	make -C groupstress
 	@echo
 .PHONY: GROUPSTRESS
+
 DEVIATION: SHOWMPI
 	@echo "Building deviation..."
 	export HOME_DIR=$(PWD); \
@@ -233,7 +235,7 @@ eth-base:: DEVIATION CHECK GROUPSTRESS
 	@echo "build base sample applications"
 .PHONY: eth-base
 
-quick:: BW LAT MULTIBW OSU IMB XHPL2 STRESS eth-base
+quick:: eth-base BW LAT MULTIBW OSU IMB STRESS XHPL2
 	@echo "Built subset of sample applications"
 .PHONY: quick
 

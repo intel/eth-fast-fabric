@@ -355,10 +355,11 @@ typedef struct {
 	STL_LID  ReportingLID;   		
 } PACK_SUFFIX STL_SMA_TRAP_DATA_LINK_WIDTH;
 
+#ifndef HPN_OPA
 #define SMALL_STR_ARRAY_SIZE 32
 #define TINY_STR_ARRAY_SIZE 16
 #define LINK_MODES_SIZE 20
-
+#endif
 /*
  * NodeInfo
  *
@@ -370,11 +371,17 @@ typedef struct {
 	uint8	ClassVersion;		/* RO Supported Subnet Management Class */
 								/* (SMP) Version */
 	uint8	NodeType;	
+#ifdef HPN_OPA
 	uint8	NumPorts;			/* RO Number of link ports on this node */
 
 	uint32	Reserved;
+#else
+	uint16	NumPorts;			/* RO Number of link ports on this node */
 
-	uint64	SystemImageGUID;		
+	uint8	Reserved[3];
+#endif
+
+	uint64	SystemImageGUID;
 
 	uint64	NodeGUID;			/* RO GUID of the HFI or switch */
 
@@ -386,16 +393,27 @@ typedef struct {
 								/* device manufacturer */
 	uint32	Revision;			/* RO Device revision, assigned by manufacturer */
 
-	STL_FIELDUNION2(u1, 32, 
-			LocalPortNum:	16,		/* RO The link port number this */
+#ifdef HPN_OPA
+	STL_FIELDUNION2(u1, 32,
+			LocalPortNum:	8,		/* RO The link port number this */
 									/* SMP came on in */
-			VendorID:		16);	/* RO Device vendor, per IEEE */
+			VendorID:		24);	/* RO Device vendor, per IEEE */
+#else
+	union {
+		struct {
+			uint16 LocalPortNum;
+			uint32 Reserved:8;
+			uint32 VendorID:24;
+		} PACK_SUFFIX s;
+	} PACK_SUFFIX u1;
+	uint16 Reserved2;
 	uint8 DeviceName[SMALL_STR_ARRAY_SIZE];
 	uint8 HardwareRev[SMALL_STR_ARRAY_SIZE];
 	uint8 FirmwareRev[SMALL_STR_ARRAY_SIZE];
 	uint8 SerialNum[SMALL_STR_ARRAY_SIZE];
 	uint8 MfgName[SMALL_STR_ARRAY_SIZE];
 	uint8 PartNum[SMALL_STR_ARRAY_SIZE];
+#endif
 } PACK_SUFFIX STL_NODE_INFO;
 
 /*
@@ -1231,8 +1249,11 @@ typedef struct {
 		Reserved:	8,
 		QueuePair:	24 );		/* RW/HS-E SA QP. POD/LUD: 1 */
 
+#ifdef HPN_OPA
 	uint8   NeighborPortNum;	/* RO/HS-- Port number of neighbor node */
-
+#else
+	uint16  NeighborPortNum;	/* RO/HS-- Port number of neighbor node */
+#endif
 	uint8   LinkDownReason;		/* RW/HS-E Link Down Reason (see STL_LINKDOWN_REASON_XXX) */
 								/* POD: 0 */
 
@@ -1478,13 +1499,17 @@ typedef struct {
 		Cap:			4 )			/* RO/HS-E Max MTU supported by this port */
 	} MTU;
 
-	uint16 MTU2; //TODO: remove replace MTU with MTU2
-
 	struct { IB_BITFIELD2( uint8,
 		Reserved:	3,
 		TimeValue:	5 )				/* RO/H-PE */
 	} Resp;
-	
+#ifdef HPN_OPA
+	uint8   LocalPortNum;			/* RO/HSPE The link port number this SMP came on in */
+
+	uint8   Reserved25;
+	uint8	Reserved24;
+#else
+	uint16   MTU2; //TODO: remove replace MTU with MTU2
 	uint32   LocalPortNum;			/* RO/HSPE The link port number this SMP came on in */
 	uint8    LocalPortId[TINY_STR_ARRAY_SIZE];
 	uint8    LocalPortIdSubtype;
@@ -1493,9 +1518,7 @@ typedef struct {
 	uint32	 IfSpeed;				/* SNMP port speed in Mbps							*/
 	uint8    LinkModeSupported[LINK_MODES_SIZE]; /* SNMP Supported Link Modes */
 	uint16   LinkModeSupLen; /* Length of the supported Link Modes */
-
-	uint8   Reserved25;
-	uint8	Reserved24;
+#endif
 
 } PACK_SUFFIX STL_PORT_INFO;
 
