@@ -43,6 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define FF_MAX_OID_LEN 24
+#define FF_SNMP_VAL_LEN 64
 
 typedef struct SNMPHost_s {
 	uint8 type;
@@ -60,12 +62,14 @@ typedef struct SNMPOid_s {
 } SNMPOid;
 
 typedef struct SNMPResult_s {
-	oid *oid;
+	oid oid[FF_MAX_OID_LEN];
 	size_t oidLen;
 	u_char type;
+	u_char data[FF_SNMP_VAL_LEN];
 	netsnmp_vardata val;
 	size_t valLen;
 	struct SNMPResult_s *next;
+	boolean freeable;
 } SNMPResult;
 
 //-------- SNMP data process interface --------//

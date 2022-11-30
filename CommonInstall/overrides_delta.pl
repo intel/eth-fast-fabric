@@ -108,6 +108,16 @@ my @delta_Components_sles15_sp2 = (
 	"eth_rdma",
 	"delta_debug",
 	);
+my @delta_Components_sles15_sp3 = (
+	"psm3",
+	"eth_rdma",
+	"delta_debug",
+	);
+my @delta_Components_sles15_sp4 = (
+	"psm3",
+	"eth_rdma",
+	"delta_debug",
+	);
 
 @Components = ( );
 # RHEL7.3 and newer AND SLES12.2 and newer
@@ -148,6 +158,8 @@ sub overrides()
 		@Components = ( @delta_Components_sles15_sp2 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
 		@Components = ( @delta_Components_sles15_sp3 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES154" ) {
+		@Components = ( @delta_Components_sles15_sp4 );
 	} else {
 		# unsupported OS
 		@Components = ( );

@@ -642,7 +642,7 @@ proc setup_expect_after {} {
 					global spawn_id expecting
 
 					if { "$expecting" != "" } {
-						log_message "\nERROR: timeout ($timeout) waiting for: $expecting"
+						log_message "\nERROR: [date_stamp]: timeout ($timeout) waiting for: $expecting"
 					}
 					# get buffered data
 					expect *
@@ -1414,7 +1414,7 @@ proc fail_test { info } {
 ##	test case code block.
 ##	However this has the advantage of logging "$info" to the test.log
 
-	log_message "\nERROR: $info"
+	log_message "\nERROR: [date_stamp]: $info"
 	error "$info" "$info"
 }
 
@@ -2111,11 +2111,11 @@ proc expect_eof { timelimit  { ignore_rest 0 } } {
 				  }
 			}
 		timeout	{ 
-				log_message "\nERROR: timeout ($timeout) waiting for: EOF"
+				log_message "\nERROR: [date_stamp]: timeout ($timeout) waiting for: EOF"
 				# get buffered data
 				expect *
 				if { "$expect_out(buffer)" != "" } {
-					log_message "\nERROR: timeout: Received data: $expect_out(buffer)"
+					log_message "\nERROR: [date_stamp]: timeout: Received data: $expect_out(buffer)"
 					fail_test "timeout: with data"
 				} else {
 					fail_test "timeout: No data"
