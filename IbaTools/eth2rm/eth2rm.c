@@ -137,7 +137,7 @@ void ShowExpectedLinkPortSelBriefSummary(ExpectedLink *elinkp, PortSelector *por
 		else
 			fprintf(stderr, "                  ");
 		if (portselp->gotPortNum)
-			fprintf(stderr, " %3u             ",portselp->PortNum);
+			fprintf(stderr, " %4u             ",portselp->PortNum);
 		else if (portselp->PortGUID)
 			fprintf(stderr, " 0x%016"PRIx64, portselp->PortGUID);
 		else

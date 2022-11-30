@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // only considering fabric objects.
 
 // search for the PortData corresponding to the given node and port number
-PortData * FindNodePort(NodeData *nodep, uint8 port)
+PortData * FindNodePort(NodeData *nodep, uint16 port)
 {
 	cl_map_item_t *mi;
 
@@ -2109,7 +2109,7 @@ SMData * FindSMPort(FabricData_t *fabricp, EUI64 PortGUID)
 // search for the PortData corresponding to the given lid and port number
 // For NICs lid completely defines the port
 // For Switches, lid will identify the switch and port is used to select port
-PortData * FindLidPort(FabricData_t *fabricp, STL_LID lid, uint8 port)
+PortData * FindLidPort(FabricData_t *fabricp, STL_LID lid, uint16 port)
 {
 	PortData *portp;
 
@@ -2127,7 +2127,7 @@ PortData * FindLidPort(FabricData_t *fabricp, STL_LID lid, uint8 port)
 }
 
 // search for the PortData corresponding to the given nodeguid and port number
-PortData *FindNodeGuidPort(FabricData_t *fabricp, EUI64 nodeguid, uint8 port)
+PortData *FindNodeGuidPort(FabricData_t *fabricp, EUI64 nodeguid, uint16 port)
 {
 	NodeData *nodep = FindNodeGuid(fabricp, nodeguid);
 	if (! nodep)
@@ -2200,7 +2200,7 @@ ExpectedNode* FindExpectedNodeByNodeDesc(const FabricData_t* fabricp, const char
 
 // Search for the ExpectedLink by one side of the link with nodeGuid & portNum. 
 // (OPTIONAL) Side is which portsel in the ExpectedLink that was the one given.
-ExpectedLink* FindExpectedLinkByOneSide(const FabricData_t *fabricp, EUI64 nodeGuid, uint8 portNum, uint8* side)
+ExpectedLink* FindExpectedLinkByOneSide(const FabricData_t *fabricp, EUI64 nodeGuid, uint16 portNum, uint8* side)
 {
 	ExpectedLink *elinkp;
 	ExpectedNode *enodep = FindExpectedNodeByNodeGuid(fabricp, nodeGuid);

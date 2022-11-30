@@ -446,9 +446,6 @@ boolean PatchFilename(const char* filename, const char* pattern, int patlen,
 	FILE* fp = NULL;
 	char buffer[BUFFER_SIZE];
 	char* bufp;
-	char* bufp2;
-	const char* patp;
-	int i;
 	boolean patched=B_FALSE;
 	boolean finished=B_FALSE;
 	if (filename && *filename)

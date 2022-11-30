@@ -124,7 +124,7 @@ proc collect_counters {counters host port delta} {
 		unix_cmd 10 0 "echo 'Lost:0' > $app_count_file"
 	}
 
-	send_unix_cmd "ethtool -S $port | egrep --color=never '?x_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/hw_counters/ && grep --color=never . *Discards; cat $app_count_file"
+	send_unix_cmd "ethtool -S $port | egrep --color=never '?x_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/ports/1/hw_counters && grep --color=never . *Discards; cat $app_count_file"
 	expect_unix_prompt 5 out
 	foreach line $out {
 		if { [string match {[tr]x_*} $line] || [string match {ip*} $line] || [string match {Lost*} $line]} {

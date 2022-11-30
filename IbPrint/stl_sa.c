@@ -80,7 +80,7 @@ PrintStlPortInfoRecord(PrintDest_t * dest, int indent,
 	struct tm *loctime;          // Time structure to convert into human readable time
 
 	PrintFunc(dest,
-			  "%*sPortLID:       0x%08x        PortNum:   0x%02x (%2u)\n",
+			  "%*sPortLID:       0x%08x        PortNum:   0x%04x (%4u)\n",
 			  indent, "", pPortInfoRecord->RID.EndPortLID,
 			  (uint32) pPortInfoRecord->RID.PortNum,
 			  (uint32) pPortInfoRecord->RID.PortNum);
@@ -269,7 +269,7 @@ PrintStlLinkRecord(PrintDest_t * dest, int indent,
 {
 	{
 
-		PrintFunc(dest, "%*sLID: 0x%08x -> 0x%08x Port: %3u -> %3u\n",
+		PrintFunc(dest, "%*sLID: 0x%08x -> 0x%08x Port: %4u -> %4u\n",
 			  indent, "",
 			  pLinkRecord->RID.FromLID, pLinkRecord->ToLID,
 			  pLinkRecord->RID.FromPort, pLinkRecord->ToPort);

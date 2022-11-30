@@ -276,7 +276,7 @@ job* create_job() {
 
 	res->conns = create_conns(num_conns, res->channel);
 	if (!res->conns) {
-		rdma_destroy_event_channel(res->conns);
+		rdma_destroy_event_channel(res->channel);
 		free(res);
 		return NULL;
 	}

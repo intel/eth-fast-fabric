@@ -114,7 +114,7 @@ int pn_gen_register(pn_gen_t* const model, char* const port_name);
  * Return value shall be a positive number. Value ZERO indicates errors, such
  * as a port name never registered.
  */
-uint8 pn_gen_get_port(pn_gen_t* const model, char* const port_name);
+uint16 pn_gen_get_port(pn_gen_t* const model, char* const port_name);
 
 /**
  * Cleanup a port number generator described by pn_gen_t

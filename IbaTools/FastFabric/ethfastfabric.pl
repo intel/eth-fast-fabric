@@ -1205,9 +1205,14 @@ sub fabricsetup_buildmpi
 				} else {
 					print "\nUse CUDA at $cuda_dir\n";
 				}
-			} else {
+			} elsif (scalar(@cuda_dirs) == 1) {
 				$cuda_dir = @cuda_dirs[0];
 				print "\nFound CUDA at $cuda_dir\n";
+			} else {
+				$cuda_dir = "";
+				if ($support_cuda) {
+					print "\nCUDA not found\n";
+				}
 			}
 			if ("$cuda_dir" ne "") {
 				if ($support_cuda) {
@@ -1232,11 +1237,11 @@ sub fabricsetup_buildmpi
 	if (!installed_mpiapps()){
 		print "Package $ComponentName{mpiapps} not installed. Only building subset of MPI Apps\n";
 		HitKeyCont;
-		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber eth-base")) {
+		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber eth-base 2>&1|tee make.res")) {
 			return 1;
 		}
 	} else{
-		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber quick")) {
+		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber quick 2>&1|tee make.res")) {
 			return 1;
 		}
 	}

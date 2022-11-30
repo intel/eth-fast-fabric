@@ -147,11 +147,11 @@ static void PortSelectorXmlOutputPortNum(IXmlOutputState_t *state, const char *t
 
 static void PortSelectorXmlParserEndPortNum(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
 {
-	uint8 value;
+	uint16 value;
 	
-	if (IXmlParseUint8(state, content, len, &value)) {
-		if (value > 254) {
-			IXmlParserPrintError(state, "PortNum must be in range [0,254]");
+	if (IXmlParseUint16(state, content, len, &value)) {
+		if (value > 65535) {
+			IXmlParserPrintError(state, "PortNum must be in range [0,65535]");
 		} else {
 			((PortSelector *)object)->PortNum = value;
 			((PortSelector *)object)->gotPortNum = 1;
@@ -568,11 +568,11 @@ invalid:
 
 static void ExpectedPortXmlParserEndPortNum(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
 {
-	uint8 value;
+	uint16 value;
 
-	if (IXmlParseUint8(state, content, len, &value)) {
-		if (value > 254) {
-			IXmlParserPrintError(state, "PortNum must be in range [0,254]");
+	if (IXmlParseUint16(state, content, len, &value)) {
+		if (value > 65535) {
+			IXmlParserPrintError(state, "PortNum must be in range [0,65535]");
 		} else {
 			((ExpectedPort *)object)->PortNum = value;
 		}
@@ -663,7 +663,7 @@ static void *ExpectedPortXmlParserStart(IXmlParserState_t *state, void *parent, 
 }
 
 // check enodep->ports size and grow as needed to accomidate adding portNum
-static FSTATUS ExpectedNodePrepareSize(ExpectedNode *enodep, uint8 portNum)
+static FSTATUS ExpectedNodePrepareSize(ExpectedNode *enodep, uint16 portNum)
 {
 	if ((portNum + 1) > enodep->portsSize) {
 		int allocCount = MAX((enodep->portsSize == 0 ? 1 : 2 * enodep->portsSize),
@@ -696,7 +696,7 @@ static FSTATUS ExpectedNodeAddPort(ExpectedNode *enodep, ExpectedPort *eportp)
 	return FSUCCESS;
 }
 
-static ExpectedPort *ExpectedNodeGetPort(ExpectedNode *enodep, uint8 portNum)
+static ExpectedPort *ExpectedNodeGetPort(ExpectedNode *enodep, uint16 portNum)
 {
 	if(portNum >= enodep->portsSize)
 		return NULL;

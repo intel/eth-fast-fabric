@@ -720,7 +720,7 @@ static void LinkXmlOutputTo(IXmlOutputState_t *state, const char *tag, void *dat
 
 struct portref {
 	EUI64 NodeGUID;
-	uint8 PortNum;
+	uint16 PortNum;
 };
 
 typedef struct TempLinkData {
