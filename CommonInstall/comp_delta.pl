@@ -73,6 +73,7 @@ my @delta_kernel_srpms_sles15 = ( 'iefs-kernel-updates-kmp-default' );
 my @delta_kernel_srpms_sles15_sp1 = ( 'iefs-kernel-updates-kmp-default' );
 my @delta_kernel_srpms_sles15_sp2 = ( 'iefs-kernel-updates-kmp-default' );
 my @delta_kernel_srpms_sles15_sp3 = ( 'iefs-kernel-updates-kmp-default' );
+my @delta_kernel_srpms_sles15_sp4 = ( 'iefs-kernel-updates-kmp-default' );
 my @delta_kernel_srpms_rhel78 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel79 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel8 = ( 'kmod-iefs-kernel-updates' );
@@ -151,6 +152,9 @@ sub init_delta_info($)
 	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
 		&& "$CUR_VENDOR_VER" eq 'ES153') {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp3 );
+	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
+		&& "$CUR_VENDOR_VER" eq 'ES154') {
+		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp4 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel81 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
@@ -796,6 +800,8 @@ sub installed_delta_eth_module()
 	} elsif ( "$CUR_VENDOR_VER" eq "ES152" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
+		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES154" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
 	} else {
 		return 0;

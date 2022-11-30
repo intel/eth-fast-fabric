@@ -46,11 +46,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEBUG 0
 #define BASENAME "ethudstress"
-#define PSERROR(str) fprintf(stderr, "%s: Error - %s : %s\n", BASENAME, str, strerror(errno))
-#define PFERROR(format, args...) { fprintf(stderr, "%s: Error - ", BASENAME); fprintf(stderr, format, ##args); }
-#define PFWARN(format, args...) { fprintf(stderr, "%s: Warning - ", BASENAME); fprintf(stderr, format, ##args); }
-#define FPRINT(format, args...) { printf("%s: ", BASENAME); printf(format, ##args);}
-#define DBGPRINT(format, args...) if (DEBUG) { fprintf(stderr, format, ##args); }
+#define PRINTHDR(out) {                                        \
+	struct timeval curTime;                                \
+	struct timezone timeZone;                              \
+	struct tm *tm;                                         \
+	gettimeofday(&curTime, &timeZone);                     \
+	tm = localtime(&curTime.tv_sec);                       \
+	if (tm) {                                              \
+		fprintf(out, "%s[%s] %.2d:%.2d:%.2d.%.6d ",    \
+			BASENAME, src_addr ? src_addr : "-",   \
+			tm->tm_hour, tm->tm_min, tm->tm_sec,   \
+			(int) curTime.tv_usec);                \
+	} else {                                               \
+		fprintf(out, "%s[%s] ", BASENAME,              \
+			src_addr ? src_addr : "-");            \
+	}                                                      \
+}
+#define PSERROR(str) { PRINTHDR(stderr); fprintf(stderr, "- Error: %s - %s\n", str, strerror(errno)); }
+#define PFERROR(format, args...) { PRINTHDR(stderr); fprintf(stderr, "- Error: "); fprintf(stderr, format, ##args); }
+#define PFWARN(format, args...) { PRINTHDR(stderr); fprintf(stderr, "- Warning: "); fprintf(stderr, format, ##args); }
+#define FPRINT(format, args...) { PRINTHDR(stdout); printf("- "); printf(format, ##args); }
+#define DBGPRINT(format, args...) if (DEBUG) { PRINTHDR(stderr); fprintf(stderr, format, ##args); }
 
 #define OP_TIMEOUT_MS 2000 // operation timeout in ms
 
@@ -179,7 +195,7 @@ void print_perf(char* name, perf the_perf) {
 		return;
 	}
 	uint64_t delta = the_perf.end_us - the_perf.start_us;
-	printf("\n---- %s ----\n", name);
+	printf("\n---- %s: %s ----\n", src_addr, name);
 	printf("Time: %ld ms\n", delta/1000);
 	printf("Pkt Size: %d Bytes\n", msg_size);
 	printf("Rx: %ld Pkts, Lost: %ld Pkts\n", the_perf.rx_pkts, the_perf.lost_rx_pkts);
@@ -199,7 +215,7 @@ void print_perf(char* name, perf the_perf) {
 connection* create_conns(int num_conns, struct rdma_event_channel *channel) {
 	connection* res = calloc(sizeof(connection), num_conns);
 	if (!res) {
-		PFERROR("couldn't allocate memory for connections.");
+		PFERROR("couldn't allocate memory for connections.\n");
 		return NULL;
 	}
 
@@ -468,6 +484,7 @@ void *do_poll_cqs(void *arg) {
 	struct ibv_qp_attr attr;
 	struct ibv_qp_init_attr init_attr;
 	int count = 0, ret;
+	uint64_t progress_time = get_timestamp() + 1000000;
 
 	connection *conn = param->conn;
 	int msg_count = param->msg_count;
@@ -479,6 +496,12 @@ void *do_poll_cqs(void *arg) {
 
 	for (count = 0; count < msg_count; count += ret) {
 		ret = ibv_poll_cq(conn->cq, msg_count >8 ? 8 : msg_count, wc);
+		if (!dst_addr && get_timestamp() >= progress_time) {
+			// only print progress on receiver side
+			DBGPRINT("connection %2d - progress: qpn=%d expected msg_count=%d got=%d poll ret=%d\n",
+				conn->id, conn->cma_id->qp->qp_num, msg_count, count, ret);
+			progress_time += 1000000;
+		}
 		if (ret > 0 && (msg_count - count < 10)) {
 			DBGPRINT("    id=%d count=%d get=%d\n", conn->id, count, ret);
 		}
@@ -488,7 +511,8 @@ void *do_poll_cqs(void *arg) {
 			goto out;
 		}
 		if (!ret && get_timestamp() >= stop_time_us) {
-			PFWARN("connection %d - time out during data polling\n", conn->id);
+			PFWARN("connection %2d - timeout: qpn=%d expected msg_count=%d got=%d\n",
+				conn->id, conn->cma_id->qp->qp_num, msg_count, count);
 			param->ret = 0;
 			goto out;
 		}
@@ -581,7 +605,7 @@ int on_route_event(job *the_job, struct rdma_cm_event *event) {
 	param.private_data_len = the_job->addr_info->ai_connect_len;
 	ret = rdma_connect(conn->cma_id, &param);
 	if (ret) {
-		PFERROR("failed to connect");
+		PSERROR("failed to connect");
 		goto err;
 	}
 	return 0;
@@ -622,12 +646,12 @@ int on_connect_event(job *the_job, struct rdma_cm_event *event) {
 	param.qp_num = next->cma_id->qp->qp_num;
 	ret = rdma_accept(next->cma_id, &param);
 	if (ret) {
-		PFERROR("failed to accept");
+		PSERROR("failed to accept");
 		goto err2;
 	}
 	next->connected = true;
 	the_job->conn_left -= 1;
-	DBGPRINT("on_connect_event id=%d connected=%d\n", next->id, next->connected);
+	FPRINT("Accept connection: id=%2d qp_num=%d\n", next->id, param.qp_num);
 	return 0;
 
 err2:
@@ -654,7 +678,8 @@ int on_established_event(job* the_job, struct rdma_cm_event *event) {
 	}
 
 	the_job->conn_left -= 1;
-	DBGPRINT("on_established_event id=%d connected=%d\n", conn->id, conn->connected);
+	FPRINT("Connection established: id=%3d qp_num=%3d remote_qpn=%3d\n",
+		conn->id, conn->cma_id->qp->qp_num, conn->remote_qpn);
 	return ret;
 }
 
@@ -699,7 +724,7 @@ int process_events(job* the_job) {
 				ret = event->status;
 				break;
 			case RDMA_CM_EVENT_DEVICE_REMOVAL:
-				PFERROR("Device removed.");
+				PFERROR("Device removed.\n");
 				break;
 			default:
 				break;

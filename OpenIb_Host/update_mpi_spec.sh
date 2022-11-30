@@ -49,7 +49,13 @@ then
 	sed -i "s/__RPM_DBG/%global debug_package %{nil}/" mpi-apps.spec
 elif [ "$id" = "sles" ]
 then
-	sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
+	GE_15_4=$(echo "$versionid >= 15.4" | bc)
+	if [ $GE_15_4 = 1 ]
+	then
+		sed -i "s/__RPM_REQ/Requires: openblas-common-devel/" mpi-apps.spec
+	else
+		sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
+	fi
 	sed -i "/__RPM_DBG/,+1d" mpi-apps.spec
 else
 	echo ERROR: Unsupported distribution: $id $versionid

@@ -92,51 +92,27 @@ proc case_cleanup { failed } {
 	}
 }
 
-proc run_rdma_ping {server_host server_port client_host client_port ping_count} {
+proc run_rdma_ping {server_host server_port srv_ip_addr client_host client_port ping_count} {
 	global env
 
-	target_root_sh $server_host
-	unix_cmd 30 "" "killall rping"
-	send_unix_cmd "ip a show dev $server_port"
+
+	target_root_sh $client_host
+	send_unix_cmd "ip a show dev $client_port"
 	set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
-	if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy srv_ip_addr]} {
-		fail_test "Couldn't find ip address for $server_host:$server_port"
+	if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy clt_ip_addr]} {
+		fail_test "Couldn't find ip address for $client_host:$client_port"
 	}
 	check_exit_status 30 0
+
+	send_unix_cmd "echo TX: \$(rping -cva $srv_ip_addr -I $clt_ip_addr -C $ping_count | grep 'ping data: rdma-ping' | wc -l)"
+	set out [expect_list 10 {"(?n)^TX:.*"} {"error" "failed"}]
+	if {![regexp {: ([0-9]+)} $out dummy tx_count] || "$tx_count" == "0" } {
+		fail_test "rping from $client_host:$client_port to $server_host:$server_port failed"
+	}
+	if {"$tx_count" != "$ping_count"} {
+		fail_test "Only $tx_count/$ping_count rpings succeeded"
+	}
 	target_root_sh_exit
-
-	init_subprocesses
-
-	subprocess {
-		target_root_sh $server_host
-		send_unix_cmd "rping -svda $srv_ip_addr"
-		expect_list 60 {"rdma_listen"} {"rping -s [-vVd]" "Cannot assign requested address" "Bad file descriptor"}
-		check_exit_status 60 0
-		target_root_sh_exit
-	}
-
-	subprocess {
-		after 5000
-		target_root_sh $client_host
-		send_unix_cmd "ip a show dev $client_port"
-		set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
-		if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy clt_ip_addr]} {
-			fail_test "Couldn't find ip address for $client_host:$client_port"
-		}
-		check_exit_status 30 0
-
-		send_unix_cmd "echo TX: \$(rping -cva $srv_ip_addr -I $clt_ip_addr -C $ping_count | grep 'ping data: rdma-ping' | wc -l)"
-		set out [expect_list 20 {"(?n)^TX:.*"} {"error"}]
-		if {![regexp {: ([0-9]+)} $out dummy tx_count] || "$tx_count" == "0" } {
-			fail_test "rping from $client_host:$client_port to $server_host:$server_port failed"
-		}
-		if {"$tx_count" != "$ping_count"} {
-			fail_test "Only $tx_count/$ping_count rpings successed"
-		}
-		target_root_sh_exit
-	}
-
-	wait_subprocesses
 }
 
 proc test_case_rping {server server_ports client client_ports {ping_count 5} {punchlist 0}} {
@@ -162,7 +138,7 @@ proc test_case_rping {server server_ports client client_ports {ping_count 5} {pu
 ##	no item_setup nor item_cleanup used
 	global env
 
-	test_case "$server" "$server rping" "test rping of $server confirm all other hosts can communicate to it
+	test_case "$server" "$server rping" "test rping of $server confirm $client can communicate to it
 File: /usr/lib/eth-tools/rping.exp" case_setup case_cleanup {
 		upvar server server
 		upvar server_ports server_ports
@@ -180,16 +156,49 @@ File: /usr/lib/eth-tools/rping.exp" case_setup case_cleanup {
 			fail_test "No ports on $client"
 		}
 
-		foreach sport $server_ports {
+		parallel sport $server_ports {
+			if { [ test_parallel ] } {
+				# stagger parallel start by 100ms per
+				# server to avoid ssh eof errors
+				set index [ lsearch -exact $server_ports $sport ]
+				after [ calc_timeout [ expr ( $index % [ test_get_env TEST_MAX_PARALLEL ] ) * 100  ] ]
+			}
+			set nohup_file "/tmp/ff_rping.$sport"
+
+			test_item "$sport-listener" "start $server:$sport listener" "start RDMA ping listener on $server:$sport" noop cleanup_all_children {
+				upvar srv_ip_addr srv_ip_addr
+
+				target_root_sh $server
+				send_unix_cmd "ip a show dev $sport"
+				set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
+				if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy srv_ip_addr]} {
+					fail_test "Couldn't find ip address for $server:$sport"
+				}
+				check_exit_status 30 0
+				unix_cmd 30 "" "pkill -f 'rping -svda $srv_ip_addr '"
+				unix_cmd 30 "" "rm -f $nohup_file"
+				unix_cmd 60 "" "nohup rping -svda $srv_ip_addr -P >$nohup_file 2>&1 &"
+				sleep [ calc_timeout 1 ]
+				target_root_sh_exit
+			}
+
 			foreach cport $client_ports {
 				if { [ catch { set res [
 					test_item "$sport-$client:$cport" "$client:$cport to $server:$sport" "RDMA ping from $client:$cport to $server:$sport" noop cleanup_all_children {
-						run_rdma_ping $server $sport $client $cport $ping_count
+						run_rdma_ping $server $sport $srv_ip_addr $client $cport $ping_count
 				} ] } err_str2 ] != 0  || $res != 0 } {
 					if { $punchlist } {
 						append_punchlist "$client:$cport" "unable to rping $server:$sport via RDMA"
 					}
 				}
+			}
+
+			test_item "$sport-stop_listener" "stop $server:$sport listener" "stop RDMA ping listener on $server:$sport" noop cleanup_all_children {
+				target_root_sh $server
+				unix_cmd 30 "" "pkill -f 'rping -svda $srv_ip_addr '"
+				unix_cmd 30 "" "cat $nohup_file"
+				unix_cmd 30 "" "rm -f $nohup_file"
+				target_root_sh_exit
 			}
 		}
 	}
@@ -226,9 +235,10 @@ File: /usr/lib/eth-tools/rping.exp" suite_setup noop {
 
 	set port_file "/tmp/ff_port_[pid]"
 	parallel host [array names HOST_PORTS]  {
+		target_root_sh $host
+		unix_cmd 30 "" "killall rping"
 		set ports $HOST_PORTS($host)
 		if {"$ports" == ""} {
-			target_root_sh $host
 			unix_cmd 10 0 "type rping"
 			send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
 			set out [expect_list 20 {"(?n)^PORTS:.*"}]
@@ -237,8 +247,8 @@ File: /usr/lib/eth-tools/rping.exp" suite_setup noop {
 			}
 			check_exit_status 20 0
 			exec echo "$host: $ports" >> $port_file
-			target_root_sh_exit
 		}
+		target_root_sh_exit
 	}
 	if { [ file exists $port_file ] } {
 		foreach line [split [exec cat $port_file] '\n'] {

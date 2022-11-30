@@ -64,6 +64,7 @@ my @Components_sles15 = ( @EthAllComponents );
 my @Components_sles15_sp1 = ( @EthAllComponents );
 my @Components_sles15_sp2 = ( @EthAllComponents );
 my @Components_sles15_sp3 = ( @EthAllComponents );
+my @Components_sles15_sp4 = ( @EthAllComponents );
 my @Components_rhel78 = ( @EthAllComponents );
 my @Components_rhel79 = ( @EthAllComponents );
 my @Components_rhel8 = ( @EthAllComponents );
@@ -571,6 +572,12 @@ sub init_components
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
 		@Components = ( @Components_sles15_sp3 );
+		@SubComponents = ( @SubComponents_newer );
+		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
+						%eth_module_sles_comp_info,
+						);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES154" ) {
+		@Components = ( @Components_sles15_sp4 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
 						%eth_module_sles_comp_info,

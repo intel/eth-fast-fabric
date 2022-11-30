@@ -47,6 +47,8 @@ static int SNMP_INITED = 0;
 #define ENTITY_TYPE_CHASSIS 3
 #define ADDR_SUBTYPE_IPV4 1
 #define PORTID_SUBTYPE_MAC 3
+#define SNMP_BULK_SIZE 10
+#define SNMP_RESULT_BLOCK 1024
 
 typedef struct {
 	STL_NODE_RECORD *node;
@@ -403,11 +405,29 @@ boolean is_supported_interface(SNMPHost *host, char* ifName, size_t len) {
 }
 
 /*
- * @brief create a SNMPResult object
+ * @brief get next SNMPResult. If unavailable, create SNMP_RESULT_BLOCK linked SNMPResult
+ *        and return the first one.
  */
-SNMPResult * create_snmp_result() {
-	SNMPResult* res = MemoryAllocate2AndClear(sizeof(SNMPResult), IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
-	return res;
+SNMPResult * get_next_snmp_result(SNMPResult *res) {
+	if (res && res->next) {
+		return res->next;
+	}
+
+	SNMPResult* tmp = MemoryAllocate2AndClear(sizeof(SNMPResult) * SNMP_RESULT_BLOCK, IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
+	if (tmp == NULL) {
+		fprintf(stderr, "ERROR - couldn't allocate memory for SNMPResult.\n");
+		return NULL;
+	}
+	TRACEPRINT("Allocated SNMPResult BLOCK\n");
+
+	int i;
+	SNMPResult *rp = res ? res : tmp;
+	for (i = 0; i < SNMP_RESULT_BLOCK; i++) {
+		tmp[i].freeable = i == 0;
+		rp->next = &tmp[i];
+		rp = rp->next;
+	}
+	return tmp;
 }
 
 /*
@@ -417,15 +437,15 @@ SNMPResult * create_snmp_result() {
  */
 void free_snmp_result(SNMPResult *res) {
 	if (res) {
-		if (res->oid)
-			MemoryDeallocate(res->oid);
 		// just pick one of the union, so the compiler will not complain
-		if (res->val.string)
+		if (res->val.string && (u_char *)res->val.string != res->data)
 			MemoryDeallocate(res->val.string);
 		if (res->next) {
 			free_snmp_result(res->next);
 		}
-		MemoryDeallocate(res);
+		if (res->freeable) {
+			MemoryDeallocate(res);
+		}
 	}
 }
 
@@ -439,36 +459,30 @@ void free_snmp_result(SNMPResult *res) {
  *                 	link to it
  * @return the created SNMPResult
  */
-SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *varLst,
+SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *vars,
 		boolean fillFirst) {
-	SNMPResult *curRes, *newRes = NULL;
-	struct variable_list *vp = varLst;
+	SNMPResult *newRes = NULL;
 	char buf[1024];
-	curRes = res;
-	while (vp) {
-		if (fillFirst) {
-			newRes = res;
-		} else {
-			newRes = create_snmp_result();
-		}
-		if (!newRes) {
-			fprintf(stderr, "ERROR - no SNMPResult\n");
-			return NULL;
-		}
-		
-		int size = sizeof(oid) * vp->name_length;
-		newRes->oid = MemoryAllocate2AndClear(size, IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
-		if (!newRes->oid) {
-			fprintf(stderr, "ERROR - couldn't allocate memory.\n");
-			if (!fillFirst) {
-				free_snmp_result(newRes);
-			}
-			return NULL;
-		}
-		memcpy(newRes->oid, vp->name, size);
-		newRes->oidLen = vp->name_length;
-		newRes->type = vp->type;
-		void * val = MemoryAllocate2AndClear(vp->val_len, IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
+	if (fillFirst) {
+		newRes = res;
+	} else {
+		newRes = get_next_snmp_result(res);
+	}
+	if (!newRes) {
+		fprintf(stderr, "ERROR - no SNMPResult\n");
+		return NULL;
+	}
+
+	ASSERT(vars->name_length <= FF_MAX_OID_LEN);
+	int size = sizeof(oid) * MIN(vars->name_length, FF_MAX_OID_LEN);
+	memcpy(newRes->oid, vars->name, size);
+	newRes->oidLen = vars->name_length;
+	newRes->type = vars->type;
+	void * val = NULL;
+	if (vars->val_len <= FF_SNMP_VAL_LEN) {
+		val = newRes->data;
+	} else {
+		val = MemoryAllocate2AndClear(vars->val_len, IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
 		if (!val) {
 			fprintf(stderr, "ERROR - couldn't allocate memory.\n");
 			if (!fillFirst) {
@@ -476,22 +490,16 @@ SNMPResult * add_snmp_result(SNMPResult *res, struct variable_list *varLst,
 			}
 			return NULL;
 		}
-		memcpy(val, vp->val.string, vp->val_len);
-		// just pick one of the union to do the cast, so the compiler will not complain
-		newRes->val = (netsnmp_vardata) (u_char *) val;
-
-		newRes->valLen = vp->val_len;
-		vp = vp->next_variable;
-
-		snprint_objid(buf, sizeof(buf), newRes->oid, newRes->oidLen);
-		TRACEPRINT("Added %s\n", buf);
-		if (!fillFirst) {
-			curRes->next = newRes;
-		} else {
-			fillFirst = FALSE;
-		}
-		curRes = newRes;
+		TRACEPRINT("Allocated SNMP VAL len=%ld\n", vars->val_len);
 	}
+	memcpy(val, vars->val.string, vars->val_len);
+	// just pick one of the union to do the cast, so the compiler will not complain
+	newRes->val = (netsnmp_vardata) (u_char *) val;
+
+	newRes->valLen = vars->val_len;
+
+	snprint_objid(buf, sizeof(buf), newRes->oid, newRes->oidLen);
+	TRACEPRINT("Added %s\n", buf);
 	return newRes;
 }
 
@@ -748,7 +756,7 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 	int i = 0;
 	boolean manAddrProcessed = FALSE;
 	int modulePhyId = -1;
-	while (rp) {
+	while (rp && rp->oidLen) {
 		if (TRACE) {
 			snprint_objid(buf, sizeof(buf), rp->oid, rp->oidLen);
 			TRACEPRINT("Processing %s type=%d str=", buf, rp->type);
@@ -799,6 +807,9 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 				// break because we have no LID. Doesn't make sense to continue;
 				break;
 			}
+		} else if (is_oid(rp, &sysObjectID)) {
+			TRACEPRINT("..sysObjectID\n");
+			node->NodeInfo.u1.s.VendorID = (uint32) *(rp->val.objid + 6);
 		} else if (is_oid(rp, &sysName)) {
 			TRACEPRINT("..sysName\n");
 			size_t len =
@@ -833,12 +844,6 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 			if (phyId == modulePhyId) {
 				copy_snmp_string(rp, (char*) node->NodeInfo.DeviceName,
 						SMALL_STR_ARRAY_SIZE, FALSE);
-			}
-		} else if (is_oid(rp, &entPhysicalVendorType)) {
-			TRACEPRINT("..entPhysicalVendorType\n");
-			int phyId = get_oid_num(rp, entPhysicalVendorType.oidLen);
-			if (phyId == modulePhyId && rp->val.objid[0]) {
-				node->NodeInfo.u1.s.VendorID = (uint32) *(rp->val.objid + 6);
 			}
 		} else if (is_oid(rp, &entPhysicalHardwareRev)) {
 			TRACEPRINT("..entPhysicalHardwareRev\n");
@@ -893,7 +898,7 @@ HMGT_STATUS_T populate_host_node_record(SNMPHost *host, SNMPResult *res,
 	SNMPResult *sysNameRes = NULL;
 	cl_qmap_t nodeMap;
 	cl_qmap_init(&nodeMap, NULL);
-	while (rp) {
+	while (rp && rp->oidLen) {
 		if (TRACE) {
 			snprint_objid(buf, sizeof(buf), rp->oid, rp->oidLen);
 			TRACEPRINT("Processing %s type=%d str=", buf, rp->type);
@@ -1062,7 +1067,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 	portZeroRec->PortInfo.PortStates.s.PortState = ETH_PORT_UP;
 
 
-	while (rp) {
+	while (rp && rp->oidLen) {
 		if (TRACE) {
 			snprint_objid(buf, sizeof(buf), rp->oid, rp->oidLen);
 			TRACEPRINT("Processing %s type=%d str=", buf, rp->type);
@@ -1374,7 +1379,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 	cl_qmap_init(&portIdMap, NULL);
 	uint32 capSupported = 0x39;
 	uint32 capEnabled = 0x01;
-	while (rp) {
+	while (rp && rp->oidLen) {
 		if (TRACE) {
 			snprint_objid(buf, sizeof(buf), rp->oid, rp->oidLen);
 			TRACEPRINT("Processing %s type=%d str=", buf, rp->type);
@@ -1562,7 +1567,7 @@ HMGT_STATUS_T populate_port_counters(SNMPResult *res,
 	SNMPResult *rp = res;
 	char buf[1024];
 	int i = 0;
-	while (rp) {
+	while (rp && rp->oidLen) {
 		if (TRACE) {
 			snprint_objid(buf, sizeof(buf), rp->oid, rp->oidLen);
 			TRACEPRINT("Processing %s type=%d str=", buf, rp->type);
@@ -1900,6 +1905,9 @@ int print_result(FILE *out, int status, struct snmp_session *session,
 						varList->name_length, varList);
 				fprintf(out, "%s: %s\n", session->peername, buf);
 				varList = varList->next_variable;
+				if (varList) {
+					print_timestamp(out);
+				}
 			}
 		} else {
 			for (i = 1; varList && i != pdu->errindex;
@@ -1925,120 +1933,139 @@ int print_result(FILE *out, int status, struct snmp_session *session,
 	return 0;
 }
 
+/*
+ * prepare next SNMP query based on OID type
+ */
+struct snmp_pdu * prepare_snmp_query(struct context_s *context) {
+	struct snmp_pdu *res = NULL;
+	if (!context->current_oid->name) {
+		return res;
+	}
+	if (context->current_oid->type == SNMP_MSG_GET) {
+		res = snmp_pdu_create(SNMP_MSG_GET);
+		TRACEPRINT("Query GET %s\n", context->current_oid->name);
+	} else {
+		res = snmp_pdu_create(SNMP_MSG_GETBULK);
+		res->non_repeaters = 0;
+		// Entity MIB returns all entities in a device that can be a big number.
+		// We only care Module/Chassis that supposed to be in the first 5. Usually
+		// it's the first or second (if it has virtual root) one.
+		if (match_oid(entPhysical.oid, entPhysical.oidLen,
+			context->current_oid->oid, context->current_oid->oidLen)) {
+			res->max_repetitions = 5;
+		} else {
+			res->max_repetitions = context->ifNumber ? context->ifNumber + 1 : SNMP_BULK_SIZE;
+		}
+		TRACEPRINT("Query GETBULK %s max_repetitions=%ld\n",
+			context->current_oid->name, res->max_repetitions);
+	}
+	snmp_add_null_var(res, context->current_oid->oid, context->current_oid->oidLen);
+	return res;
+}
 
-//TODO: part of this comes from asyncapp.c::async_response function; need to rewrite some of this
 //TODO: improve to store query result in a map with key=oid, value=SNMPResult
 //      that is a linked list with all results for an oid.
 /*
  * response handler
  */
-int asynch_response(int operation, struct snmp_session *sp, int reqid,
+int asynch_mixed_response(int operation, struct snmp_session *sp, int reqid,
 		struct snmp_pdu *pdu, void *magic) {
 	struct context_s *context = (struct context_s *) magic;
 	struct snmp_pdu *req = NULL;
 	struct variable_list *vars;
-	QueryState state;
-	oid name[MAX_OID_LEN];
-	size_t name_length;
+	QueryState state = Q_NONE;
+	SNMPOid *next_oid;
 
 	TRACEPRINT("Get response for %s, magic=%p from %s\n",
 			context->current_oid->name, magic, sp->peername);
 	if (operation == NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE) {
 		if (pdu->errstat == SNMP_ERR_NOERROR) {
-			boolean addResult = FALSE;
-			state = Q_END_NEXT;
-			if (context->current_oid->type == SNMP_MSG_GET) {
-				addResult = TRUE;
-				vars = pdu->variables;
-				if (vars->type == SNMP_NOSUCHOBJECT) {
-					PRINT_NOSUCHOBJECT(context->current_oid->name, sp->peername);
-					state = Q_WARN;
-				}
-				if (vars->type == SNMP_NOSUCHINSTANCE) {
-					PRINT_NOSUCHINSTANCE(context->current_oid->name, sp->peername);
-					state = Q_WARN;
-				}
-			} else if (context->current_oid->type == SNMP_MSG_GETNEXT) {
-				for (vars = pdu->variables; vars; vars = vars->next_variable) {
-					if (!match_oid(context->current_oid->oid,
-							context->current_oid->oidLen, vars->name,
-							vars->name_length)) {
-						TRACEPRINT("  No OID match\n");
-						if ((! context->resultTail) ||
-						    (! is_oid(context->resultTail, context->current_oid)))
-							PRINT_NOSUCHOBJECT(context->current_oid->name, sp->peername);
-						// not part of this subtree
+			if (TRACE) {
+				print_result(verbose_file, STAT_SUCCESS, context->sess, pdu);
+			}
+			vars = pdu->variables;
+			while (vars) {
+				if (!match_oid(context->current_oid->oid,
+						context->current_oid->oidLen, vars->name,
+						vars->name_length)) {
+					TRACEPRINT("  No OID match\n");
+					if ((! context->resultTail) ||
+					    (! is_oid(context->resultTail, context->current_oid)))
+						PRINT_NOSUCHOBJECT(context->current_oid->name, sp->peername);
+
+					next_oid = context->current_oid + 1;
+					if (!next_oid->name ||
+					    !match_oid(next_oid->oid, next_oid->oidLen,
+						vars->name, vars->name_length)) {
 						state = Q_END_NEXT;
 						break;
-					}
-					if (vars->type == SNMP_ENDOFMIBVIEW || vars->type == SNMP_NOSUCHOBJECT) {
-						PRINT_NOSUCHOBJECT(context->current_oid->name,
-                                                		   sp->peername);
-						state = Q_WARN;
-						break;
-					} else if (vars->type == SNMP_NOSUCHINSTANCE) {
-						PRINT_NOSUCHINSTANCE(context->current_oid->name,
-								     sp->peername);
-						state = Q_WARN;
-						break;
 					} else {
-						memmove((char *) name, (char *) vars->name,
-							vars->name_length * sizeof(oid));
-						name_length = vars->name_length;
+						context->current_oid += 1;
 						state = Q_NEXT;
+						continue;
 					}
 				}
-			} else {
-				// unknown operation, ignore
-				fprintf(stderr, "Unsupported operation: %d\n",
-						context->current_oid->type);
-				state = Q_ERROR;
-			}
-
-			if (state == Q_NEXT) {
-				TRACEPRINT("Query GetNext\n");
-				addResult = TRUE;
-				req = snmp_pdu_create(SNMP_MSG_GETNEXT);
-				snmp_add_null_var(req, name, name_length);
-			} else if (state == Q_END_NEXT || state == Q_WARN) {
-				context->current_oid++; /* send next GET (if any) */
-				TRACEPRINT("Query Next OID %s\n",
-						context->current_oid->name);
-				if (context->current_oid->name) {
-					req = snmp_pdu_create(context->current_oid->type);
-					snmp_add_null_var(req, context->current_oid->oid,
-							context->current_oid->oidLen);
+				if (vars->type == SNMP_ENDOFMIBVIEW ||
+				    vars->type == SNMP_NOSUCHOBJECT ||
+				    vars->type == SNMP_NOSUCHINSTANCE) {
+					PRINT_NOSUCHOBJECT(context->current_oid->name,
+							   sp->peername);
+					state = Q_WARN;
+					break;
 				}
-			}
-
-			if (addResult) {
-				if (TRACE)
-					print_result(verbose_file, STAT_SUCCESS, context->sess, pdu);
+				if (!context->ifNumber &&
+				    match_oid(ifNumber.oid, ifNumber.oidLen, vars->name, vars->name_length)) {
+				    context->ifNumber = (uint16) *(vars->val.integer);
+				    TRACEPRINT("ifNumber=%d\n", context->ifNumber);
+				}
+				state = context->current_oid->type == SNMP_MSG_GET ? Q_END_NEXT : Q_NEXT;
 				boolean fillFirst = FALSE;
 				if (!context->result) {
-					context->result = context->resultTail = create_snmp_result();
+					context->result = context->resultTail = get_next_snmp_result(NULL);
 					fillFirst = TRUE;
 				}
 				SNMPResult * newRes = add_snmp_result(context->resultTail,
-						pdu->variables, fillFirst);
+						vars, fillFirst);
 				context->resultTail = newRes;
 				if (!newRes) {
 					fprintf(stderr,
 							"ERROR - Couldn't allocate memory for SNMPResult.\n");
-					// free pdu if we have
-					if (req) {
-						snmp_free_pdu(req);
-						req = NULL;
-					}
 					// set state to Q_ERROR, so we stop the query.
 					state = Q_ERROR;
 				}
+				if (vars->next_variable) {
+					vars = vars->next_variable;
+				} else {
+					break;
+				}
+			}
+			// Entity MIB data can be big. We only care the first couple entities,
+			// so no continue query for it.
+			if (state == Q_NEXT &&
+				!match_oid(entPhysical.oid, entPhysical.oidLen, vars->name, vars->name_length)) {
+				req = snmp_pdu_create(SNMP_MSG_GETBULK);
+				req->non_repeaters = 0;
+				req->max_repetitions = context->ifNumber ? context->ifNumber + 1 : SNMP_BULK_SIZE;
+				if (TRACE) {
+					char buf[512];
+					snprint_variable(buf, sizeof(buf), vars->name,
+							vars->name_length, vars);
+					TRACEPRINT("Continue Query \n    %s\n", buf);
+				}
+				snmp_add_null_var(req, vars->name, vars->name_length);
+			} else if (state != Q_ERROR) {
+				context->current_oid += 1;
+				req = prepare_snmp_query(context);
 			}
 
 			if (req) {
-				if (snmp_send(context->sess, req))
+				if (snmp_send(context->sess, req)) {
+					if (TRACE) {
+						print_timestamp(verbose_file?verbose_file:stderr);
+					}
+					TRACEPRINT("Send Query to %s\n", context->sess->peername);
 					return 1;
-				else {
+				} else {
 					snmp_perror("snmp_send");
 					snmp_free_pdu(req);
 					state = Q_ERROR;
@@ -2198,6 +2225,7 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 		cs->result = NULL;
 		cs->resultTail = NULL;
 		cs->populated_data = NULL;
+		cs->ifNumber = 0;
 
 		DBGPRINT("Init SNMP Session for %s\n", hosts[count].name);
 
@@ -2274,7 +2302,7 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 			sess.community_len = strlen((char*) sess.community);
 		}
 
-		sess.callback = asynch_response; /* default callback */
+		sess.callback = asynch_mixed_response; /* default callback */
 		sess.callback_magic = cs;
 		cs->sess = snmp_open(&sess);
 		if (sess.peername) {
@@ -2293,14 +2321,16 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 			continue;
 		}
 
-		req = snmp_pdu_create(cs->current_oid->type); /* send the first GET */
-		snmp_add_null_var(req, cs->current_oid->oid, cs->current_oid->oidLen);
+		req = prepare_snmp_query(cs);
 
 		if (snmp_send(cs->sess, req)) {
 			active_hosts++;
-			TRACEPRINT("Increase - ActiveHosts=%d\n", active_hosts);
-		}
-		else {
+			if (TRACE) {
+				print_timestamp(verbose_file?verbose_file:stderr);
+			}
+			TRACEPRINT("Send Query to %s\nIncrease - ActiveHosts=%d\n",
+				cs->sess->peername, active_hosts);
+		} else {
 			snmp_perror("snmp_send");
 			snmp_free_pdu(req);
 		}
@@ -2721,12 +2751,12 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 	// TODO: improve to maintain query results in a map rather than list. This
 	//       will break the dependency mentioned above. And may slightly improve
 	//       performance as well.
-	SNMPOid sw_oids[] = { lldpLocSysCapEnabled, lldpLocSysCapSupported,
+	SNMPOid sw_oids[] = { ifNumber, lldpLocSysCapEnabled, lldpLocSysCapSupported,
 			lldpLocChassisId, lldpLocManAddrIfId, lldpRemChassisId,
 			lldpRemPortIdSubtype, lldpRemPortId, lldpRemSysName,
 			lldpRemSysCapEnabled, lldpLocPortIdSubtype, lldpLocPortId,
-			sysName,
-			ifNumber, ifIndex, ifName, ifType, ifMTU, ifSpeed,
+			sysObjectID, sysName,
+			ifIndex, ifName, ifType, ifMTU, ifSpeed,
 			ifPhysAddress, ifOperStatus, ifInDiscards, ifInErrors,
 			ifInUnknownProtos, ifOutDiscards, ifOutErrors,
 			ipAdEntIfIndex,
@@ -2741,7 +2771,7 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 			ifMauAutoNegAdminStatus,
 			ifHCInOctets, ifHCInUcastPkts, ifHCInMulticastPkts, ifHCOutOctets,
 			ifHCOutUcastPkts, ifHCOutMulticastPkts, ifHighSpeed,
-			entPhysicalClass, entPhysicalDescr, entPhysicalVendorType,
+			entPhysicalClass, entPhysicalDescr,
 			entPhysicalHardwareRev, entPhysicalFirmwareRev,
 			entPhysicalSerialNum, entPhysicalMfgName, entPhysicalModelName,
 			{ NULL } };
@@ -2752,8 +2782,8 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 //			lldpLocChassisId, lldpLocManAddrIfId, lldpRemChassisId,
 //			lldpRemPortIdSubtype, lldpRemPortId, lldpRemSysName,
 //			lldpRemSysCapEnabled, lldpLocPortIdSubtype, lldpLocPortId,
-			sysName,
-			ifNumber, ifIndex, ifName, ifType, ifMTU, ifSpeed,
+			ifNumber, sysObjectID, sysName,
+			ifIndex, ifName, ifType, ifMTU, ifSpeed,
 			ifPhysAddress, ifOperStatus, ifInDiscards, ifInErrors,
 			ifInUnknownProtos, ifOutDiscards, ifOutErrors,
 			ipAdEntIfIndex,
@@ -2770,7 +2800,7 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 //			ifMauAutoNegAdminStatus,
 			ifHCInOctets, ifHCInUcastPkts, ifHCInMulticastPkts, ifHCOutOctets,
 			ifHCOutUcastPkts, ifHCOutMulticastPkts, ifHighSpeed,
-//			entPhysicalClass, entPhysicalDescr, entPhysicalVendorType,
+//			entPhysicalClass, entPhysicalDescr,
 //			entPhysicalHardwareRev, entPhysicalFirmwareRev,
 //			entPhysicalSerialNum, entPhysicalMfgName, entPhysicalModelName,
 			{ NULL } };

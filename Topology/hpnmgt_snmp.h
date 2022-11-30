@@ -46,13 +46,14 @@ struct context_s {
 	SNMPOid *current_oid; /* How far in our poll are we */
 	SNMPResult *result; /* A chain of query results in this session */
 	SNMPResult *resultTail; /* last element in the result chain */
+	int ifNumber; /* Number of interfaces */
 	snmp_device_data_process processor; /* function that processors the SNMPResult data */
 	void *populated_data; /* data generated from processor */
 	FabricData_t *fabric; /* the fabric data */
 };
 int active_hosts; /* hosts that we have not completed */
 typedef enum {
-	Q_NEXT, Q_END_NEXT, Q_WARN, Q_ERROR
+	Q_NONE, Q_NEXT, Q_END_NEXT, Q_WARN, Q_ERROR
 } QueryState;
 typedef enum {
 	P_UNKNOWN_ENTRY, P_SUCCESS, P_ERROR
@@ -77,6 +78,7 @@ SNMPOid lldpRemPortId = { ".1.0.8802.1.1.2.1.4.1.1.7", SNMP_MSG_GETNEXT };
 SNMPOid lldpRemSysName = { ".1.0.8802.1.1.2.1.4.1.1.9", SNMP_MSG_GETNEXT };
 SNMPOid lldpRemSysCapEnabled = { ".1.0.8802.1.1.2.1.4.1.1.12", SNMP_MSG_GETNEXT };
 
+SNMPOid sysObjectID = { ".1.3.6.1.2.1.1.2.0", SNMP_MSG_GET };
 SNMPOid sysName = { ".1.3.6.1.2.1.1.5.0", SNMP_MSG_GET };
 SNMPOid ifNumber = { ".1.3.6.1.2.1.2.1.0", SNMP_MSG_GET };
 SNMPOid ifIndex = { ".1.3.6.1.2.1.2.2.1.1", SNMP_MSG_GETNEXT };
@@ -125,9 +127,10 @@ SNMPOid ifHCOutUcastPkts = {".1.3.6.1.2.1.31.1.1.1.11", SNMP_MSG_GETNEXT};
 SNMPOid ifHCOutMulticastPkts = {".1.3.6.1.2.1.31.1.1.1.12", SNMP_MSG_GETNEXT};
 SNMPOid ifHighSpeed = { ".1.3.6.1.2.1.31.1.1.1.15", SNMP_MSG_GETNEXT };
 
+SNMPOid entPhysical = { ".1.3.6.1.2.1.47.1.1", SNMP_MSG_GETNEXT };
 SNMPOid entPhysicalDescr = { ".1.3.6.1.2.1.47.1.1.1.1.2", SNMP_MSG_GETNEXT };
-SNMPOid entPhysicalVendorType =
-		{ ".1.3.6.1.2.1.47.1.1.1.1.3", SNMP_MSG_GETNEXT };
+//SNMPOid entPhysicalVendorType =
+//		{ ".1.3.6.1.2.1.47.1.1.1.1.3", SNMP_MSG_GETNEXT };
 SNMPOid entPhysicalClass = { ".1.3.6.1.2.1.47.1.1.1.1.5", SNMP_MSG_GETNEXT };
 SNMPOid entPhysicalHardwareRev =
 		{ ".1.3.6.1.2.1.47.1.1.1.1.8", SNMP_MSG_GETNEXT };
@@ -144,7 +147,7 @@ SNMPOid *LLDPOids[] = { &lldpLocChassisId, &lldpLocSysName,
 	&lldpLocPortEntry, &lldpLocPortIdSubtype,
 	&lldpLocPortId, &lldpLocPortDesc, &lldpLocManAddrIfId, &lldpRemEntry,
 	&lldpRemChassisId, &lldpRemPortIdSubtype, &lldpRemPortId, &lldpRemSysName,
-	&lldpRemSysCapEnabled, &sysName, &ifNumber, &ifIndex, &ifDescr, &ifType,
+	&lldpRemSysCapEnabled, &sysObjectID, &sysName, &ifNumber, &ifIndex, &ifDescr, &ifType,
 	&ifMTU, &ifSpeed, &ifPhysAddress, &ifOperStatus, &ifInDiscards, &ifInErrors,
 	&ifInUnknownProtos, &ifOutDiscards, &ifOutErrors, &ipAdEntIfIndex,
 	&dot3StatsSingleCollisionFrames, &dot3StatsMultipleCollisionFrames,
@@ -157,8 +160,8 @@ SNMPOid *LLDPOids[] = { &lldpLocChassisId, &lldpLocSysName,
 	&ifMauStatus, &ifMauMediaAvailable, &ifMauTypeListBits,
 	&ifMauAutoNegAdminStatus, &ifName, &ifHCInOctets, &ifHCInUcastPkts,
 	&ifHCInMulticastPkts, &ifHCOutOctets, &ifHCOutUcastPkts,
-	&ifHCOutMulticastPkts, &ifHighSpeed, &entPhysicalClass,
-	&entPhysicalDescr, &entPhysicalVendorType, &entPhysicalHardwareRev,
+	&ifHCOutMulticastPkts, &ifHighSpeed, &entPhysical,
+	&entPhysicalClass, &entPhysicalDescr, &entPhysicalHardwareRev,
 	&entPhysicalFirmwareRev, &entPhysicalSerialNum,
 	&entPhysicalMfgName, &entPhysicalModelName,
 	NULL};

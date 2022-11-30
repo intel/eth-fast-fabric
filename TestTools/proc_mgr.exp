@@ -546,7 +546,7 @@ proc wait_process_list { pid_list {fd_arr "" }} {
 			set fd_list($pid) "0"
 		}
 
-	if { ! [ tools_check_process_results ] } {
+	if { ! $killed && ! [ tools_check_process_results ] } {
 		# we had a failure which will propigate up
 		# stop other processes
 	    	log_message "Child failure detected: killing $pid_list"
@@ -564,10 +564,10 @@ proc wait_process_list { pid_list {fd_arr "" }} {
 			}
 		}
 
-		catch {exec kill -s TERM $pid_list }
+		catch { exec bash -c "kill -s TERM $pid_list" }
 		sleep 2
 		log_message "exec: kill -s KILL $pid_list"
-		catch {exec kill -s KILL $pid_list }
+		catch { exec bash -c "kill -s KILL $pid_list" }
 		set killed 1
 	}
     }

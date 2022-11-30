@@ -154,11 +154,8 @@ proc run_ethudstress {server_host server_port server_ip senders} {
 	global stress_tool
 	global host_port_ip
 
-	target_root_sh $server_host
-	unix_cmd 30 "" "killall $stress_tool"
-	target_root_sh_exit
-
 	set rec_num_conns [expr $num_conns * [llength $senders]]
+	set conn_timeout [ calc_timeout $conn_timeout_s ]
 	set exp_timeout [expr $conn_timeout_s + 10]
 	set app_count_file [get_app_lost_count_file $server_host $server_port]
 	array set counters {}
@@ -167,21 +164,22 @@ proc run_ethudstress {server_host server_port server_ip senders} {
 	init_subprocesses
 	subprocess {
 		target_root_sh $server_host
-		send_unix_cmd "$stress_tool -b $server_ip -c $rec_num_conns -C $msg_count -S $msg_size -T $conn_timeout_s | tee >(grep ' Lost: '|cut -d' ' -f4-5|tr -d ' '> $app_count_file)"
+		send_unix_cmd "$stress_tool -b $server_ip -c $rec_num_conns -C $msg_count -S $msg_size -T $conn_timeout | tee >(grep ' Lost: '|cut -d' ' -f4-5|tr -d ' '> $app_count_file)"
 		expect_list $exp_timeout {"Test complete"} {"Error"}
 		target_root_sh_exit
 	}
 
-	after 1000
+	sleep [ calc_timeout 2 ]
 	foreach client $senders {
 		set step [expr $num_conns / [llength $host_port_ip($client)]]
 		set conns [expr ($num_conns % [llength $host_port_ip($client)]) + $step]
 		foreach port_ip $host_port_ip($client) {
 			set port_ip [split $port_ip ":"]
+			# stagger ssh against the same host to avoid ssh eof errors
+			after [ calc_timeout 100 ]
 			subprocess {
 				target_root_sh $client
-				after 1000
-				send_unix_cmd "$stress_tool -s $server_ip -b [lindex $port_ip 1] -c $conns -C $msg_count -S $msg_size -T $conn_timeout_s"
+				send_unix_cmd "$stress_tool -s $server_ip -b [lindex $port_ip 1] -c $conns -C $msg_count -S $msg_size -T $conn_timeout"
 				expect_list $exp_timeout {"Test complete"} {"Error"}
 				target_root_sh_exit
 			}
@@ -191,7 +189,7 @@ proc run_ethudstress {server_host server_port server_ip senders} {
 	wait_subprocesses
 
 # We sleep for some time in order to capture all the dropped packets
-# If we count them immediate, we may miss some packets
+# If we count them immediately, we may miss some packets
 
 	sleep [ calc_timeout 2 ]
 
@@ -221,17 +219,15 @@ proc run_ethudstress {server_host server_port server_ip senders} {
 		append err_msg_body "Has no Tx or Rx pause frames. "
 	}
 	if { $has_dropped } {
-		append err_msg_body "Has dropped packages."
+		append err_msg_body "Has dropped packets."
 	}
 	if { $app_lost_pkts && $err_msg_body eq ""} {
-		append err_msg_body "App lost packages, senders may have wrong PFC."
+		append err_msg_body "App lost packets, senders may have wrong PFC settings."
 	}
 	if {[string compare $err_msg_body ""]} {
 		set err_msg "Receiver $server_host:$server_port - "
 		append err_msg $err_msg_body
-		error $err_msg \
-		      "Receiver $server_host:$server_port shall generate pause frames and have no dropped packages" \
-		      1
+		fail_test $err_msg
 	}
 }
 
@@ -263,7 +259,16 @@ File: /usr/lib/eth-tools/pfctest.exp" case_setup case_cleanup {
 		upvar senders senders
 		upvar punchlist punchlist
 
-		foreach port_ip $host_port_ip($receiver) {
+		parallel port_ip $host_port_ip($receiver) {
+			if { [ test_parallel ] } {
+				# stagger parallel start by 1/2 second so we get
+				# good overlap of the sleeps per test_item but
+				# limit overlap of actual stress test (which is
+				# typically 1/10 second) so that we get good
+				# oversubscription of receiver
+				set index [ lsearch -exact $host_port_ip($receiver) $port_ip ]
+				after [ calc_timeout [ expr ( $index % [ test_get_env TEST_MAX_PARALLEL ] ) * 500  ] ]
+			}
                         set port_ip [split $port_ip ":"]
                         set port [lindex $port_ip 0]
                         set ip [lindex $port_ip 1]
@@ -309,6 +314,7 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 	global min_msg_size
 	global driver
 	global host_port_ip
+	global stress_tool
 
 	set hrange {}
 	set hindex -1
@@ -324,6 +330,7 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 	parallel host [array names HOST_PORTS]  {
 		set ports $HOST_PORTS($host)
 		target_root_sh $host
+		unix_cmd 30 "" "killall $stress_tool"
 		if {"$ports" == ""} {
 			send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
 			set out [expect_list 20 {"(?n)^PORTS:.*"}]
@@ -404,7 +411,7 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 
 	# run ethudstress between one host and its next 2 hosts in host list
 	# to ensure the first host can generate pause frames, and the other two
-	# hosts can respond on pause frames (come from switch), so no pkg drop.
+	# hosts can respond on pause frames (come from switch), so no pkt drop.
 	# For host1,...,hostN, we test among (host1, host2, hosts3),
 	# (host2, host3, host4), ..., (hostN-2, hostN-1, hostN), and
 	# (hostN-1, hostN, host1), (hostN, host1, host2)
