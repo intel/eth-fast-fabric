@@ -47,7 +47,7 @@ readonly BASENAME="$(basename $0)"
 Usage_full()
 {
 	echo "Usage: ${BASENAME} [-b|-e] [-s] [-d dir] [-c file] [-T topology_inputs]" >&2
-	echo "                    [-E file] [-p planes]">&2
+	echo "                    [-E file] [-p planes] [-f host_files]">&2
 #	echo "                    [-F switchesfile] [-H 'switches']">&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
@@ -63,6 +63,10 @@ Usage_full()
 	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
 	echo "   -p planes - Fabric planes separated by space. Default is" >&2
 	echo "            the first enabled plane defined in config file" >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
+	echo "            the HostsFiles defined in Mgt config file for the" >&2
+	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
+	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
 	echo "   -T topology_inputs - name of topology input filenames separated by space." >&2
 	echo "            See ethreport for more information on topology_input files" >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
@@ -79,6 +83,7 @@ Usage_full()
 #	echo "                       unused if -b option supplied" >&2
 	echo "for example:" >&2
 	echo "   ${BASENAME}" >&2
+	echo "   ${BASENAME} -p 'p1 p2' -f 'hosts1 DEFAULT'" >&2
 	exit 0
 }
 
@@ -111,7 +116,7 @@ opts=""
 configfile=$CONFIG_DIR/$FF_PRD_NAME/ethmon.conf
 status=ok
 #while getopts besd:c:p:t:T:H:F: param
-while getopts besd:c:E:p:T: param
+while getopts besd:c:E:p:f:T: param
 do
 	case $param in
 	b)	opts="$opts -b"; getbaseline=y;;
@@ -121,6 +126,7 @@ do
 	c)	configfile="$OPTARG";;
 	E)	opts="$opts -E '$OPTARG'";;
 	p)	opts="$opts -p '$OPTARG'";;
+	f)	opts="$opts -f '$OPTARG'";;
 	T)	opts="$opts -T '$OPTARG'";;
 #	H)	export SWITCHES="$OPTARG";;
 #	F)	export SWITCHES_FILE="$OPTARG";;

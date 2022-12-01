@@ -51,7 +51,7 @@ readonly BASENAME="$(basename $0)"
 
 Usage_basic()
 {
-	echo "Usage: $BASENAME [-v] [-q] [-E file] [-p planes] [-X snapshot_input]" >&2
+	echo "Usage: $BASENAME [-v] [-q] [-E file] [-p planes] [-f host_files] [-X snapshot_input]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -61,11 +61,16 @@ Usage_basic()
 	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
 	echo "   -p planes - Fabric planes separated by space. Default is" >&2
 	echo "            the first enabled plane defined in config file." >&2
-	echo "            Value 'ALL' will use all enabled planes." >&2
+	echo "            Value 'ALL' will use all enabled planes" >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
+	echo "            the HostsFiles defined in Mgt config file for the" >&2
+	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
+	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
 	echo "   -X snapshot_input - generate report using data in snapshot_input" >&2
 	echo "for example:" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -X snapshot.xml" >&2
+	echo "   $BASENAME -p 'p1 p2' -f 'hosts1 DEFAULT'" >&2
 }
 
 Usage_ff()
@@ -89,13 +94,15 @@ opts=""
 mgt_file=$CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml
 planes=
 snapshot=
-while getopts vqE:p:X: param
+hfiles=
+while getopts vqE:p:f:X: param
 do
 	case $param in
 	v) opts="$opts -v";;
 	q) opts="$opts -q";;
 	E) mgt_file="$OPTARG";;
 	p) planes="$OPTARG";;
+	f) hfiles="$OPTARG";;
 	X) snapshot="$OPTARG";;
 	?) Usage_ff;;
 	esac
@@ -111,8 +118,13 @@ if [[ -n $snapshot && ! -e $snapshot ]]; then
 	Usage_ff
 fi
 
-if [[ -n $snapshot && -n $planes ]]; then
-	echo "$BASENAME: -p ignored for -X"
+if [[ -n $snapshot ]]; then
+	if [[ -n $planes ]]; then
+		echo "$BASENAME: -p ignored for -X"
+	fi
+	if [[ -n $hfiles ]]; then
+		echo "$BASENAME: -f ignored for -X"
+	fi
 fi
 
 status=ok
@@ -130,13 +142,29 @@ else
 	if [[ "$planes" = "ALL" ]]; then
 		planes="$(/usr/sbin/ethxmlextract -H -e Plane.Name -X "$mgt_file")"
 	fi
-	for plane in $planes; do
-		echo "Fabric Plane $plane Information:"
-		if ! ethreport $opts -E "$mgt_file" -p "$plane" -o fabricinfo; then
-			status=bad
+	if [[ -z $hfiles ]]; then
+		for plane in $planes; do
+			echo "Fabric Plane $plane Information:"
+			if ! ethreport $opts -E "$mgt_file" -p "$plane" -o fabricinfo; then
+				status=bad
+			fi
+			print_split
+		done
+	else
+		a_planes=($planes)
+		a_hfiles=($hfiles)
+		if [[ ${#a_planes[@]} -ne ${#a_hfiles[@]} ]]; then
+			echo "Error: Number of hosts files (${#a_hfiles[@]}) doesn't match number of planes (${#a_planes[@]})!" >&2
+			exit 1
 		fi
-		print_split
-	done
+		for i in "${!a_planes[@]}"; do
+			echo "Fabric Plane ${a_planes[i]} Information:"
+			if ! ethreport $opts -E "$mgt_file" -p "${a_planes[i]}" -f "${a_hfiles[i]}" -o fabricinfo; then
+				status=bad
+			fi
+			print_split
+		done
+	fi
 fi
 
 if [ "$status" != "ok" ]; then

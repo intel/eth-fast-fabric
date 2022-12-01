@@ -140,12 +140,12 @@ get_node_ports()
 	echo "${LC_NODE_PORTS[${node,,}]}"
 }
 
-# Find the irdma devices for a given node.
-get_node_irdmas()
+# Find the irdma devices for given ports.
+get_irdmas()
 {
-	node=$1
+	ports=$1
 	devs=
-	for port in ${LC_NODE_PORTS[${node,,}]}
+	for port in ${ports}
 	do
 		dev=$(sck_to_irdma $port)
 		if [ -n "$dev" ]
@@ -203,7 +203,8 @@ check_host_args()
 			Usage
 		fi
 	else
-		CONTENTS="$HOSTS"
+		CONTENTS="${HOSTS// /$'\n'}"
+		HOSTS=`extract_device_name "$1" "$CONTENTS"`
 	fi
 	extract_node_ports "$CONTENTS"
 }

@@ -40,7 +40,7 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-if [ -z "$1" ]
+if [ -z "$1" -o x"$1" = x"-h" -o x"$1" = x"--help" ]
 then 
 	echo " Usage: run_hpl number_processes"
 	echo " For example: ./run_hpl2 2"

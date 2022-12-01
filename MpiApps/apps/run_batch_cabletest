@@ -49,6 +49,7 @@ Usage() {
 	echo "Usage: ./run_batch_cabletest [-v] [-n numprocs] [duration [minmsg [maxmsg]]]" >&2
 	echo "           or" >&2
 	echo "       ./run_batch_cabletest --help" >&2
+	echo >&2
 	echo "    -v - verbose mode.  Additional output generated to nohup files" >&2
 	echo "    -n numprocs - number of processes per host (default 3)" >&2
 	echo "    duration - how many minutes to run.  Can be 'infinite'.  Default is 60" >&2
@@ -73,7 +74,7 @@ Usage() {
 	exit 2
 }
 
-if [ x"$1" = x"--help" ]
+if [ x"$1" = x"--help" -o x"$1" = x"-h" ]
 then
 	Usage
 fi

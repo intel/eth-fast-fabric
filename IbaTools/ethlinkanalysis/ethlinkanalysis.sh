@@ -56,7 +56,7 @@ ETHXMLEXTRACT="/usr/sbin/ethxmlextract"
 Usage_full()
 {
 	echo "Usage: $BASENAME [-U] [-T topology_inputs] [-X snapshot_input]" >&2
-	echo "                  [-x snapshot_suffix] [-c file] [-E file] [-p planes] reports ..." >&2
+	echo "                  [-x snapshot_suffix] [-c file] [-E file] [-p planes] [-f host_files] reports ..." >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -75,7 +75,11 @@ Usage_full()
 	echo "             default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
 	echo "   -p planes - Fabric planes separated by space. Default is" >&2
 	echo "             the first enabled plane defined in config file." >&2
-	echo "             Value 'ALL' will use all enabled planes." >&2
+	echo "             Value 'ALL' will use all enabled planes" >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
+	echo "            the HostsFiles defined in Mgt config file for the" >&2
+	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
+	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
 	echo "    reports - The following reports are supported" >&2
 	echo "         errors - link error analysis" >&2
 	echo "         slowlinks - links running slower than expected" >&2
@@ -101,6 +105,7 @@ Usage_full()
 	echo "example:">&2
 	echo "   $BASENAME errors" >&2
 	echo "   $BASENAME slowlinks" >&2
+	echo "   $BASENAME -p 'p1 p2' -f 'hosts1 DEFAULT' errors" >&2
 	exit 0
 }
 
@@ -387,9 +392,10 @@ config_file="$CONFIG_DIR/$FF_PRD_NAME/ethmon.si.conf"
 mgt_file="$CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml"
 topology_inputs=
 planes=
+hfiles=
 status=0
 
-while getopts UT:X:x:c:E:p: param
+while getopts UT:X:x:c:E:p:f: param
 do
 	case $param in
 	U)	skip_unexpected=y;;
@@ -399,6 +405,7 @@ do
 	c)	config_file="$OPTARG";;
 	E)	mgt_file="$OPTARG";;
 	p)	planes="$OPTARG";;
+	f)	hfiles="$OPTARG";;
 	?)
 		Usage;;
 	esac
@@ -467,6 +474,10 @@ then
 	if [[ -n $planes ]]
 	then
 		echo "$BASENAME: -p ignored for -X" >&2
+	fi
+	if [[ -n $hfiles ]]
+	then
+		echo "$BASENAME: -f ignored for -X" >&2
 	fi
 	snapshot_plane="$($ETHXMLEXTRACT -H -e Snapshot:plane* -X "$snapshot_input")"
 	if [ -z "$snapshot_plane" ]
@@ -552,6 +563,7 @@ do_analysis()
 {
 	plane_name="${1%;*}"
 	top_file="${1#*;}"
+	hfile="$2"
 
 	topt=""
 	if [ "$top_file" != "" ]
@@ -570,11 +582,17 @@ do_analysis()
 		fi
 		# generate a snapshot per fabric then analyze
 		ETHREPORT="/usr/sbin/ethreport -E $mgt_file"
+		if [[ -n "$hfile" ]]
+		then
+			cmd="$ETHREPORT -f $hfile"
+		else
+			cmd="$ETHREPORT"
+		fi
 		if [ x"$plane_name" != x ]
 		then
-			$ETHREPORT -p $plane_name $snapshot_opts -o snapshot > $snapshot_input
+			$cmd -p $plane_name $snapshot_opts -o snapshot > $snapshot_input
 		else
-			$ETHREPORT $snapshot_opts -o snapshot > $snapshot_input
+			$cmd $snapshot_opts -o snapshot > $snapshot_input
 		fi
 		ETHREPORT="$ETHREPORT -q"
 	fi
@@ -616,15 +634,30 @@ do_analysis()
 	done
 }
 
-first_plane=1
-for plane in $planes
+a_planes=($planes)
+a_hfiles=($hfiles)
+hfile=""
+if [[ -n $hfiles && ${#a_planes[@]} -ne ${#a_hfiles[@]} ]]
+then
+	echo "$BASENAME: Error: Number of hosts files (${#a_hfiles[@]}) doesn't match number of planes (${#a_planes[@]})!" >&2
+	exit 1
+fi
+for i in "${!a_planes[@]}"
 do
 	plane_count=$((plane_count + 1))
-	if [[ $first_plane -eq 1 ]]
+	if [[ $i -ne 0 ]]
 	then
-		first_plane=0
-	else
 		echo ""
+	fi
+	plane=${a_planes[i]}
+	if [[ -n $hfiles ]]
+	then
+		if [[ "${a_hfiles[i]}" = "DEFAULT" ]]
+		then
+			hfile=""
+		else
+			hfile=${a_hfiles[i]}
+		fi
 	fi
 	id="${plane%;*}"
 	available_plane="$(echo "$available_planes" | grep "^$id;" 2>/dev/null)"
@@ -638,10 +671,10 @@ do
 	then
 		# happens on -p used without -X/-T that the planes has no topology file info
 		# so we use what is available in conf file
-		do_analysis "$available_plane"
+		do_analysis "$available_plane" "$hfile"
 	else
 		# happens on -X/-T that we already figured out topology file and put it in planes
-		do_analysis "$plane"
+		do_analysis "$plane" "$hfile"
 	fi
 done
 

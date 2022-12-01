@@ -50,7 +50,7 @@ ETHXMLEXTRACT="/usr/sbin/ethxmlextract"
 Usage_full()
 {
 	echo "Usage: $BASENAME [-b|-e] [-s] [-d dir] [-c file]" >&2
-	echo "                   [-E file] [-p planes] [-T topology_inputs]" >&2
+	echo "                   [-E file] [-p planes] [-T topology_inputs] [-f host_files]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -65,13 +65,18 @@ Usage_full()
 	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
 	echo "   -p planes - Fabric planes separated by space. Default is" >&2
 	echo "            the first enabled plane defined in config file." >&2
-	echo "            Value 'ALL' will use all enabled planes." >&2
+	echo "            Value 'ALL' will use all enabled planes" >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
+	echo "            the HostsFiles defined in Mgt config file for the" >&2
+	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
+	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
 	echo "   -T topology_inputs - name of topology input filenames separated by space." >&2
 	echo "            See ethreport for more information on topology_input files" >&2
 	echo " Environment:" >&2
 	echo "   FF_ANALYSIS_DIR - top level directory for baselines and failed health checks" >&2
 	echo "for example:" >&2
 	echo "   $BASENAME" >&2
+	echo "   $BASENAME -p 'p1 p2' -f 'hosts1 DEFAULT'" >&2
 	exit 0
 }
 
@@ -100,9 +105,10 @@ savehistory=n
 configfile=$CONFIG_DIR/$FF_PRD_NAME/ethmon.conf
 mgt_file=$CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml
 planes=
+hfiles=
 topology_inputs=
 status=ok
-while getopts besd:c:E:p:T: param
+while getopts besd:c:E:p:f:T: param
 do
 	case $param in
 	b)	getbaseline=y;;
@@ -112,6 +118,7 @@ do
 	c)	configfile="$OPTARG";;
 	E)	mgt_file="$OPTARG";;
 	p)	planes="$OPTARG";;
+	f)	hfiles="$OPTARG";;
 	T)	topology_inputs="$OPTARG";;
 	?)	Usage;;
 	esac
@@ -188,6 +195,7 @@ do_analysis()
 {
 	plane_name="${1%;*}"
 	top_file="${1#*;}"
+	hfile="$2"
 	baseline=$baseline_dir/fabric.$plane_name
 	latest=$latest_dir/fabric.$plane_name
 
@@ -197,6 +205,10 @@ do_analysis()
 		topt="-T $top_file"
 	fi
 	ETHREPORT="/usr/sbin/ethreport -E $mgt_file -p $plane_name"
+	if [[ -n $hfile ]]
+	then
+		ETHREPORT="$ETHREPORT -f $hfile"
+	fi
 
 	if [[ $getbaseline == n  && $healthonly == n ]]
 	then
@@ -352,8 +364,26 @@ do_analysis()
 	fi
 }
 
-for plane in $planes
+a_planes=($planes)
+a_hfiles=($hfiles)
+hfile=""
+if [[ -n $hfiles && ${#a_planes[@]} -ne ${#a_hfiles[@]} ]]
+then
+	echo "$BASENAME: Error: Number of hosts files (${#a_hfiles[@]}) doesn't match number of planes (${#a_planes[@]})!" >&2
+	exit 1
+fi
+for i in "${!a_planes[@]}"
 do
+	plane=${a_planes[i]}
+	if [[ -n $hfiles ]]
+	then
+		if [[ "${a_hfiles[i]}" = "DEFAULT" ]]
+		then
+			hfile=""
+		else
+			hfile=${a_hfiles[i]}
+		fi
+	fi
 	id="${plane%;*}"
 	available_fid="$(echo "$available_fids" | grep "^$id;" 2>/dev/null)"
 	if [[ -z $available_fid ]]
@@ -365,10 +395,10 @@ do
 	if [[ "$id" = "$plane" ]]
 	then
 		# no user specified topology file. use what we find in conf file
-		do_analysis "$available_fid"
+		do_analysis "$available_fid" "$hfile"
 	else
 		# use user specified topology file
-		do_analysis "$plane"
+		do_analysis "$plane" "$hfile"
 	fi
 done
 

@@ -139,8 +139,21 @@ File: /usr/lib/eth-tools/mpiperf.exp" suite_setup noop {
 
 	set mpitype [determine_mpitype "$env(FF_MPI_APPS_DIR)"]
 
+	# figure out ports info
+	set first_irdmas ""
+	test_case "setup" "mpiperf test setup" "Prepare for mpiperf tests File: /usr/lib/eth-tools/mpiperf.exp" case_setup case_cleanup {
+		upvar first_irdmas first_irdmas
+		set ret [get_irdmas]
+		set first_irdmas [lindex $ret 0]
+		if { "$first_irdmas" == "" } {
+			fail_test "[lindex $ret 1]"
+		}
+	}
+
 	foreach pair $host_pairs {
-		test_case_run_mpi_app_port $mpitype default localhost $pair $env(CFG_MPI_DEV) 60 "$env(FF_MPI_APPS_DIR)/latency" "latency" "100000 0" 1
-		test_case_run_mpi_app_port $mpitype default localhost $pair $env(CFG_MPI_DEV) 60 "$env(FF_MPI_APPS_DIR)/bandwidth" "bw" "100 1000000" 1
+		foreach port $first_irdmas {
+			test_case_run_mpi_app_port $mpitype default localhost $pair $port 0 60 "$env(FF_MPI_APPS_DIR)/latency" "latency" "100000 0" 1
+			test_case_run_mpi_app_port $mpitype default localhost $pair $port 0 60 "$env(FF_MPI_APPS_DIR)/bandwidth" "bw" "100 1000000" 1
+		}
 	}
 }

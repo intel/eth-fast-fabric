@@ -123,12 +123,18 @@ shift $((OPTIND -1))
 
 check_host_args $BASENAME
 
-first_irdmas=$(get_node_irdmas $(echo "$HOSTS" | head -n 1))
+first_node=$(echo "$HOSTS" | head -n 1 | cut -d ' ' -f 1)
+first_ports=$(get_node_ports "$first_node")
+if [ -z "$first_ports" ]; then
+	first_ports=$(get_ifs_by_driver ice)
+fi
+first_irdmas=$(get_irdmas "$first_ports")
 if [ -n "$first_irdmas" ]; then
 	export CFG_MPI_DEV="+(${first_irdmas// /|})"
 else
 	export CFG_MPI_DEV=
 fi
+export CFG_MPI_MULTIRAIL=1
 
 # HOSTS now lists all the hosts, pass it along to the commands below via env
 export HOSTS
@@ -149,7 +155,7 @@ start()
 	fi
 	ff_var_to_stdout "$HOSTS" > $tempfile
 	cd $FF_MPI_APPS_DIR
-	MPI_HOSTS=$tempfile PSM3_MUTIRAIL=1 ./run_batch_cabletest -n $numprocs infinite
+	MPI_HOSTS=$tempfile ./run_batch_cabletest -n $numprocs infinite
 }
 
 stop()
