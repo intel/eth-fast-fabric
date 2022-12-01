@@ -74,6 +74,7 @@ my @Components_rhel83 = ( @EthAllComponents );
 my @Components_rhel84 = ( @EthAllComponents );
 my @Components_rhel85 = ( @EthAllComponents );
 my @Components_rhel86 = ( @EthAllComponents );
+my @Components_rhel9 = ( @EthAllComponents );
 
 @Components = ( );
 
@@ -548,6 +549,12 @@ sub init_components
 						);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
 		@Components = ( @Components_rhel86 );
+		@SubComponents = ( @SubComponents_newer );
+		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
+						%eth_module_rhel_comp_info,
+						);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
+		@Components = ( @Components_rhel9 );
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
 						%eth_module_rhel_comp_info,

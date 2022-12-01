@@ -490,12 +490,19 @@ export CFG_HOSTS="$HOSTS"
 cfg_host_ports=""
 for host in $HOSTS; do
 	if [ -z "$cfg_host_ports" ]; then
-		cfg_host_ports="${host}:$(get_node_ports "$host")"
+		export CFG_FIRST_PORTS=$(get_node_ports "$host")
+		export CFG_FIRST_IRDMAS=$(get_node_irdmas "$host")
+		cfg_host_ports="${host}:$CFG_FIRST_PORTS"
 	else
 		cfg_host_ports="${cfg_host_ports};${host}:$(get_node_ports "$host")"
 	fi
 done
 export CFG_HOST_PORTS="${cfg_host_ports}"
+if [ -n "$CFG_FIRST_IRDMAS" ]; then
+	export CFG_MPI_DEV="+(${CFG_FIRST_IRDMAS// /|})"
+else
+	export CFG_MPI_DEV=
+fi
 
 export CFG_MPI_PROCESSES="$HOSTS"
 #export CFG_PERF_PAIRS=TBD

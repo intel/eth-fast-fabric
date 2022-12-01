@@ -59,7 +59,8 @@ export MPI_CMD_ARGS=
 # These variables are passed to the Intel mpirun command.
 export I_MPI_FABRICS=shm:ofi
 
-# Replace I_MPI_OFI_PROVIDER with FI_PROVIDER for v2021.6.0
+# For Intel MPI v2021.6.0 it's recommended to use FI_PROVIDER
+# for other releases I_MPI_OFI_PROVIDER is recommended
 #export I_MPI_OFI_PROVIDER=psm3
 export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv FI_PROVIDER=psm3"
 

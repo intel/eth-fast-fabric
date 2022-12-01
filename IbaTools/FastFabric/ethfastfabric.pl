@@ -71,8 +71,11 @@ my $TOOLS_DIR;
 # where to install libraries
 my $LIB_DIR;
 my $USRLOCALLIB_DIR;
+my $SAMPLE_DIR = "/usr/share/eth-tools/samples/";
 my $OWNER;
 my $GROUP;
+my $PLANE;
+my $NUM_ENABLED_PLANES;
 
 $SYS_CONFIG_DIR="/etc";
 $OPA_CONFIG_DIR = "$SYS_CONFIG_DIR/eth-tools";
@@ -85,6 +88,8 @@ if ( "$TOOLS_DIR" eq "" ) {
 	$TOOLS_DIR = "/usr/lib/eth-tools";
 }
 $FF_CONF_FILE = "$OPA_CONFIG_DIR/ethfastfabric.conf";
+my $FF_MGT_CONF = "$OPA_CONFIG_DIR/mgt_config.xml";
+my $TMP_MGT_CONF = "/tmp/mgt_config_$$.xml";
 $OWNER = "root";
 $GROUP = "root";
 
@@ -104,7 +109,7 @@ my %ComponentName = (
 
 my @FabricSetupSteps;
 	# Names of fabric setup steps
-@FabricSetupSteps = ( "config", "findgood", "setupssh",
+@FabricSetupSteps = ( "mgtconf","config", "findgood", "setupssh",
 				"copyhosts", "showuname", "install",
 				"configsnmp", "buildapps", "reboot", "refreshssh",
 				"rebuildmpi", "ethcmdall", "copyall", "viewres"
@@ -112,7 +117,8 @@ my @FabricSetupSteps;
 
 	# full name of steps for prompts
 my %FabricSetupStepsName = (
-				"config" => "Edit Config and Select/Edit Host File",
+				"mgtconf" => "Edit Management Config File",
+				"config" => "Edit FF Config and Select/Edit Host File",
 				"findgood" => "Verify Hosts Pingable",
 				"setupssh" => "Set Up Password-Less SSH/SCP",
 				"copyhosts" => "Copy /etc/hosts to All Hosts",
@@ -129,7 +135,8 @@ my %FabricSetupStepsName = (
 				);
 # what to output before each menu item as a delimiter/marker
 my %FabricSetupStepsMenuDelimiter = (
-				"config" => "setup",
+				"mgtconf" => "setup",
+				"config" => "",
 				"findgood" => "",
 				"setupssh" => "",
 				"copyhosts" => "",
@@ -147,14 +154,15 @@ my %FabricSetupStepsMenuDelimiter = (
 	# Names of fabric admin steps
 my @FabricAdminSteps;
 # ethpingall replaced with findgood
-@FabricAdminSteps = ( "config", "fabric_info", "findgood", "singlehost",
+@FabricAdminSteps = ( "plane", "config", "fabric_info", "findgood", "singlehost",
 				"showallports", "rping", "pfctest",
 				"refreshssh", "mpiperf", "health", "cabletest", "ethcaptureall",
 				"ethcmdall", "viewres"
 					);
 	# full name of steps for prompts
 my %FabricAdminStepsName = (
-				"config" => "Edit Config and Select/Edit Host File",
+				"plane" => "Edit Management Config and Select Plane",
+				"config" => "Edit FF Config and Select/Edit Host File",
 				"fabric_info" => "Summary of Fabric Components",
 				"findgood" => "Verify Hosts Are Pingable, SSHable, and Active",
 				"singlehost" => "Perform Single Host Verification",
@@ -171,6 +179,7 @@ my %FabricAdminStepsName = (
 				);
 # what to output before each menu item as a delimiter/marker
 my %FabricAdminStepsMenuDelimiter = (
+				"plane" => "plane",
 				"config" => "validation",
 				"fabric_info" => "",
 				#"ethpingall" => "",
@@ -205,6 +214,7 @@ my $FabricSwitchesFile="$OPA_CONFIG_DIR/switches";
 if ( "$ENV{SWITCHES_FILE}" ne "" ) {
 	$FabricSwitchesFile="$ENV{SWITCHES_FILE}";
 }
+my $PrevFabricSwitchesFile=$FabricSwitchesFile;
 my $Editor="$ENV{EDITOR}";
 if ( "$Editor" eq "" ) {
 	$Editor="vi";
@@ -212,6 +222,7 @@ if ( "$Editor" eq "" ) {
 
 sub HitKeyCont;
 sub remove_whitespace($);
+sub fabricadmin_plane();
 
 sub set_libdir
 {
@@ -277,6 +288,8 @@ sub print_delimiter
 		print("Admin:\n");
 	} elsif ("$delimiter" eq "setup" ) {
 		print("Setup:\n");
+	} elsif ("$delimiter" eq "plane" ) {
+		print("Plane:\n");
 	} elsif ("$delimiter" eq "validation" ) {
 		print("Validation:\n");
 	} elsif ("$delimiter" eq "review" ) {
@@ -643,6 +656,41 @@ sub check_user
 	}
 }
 
+sub add_mgt_plane($$)
+{
+	my $conf = "$_[0]";
+	my $plane = "$_[1]";
+	if (-e $conf) {
+		system("sed -i 's/<\\\/Config>//' $conf");
+		open(FILE, ">>", "$conf") || die "Unable to open file $conf";
+		print FILE "	<Plane>\n";
+		print FILE "		<Name>$plane</Name>\n";
+		print FILE "		<Enable>1</Enable>\n";
+		print FILE "		<HostsFile>$FabricAdminHostsFile</HostsFile>\n";
+		print FILE "		<SwitchesFile>$FabricSwitchesFile</SwitchesFile>\n";
+		print FILE "	</Plane>\n";
+		print FILE "</Config>\n";
+		close(FILE);
+	}
+	print LOG_FD "Added plane '$plane' into $conf\n";
+}
+
+sub setup_mgt_conf
+{
+	if (! -e $TMP_MGT_CONF) {
+		if ( ! -e "$BIN_DIR/ethxmlfilter" ) {
+			print "preparing mgt_config.xml...\n";
+			print "ethxmlfilter requires $ComponentName{oftools} be installed\n";
+			HitKeyCont;
+			return 1;
+		}
+		system("ethxmlfilter -s 'Plane' $FF_MGT_CONF > $TMP_MGT_CONF");
+		add_mgt_plane($TMP_MGT_CONF, "plane");
+	}
+	return 0;
+}
+
+
 sub Usage
 {
 	# don't document -r option, its only used for MPI do_build and
@@ -665,8 +713,8 @@ sub process_args
 				$FabricSetupScpFromDir="$arg";
 				$setdir=0;
 			} elsif ( $setroot ) {
-				$ROOT="$arg";
-				$setroot=0;
+				$ROOT = "$arg";
+				$setroot = 0;
 			} elsif ( "$arg" eq "--fromdir" ) {
 				$setdir=1;
 			} elsif ( "$arg" eq "-r" ) {
@@ -679,11 +727,61 @@ sub process_args
 			$last_arg=$arg;
 		}
 	}
-	if ( $setdir || $setroot) {
+	if ( $setdir || $setroot ) {
 		printf STDERR "Missing argument for option: $last_arg\n";
 		Usage;
 	}
 
+}
+
+sub process_mgt_config
+{
+	if (! -e $FF_MGT_CONF) {
+		#die "Mgt configuration file '$FF_MGT_CONF' doesn't exist\n";
+		# replace missing file
+		copy_data_file("$SAMPLE_DIR/mgt_config.xml-sample", "$FF_MGT_CONF");
+	}
+	if ( ! -e "$BIN_DIR/ethxmlextract" ) {
+		print "processing $FF_MGT_CONF...\n";
+		die "ethxmlextract requires $ComponentName{oftools} be installed\n";
+	}
+	my $conf_dir = `ethxmlextract -e ConfigDir -H -X $FF_MGT_CONF`;
+	chomp($conf_dir);
+	my @planes = `ethxmlextract -X $FF_MGT_CONF -H -e Plane.Name -e Plane.Enable | grep ';1\$' | cut -d ';' -f1`;
+	chomp(@planes);
+	$NUM_ENABLED_PLANES = @planes;
+	if ($NUM_ENABLED_PLANES == 0) {
+		print "No enabled plane defined. Please edit '$FF_MGT_CONF'\n";
+		fabricadmin_plane;
+		return 0;
+	}
+	if ( $PLANE eq "" ) {
+		$PLANE = @planes[0];
+	}
+	my $cmd = "ethxmlextract -X $FF_MGT_CONF -H -e Plane.Name -e Plane.Enable -e Plane.HostsFile -e Plane.SwitchesFile";
+	my $params = `$cmd | grep '^$PLANE;'`;
+	if ( $params ne "" ) {
+		($PLANE, $FabricAdminHostsFile, $FabricSwitchesFile) = (split(/;/, $params))[0, 2, 3];
+		if ( $FabricAdminHostsFile eq "" ) {
+			#die "HostsFile is undefined for plane '$PLANE' in '$FF_MGT_CONF'\n";
+			$FabricAdminHostsFile = $PrevFabricAdminHostsFile;
+		} else {
+			if (substr($FabricAdminHostsFile, 0, 1) ne "/") {
+				$FabricAdminHostsFile = "$conf_dir/$FabricAdminHostsFile"
+			}
+			$PrevFabricAdminHostsFile = $FabricAdminHostsFile;
+		}
+		chomp($FabricSwitchesFile);
+		if ( $FabricSwitchesFile eq "" ) {
+			#die "SwitchesFile is undefined for plane '$PLANE' in '$FF_MGT_CONF'\n";
+			$FabricSwitchesFile = $PrevFabricSwitchesFile;
+		} else {
+			if (substr($FabricSwitchesFile, 0, 1) ne "/") {
+				$FabricSwitchesFile = "$conf_dir/$FabricSwitchesFile"
+			}
+			$PrevFabricSwitchesFile = $FabricSwitchesFile;
+		}
+	}
 }
 
 sub read_ffconfig_param
@@ -860,6 +958,32 @@ sub ff_viewres
 	return 0;
 }
 
+sub fabricsetup_mgtconf()
+{
+	my @fab_planes;
+
+	print "Using $Editor (to select a different editor, export EDITOR).\n";
+	do
+	{
+		if (! -e $FF_MGT_CONF) {
+			#die "Mgt configuration file '$FF_MGT_CONF' doesn't exist\n";
+			# replace missing file
+			copy_data_file("$SAMPLE_DIR/mgt_config.xml-sample", "$FF_MGT_CONF");
+		}
+		print "About to: $Editor $FF_MGT_CONF\n";
+		if ( HitKeyContAbortable() ) {
+			return 1;
+		}
+		system("$Editor '$FF_MGT_CONF'");
+		@fab_planes = `ethxmlextract -X $FF_MGT_CONF -H -e Plane.Name -e Plane.Enable | grep ';1\$' | cut -d ';' -f1`;
+		chomp(@fab_planes);
+		if (@fab_planes == 0) {
+			print "\n";
+			print "You must define at least one ENABLED plane\n";
+		}
+	} until (@fab_planes > 0);
+}
+
 sub fabricsetup_config
 {
 	my $inp;
@@ -870,7 +994,7 @@ sub fabricsetup_config
 		if (setup_ffconfig() ) {
 			return 1;
 		}
-		do 
+		do
 		{
 			print "The FastFabric operations which follow will require a file\n";
 			print "listing the hosts to operate on\n";
@@ -936,8 +1060,9 @@ sub fabricsetup_findgood
 	#if (-s $OPA_CONFIG_DIR/bad) {
 	if ( "$FabricSetupHostsFile" ne "$OPA_CONFIG_DIR/good") {
 		if (GetYesNo("Would you like to now use $OPA_CONFIG_DIR/good as Host File?", "y") ) {
-	    	$PrevFabricSetupHostsFile = "$FabricSetupHostsFile";
-	    	$FabricSetupHostsFile = "$OPA_CONFIG_DIR/good";
+			$PrevFabricSetupHostsFile = "$FabricSetupHostsFile";
+			$FabricSetupHostsFile = "$OPA_CONFIG_DIR/good";
+			system "rm -f $TMP_MGT_CONF";
 		}
 	}
 	return 0;
@@ -1414,9 +1539,34 @@ DO_SETUP:
 	goto DO_SETUP;
 }
 
+sub fabricadmin_plane()
+{
+	do {
+		fabricsetup_mgtconf;
+		my @fab_planes = `ethxmlextract -X $FF_MGT_CONF -H -e Plane.Name -e Plane.Enable | grep ';1\$' | cut -d ';' -f1`;
+		chomp(@fab_planes);
+
+		if (@fab_planes > 1) {
+			my $title1 = "Host Admin: $FabricAdminStepsName{'plane'}";
+			my $title2 = "Plane Selection";
+
+			my $inp = selection_menu(
+				"$title1", "$title2", "Fabric Plane",
+				@fab_planes);
+			if ( "$inp" ne "") {
+				$PLANE=$inp;
+			}
+		} else {
+			$PLANE=@fab_planes[0];
+		}
+		print "\n";
+		print "Selected plane '$PLANE'\n";
+	} until (GetYesNo("Are you sure you want to proceed?", "n") );
+	process_mgt_config;
+}
+
 sub fabricadmin_config
 {
-	my $inp;
 	my $file;
 
 	print "Using $Editor (to select a different editor, export EDITOR).\n";
@@ -1424,37 +1574,36 @@ sub fabricadmin_config
 		if (setup_ffconfig() ) {
 			return 1;
 		}
-		do
-		{
-			print "The FastFabric operations which follow will require a file\n";
-			print "listing the hosts to operate on\n";
-			print "You should select a file which INCLUDES this host\n";
-			print "Select Host File to Use/Edit [$PrevFabricAdminHostsFile]: ";
-			chomp($inp = <STDIN>);
-			$inp=remove_whitespace($inp);
+		$file=$FabricAdminHostsFile;
+		if ( ! -e "$file") {
+			if ( $NUM_ENABLED_PLANES > 1 ) {
+				copy_data_file("$SAMPLE_DIR/allhosts_mp-sample", "$file");
+			} else {
+				copy_data_file("$SAMPLE_DIR/allhosts-sample", "$file");
+			}
+		}
+		print "\n";
+		print "The FastFabric operations which follow will apply on\n";
+		print "plane '$PLANE' hosts defined in $file\n";
+		print "About to: $Editor $file\n";
+		if ( HitKeyContAbortable() ) {
+			return 1;
+		}
+		system("$Editor '$file'");
 
-			if ( length($inp) == 0 ) 
-			{
-				$inp = $PrevFabricAdminHostsFile;
-			}
-			$file = SanitizeFilename($inp);
-			if ( length($file) > 0 ) {
-				print "About to: $Editor $file\n";
-				if ( HitKeyContAbortable() ) {
-					return 1;
-				}
-				system("$Editor '$file'");
-				if ( ! -e "$file" ) {
-					print "You must create a Host File to proceed\n\n";
-				} else {
-					$FabricAdminHostsFile=$file;
-					$PrevFabricAdminHostsFile=$file;
-				}
-			}
-		} until ( -e "$file");
-		print "Selected Host File: $FabricAdminHostsFile\n";
+		$file=$FabricSwitchesFile;
+		if ( ! -e "$file") {
+			copy_data_file("$SAMPLE_DIR/switches-sample", "$file");
+		}
+		print "\n";
+		print "The FastFabric operations which follow will apply on\n";
+		print "plane switches defined in $file\n";
+		print "About to: $Editor $file\n";
+		if ( HitKeyContAbortable() ) {
+			return 1;
+		}
+		system("$Editor '$file'");
 	} until (! GetYesNo("Do you want to edit/review/change the files?", "y") );
-	print LOG_FD "Selected Host File -> $FabricAdminHostsFile\n";
 	return 0;
 }
 
@@ -1465,7 +1614,10 @@ sub fabricadmin_fabric_info
 		HitKeyCont;
 		return 1;
 	}
-	return run_fabric_cmd("$BIN_DIR/ethfabricinfo");
+	if (setup_mgt_conf()) {
+		return 1;
+	}
+	return run_fabric_cmd("$BIN_DIR/ethfabricinfo -E $TMP_MGT_CONF");
 }
 #sub fabricadmin_ethpingall
 #{
@@ -1498,15 +1650,16 @@ sub fabricadmin_findgood
 		# skip active test
 		$findgood_opts="$findgood_opts -A";
 	}
-	if ( run_fabric_cmd("$BIN_DIR/ethfindgood $findgood_opts -f $FabricAdminHostsFile")) {
+	if ( run_fabric_cmd("$BIN_DIR/ethfindgood $findgood_opts -f $FabricAdminHostsFile -p $PLANE")) {
 		return 1;
 	}
 	# ask even if non-bad since good file will be better sorted for cabletest
 	#if (-s $OPA_CONFIG_DIR/bad) {
-	if ( "$FabricAdminHostsFile" ne "$OPA_CONFIG_DIR/good") {
-		if (GetYesNo("Would you like to now use $OPA_CONFIG_DIR/good as Host File?", "y") ) {
-	    	$PrevFabricAdminHostsFile = "$FabricAdminHostsFile";
-	    	$FabricAdminHostsFile = "$OPA_CONFIG_DIR/good";
+	if ( "$FabricAdminHostsFile" ne "$OPA_CONFIG_DIR/good_$PLANE") {
+		if (GetYesNo("Would you like to now use $OPA_CONFIG_DIR/good_$PLANE as Host File?", "y") ) {
+			$PrevFabricAdminHostsFile = "$FabricAdminHostsFile";
+			$FabricAdminHostsFile = "$OPA_CONFIG_DIR/good_$PLANE";
+			system("rm -f $TMP_MGT_CONF");
 		}
 	}
 	return 0;
@@ -1729,9 +1882,12 @@ sub fabricadmin_showallports
 	} while (length($inp) == 0);
 	$linkanalysis_file = $inp;
 	if ($linkanalysis) {
+		if (setup_mgt_conf()) {
+			return 1;
+		}
 		my $snapshot_suffix=`date +%Y%m%d-%H%M%S`;
 		chop $snapshot_suffix;
-		if ( run_fabric_cmd("$BIN_DIR/ethlinkanalysis $linkanalysis_opts -x '$snapshot_suffix' $linkanalysis_reports > $linkanalysis_file 2>&1", "skip_prompt") ) {
+		if ( run_fabric_cmd("$BIN_DIR/ethlinkanalysis -E $TMP_MGT_CONF $linkanalysis_opts -x '$snapshot_suffix' $linkanalysis_reports > $linkanalysis_file 2>&1", "skip_prompt") ) {
 			return 1;
 		}
 	} else  {
@@ -1798,10 +1954,13 @@ sub fabricadmin_mpiperf
 sub fabricadmin_health
 {
 	# TBD -switches file
+	if (setup_mgt_conf()) {
+		return 1;
+	}
 	if (GetYesNo("Baseline present configuration?", "n") ) {
-		return run_fabric_cmd("$BIN_DIR/ethallanalysis -b");
+		return run_fabric_cmd("$BIN_DIR/ethallanalysis -b -E $TMP_MGT_CONF");
 	} else {
-		return run_fabric_cmd("$BIN_DIR/ethallanalysis");
+		return run_fabric_cmd("$BIN_DIR/ethallanalysis -E $TMP_MGT_CONF");
 	}
 }
 sub fabricadmin_cabletest
@@ -1884,6 +2043,7 @@ sub fabric_admin
 	my $step;
 	my $i;
 
+	process_mgt_config;
 	foreach $step ( @FabricAdminSteps )
 	{
 		$selected{$step}= 0;
@@ -1892,6 +2052,7 @@ DO_SETUP:
 	system "clear";
 	print color("bold");
 	printf ("FastFabric Ethernet Host Verification/Admin Menu\n");
+	printf ("Plane: $PLANE\n");
 	printf ("Host File: $FabricAdminHostsFile\n");
 	print color("reset");
 	for($i=0; $i < scalar(@FabricAdminSteps); $i++)
@@ -2216,6 +2377,17 @@ START:
 	$MENU_CHOICE = $inp;
 }
 
+sub cleanup
+{
+	print LOG_FD "removing tmp file $TMP_MGT_CONF...\n";
+	system("rm -f $TMP_MGT_CONF");
+	print LOG_FD "closing log file...\n";
+	close_log;
+	exit(0);
+}
+
+$SIG{'INT'} = 'cleanup';
+
 process_args;
 check_user;
 open_log;
@@ -2242,4 +2414,7 @@ elsif ($MENU_CHOICE == 2)
 #	fabric_monitor;
 #	goto RESTART;
 #}
-close_log;
+
+END {
+	cleanup;
+}

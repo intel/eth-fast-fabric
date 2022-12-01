@@ -397,7 +397,7 @@ boolean is_supported_interface(SNMPHost *host, char* ifName, size_t len) {
 
 	int i = 0;
 	for (;i < host->numInterface; i++) {
-		if (strncmp(host->interfaces[i], ifName, len) == 0) {
+		if (strncmp(host->interfaces[i], ifName, len) == 0 && host->interfaces[i][len] == 0) {
 			return TRUE;
 		}
 	}
@@ -1013,7 +1013,7 @@ next_loop:
  * @brief create port records for each switch node and put port list back to RAW_NODE
  */
 HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
-		QUICK_LIST *nodeList) {
+		QUICK_LIST *nodeList, int downportinfo) {
 	HMGT_STATUS_T fstatus = HMGT_STATUS_SUCCESS;
 
 	if (nodeList == NULL) {
@@ -1180,11 +1180,12 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 			}
 		} else if (is_oid(rp, &lldpLocPortIdSubtype)) {
 			TRACEPRINT("..lldpLocPortIdSubtype\n");
+			STL_PORTINFO_RECORD *portRec = NULL;
 			int portNum = get_oid_num(rp, lldpLocPortIdSubtype.oidLen);
+			uint8 type = *(rp->val.integer);
 			LIST_ITEM *lItem = get_map_obj(&portNumMap, portNum);
 			if (lItem) {
-				STL_PORTINFO_RECORD *portRec = lItem->pObject;
-				uint8 type = *(rp->val.integer);
+				portRec = lItem->pObject;
 				if (type != 5 && type != 7) {
 				// we expect subtype 5 (interface name) or 7 (local) for switch ports
 					fprintf(stderr,
@@ -1192,6 +1193,31 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 					// cannot continue, have to break
 					break;
 				}
+			} else if (downportinfo) {
+				// inactive ports
+				LIST_ITEM *item = create_port_item();
+				if (item == NULL) {
+					// create_port_item already print out err msg
+					goto next_loop;
+				}
+				QListInsertTail(rawNode->ports, item);
+				portRec = item->pObject;
+				portRec->RID.EndPortLID = nodeRec->RID.LID;
+				portRec->PortInfo.CapabilityMask.AsReg32 =
+						portZeroRec->PortInfo.CapabilityMask.AsReg32;
+				portRec->PortInfo.CapabilityMask3.AsReg16 =
+						portZeroRec->PortInfo.CapabilityMask3.AsReg16;
+
+				cl_map_obj_t *mapObj = create_map_obj(item);
+				if (mapObj) {
+					cl_qmap_insert(&portNumMap, portNum, &(mapObj->item));
+				} else {
+					fprintf(stderr, "ERROR - failed to create map obj.\n");
+					fstatus = HMGT_STATUS_INSUFFICIENT_MEMORY;
+					break;
+				}
+			}
+			if (portRec) {
 				portRec->PortInfo.LocalPortIdSubtype = type;
 			}
 		} else if (is_oid(rp, &lldpLocPortId)) {
@@ -2467,7 +2493,7 @@ QUICK_LIST* process_dev_data(SNMPHost *host, SNMPResult *res,
 		if (fstatus != HMGT_STATUS_SUCCESS) {
 			goto done;
 		}
-		fstatus = populate_switch_node_port_records(res, nodeList);
+		fstatus = populate_switch_node_port_records(res, nodeList, pFabric->flags & FF_DOWNPORTINFO);
 		if (fstatus != HMGT_STATUS_SUCCESS) {
 			goto done;
 		}
@@ -2562,7 +2588,9 @@ QUICK_LIST* process_dev_data(SNMPHost *host, SNMPResult *res,
 			}
 		}
 	}
-	fstatus = populate_port_counters(res, &ifIndexMap);
+	if (pFabric->flags & FF_STATS) {
+		fstatus = populate_port_counters(res, &ifIndexMap);
+	}
 	cleanup_map(&ifIndexMap);
 
 done:
@@ -2675,7 +2703,8 @@ HMGT_STATUS_T process_fab_data(QUICK_LIST **allNodes, int numHosts,
 						portData->PortInfo.NeighborPortId);
 				nbrRawNode = get_map_obj(&nodeMap, nbrGuid);
 				if (nbrRawNode == NULL) {
-					fprintf(stderr,
+					if (portData->PortInfo.NeighborNodeGUID)
+						fprintf(stderr,
 							"WARNING - Couldn't find neighbor node nodeGuid=0x%016"PRIx64", portId=%s\n",
 							nbrGuid, portData->PortInfo.NeighborPortId);
 					fstatus = HMGT_STATUS_PARTIALLY_PROCESSED;
@@ -2714,8 +2743,10 @@ HMGT_STATUS_T process_fab_data(QUICK_LIST **allNodes, int numHosts,
 				portData->PortInfo.NeighborPortNum = nbrPortData->PortNum;
 
 				TRACEPRINT("  Add Link\n");
-				// add link to fabric data
-				fstatus = FabricDataAddLink(pFabric, portData, nbrPortData);
+				// add "new" link to fabric data
+				if (portData->neighbor != nbrPortData || nbrPortData->neighbor != portData) {
+					fstatus = FabricDataAddLink(pFabric, portData, nbrPortData);
+				}
 			}
 		}
 	}
@@ -2751,7 +2782,7 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 	// TODO: improve to maintain query results in a map rather than list. This
 	//       will break the dependency mentioned above. And may slightly improve
 	//       performance as well.
-	SNMPOid sw_oids[] = { ifNumber, lldpLocSysCapEnabled, lldpLocSysCapSupported,
+	SNMPOid sw_oids_full[] = { ifNumber, lldpLocSysCapEnabled, lldpLocSysCapSupported,
 			lldpLocChassisId, lldpLocManAddrIfId, lldpRemChassisId,
 			lldpRemPortIdSubtype, lldpRemPortId, lldpRemSysName,
 			lldpRemSysCapEnabled, lldpLocPortIdSubtype, lldpLocPortId,
@@ -2775,9 +2806,21 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 			entPhysicalHardwareRev, entPhysicalFirmwareRev,
 			entPhysicalSerialNum, entPhysicalMfgName, entPhysicalModelName,
 			{ NULL } };
-
+	SNMPOid sw_oids_basic[] = { ifNumber, lldpLocSysCapEnabled, lldpLocSysCapSupported,
+			lldpLocChassisId, lldpLocManAddrIfId, lldpRemChassisId,
+			lldpRemPortIdSubtype, lldpRemPortId, lldpRemSysName,
+			lldpRemSysCapEnabled, lldpLocPortIdSubtype, lldpLocPortId,
+			sysObjectID, sysName,
+			ifIndex, ifName, ifType, ifMTU, ifSpeed,
+			ifPhysAddress, ifOperStatus, ipAdEntIfIndex,
+			ifMauStatus, ifMauMediaAvailable, ifMauTypeListBits,
+			ifMauAutoNegAdminStatus, ifHighSpeed,
+			entPhysicalClass, entPhysicalDescr,
+			entPhysicalHardwareRev, entPhysicalFirmwareRev,
+			entPhysicalSerialNum, entPhysicalMfgName, entPhysicalModelName,
+			{ NULL } };
 	// net-snmp on host doesn't support LLDP, EtherLike, MAU and Entity
-	SNMPOid nic_oids[] = {
+	SNMPOid nic_oids_full[] = {
 //	                lldpLocSysCapEnabled, lldpLocSysCapSupported,
 //			lldpLocChassisId, lldpLocManAddrIfId, lldpRemChassisId,
 //			lldpRemPortIdSubtype, lldpRemPortId, lldpRemSysName,
@@ -2804,11 +2847,34 @@ HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
 //			entPhysicalHardwareRev, entPhysicalFirmwareRev,
 //			entPhysicalSerialNum, entPhysicalMfgName, entPhysicalModelName,
 			{ NULL } };
-	status = collect_data(hosts, sw_oids, nic_oids, hostEntries,
+	SNMPOid nic_oids_basic[] = {
+//	                lldpLocSysCapEnabled, lldpLocSysCapSupported,
+//			lldpLocChassisId, lldpLocManAddrIfId, lldpRemChassisId,
+//			lldpRemPortIdSubtype, lldpRemPortId, lldpRemSysName,
+//			lldpRemSysCapEnabled, lldpLocPortIdSubtype, lldpLocPortId,
+			ifNumber, sysObjectID, sysName,
+			ifIndex, ifName, ifType, ifMTU, ifSpeed,
+			ifPhysAddress, ifOperStatus, ipAdEntIfIndex,
+//			ifMauStatus, ifMauMediaAvailable, ifMauTypeListBits,
+//			ifMauAutoNegAdminStatus,
+			ifHighSpeed,
+//			entPhysicalClass, entPhysicalDescr,
+//			entPhysicalHardwareRev, entPhysicalFirmwareRev,
+//			entPhysicalSerialNum, entPhysicalMfgName, entPhysicalModelName,
+			{ NULL } };
+	if (pFabric->flags & FF_STATS) {
+		status = collect_data(hosts, sw_oids_full, nic_oids_full, hostEntries,
 				(void* (*)(SNMPHost*, SNMPResult*, FabricData_t*)) process_dev_data,
 				(HMGT_STATUS_T (*)(void**, int, FabricData_t*)) process_fab_data,
 				(HMGT_STATUS_T (*)(void*)) cleanup_dev_data,
 				pFabric);
+	} else {
+		status = collect_data(hosts, sw_oids_basic, nic_oids_basic, hostEntries,
+				(void* (*)(SNMPHost*, SNMPResult*, FabricData_t*)) process_dev_data,
+				(HMGT_STATUS_T (*)(void**, int, FabricData_t*)) process_fab_data,
+				(HMGT_STATUS_T (*)(void*)) cleanup_dev_data,
+				pFabric);
+	}
 
 	recSize = sizeof(HPN_FABRICDATA_RECORD);
 	memSize = recSize;

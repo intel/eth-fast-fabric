@@ -140,7 +140,7 @@ File: /usr/lib/eth-tools/mpiperf.exp" suite_setup noop {
 	set mpitype [determine_mpitype "$env(FF_MPI_APPS_DIR)"]
 
 	foreach pair $host_pairs {
-		test_case_run_mpi_app $mpitype default localhost $pair 60 "$env(FF_MPI_APPS_DIR)/latency" "latency" "100000 0" 1
-		test_case_run_mpi_app $mpitype default localhost $pair 60 "$env(FF_MPI_APPS_DIR)/bandwidth" "bw" "100 1000000" 1
+		test_case_run_mpi_app_port $mpitype default localhost $pair $env(CFG_MPI_DEV) 60 "$env(FF_MPI_APPS_DIR)/latency" "latency" "100000 0" 1
+		test_case_run_mpi_app_port $mpitype default localhost $pair $env(CFG_MPI_DEV) 60 "$env(FF_MPI_APPS_DIR)/bandwidth" "bw" "100 1000000" 1
 	}
 }

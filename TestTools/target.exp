@@ -1,6 +1,6 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -193,7 +193,10 @@ proc local_set_env { } {
 	#target_set_intr
 	# get rid of cr and control characters in logs for easier reading
 	#unix_cmd 60 0 {unset PROMPT_COMMAND; export PS1='[\u@\h]\$ '; stty -onlcr columns 500}
-	unix_cmd 60 0 {unset PROMPT_COMMAND HISTFILE; set +o history; export PS1='[\u@\h]\$ '}
+	# Added "bind 'set enable-bracketed-paste off'" to prevent the inclusion of bracket control characters
+	#  from being added to the output. Newer bash versions now enable this feature by default, so we
+	#  need to disable it here.
+	unix_cmd 60 0 {unset PROMPT_COMMAND HISTFILE; set +o history; bind 'set enable-bracketed-paste off'; export PS1='[\u@\h]\$ '}
 
 }
 
@@ -783,7 +786,10 @@ proc target_set_env { } {
 	#unix_cmd 60 "" "umask 0"
 	#target_set_intr
 	# get rid of cr and control characters in logs for easier reading
-	unix_cmd 60 0 {unset PROMPT_COMMAND HISTFILE; set +o history; export PS1='[\u@\h]\$ '; stty -onlcr columns 500}
+	# Added "bind 'set enable-bracketed-paste off'" to prevent the inclusion of bracket control characters
+	#  from being added to the output. Newer bash versions now enable this feature by default, so we
+	#  need to disable it here.
+	unix_cmd 60 0 {unset PROMPT_COMMAND HISTFILE; set +o history; bind 'set enable-bracketed-paste off'; export PS1='[\u@\h]\$ '; stty -onlcr columns 500}
 }
 
 proc target_root_sh { target } {

@@ -83,6 +83,7 @@ my @delta_kernel_srpms_rhel83 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel84 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel85 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms_rhel86 = ( 'kmod-iefs-kernel-updates' );
+my @delta_kernel_srpms_rhel9 = ( 'kmod-iefs-kernel-updates' );
 my @delta_kernel_srpms = ( );
 
 # This provides information for all kernel srpms
@@ -155,6 +156,8 @@ sub init_delta_info($)
 	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
 		&& "$CUR_VENDOR_VER" eq 'ES154') {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp4 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
+		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel9 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
 		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel81 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
@@ -788,6 +791,8 @@ sub installed_delta_eth_module()
 	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
+		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES124" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);

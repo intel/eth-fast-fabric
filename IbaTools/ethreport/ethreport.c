@@ -1130,8 +1130,8 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 	case FORMAT_TEXT:
 		if (portp->PortGUID)
 			if (g_persist || g_hard)
-				printf("%*sPortNum: %4u EndMgmtIfID: xxxxxxxxxx MgmtIfAddr: 0x%016"PRIx64"\n",
-					indent, "", portp->PortNum, portp->PortGUID);
+				printf("%*sPortNum: %4u EndMgmtIfID: xxxxxxxxxx MgmtIfAddr: 0x%016"PRIx64" LclMgmtIfID: %-4d\n",
+					indent, "", portp->PortNum, portp->PortGUID, pPortInfo->LocalPortNum);
 			else
 				printf("%*sPortNum: %4u EndMgmtIfID: 0x%.*x MgmtIfAddr: 0x%016"PRIx64" LclMgmtIfID: %-4d\n",
 					indent, "", portp->PortNum,
@@ -1146,15 +1146,24 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 				printf("%*sPortDetails: %s\n", indent+4, "", portselp->details);
 			}
 		}
-		if (portp->neighbor) {
+		if (portp->neighbor && !g_hard) {
 			ShowLinkPortSummary(portp->neighbor, "Neighbor: ", format, indent+4, detail);
 			if (detail-1)
 				ShowExpectedLinkSummary(portp->neighbor->elinkp, format, indent+8, detail-1);
+		} else if (g_hard) {
+			printf("%*sNeighborNodeType: xxxx\n", indent+4, "");
+		} else {
+			printf("%*sNeighborNodeType: %s\n",
+				indent+4, "",
+				!pPortInfo->NeighborNodeGUID ? "N/A" :
+				OpaNeighborNodeTypeToText(pPortInfo->PortNeighborMode.NeighborNodeType));
 		}
 		if (detail) {
 			if (g_hard) {
 				printf( "%*sLclMgmtIfID: %-4d PortState: xxxxxx           PhysState: xxxxxxxx\n",
 					indent+4, "", pPortInfo->LocalPortNum);
+				printf("%*sPortType: (%d) %-3s       IPAddr IPv4: xxxxxxxx\n", indent+4, "", pPortInfo->PortPhysConfig.s.PortType,
+						EthPortTypeToText(pPortInfo->PortPhysConfig.s.PortType));
 			}
 			else {
 				uint8 ldr = 0;
@@ -1182,21 +1191,15 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 						pPortInfo->PortStates.s.PortPhysicalState ?
 								(pPortInfo->PortStates.s.IsSMConfigurationStarted?"True":"False")
 								: "False");
+				printf("%*sPortType: (%d) %-3s       IPAddr IPv4: %d.%d.%d.%d\n", indent+4, "", pPortInfo->PortPhysConfig.s.PortType,
+						EthPortTypeToText(pPortInfo->PortPhysConfig.s.PortType), pPortInfo->IPAddrIPV4.addr[0],
+						pPortInfo->IPAddrIPV4.addr[1],pPortInfo->IPAddrIPV4.addr[2],pPortInfo->IPAddrIPV4.addr[3]);
 			}
-			printf("%*sPortType: (%d) %-3s       IPAddr IPv4: %d.%d.%d.%d\n", indent+4, "", pPortInfo->PortPhysConfig.s.PortType,
-					EthPortTypeToText(pPortInfo->PortPhysConfig.s.PortType), pPortInfo->IPAddrIPV4.addr[0],
-					pPortInfo->IPAddrIPV4.addr[1],pPortInfo->IPAddrIPV4.addr[2],pPortInfo->IPAddrIPV4.addr[3]);
 			if (g_hard) {
 				printf( "%*sIfID:    xxxxxxxxxx\n",
 					indent+4, "");
-				printf( "%*sRespTimeout: xxxxxxx",
+				printf( "%*sRespTimeout: xxxxxxx\n",
 					indent+4, "");
-			} else if (g_persist) {
-				printf( "%*sIfID:    xxxxxxxxxx\n",
-					indent+4, "");
-				FormatTimeoutMult(buf1, pPortInfo->Resp.TimeValue);
-				printf( "%*sRespTimeout: %s\n",
-					indent+4, "", buf1);
 			} else {
 				printf( "%*sIfID:    0x%.*x\n",
 					indent+4, "",
@@ -1206,14 +1209,20 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 				printf( "%*sRespTimeout: %s\n",
 					indent+4, "", buf1);
 			}
-			printf("%*sMTU Supported: %d bytes\n",
-					indent+4, "",
-					pPortInfo->MTU2);
-			if (g_hard)
-				printf( "%*sLinkSpeed: Active: xxxxxxx  Supported: %10s  Enabled: xxxxxxxxxx\n",
-					indent+4, "",
-					EthLinkSpeedToText(pPortInfo->LinkSpeed.Supported, buf1, sizeof(buf1)));
-			else {
+			if (g_hard) {
+				printf("%*sMTU: xxxx bytes\n", indent+4, "");
+				if (pPortInfo->LinkModeSupLen) {
+					printf( "%*sLinkSpeed: Active: xxxxxxx  Supported: %10s (%s)\n",
+						indent+4, "",
+						EthLinkSpeedToText(pPortInfo->LinkSpeed.Supported, buf1, sizeof(buf1)),
+						EthSupportedLinkModeToText(pPortInfo->LinkModeSupported,
+								pPortInfo->LinkModeSupLen, buf3, sizeof(buf3)));
+				} else {
+					printf( "%*sLinkSpeed: Active: xxxxxxx  Supported: -\n", indent+4, "");
+				}
+				printf("%*sIPAddr Prim/Sec: xxxxxxxx / xxxxxxxx\n", indent+4, "");
+			} else {
+				printf("%*sMTU: %d bytes\n", indent+4, "", pPortInfo->MTU2);
 				if (pPortInfo->LinkModeSupLen) {
 					printf( "%*sLinkSpeed: Active: %7s (%d mbit/s)  Supported: %10s (%s)\n",
 						indent+4, "",
@@ -1228,29 +1237,28 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 							EthLinkSpeedToText(pPortInfo->LinkSpeed.Active, buf1, sizeof(buf1)),
 							pPortInfo->IfSpeed);
 				}
+				printf("%*sIPAddr Prim/Sec: %s / %s\n",
+					indent+4, "",
+					inet_ntop(AF_INET6, pPortInfo->IPAddrIPV6.addr, buf1, sizeof(buf1)),
+					inet_ntop(AF_INET, pPortInfo->IPAddrIPV4.addr, buf2, sizeof(buf2)));
 			}
 
-			printf("%*sIPAddr Prim/Sec: %s / %s\n",
-				indent+4, "",
-				inet_ntop(AF_INET6, pPortInfo->IPAddrIPV6.addr, buf1, sizeof(buf1)),
-				inet_ntop(AF_INET, pPortInfo->IPAddrIPV4.addr, buf2, sizeof(buf2)));
-
-			printf("%*sNeighborNodeType: %s\n",
-				indent+4, "",
-				OpaNeighborNodeTypeToText(pPortInfo->PortNeighborMode.NeighborNodeType));
 			FormatEthCapabilityMask(buf1, pPortInfo->CapabilityMask);
 			printf( "%*sCapability Supported 0x%08x: %s\n",
 				indent+4, "",
 				pPortInfo->CapabilityMask.AsReg32, buf1);
-			FormatEthCapabilityMask3(buf1, pPortInfo->CapabilityMask3, sizeof(buf1));
-			printf("%*sCapability Enabled 0x%04x: %s\n",
-				indent+4, "",
-				pPortInfo->CapabilityMask3.AsReg16, buf1);
 
 			if (!g_hard) {
+				FormatEthCapabilityMask3(buf1, pPortInfo->CapabilityMask3, sizeof(buf1));
+				printf("%*sCapability Enabled 0x%04x: %s\n",
+					indent+4, "",
+					pPortInfo->CapabilityMask3.AsReg16, buf1);
 				if (pPortInfo->CapabilityMask3.s.IsMAXLIDSupported)
 					printf("%*sMaxLID: %u\n",
 						indent+4, "", pPortInfo->MaxLID);
+			} else {
+				printf("%*sCapability Enabled xxxx: xxxxxxxx\n",
+					indent+4, "");
 			}
 
 			if (portp->pPortCounters && detail > 2 && ! g_persist && ! g_hard) {
@@ -1258,7 +1266,7 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 			}
 		} else {
 			if (g_hard)
-				printf("%*sWidth: xxxx Speed: xxxxxxx Downgraded? xxx\n",
+				printf("%*sSpeed: xxxxxxx\n",
 					indent+4, "");
 			else
 				printf("%*sSpeed: %7s\n",
@@ -1289,6 +1297,11 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 			if (detail-1)
 				ShowExpectedLinkSummary(portp->neighbor->elinkp, format, indent+12, detail-1);
 			printf("%*s</Neighbor>\n", indent+4, "");
+		} else if (!g_persist && !g_hard) {
+			XmlPrintStr("NeighborNodeType",
+				!pPortInfo->NeighborNodeGUID ? "N/A" :
+				OpaNeighborNodeTypeToText(pPortInfo->PortNeighborMode.NeighborNodeType),
+				indent+4);
 		}
 		if (detail) {
 			if (g_hard) {
@@ -1315,17 +1328,16 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 			if (g_hard) {
 				// noop
 			} else {
-				if (! g_persist)
-					XmlPrintPortIfID("IfID", pPortInfo->LID, indent+4);
+				XmlPrintPortIfID("IfID", pPortInfo->LID, indent+4);
 				FormatTimeoutMult(buf1, pPortInfo->Resp.TimeValue);
 				XmlPrintStr("RespTimeout", buf1, indent+4);
 				XmlPrintDec("RespTimeout_Int", pPortInfo->Resp.TimeValue,
 								indent+4);
 			}
 
-			XmlPrintDec("MTUSupported",
-					pPortInfo->MTU2, indent+4);
 			if (! g_hard) {
+				XmlPrintDec("MTU",
+					pPortInfo->MTU2, indent+4);
 				XmlPrintLinkSpeed("LinkSpeedActive",
 					pPortInfo->LinkSpeed.Active, indent+4);
 			}
@@ -1336,21 +1348,21 @@ void ShowPortSummary(PortData *portp, Format_t format, int indent, int detail)
 				XmlPrintStr("LinkSpeedSupported", "-", indent+4);
 			}
 
-			XmlPrintStr("IPV6", inet_ntop(AF_INET6, pPortInfo->IPAddrIPV6.addr, buf1, sizeof(buf1)), indent+4);
-			XmlPrintStr("IPV4", inet_ntop(AF_INET, pPortInfo->IPAddrIPV4.addr, buf2, sizeof(buf2)), indent+4);
-
-			XmlPrintStr("NeighborModeNeighborNodeType",
-				OpaNeighborNodeTypeToText(pPortInfo->PortNeighborMode.NeighborNodeType),
-				indent+4);
+			if (! g_hard) {
+				XmlPrintStr("IPV6", inet_ntop(AF_INET6, pPortInfo->IPAddrIPV6.addr, buf1, sizeof(buf1)), indent+4);
+				XmlPrintStr("IPV4", inet_ntop(AF_INET, pPortInfo->IPAddrIPV4.addr, buf2, sizeof(buf2)), indent+4);
+			}
 
 			FormatStlCapabilityMask(buf1, pPortInfo->CapabilityMask);
 			XmlPrintHex32("CapabilityMask",
 				pPortInfo->CapabilityMask.AsReg32,
 				indent+4);
 			XmlPrintStr("Capability", buf1, indent+4);
-			XmlPrintHex16("CapabilityMask3", pPortInfo->CapabilityMask3.AsReg16, indent+4);
-			FormatStlCapabilityMask3(buf1, pPortInfo->CapabilityMask3, sizeof(buf1));
-			XmlPrintStr("Capability3", buf1, indent+4);
+			if (! g_hard ) {
+				XmlPrintHex16("CapabilityMask3", pPortInfo->CapabilityMask3.AsReg16, indent+4);
+				FormatStlCapabilityMask3(buf1, pPortInfo->CapabilityMask3, sizeof(buf1));
+				XmlPrintStr("Capability3", buf1, indent+4);
+			}
 			if (! g_hard && ! g_persist) {
 				XmlPrintHex8("LinkDownReason", pPortInfo->LinkDownReason, indent+4);
 				XmlPrintHex8("NeighborLinkDownReason", pPortInfo->NeighborLinkDownReason, indent+4);
@@ -2177,7 +2189,7 @@ void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int deta
 	switch (format) {
 	case FORMAT_TEXT:
 		if (portp->PortGUID)
-			if (g_hard || g_persist)
+			if (g_hard)
 				printf("%*s%4u xxxxxx %-*s 0x%016"PRIx64,
 					indent, "", portp->PortNum,
 					TINY_STR_ARRAY_SIZE, portp->PortInfo.LocalPortId,
@@ -2192,7 +2204,7 @@ void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int deta
 				indent, "", portp->PortNum, TINY_STR_ARRAY_SIZE,
 				portp->PortInfo.LocalPortId);
 		if (g_hard)
-			printf(" xxxx xxxxxxx\n");
+			printf(" xxxxxxx\n");
 		else
 			printf(" %7s\n",
 				EthLinkSpeedToText(portp->PortInfo.LinkSpeed.Active, buf1, sizeof(buf1)));
@@ -2202,10 +2214,10 @@ void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int deta
 				portp->nodep->NodeInfo.NodeGUID, portp->PortNum);
 		XmlPrintDec("PortNum", portp->PortNum, indent+4);
 		if (portp->PortGUID) {
-			if (! (g_hard || g_persist)) {
+			if (! (g_hard)) {
 				XmlPrintPortIfID("EndMgmtIfID",
 					portp->EndPortLID, indent+4);
-            }
+			}
 			XmlPrintHex64("MgmtIfAddr", portp->PortGUID, indent+4);
 		}
 		XmlPrintStr("PortId", (const char*) portp->PortInfo.LocalPortId, indent+4);
@@ -3573,6 +3585,30 @@ void ShowLinkErrorReport(Point *focus, Format_t format, int indent, int detail)
 			break;
 		}
 		goto done;
+	} else if (! (g_Fabric.flags & FF_STATS) && ! g_snapshot_in_file) {
+		switch (format) {
+		case FORMAT_TEXT:
+			printf("%*sReport skipped: -s nor -X option not specified\n", indent, "");
+			break;
+		case FORMAT_XML:
+			printf("%*s<!-- Report skipped: -s nor -X option not specified -->\n", indent, "");
+			break;
+		default:
+			break;
+		}
+		goto done;
+	} else if (! (g_Fabric.flags & FF_STATS) && g_snapshot_in_file) {
+		switch (format) {
+		case FORMAT_TEXT:
+			printf("%*sReport skipped: provided snapshot was created without -s option\n", indent, "");
+			break;
+		case FORMAT_XML:
+			printf("%*s<!-- Report skipped: provided snapshot was created without -s option -->\n", indent, "");
+			break;
+		default:
+			break;
+		}
+		goto done;
 	}
 
 	ShowPointFocus(focus, FIND_FLAG_FABRIC, format, indent, detail);
@@ -3785,7 +3821,10 @@ struct option options[] = {
 		{ "quiet", no_argument, NULL, 'q' },
 		{ "output", required_argument, NULL, 'o' },
 		{ "detail", required_argument, NULL, 'd' },
+		{ "persist", no_argument, NULL, 'P' },
+		{ "hard", no_argument, NULL, 'H' },
 		{ "noname", no_argument, NULL, 'N' },
+		{ "stats", no_argument, NULL, 's' },
 		{ "limit", no_argument, NULL, 'L' },
 		{ "config", required_argument, NULL, 'c' },
 		{ "focus", required_argument, NULL, 'F' },
@@ -3793,7 +3832,7 @@ struct option options[] = {
 		{ "infile", required_argument, NULL, 'X' },
 		{ "topology", required_argument, NULL, 'T' },
 		{ "quietfocus", no_argument, NULL, 'Q' },
-//		{ "allports", no_argument, NULL, 'A' },
+		{ "allports", no_argument, NULL, 'A' },
 		{ "rc", required_argument, NULL, 'z' },
 		{ "timeout", required_argument, NULL, '!' },
 		{ "ethconfig", required_argument, NULL, 'E' },
@@ -3805,9 +3844,9 @@ struct option options[] = {
 
 void Usage_full(void)
 {
-	fprintf(stderr, "Usage: ethreport [-v][-q] [-o report] [-d detail]\n"
-	                "                    [-N] [-x] [-X snapshot_input] [-T topology_input]\n"
-	                "                    [-c file] [-L] [-F point] [-Q] [-E file] [-p plane]\n");
+	fprintf(stderr, "Usage: ethreport [-v][-q] [-o report] [-d detail] [-P|-H]\n"
+	                "                    [-N] [-x] [-X snapshot_input] [-T topology_input] [-s]\n"
+	                "                    [-A] [-c file] [-L] [-F point] [-Q] [-E file] [-p plane]\n");
 	fprintf(stderr, "              or\n");
 	fprintf(stderr, "       ethreport --help\n");
 	fprintf(stderr, "    --help - produce full help text\n");
@@ -3816,6 +3855,8 @@ void Usage_full(void)
 	fprintf(stderr, "    --timeout                 - timeout(wait time for response) in ms, default is 1000ms\n");
 	fprintf(stderr, "    -o/--output report        - report type for output\n");
 	fprintf(stderr, "    -d/--detail level         - level of detail 0-n for output, default is 2\n");
+	fprintf(stderr, "    -P/--persist              - only include data persistent across reboots\n");
+	fprintf(stderr, "    -H/--hard                 - only include permanent hardware data\n");
 	fprintf(stderr, "    -N/--noname               - omit node\n");
 	fprintf(stderr, "    -x/--xml                  - output in xml\n");
 	fprintf(stderr, "    -X/--infile snapshot_input\n");
@@ -3829,7 +3870,8 @@ void Usage_full(void)
 	fprintf(stderr, "                                reports can be augmented with information\n");
 	fprintf(stderr, "                                not available electronically.\n");
 	fprintf(stderr, "                                '-' may be used to specify stdin\n");
-//	fprintf(stderr, "    -A/--allports             - also get PortInfo for down switch ports.\n");
+	fprintf(stderr, "    -s/--stats                - get performance stats for all ports\n");
+	fprintf(stderr, "    -A/--allports             - also get PortInfo for down switch ports.\n");
 	fprintf(stderr, "    -c/--config file          - error thresholds config file, default is\n");
 	fprintf(stderr, "                                %s\n", CONFIG_FILE);
 	fprintf(stderr, "    -E/--ethconfig file       - Ethernet Mgt config file, default is\n");
@@ -3872,7 +3914,7 @@ void Usage_full(void)
 	fprintf(stderr, "                                potential\n");
 	fprintf(stderr, "    errors                    - summary of links whose errors exceed counts in\n");
 	fprintf(stderr, "                                config file\n");
-//	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
+	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
 	fprintf(stderr, "    verifynics                 - compare fabric (or snapshot) NICs to supplied\n");
 	fprintf(stderr, "                                topology and identify differences and omissions\n");
 	fprintf(stderr, "    verifysws                 - compare fabric (or snapshot) Switches to\n");
@@ -3993,7 +4035,7 @@ void Usage_full(void)
 
 void Usage(void)
 {
-	fprintf(stderr, "Usage: ethreport [-v][-q] [-o report] [-d detail] [-x]\n");
+	fprintf(stderr, "Usage: ethreport [-v][-q] [-o report] [-d detail] [-x] [-s]\n");
 	fprintf(stderr, "              or\n");
 	fprintf(stderr, "       ethreport --help\n");
 	fprintf(stderr, "    --help - produce full help text\n");
@@ -4002,6 +4044,7 @@ void Usage(void)
 	fprintf(stderr, "    -o/--output report        - report type for output\n");
 	fprintf(stderr, "    -d/--detail level         - level of detail 0-n for output, default is 2\n");
 	fprintf(stderr, "    -x/--xml                  - output in xml\n");
+	fprintf(stderr, "    -s/--stats                - get performance stats for all ports\n");
 	fprintf(stderr, "Report Types (abridged):\n");
 	fprintf(stderr, "    comps                     - summary of all systems in fabric\n");
 	fprintf(stderr, "    brcomps                   - brief summary of all systems in fabric\n");
@@ -4021,7 +4064,7 @@ void Usage(void)
 	fprintf(stderr, "                                potential\n");
 	fprintf(stderr, "    errors                    - summary of links whose errors exceed counts in\n");
 	fprintf(stderr, "                                config file\n");
-//	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
+	fprintf(stderr, "    otherports                - summary of ports not connected to this fabric\n");
 	fprintf(stderr, "    all                       - comp, nodes, links, extlinks,\n");
 	fprintf(stderr, "                                slowconnlinks, and error reports\n");
 	fprintf(stderr, "    fabricinfo                - fabric information\n");
@@ -4190,8 +4233,8 @@ report_t checkOutputType(const char* name)
 		return REPORT_MISCONNLINKS;
 	} else if (0 == strcmp(optarg, "errors")) {
 		return REPORT_ERRORS;
-//	} else if (0 == strcmp(optarg, "otherports")) {
-//		return REPORT_OTHERPORTS;
+	} else if (0 == strcmp(optarg, "otherports")) {
+		return REPORT_OTHERPORTS;
 	} else if (0 == strcmp(optarg, "verifylinks")) {
 		return REPORT_VERIFYLINKS;
 	} else if (0 == strcmp(optarg, "verifyextlinks")) {
@@ -4268,7 +4311,7 @@ int main(int argc, char ** argv)
 	}
 
 	// process command line arguments
-	while (-1 != (c = getopt_long(argc,argv, "vVAqo:d:NLc:F:xX:T:E:p:Q", options, &index)))
+	while (-1 != (c = getopt_long(argc,argv, "vVAqo:d:sNLc:F:xX:T:E:p:Q", options, &index)))
 	{
                 switch (c)
 		{
@@ -4291,6 +4334,8 @@ int main(int argc, char ** argv)
 				break;
 			case 'o':	// select output record desired
 				report = (report_t) report | checkOutputType(optarg);
+				if (report & REPORT_ERRORS)
+					sweepFlags |= FF_STATS;
 				if (report & (REPORT_VERIFYNICS|REPORT_VERIFYSWS))
 					find_flag |= FIND_FLAG_ENODE;
 				if (report & (REPORT_VERIFYLINKS|REPORT_VERIFYEXTLINKS
@@ -4306,12 +4351,21 @@ int main(int argc, char ** argv)
 				}
 				detail = (int)temp;
 				break;
+			case 'P':	// persistent data only
+				g_persist = 1;
+				break;
+			case 'H':	// hardware data only
+				g_hard = 1;
+				break;
 			case 'N':	// omit names
 				g_noname = 1;
 				break;
-//			case 'A':	// get PortInfo for all switch ports, including down ones
-//				sweepFlags |= FF_DOWNPORTINFO;
-//				break;
+			case 's':	// get performance stats
+				sweepFlags |= FF_STATS;
+				break;
+			case 'A':	// get PortInfo for all switch ports, including down ones
+				sweepFlags |= FF_DOWNPORTINFO;
+				break;
 			case 'L':	// limit to specific ports
 				g_limitstats = 1;
 				break;
@@ -4413,8 +4467,7 @@ int main(int argc, char ** argv)
 	}
 
 	if ((report & REPORT_FABRICINFO) && (g_limitstats || g_noname || (sweepFlags & FF_DOWNPORTINFO))) {
-//		fprintf(stderr, "ethreport: -L, -N, -A ignored for -o fabricinfo\n");
-		fprintf(stderr, "ethreport: -L, -N ignored for -o fabricinfo\n");
+		fprintf(stderr, "ethreport: -L, -N, -A ignored for -o fabricinfo\n");
 		g_noname = 0;
 	}
 
@@ -4423,9 +4476,11 @@ int main(int argc, char ** argv)
 		g_limitstats = 0;
 	}
 
-	if ((report & REPORT_SNAPSHOT) && g_noname) {
-		fprintf(stderr, "ethreport: -N ignored for -o snapshot\n");
+	if ((report & REPORT_SNAPSHOT) && (g_noname || g_hard || g_persist)) {
+		fprintf(stderr, "ethreport: -N, -H and -P ignored for -o snapshot\n");
 		g_noname = 0;
+		g_hard = 0;
+		g_persist = 0;
 	}
 
 	if (g_fabricId[0] && strchr(g_fabricId, ' ')) {
@@ -4434,6 +4489,9 @@ int main(int argc, char ** argv)
 	}
 
 	if (g_snapshot_in_file) {
+		if (sweepFlags & FF_STATS)
+			fprintf(stderr, "ethreport: -s ignored for -X\n");
+		sweepFlags &= ~(FF_STATS);
 		if (sweepFlags & FF_DOWNPORTINFO)
 			fprintf(stderr, "ethreport: -A ignored for -X\n");
 		sweepFlags &= ~(FF_DOWNPORTINFO);
@@ -4441,6 +4499,11 @@ int main(int argc, char ** argv)
 	if (g_limitstats && ! (report & (REPORT_ERRORS|REPORT_SNAPSHOT))) {
 		fprintf(stderr, "ethreport: -L ignored without -o errors nor -o snapshot\n");
 		g_limitstats = 0;
+	}
+
+	if (g_hard || g_persist) {
+		// do not collect port counters
+		sweepFlags &= ~(FF_STATS);
 	}
 
 	if (report == REPORT_NONE)
