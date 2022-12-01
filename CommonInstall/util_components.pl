@@ -544,8 +544,10 @@ sub ShowRpmList($$$$@)
 	my $rpmsdir = "";
 	my $first_item = 1;
 	foreach my $rpm (@rpms) {
-		if ( $GPU_Install && -d file_glob("./repos/IEFS_PKGS_CUDA") ) {
+		if ( $GPU_Install == 1 && -d file_glob("./repos/IEFS_PKGS_CUDA") ) {
 			$rpmsdir=file_glob("./repos/IEFS_PKGS_CUDA/RPMS");
+		} elsif ( $GPU_Install == 2 && -d file_glob("./repos/IEFS_PKGS_ONEAPI-ZE") ) {
+			$rpmsdir=file_glob("./repos/IEFS_PKGS_ONEAPI-ZE/RPMS");
 		} else {
 			$rpmsdir=file_glob("./repos/IEFS_PKGS/RPMS");
 		}
@@ -1395,8 +1397,10 @@ sub show_install_menu($)
 			printf ("$BRAND Ethernet Install ($VERSION $DBG_FREE) Menu\n\n");
 			my $screens = int((scalar(@Components) - $num_hidden_comps + $maxlines-1)/$maxlines);
 
-			if($GPU_Install == 1) {
+			if ($GPU_Install == 1) {
 				printf ("Install GPU Direct components, ensure nvidia drivers + SDK are present \n\n");
+			} elsif ($GPU_Install == 2) {
+				printf ("Install GPU Direct components, ensure intel drivers + SDK are present \n\n");
 			}
 			if ($screens > 1 ) {
 				printf ("Please Select Install Action (screen %d of $screens):\n",

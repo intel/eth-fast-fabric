@@ -1,4 +1,4 @@
-basic_tools_sbin="ethcapture ethshmcleanup"
+basic_tools_sbin="ethbw ethcapture ethshmcleanup"
 
 basic_tools_sbin_sym=""
 

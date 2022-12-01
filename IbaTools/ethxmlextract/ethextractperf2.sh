@@ -80,7 +80,7 @@ then
 fi
 
 IFS=';'
-/usr/sbin/ethreport -o comps -x -Q -d 10 "$@" > $tempfile
+/usr/sbin/ethreport -o comps -s -x -Q -d 10 "$@" > $tempfile
 if [ -s $tempfile ]
 then
 	# minor reformatting of header line to condense column names

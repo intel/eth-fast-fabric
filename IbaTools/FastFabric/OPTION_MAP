@@ -20,7 +20,8 @@ List of command line options used in various Fast Fabric tools
                     SNMP query
 -b                  Sets the baseline mode                         ethallanalysis
 -b                  Specifies the baseline mode                    ethfabricanalysis
--b                  bind address                                   ethudtress
+-b                  bind address                                   ethudstress
+-B                  sockets listener "service" "port number"       ethudstress
 -C                  Performs more topology file validation         eth2rm
 -C                  Outputs list of supported components           iefsconfig
 -C                  message count                                  ethustress
@@ -133,6 +134,7 @@ List of command line options used in various Fast Fabric tools
 -I install_options  Specifies the software install options         ethhostadmin
 -i level            Specifies the output indent level              ethxlattopology
 -i number           Number of spaces to indent each level of XML   ethxmlgenerate
+-i interval         seconds between BW monitoring                  ethbw
                     output
 -k                  At start and end of verification, kills any    ethverifyhosts
                     existing hostverify or xhpl jobs on the hosts

@@ -49,12 +49,19 @@ log_user 0;	# disable detailed logging to stdout
 #exp_internal 1
 #cmd_trace on
 #strace 4
+set rping_port_file ""
 
 proc suite_setup {} {
 	# example of conditional setup
 	#test_execute {load populate} {
 		#do some installation or configuration stuff
 	#}
+}
+
+proc suite_cleanup { failed } {
+	global rping_port_file
+
+	exec rm -f $rping_port_file
 }
 
 proc case_setup {} {
@@ -205,7 +212,7 @@ File: /usr/lib/eth-tools/rping.exp" case_setup case_cleanup {
 }
 
 test_suite "rping" "rdma ping" "Ping test to each host via RDMA
-File: /usr/lib/eth-tools/rping.exp" suite_setup noop {
+File: /usr/lib/eth-tools/rping.exp" suite_setup suite_cleanup {
 	# Global Initializations for Test Suite:
 	# --------------------------------------
 
@@ -227,47 +234,81 @@ File: /usr/lib/eth-tools/rping.exp" suite_setup noop {
 	set driver "ice"
 
 	foreach hp [split $env(CFG_HOST_PORTS) ";"] {
-		incr hindex
 		set key_value [split $hp ":"]
-		set HOST_PORTS([lindex $key_value 0]) [lindex $key_value 1]
-		lappend hrange $hindex
+		set host_ports([lindex $key_value 0]) [lindex $key_value 1]
 	}
 
-	set port_file "/tmp/ff_port_[pid]"
-	parallel host [array names HOST_PORTS]  {
-		target_root_sh $host
-		unix_cmd 30 "" "killall rping"
-		set ports $HOST_PORTS($host)
-		if {"$ports" == ""} {
-			unix_cmd 10 0 "type rping"
-			send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
-			set out [expect_list 20 {"(?n)^PORTS:.*"}]
-			if {![regexp {: ([\w ]+)} $out dummy ports]} {
-				fail_test "No $driver interfaces found"
+	global rping_port_file
+	set rping_port_file "/tmp/ff_port_[pid]"
+
+	test_case "setup" "rping test setup" "Prepare for rping tests
+File: /usr/lib/eth-tools/rping.exp" case_setup case_cleanup {
+		upvar rping_port_file rping_port_file
+		upvar host_ports host_ports
+		upvar driver driver
+
+		parallel host [array names host_ports]  {
+			if { [ catch { set res [
+				test_item "$host-setup" "Prepare for rping tests on $host" "prepare for RDMA ping tests on $host" noop cleanup_all_children {
+
+					target_root_sh $host
+					unix_cmd 30 "" "killall rping"
+					set ports $host_ports($host)
+					if {"$ports" == ""} {
+						unix_cmd 10 0 "type rping"
+						send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
+						set out [expect_list 20 {"(?n)^PORTS:.*"}]
+						if {![regexp {: ([\w ]+)} $out dummy ports]} {
+							fail_test "No $driver interfaces found"
+						}
+						check_exit_status 20 0
+						set user_ports 0
+					} else {
+						set user_ports 1
+					}
+					target_root_sh_exit
+					if { $user_ports == 0 } {
+						exec echo "$host:$ports" >> $rping_port_file
+					}
+				}
+			 ] } err_str2 ] != 0  || $res != 0 } {
+				append_punchlist "$host" "unable to prepare for rping test (ssh or NIC config issue)"
+				exec echo "$host:FAILED" >> $rping_port_file
 			}
-			check_exit_status 20 0
-			exec echo "$host: $ports" >> $port_file
 		}
-		target_root_sh_exit
 	}
-	if { [ file exists $port_file ] } {
-		foreach line [split [exec cat $port_file] '\n'] {
+	if { [ file exists $rping_port_file ] } {
+		foreach line [split [exec cat $rping_port_file] '\n'] {
 			set line [split $line ":"]
-			set HOST_PORTS([lindex $line 0]) [lindex $line 1]
+			if { [lindex $line 1 ] != "FAILED" } {
+				set host_ports([lindex $line 0]) [lindex $line 1]
+			} else {
+				unset host_ports([lindex $line 0])
+			}
 		}
-		exec rm -f $port_file
+		exec rm -f $rping_port_file
 	}
 
 	# test rping between one host and the next host in host list to ensure each host
 	# can run rping server and client correctly. E.g. for host1,...,hostN, we test
 	# (host1, host2), (host2, host3), ..., (hostN-1, hostN) and (hostN, host1)
+	# if only one host, will test it rping-ing itself
+	if { [ array size host_ports ] == 0 } {
+		fail_test "All Hosts failed rping prepare"
+	}
+
+	foreach host [array names host_ports ] {
+		incr hindex
+		lappend hrange $hindex
+	}
+
 	parallel hindex $hrange {
 		set next [expr $hindex + 1]
 		if { $next == [llength $hrange] } {
 			set next 0
 		}
-		set shost [lindex [array names HOST_PORTS] $hindex]
-		set chost [lindex [array names HOST_PORTS] $next]
-		test_case_rping $shost $HOST_PORTS($shost) $chost $HOST_PORTS($chost) 5 1
+		set shost [lindex [array names host_ports] $hindex]
+		set chost [lindex [array names host_ports] $next]
+		test_case_rping $shost $host_ports($shost) $chost $host_ports($chost) 5 1
 	}
 }

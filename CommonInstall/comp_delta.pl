@@ -227,6 +227,13 @@ sub delta_srpm_file($$)
 			NormalPrint("CUDA specific SRPMs do not exist\n");
 			exit 1;
 		}
+	} elsif ( $GPU_Install == 2 ) {
+		if ( -d $srcdir."/SRPMS/ONEAPI-ZE" ) {
+			$result = file_glob("$srcdir/$SRPMS_SUBDIR/ONEAPI-ZE/$globname");
+		} else {
+			NormalPrint("ONEAPI ZE specific SRPMs do not exist\n");
+			exit 1;
+		}
 	} else {
 		$result = file_glob("$srcdir/$SRPMS_SUBDIR/$globname");
 	}
@@ -264,6 +271,14 @@ sub get_rpms_dir_delta($)
 				$rpmsdir=$rpmsdir."/CUDA";
 			} else {
 				NormalPrint("CUDA specific packages do not exist\n");
+				exit 1;
+			}
+	} elsif ( $GPU_Install == 2
+		 && ( $package =~ /iefs-kernel-updates/ || $package =~ /libpsm/) ) {
+			if ( -d $rpmsdir."/ONEAPI-ZE" ) {
+				$rpmsdir=$rpmsdir."/ONEAPI-ZE";
+			} else {
+				NormalPrint("ONEAPI ZE specific packages do not exist\n");
 				exit 1;
 			}
 	}
@@ -470,6 +485,8 @@ sub build_delta($$$$$$)
 		$resfileop = "append";
 		if ( $GPU_Install == 1 ) {
 			delta_move_rpms("$RPM_DIR/$RPMS_SUBDIR", "$rpmsdir/CUDA");
+		} elsif ( $GPU_Install == 2 ) {
+			delta_move_rpms("$RPM_DIR/$RPMS_SUBDIR", "$rpmsdir/ONEAPI-ZE");
 		} else {
 			delta_move_rpms("$RPM_DIR/$RPMS_SUBDIR", "$rpmsdir");
 		}
