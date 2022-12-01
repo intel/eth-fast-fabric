@@ -46,6 +46,7 @@ my $exit_code=0;
 
 my $Force_Install = 0;# force option used to force install on unsupported distro
 my $GPU_Install = 0;
+my $GPU_Dir = "";
 # When --user-space is selected we are targeting a user space container for
 # installation and will skip kernel modules and firmware
 my $user_space_only = 0; # can be set to 1 by --user-space argument

@@ -134,10 +134,10 @@ static perf receive_perf, reply_perf;
 static struct rdma_addrinfo hint;
 
 void usage() {
-	fprintf(stderr, "Usage: %s [-b bind_addr] [-r] [-c connections] [-C msg_count]\n", BASENAME);
-	fprintf(stderr, "		[-S msg_size] [-T timeout_sec]\n");
-	fprintf(stderr, "Usage: %s -s server_addr [-b bind_addr] [-r] [-t tos] [-c connections]\n", BASENAME);
-	fprintf(stderr, "		[-S msg_size] [-T timeout_sec]\n");
+	fprintf(stderr, "Usage: %s [-b bind_addr] [-B port] [-r] [-c connections]\n", BASENAME);
+	fprintf(stderr, "		[-C msg_count] [-S msg_size] [-T timeout_sec]\n");
+	fprintf(stderr, "Usage: %s -s server_addr [-b bind_addr] [-B port] [-r] [-t tos]\n", BASENAME);
+	fprintf(stderr, "		[-c connections] [-S msg_size] [-T timeout_sec]\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Description: Send UD messages from multiple senders to a receiver.\n");
 	fprintf(stderr, "    Run this tool as a server on receiver machine, and run this tool as client\n");
@@ -147,6 +147,7 @@ void usage() {
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Options:\n");
 	fprintf(stderr, "    -b bind_addr   bind IP address\n");
+	fprintf(stderr, "    -B port        port service name/number (default '15234')\n");
 	fprintf(stderr, "    -s server_addr server/receiver address\n");
 	fprintf(stderr, "    -r             sender sends reply messages\n");
 	fprintf(stderr, "    -t tos         type of service (ToS) for this tool. The value can be 0, 8,\n");
@@ -906,13 +907,16 @@ int launch_client(job *the_job) {
 int main(int argc, char **argv) {
 	int op, ret;
 
-	while ((op = getopt(argc, argv, "s:b:rc:C:S:t:T:")) != -1) {
+	while ((op = getopt(argc, argv, "s:b:B:rc:C:S:t:T:")) != -1) {
 		switch (op) {
 		case 's':
 			dst_addr = optarg;
 			break;
 		case 'b':
 			src_addr = optarg;
+			break;
+		case 'B':
+			port = optarg;
 			break;
 		case 'r':
 			srv_reply = true;

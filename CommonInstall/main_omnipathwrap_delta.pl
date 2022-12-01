@@ -867,7 +867,8 @@ sub Usage
 	printf STDERR "            can appear with -D or more than once on command line\n";
 	printf STDERR "       -D comp - disable autostart of given component\n";
 	printf STDERR "            can appear with -E or more than once on command line\n";
-	printf STDERR "       -G - install GPU Direct components(must have NVidia drivers installed)\n";
+	printf STDERR "       -G - install GPU Direct components (must have GPU drivers installed)\n";
+	printf STDERR "            also, either NVIDIA_GPU_DIRECT=<DIR> or INTEL_GPU_DIRECT=<DIR> must be in env\n";
 	printf STDERR "       -v - verbose logging\n";
 	printf STDERR "       -vv - very verbose debug logging\n";
 	printf STDERR "       -C - output list of supported components\n";
@@ -1107,9 +1108,24 @@ sub process_args
 			} elsif ( "$arg" eq "--force" ) {
 				$Force_Install=1;
 			} elsif ( "$arg" eq "-G") {
-				$GPU_Install=1;
-				$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
-				$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
+				if (defined $ENV{'NVIDIA_GPU_DIRECT'}) {
+					$GPU_Dir = $ENV{'NVIDIA_GPU_DIRECT'};
+					$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
+					$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
+					$GPU_Install=1;
+				} elsif (defined $ENV{'INTEL_GPU_DIRECT'}) {
+					$GPU_Dir = $ENV{'INTEL_GPU_DIRECT'};
+					$GPU_Install=2;
+				} else {
+					printf STDERR "GPU Direct requested, but niether NVIDIA_GPU_DIRECT or INTEL_GPU_DIRECT set\n";
+					Usage;
+				}
+				if ( -e "$GPU_Dir/Module.symvers" ) {
+					# Found correct file
+				} else {
+					printf STDERR "GPU Direct requested, but $GPU_Dir/Module.symvers is missing\n";
+					Usage;
+				}
 			} elsif ( "$arg" eq "-C" ) {
 				$To_Show_Comps = 1;
 			} elsif ( "$arg" eq "-c" ) {

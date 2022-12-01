@@ -61,11 +61,23 @@ set driver "ice"
 # the key is hostname, and the value is a list of port, ip pairs in format <port>:<ip>
 array set host_port_ip {}
 
+set pfctest_port_file ""
+set pfctest_mtu_file ""
+set pfctest_hpi_file ""
+
 proc suite_setup {} {
 	# example of conditional setup
 	#test_execute {load populate} {
 		#do some installation or configuration stuff
 	#}
+}
+
+proc suite_cleanup { failed } {
+	global pfctest_port_file
+	global pfctest_mtu_file
+	global pfctest_hpi_file
+
+	exec rm -f $pfctest_port_file $pfctest_mtu_file $pfctest_hpi_file
 }
 
 proc case_setup {} {
@@ -269,9 +281,9 @@ File: /usr/lib/eth-tools/pfctest.exp" case_setup case_cleanup {
 				set index [ lsearch -exact $host_port_ip($receiver) $port_ip ]
 				after [ calc_timeout [ expr ( $index % [ test_get_env TEST_MAX_PARALLEL ] ) * 500  ] ]
 			}
-                        set port_ip [split $port_ip ":"]
-                        set port [lindex $port_ip 0]
-                        set ip [lindex $port_ip 1]
+			set port_ip [split $port_ip ":"]
+			set port [lindex $port_ip 0]
+			set ip [lindex $port_ip 1]
 			if { [ catch { set res [
 				test_item ":$port<--($senders)" \
 				          "In-cast $receiver:$port<--($senders)" \
@@ -292,7 +304,7 @@ File: /usr/lib/eth-tools/pfctest.exp" case_setup case_cleanup {
 }
 
 test_suite "pfctest" "Empirical PFC Test" "Empirical PFC test on all hosts
-File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
+File: /usr/lib/eth-tools/pfctest.exp" suite_setup suite_cleanup {
 	# Global Initializations for Test Suite:
 	# --------------------------------------
 
@@ -319,94 +331,117 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 	set hrange {}
 	set hindex -1
 	foreach hp [split $env(CFG_HOST_PORTS) ";"] {
-		incr hindex
 		set key_value [split $hp ":"]
-		set HOST_PORTS([lindex $key_value 0]) [lindex $key_value 1]
-		lappend hrange $hindex
+		set host_ports([lindex $key_value 0]) [lindex $key_value 1]
 	}
-	set port_file "/tmp/ff_port_[pid]"
-	set mtu_file "/tmp/ff_mtu_[pid]"
-	set hpi_file "/tmp/ff_hpi_[pid]"
-	parallel host [array names HOST_PORTS]  {
-		set ports $HOST_PORTS($host)
-		target_root_sh $host
-		unix_cmd 30 "" "killall $stress_tool"
-		if {"$ports" == ""} {
-			send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
-			set out [expect_list 20 {"(?n)^PORTS:.*"}]
-			if {![regexp {: ([\w ]+)} $out dummy ports]} {
-				fail_test "No $driver interfaces found"
+	set pfctest_port_file "/tmp/ff_port_[pid]"
+	set pfctest_mtu_file "/tmp/ff_mtu_[pid]"
+	set pfctest_hpi_file "/tmp/ff_hpi_[pid]"
+	test_case "setup" "PFC test setup" "Prepare for PFC tests File: /usr/lib/eth-tools/pfctest.exp" case_setup case_cleanup {
+		upvar pfctest_port_file pfctest_port_file
+		upvar pfctest_mtu_file pfctest_mtu_file
+		upvar pfctest_hpi_file pfctest_hpi_file
+		upvar host_ports host_ports
+		upvar driver driver
+		upvar stress_tool stress_tool
+		upvar msg_size msg_size
+		upvar min_msg_size min_msg_size
+
+		parallel host [array names host_ports]  {
+			if { [ catch { set res [
+				test_item "$host-setup" "Prepare for PFC tests on $host" "prepare for PFC tests on $host" noop cleanup_all_children {
+
+					target_root_sh $host
+					unix_cmd 30 "" "killall $stress_tool"
+					set ports $host_ports($host)
+					if {"$ports" == ""} {
+						send_unix_cmd "echo PORTS: \$(ls -l /sys/class/net/*/device/driver | grep \"$driver$\" | awk '{print \$9}' | cut -d '/' -f5 | tr '\\n' ' ')"
+						set out [expect_list 20 {"(?n)^PORTS:.*"}]
+						if {![regexp {: ([\w ]+)} $out dummy ports]} {
+							fail_test "No $driver interfaces found"
+						}
+						check_exit_status 20 0
+						set user_ports 0
+					} else {
+						set user_ports 1
+					}
+
+					set desired_mtu $msg_size
+					set port_ips ""
+					foreach port $ports {
+						send_unix_cmd "ip addr show dev $port | egrep --color=never 'mtu |inet '; echo DONE"
+						expect_list 20 {"(?n)^DONE"} {} out
+						set out [split $out "\n"]
+						# if a command already ran, the output may starts with a new line
+						if {[lindex $out 0] eq ""} {
+							set out [lreplace $out 0 0]
+						}
+
+						if { [llength $out] > 1 && [regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} [lindex $out 2] dummy ip_addr]} {
+							append port_ips " $port:$ip_addr"
+						} elseif {$user_ports == 0} {
+							# auto detected port, ignore it if it has no IP address
+							continue
+						} else {
+							# user specified port that has no IP address
+							fail_test "$host: No IP address found on interface $port"
+						}
+
+						if {![regexp {mtu ([0-9]+)} [lindex $out 1] dummy mtu]} {
+							fail_test "$host: No mtu found on interface $port"
+						}
+						if {[expr $mtu < $min_msg_size]} {
+							fail_test "$host: Mtu $mtu is less then minimum message size $min_msg_size"
+						}
+						if {[expr $mtu < $msg_size]} {
+							set desired_mtu $min_msg_size
+						}
+					}
+					if {$port_ips == ""} {
+						fail_test "$host: No valid interfaces with IP address"
+					}
+
+					target_root_sh_exit
+					# echo is safe on parallel when the string size if less than buffer size
+					exec echo "$host;$port_ips" >> $pfctest_hpi_file
+					exec echo "$desired_mtu" >> $pfctest_mtu_file
+					if { $user_ports == 0 } {
+						exec echo "$host: $ports" >> $pfctest_port_file
+					}
+				}
+			] } err_str2 ] != 0  || $res != 0 } {
+				append_punchlist "$host" "unable to prepare for PFC test (ssh or NIC config issue)"
+				exec echo "$host:FAILED" >> $pfctest_port_file
 			}
-			check_exit_status 20 0
-			exec echo "$host: $ports" >> $port_file
-			set user_ports 0
-		} else {
-			set user_ports 1
 		}
-
-		set desired_mtu $msg_size
-		set port_ips ""
-		foreach port $ports {
-			send_unix_cmd "ip addr show dev $port | egrep --color=never 'mtu |inet '; echo DONE"
-			expect_list 20 {"(?n)^DONE"} {} out
-			set out [split $out "\n"]
-			# if a command already ran, the output may starts with a new line
-			if {[lindex $out 0] eq ""} {
-				set out [lreplace $out 0 0]
-			}
-
-			if { [llength $out] > 1 && [regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} [lindex $out 2] dummy ip_addr]} {
-				append port_ips " $port:$ip_addr"
-			} elseif {$user_ports == 0} {
-				# auto detected port, ignore it if it has no IP address
-				continue
-			} else {
-				# user specified port that has no IP address
-				fail_test "$host: No IP address found on interface $port"
-			}
-
-			if {![regexp {mtu ([0-9]+)} [lindex $out 1] dummy mtu]} {
-				fail_test "$host: No mtu found on interface $port"
-			}
-			if {[expr $mtu < $min_msg_size]} {
-				fail_test "$host: Mtu $mtu is less then minimum message size $min_msg_size"
-			}
-			if {[expr $mtu < $msg_size]} {
-				set desired_mtu $min_msg_size
-			}
-		}
-		if {$port_ips == ""} {
-			fail_test "$host: No valid interfaces with IP address"
-		}
-
-		target_root_sh_exit
-		# echo is safe on parallel when the string size if less than buffer size
-		exec echo "$host;$port_ips" >> $hpi_file
-		exec echo "$desired_mtu" >> $mtu_file
 	}
-	if { [ file exists $port_file ] } {
-		foreach line [split [exec cat $port_file] '\n'] {
+	if { [ file exists $pfctest_port_file ] } {
+		foreach line [split [exec cat $pfctest_port_file] '\n'] {
 			set line [split $line ":"]
-			set HOST_PORTS([lindex $line 0]) [lindex $line 1]
+			if { [lindex $line 1 ] != "FAILED" } {
+				set host_ports([lindex $line 0]) [lindex $line 1]
+			} else {
+				unset host_ports([lindex $line 0])
+			}
 		}
-		exec rm -f $port_file
+		exec rm -f $pfctest_port_file
 	}
 
-	if { [ file exists $hpi_file ] } {
-		foreach line [split [exec cat $hpi_file] '\n'] {
+	if { [ file exists $pfctest_hpi_file ] } {
+		foreach line [split [exec cat $pfctest_hpi_file] '\n'] {
 			set line [split $line ";"]
 			set host_port_ip([lindex $line 0]) [lindex $line 1]
 		}
-		exec rm -f $hpi_file
+		exec rm -f $pfctest_hpi_file
 	}
 
-	if { [ file exists $mtu_file ] } {
-		set new_msg_size [exec sh -c "grep $min_msg_size $mtu_file >/dev/null && echo $min_msg_size || echo $msg_size"]
+	if { [ file exists $pfctest_mtu_file ] } {
+		set new_msg_size [exec sh -c "grep $min_msg_size $pfctest_mtu_file >/dev/null && echo $min_msg_size || echo $msg_size"]
 		if {$new_msg_size != $msg_size} {
 			show_message "Adjusted message size from $msg_size to $new_msg_size due to small MTU"
 			set msg_size $new_msg_size
 		}
-		exec rm -f $mtu_file
+		exec rm -f $pfctest_mtu_file
 	}
 
 	# run ethudstress between one host and its next 2 hosts in host list
@@ -415,26 +450,34 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 	# For host1,...,hostN, we test among (host1, host2, hosts3),
 	# (host2, host3, host4), ..., (hostN-2, hostN-1, hostN), and
 	# (hostN-1, hostN, host1), (hostN, host1, host2)
+	if { [ array size host_ports ] == 0 } {
+		fail_test "All Hosts failed pfctest prepare"
+	}
 
-	if {[llength $hrange] == 1} {
-		fail_suite "Need at lest two hosts!" 1
+	foreach host [array names host_ports ] {
+		incr hindex
+		lappend hrange $hindex
+	}
+
+	if {[llength $hrange] <= 1} {
+		fail_suite "Need at least two hosts!" 1
 	}
 	if {[llength $hrange] < $group_size} {
 		set group_size [llength $hrange]
 	}
 	parallel hindex $hrange {
-		set receiver [lindex [array names HOST_PORTS] $hindex]
+		set receiver [lindex [array names host_ports] $hindex]
 		set senders {}
 		set sender_proc 0
 		for {set i 1} {$i < $group_size} {incr i} {
 			set index [expr ($hindex + $i) % [llength $hrange]]
-			set sender [lindex [array names HOST_PORTS] $index]
+			set sender [lindex [array names host_ports] $index]
 			incr sender_proc [llength $host_port_ip($sender)]
 			lappend senders $sender
 			if { $i >= 2 && $sender_proc >= 8 } {
 				break
 			}
-                }
+		}
 		test_case_pfc $receiver $senders 1
 	}
 }

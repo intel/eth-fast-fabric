@@ -45,6 +45,7 @@ DIRS			= \
 				$(shell ls -d ethmon 2>/dev/null) \
 				$(shell ls -d ethreport 2>/dev/null) \
 				$(shell ls -d eth2rm 2>/dev/null) \
+				$(shell ls -d ethbw 2>/dev/null) \
 				$(shell ls -d ethxmlextract 2>/dev/null) \
 				$(shell ls -d ethxmlfilter 2>/dev/null) \
 				$(shell ls -d ethxmlgenerate 2>/dev/null) \

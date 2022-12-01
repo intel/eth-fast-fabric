@@ -1,0 +1,21 @@
+# [ICS VERSION STRING: unknown]
+# This file lists the TCP/IP names of ALL the hosts in the given plane.
+# THIS SHOULD INCLUDE THE NODE RUNNING FASTFABRIC
+#
+# Each line may specify a single host, a comment or another host list file to
+# include. You should augment a hostname with a list of network interfaces to
+# specify the interfaces specific to the given plane. For example,
+#   host1:eth2,eth3
+# If no network interfaces defined for a host, all available interfaces on the
+# host will be considered as part of the plane.
+# A host shall appear only in one line. If there are multiple occurrences,
+# FastFabric will use the last one.
+#
+# This file will be used by FastFabric to indicate which hosts should be
+# operated on by various fastfabric menus and CLI commands.
+
+# it can be useful to include the hosts file for 1 plane, but if enabled the
+# hosts file should also specify the network interfaces for each host.
+#include /etc/eth-tools/hosts
+# if line above is uncommented, add line below with TCP/IP name of FastFabric
+# host (eg. this host)

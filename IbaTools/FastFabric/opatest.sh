@@ -59,9 +59,16 @@ then
 	exit 1
 fi
 
+temp="$(mktemp --tmpdir "$cmd.XXXXXX")"
+trap "rm -f $temp; exit 1" SIGHUP SIGTERM SIGINT
+trap "rm -f $temp" EXIT
+exit_code=0
+failed_tests=
+
+
 Usage_ethhostadmin_full()
 {
-	echo "Usage: ethhostadmin [-c] [-f hostfile] [-h 'hosts'] [-r release] " >&2
+	echo "Usage: ethhostadmin [-c] [-e] [-f hostfile] [-h 'hosts'] [-r release] " >&2
 #	echo "              [-i ipoib_suffix] [-m netmask]" >&2
 	echo "              [-I install_options] [-U upgrade_options] [-d dir]" >&2
 	echo "              [-T product] [-P packages] [-S] operation ..." >&2
@@ -69,6 +76,7 @@ Usage_ethhostadmin_full()
 	echo "       ethhostadmin --help" >&2
 	echo "  --help - produce full help text" >&2
 	echo "  -c - clobber result files from any previous run before starting this run" >&2
+	echo "  -e - exit after 1st operation which fails" >&2
 #	echo "  -i ipoib_suffix - suffix to apply to host names to create ipoib host names" >&2
 #	echo "                    default is '$FF_IPOIB_SUFFIX'" >&2
 	echo "  -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
@@ -118,13 +126,14 @@ Usage_ethhostadmin_full()
 }
 #Usage_opachassisadmin_full()
 #{
-#	echo "Usage: opachassisadmin [-c] [-F switchesfile] [-H 'switches'] " >&2
+#	echo "Usage: opachassisadmin [-c] [-e] [-F switchesfile] [-H 'switches'] " >&2
 #	echo "              [-P packages] [-a action] [-I fm_bootstate]" >&2
 #	echo "              [-S] [-d upload_dir] [-s securityfiles] operation ..." >&2
 #	echo "              or" >&2
 #	echo "       opachassisadmin --help" >&2
 #	echo "  --help - produce full help text" >&2
 #	echo "  -c - clobber result files from any previous run before starting this run" >&2
+#	echo "  -e - exit after 1st operation which fails" >&2
 #	echo "  -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "  -H switches - list of switches to execute operation against" >&2
@@ -209,12 +218,13 @@ Usage_full()
 }
 Usage_ethhostadmin()
 {
-	echo "Usage: ethhostadmin [-c] [-f hostfile] [-r release] [-d dir]" >&2
+	echo "Usage: ethhostadmin [-c] [-e] [-f hostfile] [-r release] [-d dir]" >&2
 	echo "              [-T product] [-P packages] [-S] operation ..." >&2
 	echo "              or" >&2
 	echo "       ethhostadmin --help" >&2
 	echo "  --help - produce full help text" >&2
 	echo "  -c - clobber result files from any previous run before starting this run" >&2
+	echo "  -e - exit after 1st operation which fails" >&2
 	echo "  -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
 	echo "  -r release - IntelEth release to load/upgrade to, default is $FF_PRODUCT_VERSION" >&2
 	echo "  -d dir - directory to get product.release.tgz from for load/upgrade" >&2
@@ -249,13 +259,14 @@ Usage_ethhostadmin()
 }
 #Usage_opachassisadmin()
 #{
-#	echo "Usage: opachassisadmin [-c] [-F switchesfile] " >&2
+#	echo "Usage: opachassisadmin [-c] [-e] [-F switchesfile] " >&2
 #	echo "              [-P packages] [-I fm_bootstate] [-a action]" >&2
 #    echo "              [-S] [-d upload_dir] [-s securityfiles] operation ..." >&2
 #	echo "              or" >&2
 #	echo "       opachassisadmin --help" >&2
 #	echo "  --help - produce full help text" >&2
 #	echo "  -c - clobber result files from any previous run before starting this run" >&2
+#	echo "  -e - exit after 1st operation which fails" >&2
 #	echo "  -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "  -P packages - filenames/directories of firmware" >&2
@@ -389,10 +400,11 @@ action=default
 Sopt=n
 sopt=n
 securityFiles="notsupplied"
+exit_on_fail=0
 case $mode in
-ethhostadmin) host=1; options='cd:h:f:r:I:U:P:T:S';;
-#ethhostadmin) host=1; options='cd:h:f:i:r:I:U:P:T:m:S';;
-#opachassisadmin) switches=1; options='a:I:cH:F:P:d:Ss:';;
+ethhostadmin) host=1; options='cd:eh:f:r:I:U:P:T:S';;
+#ethhostadmin) host=1; options='cd:eh:f:i:r:I:U:P:T:m:S';;
+#opachassisadmin) switches=1; options='a:eI:cH:F:P:d:Ss:';;
 esac
 while getopts "$options"  param
 do
@@ -404,6 +416,8 @@ do
 	d)
 		dir="$OPTARG"
 		export UPLOADS_DIR="$dir";;
+	e)
+		exit_on_fail=1;;
 	h)
 		host=1
 		HOSTS="$OPTARG";;
@@ -530,7 +544,18 @@ fi
 run_test()
 {
 	# $1 = test suite name
-	TCLLIBPATH="$TL_DIR /usr/lib/tcl" expect -f $TL_DIR/$1.exp | tee -a $TEST_RESULT_DIR/test.res
+	TCLLIBPATH="$TL_DIR /usr/lib/tcl" expect -f $TL_DIR/$1.exp | tee $temp | tee -a $TEST_RESULT_DIR/test.res
+	# filter out lines reporting PASS and FAIL counts,
+	# any remaining lines with FAILED are real failures
+	cat $temp | grep -v 'PASSED.*FAILED' | grep -q FAILED > /dev/null
+	# last line of test.res should indicate test was Done, if it's missing
+	# then operation aborted early for some reason and essentially failed
+	if [ $? -eq 0 ] || ! grep -q '^Done ' $temp >/dev/null
+	then
+		failed_tests="$failed_tests $1"
+		exit_code=1
+	fi
+	rm -f $temp
 }
 
 if [ "$Sopt" = y ]
@@ -565,4 +590,14 @@ do
 		Usage;
 		;;
 	esac
+	if [ $exit_code -eq 1 -a $exit_on_fail -eq 1 ]
+	then
+		break
+	fi
 done
+if [ $exit_code -eq 1 ]
+then
+	echo "$cmd FAILED:$failed_tests FAILED" >&2
+	exit_code=1
+fi
+exit $exit_code
