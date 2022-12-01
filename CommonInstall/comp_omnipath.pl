@@ -734,7 +734,6 @@ sub available_mpisrc()
 {
 	my $srcdir=$ComponentInfo{'mpisrc'}{'SrcDir'};
 	return has_mpisrc($srcdir);
-	#return ( (-d "$srcdir/SRPMS" || -d "$srcdir/RPMS" ) );
 }
 
 sub installed_mpisrc()

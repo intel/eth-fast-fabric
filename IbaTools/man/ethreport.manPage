@@ -16,11 +16,11 @@ Provides powerful fabric analysis and reporting capabilities. Must be run on a h
 .SH Syntax
 ethreport  [-v][-q] [--timeout] [-o  \fIreport\fR]
 .br
-[-d  \fIdetail\fR]
+[-d  \fIdetail\fR] [-P|-H]
          [-N] [-x] [-X  \fIsnapshot\(ulinput\fR] [-T  \fItopology\(ulinput\fR]
 .br
-[-c  \fIfile\fR]
-         [-L] [-F  \fIpoint\fR] [-Q] [-E  \fIfile\fR] [-p plane]
+[-s]
+         [-A] [-c  \fIfile\fR] [-L] [-F  \fIpoint\fR] [-Q] [-E  \fIfile\fR] [-p plane] [-f hostfile]
 .SH Options
 
 .TP 10
@@ -56,6 +56,16 @@ for details.
 Specifies the level of detail 0-n for output. Default is 2.
 
 .TP 10
+-P/--persist
+
+Only include data persistent across reboots.
+
+.TP 10
+-H/--hard
+
+Only include permanent hardware data.
+
+.TP 10
 -N/--noname
 
 Omits node.
@@ -76,6 +86,16 @@ Generates a report using the data in the snapshot\(ulinput file. snapshot\(ulinp
 Uses topology\(ulinput file to augment and verify fabric information. When used, various reports can be augmented with information not available electronically. \[aq]-\[aq] may be used to specify stdin.
 
 .TP 10
+-s/--stats
+
+Get performance stats for all ports.
+
+.TP 10
+-A/--allports
+
+Also get PortInfo for down switch ports.
+
+.TP 10
 -c/--config \fIfile\fR
 
 Specifies the error thresholds configuration file. Default is /etc/eth-tools/ethmon.conf file.
@@ -89,6 +109,11 @@ Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(
 -p \fIplane\fR
 
 Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
+
+.TP 10
+-f/--hostfile \fIfile\fR
+
+File with hosts in cluster. It overrides the HostsFile for the selected plane that is defined in Mgt config file. .
 
 .TP 10
 -L/--limit
@@ -196,6 +221,11 @@ errors
 Summary of links whose errors exceed counts in the configuration file.
 
 .TP 10
+otherports
+
+Summary of ports not connected to this fabric.
+
+.TP 10
 verifynics
 
 Compares fabric (or snapshot) NICs to supplied topology and identifies differences and omissions.
@@ -284,6 +314,11 @@ ifid:\fIvalue\fR:port:\fIvalue2\fR
 \fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port number.
 
 .TP 10
+ifid:\fIvalue\fR:portid:\fIvalue2\fR
+
+\fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port id.
+
+.TP 10
 mgmtifaddr:\fIvalue\fR
 
 \fIvalue\fR is numeric port mgmtifaddr.
@@ -299,6 +334,11 @@ ifaddr:\fIvalue1\fR:port:\fIvalue2\fR
 \fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port number.
 
 .TP 10
+ifaddr:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port id.
+
+.TP 10
 chassisid:\fIvalue\fR
 
 \fIvalue\fR is numeric chassisid.
@@ -307,6 +347,11 @@ chassisid:\fIvalue\fR
 chassisid:\fIvalue1\fR:port:\fIvalue2\fR
 
 \fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port number.
+
+.TP 10
+chassisid:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port id.
 
 .TP 10
 node:\fIvalue\fR
@@ -319,6 +364,11 @@ node:\fIvalue1\fR:port:\fIvalue2\fR
 \fIvalue1\fR is node description (node name), \fIvalue2\fR is port number.
 
 .TP 10
+node:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is node description (node name), \fIvalue2\fR is port id.
+
+.TP 10
 nodepat:\fIvalue\fR
 
 \fIvalue\fR is glob pattern for node description (node name).
@@ -327,6 +377,11 @@ nodepat:\fIvalue\fR
 nodepat:\fIvalue1\fR:port:\fIvalue2\fR
 
 \fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port number.
+
+.TP 10
+nodepat:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port id.
 
 .TP 10
 nodedetpat:\fIvalue\fR
@@ -339,6 +394,11 @@ nodedetpat:\fIvalue1\fR:port:\fIvalue2\fR
 \fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port number.
 
 .TP 10
+nodedetpat:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port id.
+
+.TP 10
 nodetype:\fIvalue\fR
 
 \fIvalue\fR is node type (SW or NIC).
@@ -347,6 +407,11 @@ nodetype:\fIvalue\fR
 nodetype:\fIvalue1\fR:port:\fIvalue2\fR
 
 \fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port number.
+
+.TP 10
+nodetype:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port id.
 
 .TP 10
 rate:\fIvalue\fR

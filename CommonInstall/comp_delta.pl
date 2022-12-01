@@ -57,6 +57,7 @@
 # and/or other materials provided with the distribution.
 
 use strict;
+use Cwd 'getcwd';
 #use Term::ANSIColor;
 #use Term::ANSIColor qw(:constants);
 #use File::Basename;
@@ -65,50 +66,72 @@ use strict;
 # ==========================================================================
 # OFA_Delta installation, includes Intel value-adding packages only
 
-# all kernel srpms
-# these are in the order we must build/process them to meet basic dependencies
-my @delta_kernel_srpms_sles12_sp4 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_sles12_sp5 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_sles15 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_sles15_sp1 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_sles15_sp2 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_sles15_sp3 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_sles15_sp4 = ( 'iefs-kernel-updates-kmp-default' );
-my @delta_kernel_srpms_rhel78 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel79 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel8 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel81 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel82 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel83 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel84 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel85 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel86 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms_rhel9 = ( 'kmod-iefs-kernel-updates' );
-my @delta_kernel_srpms = ( );
-
-# This provides information for all kernel srpms
-# Only srpms listed in @delta_kernel_srpms are considered for install
-# As such, this may list some srpms which are N/A to the selected distro
-#
-# Fields:
-#	Available => indicate which platforms each srpm can be built for
-#	Builds => list of kernel and user rpms built from each srpm
-#				caller must know if user/kernel rpm is expected
-#	PartOf => Components which the rpms built from this srpm are part of
-my %delta_srpm_info = (
-		# only used in sles12sp2
-	"iefs-kernel-updates-kmp-default" =>        { Available => "",
-					Builds => "iefs-kernel-updates-kmp-default iefs-kernel-updates-devel",
-					PartOf => " eth_module",
-					},
-		# only used in rhel72 and rhel73
-	"kmod-iefs-kernel-updates" =>    { Available => "",
-					Builds => "kmod-iefs-kernel-updates iefs-kernel-updates-devel",
-					PartOf => " eth_module",
-					},
+my %sles_srpm = (
+	"Available" => "",
+	"ReadableName" => "Eth Module",
+	"SourcePackageGlob" => "iefs-kernel-updates*.src.rpm",
+	"GpuAware" => "yes",
+	"BuildProducts" => [
+		"iefs-kernel-updates-kmp-default",
+		"iefs-kernel-updates-devel",
+	],
+	"PartOf" => ["eth_module"],
+	"DKMSpackage" => "iefs-kernel-updates-dkms",
 );
 
+my %redhat_srpm = (
+	"Available" => "",
+	"ReadableName" => "Eth Module",
+	"SourcePackageGlob" => "iefs-kernel-updates*.src.rpm",
+	"GpuAware" => "yes",
+	"BuildProducts" => [
+		"kmod-iefs-kernel-updates",
+		"iefs-kernel-updates-devel",
+	],
+	"PartOf" => ["eth_module"],
+	"DKMSpackage" => "iefs-kernel-updates-dkms",
+);
+
+my %debian_tarball = (
+	"Available" => "",
+	"ReadableName" => "Eth Module",
+	"SourcePackageGlob" => "iefs-kernel-updates_*.tar.gz",
+	"GpuAware" => "yes",
+	"BuildProducts" => [
+		"kmod-iefs-kernel-updates",
+		"iefs-kernel-updates-devel",
+	],
+	"PartOf" => ["eth_module"],
+	"DKMSpackage" => "iefs-kernel-updates-dkms",
+);
+
+# all kernel srpms
+# these are in the order we must build/process them to meet basic dependencies
+my %source_pkgs_by_distro = (
+	'SuSE*ES124'    => [ \%sles_srpm ],
+	'SuSE*ES125'    => [ \%sles_srpm ],
+	'SuSE*ES15'     => [ \%sles_srpm ],
+	'SuSE*ES151'    => [ \%sles_srpm ],
+	'SuSE*ES152'    => [ \%sles_srpm ],
+	'SuSE*ES153'    => [ \%sles_srpm ],
+	'SuSE*ES154'    => [ \%sles_srpm ],
+	'redhat*ES78'   => [ \%redhat_srpm ],
+	'redhat*ES79'   => [ \%redhat_srpm ],
+	'redhat*ES8'    => [ \%redhat_srpm ],
+	'redhat*ES81'   => [ \%redhat_srpm ],
+	'redhat*ES82'   => [ \%redhat_srpm ],
+	'redhat*ES83'   => [ \%redhat_srpm ],
+	'redhat*ES84'   => [ \%redhat_srpm ],
+	'redhat*ES85'   => [ \%redhat_srpm ],
+	'redhat*ES86'   => [ \%redhat_srpm ],
+	'redhat*ES9'    => [ \%redhat_srpm ],
+	'ubuntu*UB2004' => [ \%debian_tarball ],
+	'ubuntu*UB2204' => [ \%debian_tarball ],
+);
+
+my @delta_kernel_srpms = ( );
 my %delta_autostart_save = ();
+
 # ==========================================================================
 # Delta eth_module build in prep for installation
 
@@ -122,10 +145,10 @@ sub available_srpm($$$)
 	# only used to select Available
 	my $mode = shift();	# "user" or kernel rev
 	my $osver = shift();
-	my $avail ="Available";
+	my $avail = $srpm->{"Available"};
 
-	DebugPrint("checking $srpm $mode $osver against '$delta_srpm_info{$srpm}{$avail}'\n");
-	return arch_kernel_is_allowed($osver, $delta_srpm_info{$srpm}{$avail});
+	DebugPrint("checking [$srpm->{'ReadableName'}] $mode $osver against '$avail'\n");
+	return arch_kernel_is_allowed($osver, $avail);
 }
 
 # initialize delta srpm list based on specified osver
@@ -133,49 +156,9 @@ sub available_srpm($$$)
 sub init_delta_info($)
 {
 	my $osver = shift();
-
-	# filter components by distro
-	if ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES124') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles12_sp4 );
-	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES125') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles12_sp5 );
-	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES15') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15 );
-	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES151') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp1 );
-	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES152') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp2 );
-	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES153') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp3 );
-	} elsif ("$CUR_DISTRO_VENDOR" eq 'SuSE'
-		&& "$CUR_VENDOR_VER" eq 'ES154') {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_sles15_sp4 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel9 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel81 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel82 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel83 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel84 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel85 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel86 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel8 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES78" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel78 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES79" ) {
-		@delta_kernel_srpms = ( @delta_kernel_srpms_rhel79 );
+	my $distro = "$CUR_DISTRO_VENDOR*$CUR_VENDOR_VER";
+	if (exists $source_pkgs_by_distro{$distro}) {
+		@delta_kernel_srpms = @{$source_pkgs_by_distro{$distro};}
 	} else {
 		# unknown distro, leave empty
 		@delta_kernel_srpms = ( );
@@ -183,28 +166,28 @@ sub init_delta_info($)
 
 	if (DebugPrintEnabled() ) {
 		# dump all SRPM info
-		DebugPrint "\nSRPMs:\n";
+		DebugPrint "\nSPKGs:\n";
 		foreach my $srpm ( @delta_kernel_srpms ) {
-			DebugPrint("$srpm => Builds: '$delta_srpm_info{$srpm}{'Builds'}'\n");
-			DebugPrint("           Available: '$delta_srpm_info{$srpm}{'Available'}'\n");
-			DebugPrint("           Available: ".available_srpm($srpm, "user", $osver)." PartOf: '$delta_srpm_info{$srpm}{'PartOf'}'\n");
+			DebugPrint("$srpm->{'ReadableName'} => Builds: '$srpm->{'Builds'}'\n");
+			DebugPrint("           Available: '$srpm->{'Available'}'\n");
+			DebugPrint("           Available: ".available_srpm($srpm, "user", $osver)." PartOf: [@{$srpm->{'PartOf'}}]\n");
 		}
 		DebugPrint "\n";
 	}
 }
 
-sub get_rpms_dir_delta($);
+sub get_rpms_dir_delta($$);
 
 # verify the rpmfiles exist for all the RPMs listed
-sub delta_rpm_exists_list($@)
+sub delta_rpm_exists_list($$$)
 {
 	my $mode = shift();	#  "user" or kernel rev or "firmware"
-	my(@package_list) = @_;	# package names
+	my $packages_ref = shift();
+	my $gpu_aware = shift();
 
-	foreach my $package ( @package_list )
+	foreach my $package ( @$packages_ref )
 	{
-		next if ( "$package" eq '' );
-		my $rpmdir = get_rpms_dir_delta("$package");
+		my $rpmdir = get_rpms_dir_delta($package, $gpu_aware);
 		if (! rpm_exists("$rpmdir/$package", $mode) ) {
 			return 0;
 		}
@@ -212,33 +195,31 @@ sub delta_rpm_exists_list($@)
 	return 1;
 }
 
-# resolve filename within $srcdir/$SRPMS_SUBDIR
-# and return filename relative to $srcdir
-sub delta_srpm_file($$)
+# resolve filename within source packages subdir
+# and return filename based on $srcdir
+sub delta_srpm_file($$$)
 {
-	my $srcdir = shift();
-	my $globname = shift(); # in $srcdir
-	my $result;
-
-	if ( $GPU_Install == 1 ) {
-		if ( -d $srcdir."/SRPMS/CUDA" ) {
-			$result = file_glob("$srcdir/$SRPMS_SUBDIR/CUDA/$globname");
-		} else {
-			NormalPrint("CUDA specific SRPMs do not exist\n");
-			exit 1;
+	my ($srcdir, $globname, $gpu_aware) = @_;
+	my $spkg_dir = get_source_pkg_dir($srcdir);
+	my $result = file_glob("$spkg_dir/$globname");
+	if ( $gpu_aware eq "yes" ) {
+		if ( $GPU_Install eq "NV_GPU" ) {
+			if ( -d "$spkg_dir/CUDA" ) {
+				$result = file_glob("$spkg_dir/CUDA/$globname");
+			} else {
+				NormalPrint("CUDA specific SPKGs do not exist\n");
+				exit 1;
+			}
+		} elsif ( $GPU_Install eq "INTEL_GPU" ) {
+			if ( -d "$spkg_dir/ONEAPI-ZE" ) {
+				$result = file_glob("$spkg_dir/ONEAPI-ZE/$globname");
+			} else {
+				NormalPrint("ONEAPI ZE specific SPKGs do not exist\n");
+				exit 1;
+			}
 		}
-	} elsif ( $GPU_Install == 2 ) {
-		if ( -d $srcdir."/SRPMS/ONEAPI-ZE" ) {
-			$result = file_glob("$srcdir/$SRPMS_SUBDIR/ONEAPI-ZE/$globname");
-		} else {
-			NormalPrint("ONEAPI ZE specific SRPMs do not exist\n");
-			exit 1;
-		}
-	} else {
-		$result = file_glob("$srcdir/$SRPMS_SUBDIR/$globname");
 	}
 
-	$result =~ s|^$srcdir/||;
 	return $result;
 }
 
@@ -246,41 +227,43 @@ sub delta_srpm_file($$)
 sub delta_rpms_dir()
 {
 	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
 
-	if (-d "$srcdir/$RPMS_SUBDIR/$CUR_DISTRO_VENDOR-$CUR_VENDOR_VER" ) {
-		return "$srcdir/$RPMS_SUBDIR/$CUR_DISTRO_VENDOR-$CUR_VENDOR_VER";
+	if (-d "$pkg_dir/$CUR_DISTRO_VENDOR-$CUR_VENDOR_VER" ) {
+		return "$pkg_dir/$CUR_DISTRO_VENDOR-$CUR_VENDOR_VER";
 	} else {
-		return "$srcdir/$RPMS_SUBDIR/$CUR_DISTRO_VENDOR-$CUR_VENDOR_MAJOR_VER";
+		return "$pkg_dir/$CUR_DISTRO_VENDOR-$CUR_VENDOR_MAJOR_VER";
 	}
 }
 
 # package is supplied since for a few packages (such as GPU Direct specific
 # packages) we may pick a different directory based on package name
-sub get_rpms_dir_delta($)
+sub get_rpms_dir_delta($$)
 {
 	my $package = shift();
+	my $gpu_aware = shift();
 
 	my $rpmsdir = delta_rpms_dir();
 
 	# Note no need to check kernel levels since GPU Direct now supported
 	# for all distros.  If we add a distro without this, such as Ubuntu,
 	# perhaps argument parser should turn off GPU_Install on that distro.
-	if ( $GPU_Install == 1
-		 && ( $package =~ /iefs-kernel-updates/ || $package =~ /libpsm/) ) {
+	if ( $gpu_aware eq "yes" ) {
+		if ( $GPU_Install eq "NV_GPU" ) {
 			if ( -d $rpmsdir."/CUDA" ) {
 				$rpmsdir=$rpmsdir."/CUDA";
 			} else {
 				NormalPrint("CUDA specific packages do not exist\n");
 				exit 1;
 			}
-	} elsif ( $GPU_Install == 2
-		 && ( $package =~ /iefs-kernel-updates/ || $package =~ /libpsm/) ) {
+		} elsif ( $GPU_Install eq "INTEL_GPU" ) {
 			if ( -d $rpmsdir."/ONEAPI-ZE" ) {
 				$rpmsdir=$rpmsdir."/ONEAPI-ZE";
 			} else {
 				NormalPrint("ONEAPI ZE specific packages do not exist\n");
 				exit 1;
 			}
+		}
 	}
 	return $rpmsdir;
 }
@@ -288,17 +271,16 @@ sub get_rpms_dir_delta($)
 # verify if all rpms have been built from the given srpm
 sub is_built_srpm($$)
 {
-	my $srpm = shift();	# srpm name prefix
+	my $srpm = shift();	# srpm descriptor
 	my $mode = shift();	# "user" or kernel rev
 
-	my @package_list = split /[[:space:]]+/, $delta_srpm_info{$srpm}{'Builds'};
-	return ( delta_rpm_exists_list($mode, @package_list) );
+	return ( delta_rpm_exists_list($mode, $srpm->{'BuildProducts'}, $srpm->{'GpuAware'}) );
 }
 
 # see if srpm is part of any of the components being installed/reinstalled
 sub need_srpm_for_install($$$$)
 {
-	my $srpm = shift();	# srpm name prefix
+	my $srpm = shift();	# srpm descriptor
 	my $mode = shift();	# "user" or kernel rev
 	my $osver = shift();
 	# add space at start and end so can search
@@ -306,13 +288,12 @@ sub need_srpm_for_install($$$$)
 	my $installing_list = " ".shift()." "; # items being installed/reinstalled
 
 	if (! available_srpm($srpm, $mode, $osver)) {
-		DebugPrint("$srpm $mode $osver not available\n");
+		DebugPrint("$srpm->{'ReadableName'} $mode $osver not available\n");
 		return 0;
 	}
 
-	my @complist = split /[[:space:]]+/, $delta_srpm_info{$srpm}{'PartOf'};
+	my @complist = @{$srpm->{'PartOf'}};
 	foreach my $comp (@complist) {
-		next if ("$comp" eq '');
 		DebugPrint("Check for $comp in ( $installing_list )\n");
 		if ($installing_list =~ / $comp /) {
 			return 1;
@@ -323,7 +304,7 @@ sub need_srpm_for_install($$$$)
 
 sub need_build_srpm($$$$$$)
 {
-	my $srpm = shift();	# srpm name prefix
+	my $srpm = shift();	# srpm descriptor
 	my $mode = shift();	# "user" or kernel rev
 	my $osver = shift();	# kernel rev
 	my $installing_list = shift(); # what items are being installed/reinstalled
@@ -333,25 +314,7 @@ sub need_build_srpm($$$$$$)
 	return ( need_srpm_for_install($srpm, $mode, $osver, $installing_list)
 			&& ($force
 				|| ! is_built_srpm($srpm, $mode)
-				|| ($prompt && GetYesNo("Rebuild $srpm src RPM for $mode?", "n"))));
-}
-
-# move rpms from build tree (srcdir) to install tree (destdir)
-sub delta_move_rpms($$)
-{
-	my $srcdir = shift();
-	my $destdir = shift();
-
-	system("mkdir -p $destdir");
-	if (file_glob("$srcdir/$RPM_ARCH/*") ne "" ) {
-		system("mv $srcdir/$RPM_ARCH/* $destdir");
-	}
-	if (file_glob("$srcdir/$RPM_KERNEL_ARCH/*") ne "" ) {
-		system("mv $srcdir/$RPM_KERNEL_ARCH/* $destdir");
-	}
-	if (file_glob("$srcdir/noarch/*") ne "" ) {
-		system("mv $srcdir/noarch/* $destdir");
-	}
+				|| ($prompt && GetYesNo("Rebuild $srpm->{'ReadableName'} source package for $mode?", "n"))));
 }
 
 # build all OFA components specified in installing_list
@@ -367,7 +330,6 @@ sub build_delta($$$$$$)
 
 	my $prompt_srpm = 0;	# prompt per SRPM
 	my $force_srpm = $force;	# force SRPM rebuild
-	my $force_kernel_srpm = 0;
 	my $rpmsdir = delta_rpms_dir();
 
 	# we only support building kernel code, so if user wants to skip install
@@ -379,8 +341,8 @@ sub build_delta($$$$$$)
 		return 0;	# success
 	}
 
-	if (! $force && ! $Default_Prompt && ! $force_kernel_srpm) {
-		my $choice = GetChoice("Rebuild OFA kernel SRPM (a=all, p=prompt per SRPM, n=only as needed)?", "n", ("a", "p", "n"));
+	if (! $force && ! $Default_Prompt) {
+		my $choice = GetChoice("Rebuild OFA kernel Source Package (a=all, p=prompt per package, n=only as needed)?", "n", ("a", "p", "n"));
 		if ("$choice" eq "a") {
 			$force_srpm=1;
 		} elsif ("$choice" eq "p") {
@@ -393,20 +355,23 @@ sub build_delta($$$$$$)
 	# -------------------------------------------------------------------------
 	# do all rebuild prompting first so user doesn't have to wait 5 minutes
 	# between prompts
-	my %build_kernel_srpms = ();
+	my @build_kernel_srpms = (0)x($#delta_kernel_srpms);
 	my $need_build = 0;
-	my $build_compat_rdma = 0;
 
-	# there will be exactly 1 srpm in delta_kernel_srpms
-	foreach my $kernel_srpm ( @delta_kernel_srpms ) {
-		$build_kernel_srpms{"${kernel_srpm}_build_kernel"} = need_build_srpm($kernel_srpm, "$K_VER", "$K_VER",
-							$installing_list,
-							$force_srpm || $force_kernel_srpm,
-							$prompt_srpm);
-		$need_build |= $build_kernel_srpms{"${kernel_srpm}_build_kernel"};
+	for my $i ( 0 .. $#delta_kernel_srpms ) {
+		my $build_this = need_build_srpm(
+			$delta_kernel_srpms[$i],
+			"$K_VER", "$K_VER",
+			$installing_list,
+			$force_srpm,
+			$prompt_srpm
+		);
+		$build_kernel_srpms[$i] = $build_this;
+		$need_build |= $build_this;
 	}
 
 	if (! $need_build) {
+		DebugPrint("No source packages selected for build\n");
 		return 0;	# success
 	}
 
@@ -416,16 +381,16 @@ sub build_delta($$$$$$)
 
 	NormalPrint "Checking OS Dependencies needed for builds...\n";
 
-	foreach my $srpm ( @delta_kernel_srpms ) {
-		next if ( ! $build_kernel_srpms{"${srpm}_build_kernel"} );
-
-		VerbosePrint("check dependencies for $srpm\n");
-		if (check_kbuild_dependencies($K_VER, $srpm )) {
-			DebugPrint "$srpm kbuild dependency failure\n";
+	for my $i ( 0 .. $#delta_kernel_srpms ) {
+		next if ( ! $build_kernel_srpms[$i] );
+		my $srpm_id = $delta_kernel_srpms[$i]{'ReadableName'};
+		VerbosePrint("check dependencies for $srpm_id\n");
+		if (check_kbuild_dependencies($K_VER, $srpm_id )) {
+			DebugPrint "$srpm_id kbuild dependency failure\n";
 			$dep_error = 1;
 		}
-		if (check_rpmbuild_dependencies($srpm)) {
-			DebugPrint "$srpm rpmbuild dependency failure\n";
+		if (check_rpmbuild_dependencies($srpm_id)) {
+			DebugPrint "$srpm_id rpmbuild dependency failure\n";
 			$dep_error = 1;
 		}
 	}
@@ -435,6 +400,7 @@ sub build_delta($$$$$$)
 		return 1;	# failure
 	}
 
+	DebugPrint("Building started\n");
 	# -------------------------------------------------------------------------
 	# perform the builds
 	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
@@ -444,58 +410,46 @@ sub build_delta($$$$$$)
 		$build_temp = "/var/tmp/IntelEth-DELTA";
 	}
 	my $BUILD_ROOT="$build_temp/build";
-	my $RPM_DIR="$build_temp/DELTARPMS";
+	my $BUILD_OUTPUT_DIR="$build_temp/DELTA_PACKAGES";
 	my $resfileop = "replace";	# replace for 1st build, append for rest
 
 	system("rm -rf ${build_temp}");
 
-	# use a different directory for BUILD_ROOT to limit conflict with OFED
-	if (0 != system("mkdir -p $BUILD_ROOT $RPM_DIR/BUILD $RPM_DIR/RPMS $RPM_DIR/SOURCES $RPM_DIR/SPECS $RPM_DIR/SRPMS")) {
-		NormalPrint "ERROR - mkdir -p $BUILD_ROOT $RPM_DIR/BUILD $RPM_DIR/RPMS $RPM_DIR/SOURCES $RPM_DIR/SPECS $RPM_DIR/SRPMS FAILED\n";
-		return 1;	# failure
+	if (0 != make_build_dirs($BUILD_ROOT, $BUILD_OUTPUT_DIR)) {
+		NormalPrint("Unable to create output directory layout\n");
+		return 1;
 	}
 
-	foreach my $srpm ( @delta_kernel_srpms ) {
-		VerbosePrint("process $srpm\n");
+	DebugPrint("Output directory structure prepared\n");
 
-		next if (! $build_kernel_srpms{"${srpm}_build_kernel"});
+	for my $i ( 0 .. $#delta_kernel_srpms ) {
+		my $srpm = $delta_kernel_srpms[$i];
+		VerbosePrint("processing $srpm->{'ReadableName'}\n");
+		next if ( ! $build_kernel_srpms[$i] );
 
-		my $SRC_RPM = delta_srpm_file($srcdir, "$srpm*.src.rpm");
+		my $SRC_PKG = delta_srpm_file($srcdir, $srpm->{'SourcePackageGlob'}, $srpm->{'GpuAware'});
+		$SRC_PKG = getcwd()."/".$SRC_PKG;
+		DebugPrint("Source package to be built: $SRC_PKG\n");
 
-		# Deal with SLES renaming
-		if ("$srpm" eq "kmod-iefs-kernel-updates"
-			|| "$srpm" eq "iefs-kernel-updates-kmp-default") {
-			$SRC_RPM = delta_srpm_file($srcdir, "iefs-kernel-updates*.src.rpm");
-		}
+		my $cmd = create_build_command_line($SRC_PKG, $BUILD_OUTPUT_DIR, $BUILD_ROOT, $K_VER);
+		DebugPrint("Build command: $cmd\n");
 
-		my $cmd = "rpmbuild --rebuild --define '_topdir $RPM_DIR'";
-		$cmd .=		" --define 'dist  %{nil}'";
-		$cmd .=		" --target $RPM_KERNEL_ARCH";
-		# IFS - also set build_root so we can cleanup and avoid conflicts
-		$cmd .=		" --buildroot '${BUILD_ROOT}'";
-		$cmd .=		" --define 'build_root ${BUILD_ROOT}'";
-
-	   	$cmd .=		" --define 'kver $K_VER'";
-
-		$cmd .=		" $SRC_RPM";
-
-		if (0 != run_build("$srcdir $SRC_RPM $RPM_KERNEL_ARCH $K_VER", "$srcdir", $cmd, "$resfileop")) {
+		if (0 != run_build("$srcdir $SRC_PKG $RPM_KERNEL_ARCH $K_VER", "$srcdir", $cmd, "$resfileop")) {
+			NormalPrint("Build failed\n");
 			return 1;	# failure
 		}
 		$resfileop = "append";
-		if ( $GPU_Install == 1 ) {
-			delta_move_rpms("$RPM_DIR/$RPMS_SUBDIR", "$rpmsdir/CUDA");
-		} elsif ( $GPU_Install == 2 ) {
-			delta_move_rpms("$RPM_DIR/$RPMS_SUBDIR", "$rpmsdir/ONEAPI-ZE");
-		} else {
-			delta_move_rpms("$RPM_DIR/$RPMS_SUBDIR", "$rpmsdir");
+
+		if (0 != move_packages($BUILD_OUTPUT_DIR, $rpmsdir, $GPU_Install)) {
+			NormalPrint("Copy to destination dir failed\n");
+			return 1;
 		}
 	}
 
 	if (! $debug) {
 		system("rm -rf ${build_temp}");
 	} else {
-		LogPrint "Build remnants left in $BUILD_ROOT and $RPM_DIR\n";
+		LogPrint "Build remnants left in $BUILD_ROOT and $BUILD_OUTPUT_DIR\n";
 	}
 
 	return 0;	# success
@@ -771,13 +725,13 @@ sub disable_autostart2_eth_module()
 sub get_rpms_dir_eth_module($)
 {
 	my $package = shift();
-	return get_rpms_dir_delta($package)
+	return get_rpms_dir_delta($package, "yes")
 }
 
 sub available_eth_module()
 {
 	my $srcdir=$ComponentInfo{'eth_module'}{'SrcDir'};
-	return (-d "$srcdir/SRPMS" || -d "$srcdir/RPMS" );
+        return (-d get_binary_pkg_dir($srcdir) || -d get_source_pkg_dir($srcdir));
 }
 
 sub installed_eth_module()
@@ -946,13 +900,13 @@ sub disable_autostart2_psm3()
 sub get_rpms_dir_psm3($)
 {
 	my $package = shift();
-	return get_rpms_dir_delta($package)
+	return get_rpms_dir_delta($package, "yes")
 }
 
 sub available_psm3()
 {
-    my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
-        return (-d "$srcdir/SRPMS" || -d "$srcdir/RPMS" );
+	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
+        return (-d get_binary_pkg_dir($srcdir) || -d get_source_pkg_dir($srcdir));
 }
 
 sub installed_delta_psm3()
@@ -976,7 +930,8 @@ sub installed_version_psm3()
 sub media_version_psm3()
 {
 	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
-	my $rpmfile = rpm_resolve("$srcdir/RPMS/*/libpsm3-fi", "any");
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	my $rpmfile = rpm_resolve("$pkg_dir/*/libpsm3-fi", "any");
 	my $version= rpm_query_version_release("$rpmfile");
 	return dot_version("$version");
 }
@@ -1172,13 +1127,13 @@ sub disable_autostart2_eth_roce()
 sub get_rpms_dir_delta_debug($)
 {
 	my $package = shift();
-	return get_rpms_dir_delta($package)
+	return get_rpms_dir_delta($package, "yes")
 }
 
 sub available_delta_debug()
 {
 	my $srcdir=$ComponentInfo{'delta_debug'}{'SrcDir'};
-	return (( -d "$srcdir/SRPMS" || -d "$srcdir/RPMS")
+	return ((-d get_binary_pkg_dir($srcdir) || -d get_source_pkg_dir($srcdir))
 			&& ( "$CUR_DISTRO_VENDOR" ne "SuSE" && rpm_will_build_debuginfo()));
 }
 
@@ -1322,13 +1277,13 @@ sub disable_autostart2_ibacm()
 sub get_rpms_dir_ibacm($)
 {
 	my $package = shift();
-	return get_rpms_dir_delta($package)
+	return get_rpms_dir_delta($package, "no")
 }
 
 sub available_ibacm()
 {
 	my $srcdir=$ComponentInfo{'ibacm'}{'SrcDir'};
-	return ( -d "$srcdir/SRPMS" || -d "$srcdir/RPMS" );
+	return (-d get_binary_pkg_dir($srcdir) || -d get_source_pkg_dir($srcdir));
 }
 
 sub installed_ibacm()

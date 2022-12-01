@@ -23,13 +23,21 @@ Use this tool for copying data files, operating system files, or applications to
 This tool can only copy from this system to a group of systems in the cluster. To copy from hosts in the cluster to this host, use ethuploadall.
 .IP \(bu
 user@ style syntax cannot be used when specifying filenames.
+.IP \(bu
+Beware: For the -r option, when copying a single source directory, if the destination directory does not exist it will be created and the source files placed directly in it.
+.IP \(bu
+In other situations, the -r option will copy the source directory as a directory under the destination directory.
+.IP \(bu
+The -R option will always copy the source directory as a directory under the destination directory.
+.IP \(bu
+The -t option will always place the files found in source\(uldir directly in the destination directory.
 
 .SH Syntax
 
 .PP
 
 .br
-ethscpall [-p] [-r] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR]
+ethscpall [-pq] [-r|-R] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR] [-B  \fIinterface\fR]
 .br
 source\(ulfile ... dest\(ulfile
 
@@ -38,7 +46,7 @@ source\(ulfile ... dest\(ulfile
 .PP
 
 .br
-ethscpall [-t] [-p] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR]
+ethscpall [-t] [-pq] [-Z  \fItarcomp\fR] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR] [-B  \fIinterface\fR]
 .br
 [ \fIsource\(uldir\fR [ \fIdest\(uldir\fR]]
 
@@ -55,9 +63,17 @@ Produces full help text.
 
 Performs copy in parallel on all hosts.
 .TP 10
+-q
+
+Don\[aq]t list files being transferred.
+.TP 10
 -r
 
-Performs recursive copy of directories.
+Performs recursive copy of directories using scp.
+.TP 10
+-R
+
+Performs recursive copy of directories using rsync (only copy changed files).
 .TP 10
 -t
 
@@ -75,6 +91,16 @@ Specifies the file with hosts in cluster. Default is /etc/eth-tools/hosts file.
 -u \fIuser\fR
 
 Specifies the user to perform copy to. Default is current user code.
+.TP 10
+-B \fIinterface\fR
+
+Local network interface to use for scp or rsync Note the destination hosts specified must be accessible via the given \fIinterface\fR\[aq]s IP subnet. This may imply the use of alternate hostnames or IP addresses for the destination hosts
+
+.TP 10
+-Z \fItarcomp\fR
+
+A simple tar compression option to use, such as --xz or --lzip. When host list is large better compression may be preferred. When host list is small faster compression may be preferred. -Z \[aq] \[aq] will not use compression. Default is -z.
+
 .TP 10
 \fIsource\(ulfile\fR
 
@@ -116,6 +142,15 @@ ethscpall -h \[aq]arwen elrond\[aq] a b c /root/tools
 .br
 
 HOSTS=\[aq]arwen elrond\[aq] ethscpall a b c /root/tools
+.br
+
+
+.br
+
+# copy to an explitly specified set of hosts over local eth2 nic
+.br
+
+echscpall -h \[aq]arwen elrond\[aq] -B eth2 a b c /root/tools
 .SH Environment Variables
 
 .PP

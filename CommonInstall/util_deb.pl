@@ -73,7 +73,6 @@ sub rpm_tr_os_version($)
 sub rpm_to_deb_pkg_trans($)
 {
 	my ($pkg) = shift(); # package name
-	$pkg =~ s/-devel/-dev/g;
 	return $pkg;
 }
 
@@ -287,13 +286,13 @@ sub rpm_is_installed($$)
 	$cpu = rpm_get_cpu_arch($mode);
 	if ("$mode" eq "any" ) {
 		# any variation is ok
-		my $cmd = "dpkg -l '$package' | egrep '^ii' > /dev/null 2>&1";
+		my $cmd = "dpkg-query --show '$package' >/dev/null 2>&1";
 		DebugPrint $cmd."\n";
 		$rc = system($cmd);
 		$last_checked = "any variation";
 	} elsif ("$mode" eq "user" || "$mode" eq "firmware") {
 		# verify $cpu version or any is installed
-		my $cmd = "dpkg -l '$package' | egrep '^ii' 2>/dev/null|egrep '^$cpu\$|' >/dev/null 2>&1";
+		my $cmd = "dpkg -l '$package' 2>/dev/null | egrep '^ii' 2>/dev/null|egrep '^$cpu\$|' >/dev/null 2>&1";
 		DebugPrint $cmd."\n";
 		$rc = system $cmd;
 		$last_checked = "for $mode $cpu or noarch";
@@ -429,7 +428,7 @@ sub rpm_check_os_prereqs($$)
 	DebugPrint "Checking prereqs for $comp\n";
 	foreach (@rpm_list){
 		DebugPrint "Checking installation of $_\n";
-		#Don't check dependencies for kernel RPMS if their installation is skipped
+		#Don't check dependencies for kernel PKGS if their installation is skipped
 		if($user_space_only == 1){
 			if( "$_" =~ /kernel/ || "$_" =~ /kmod/ || "$_" eq "pciutils" ) {
 				DebugPrint("Skipping check for $_ \n");
@@ -557,7 +556,7 @@ sub rpm_resolve($$)
 	my $debfile;
 	my $cpu;
 
-	$package = rpm_to_deb_pkg_trans($package);
+	$debpath = rpm_to_deb_pkg_trans($debpath);
 	
 	$cpu = rpm_get_cpu_arch($mode);
 	# we expect 0-1 match, ignore all other filenames returned
@@ -761,7 +760,7 @@ sub check_kbuild_dependencies($$)
 	}
 	if ( ! -d "$dir/scripts" ) {
 		NormalPrint "Unable to build $srpm: $dir/scripts: not found\n";
-		NormalPrint "linux-source or linux-headers-generic is required to build $srpm\n";
+		NormalPrint "linux-headers-$osver is required to build $srpm\n";
 		return 1;	# failure
 	}
 	return 0;
@@ -777,5 +776,64 @@ sub check_rpmbuild_dependencies($)
 		NormalPrint("devscripts is required to build $srpm\n");
 		$err++;
 	}
+	if (! rpm_is_installed("debhelper", "any")) {
+		NormalPrint("debhelper is required to build $srpm\n");
+		$err++;
+	}
+	return $err;
 }
 
+sub get_binary_pkg_dir($)
+{
+	my ($base) = @_;
+	return "$base/DEBS";
+}
+
+sub get_source_pkg_dir($)
+{
+	my ($base) = @_;
+	return "$base/SDEBS";
+}
+
+sub make_build_dirs($$)
+{
+	my ($BUILD_ROOT, $PKG_DIR) = @_;
+	if (0 != system("mkdir -p $PKG_DIR")) {
+		NormalPrint "ERROR - mkdir -p $PKG_DIR FAILED\n";
+		return 1; # failure
+	}
+	return 0;
+}
+
+sub create_build_command_line($$$$)
+{
+	my ($SRC_PKG, $BUILD_OUTPUT_DIR, $BUILD_ROOT, $K_VER) = @_;
+
+	my $cmd = "( ";
+	$cmd .= "set -e; ";
+	$cmd .= "cd $BUILD_OUTPUT_DIR; ";
+	$cmd .=	"tar -xvf $SRC_PKG; ";
+	$cmd .=	"cd *; ";
+	$cmd .= "export KERNEL_MOD_SIGNING_ENABLED=0; ";
+	$cmd .= "export DEFAULT_KERNEL_VERSION=$K_VER; ";
+	$cmd .=	"dpkg-buildpackage; ";
+	$cmd .= ")";
+
+	return $cmd;
+}
+
+sub move_packages($$$)
+{
+	my ($source_dir, $target_dir, $GPU_Install) = @_;
+	my $err = 0;
+	my $real_target = $target_dir;
+	if ( $GPU_Install eq "NVGPU" ) {
+		$real_target = "$target_dir/CUDA";
+	} elsif ( $GPU_Install eq "IGPU" ) {
+		$real_target = "$target_dir/ONEAPI-ZE";
+	}
+	system("mkdir -p $real_target");
+	DebugPrint("Moving $source_dir/*.deb to $real_target\n");
+	$err = system("mv $source_dir/*.deb $real_target");
+	return $err;
+}

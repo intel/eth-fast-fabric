@@ -43,14 +43,16 @@ my $FF_CONF_FILE = "/usr/lib/eth-tools/ethfastfabric.conf";
 sub get_rpms_dir_fastfabric
 {
 	my $srcdir=$ComponentInfo{'fastfabric'}{'SrcDir'};
-	return "$srcdir/RPMS/*";
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	return "$pkg_dir/*";
 }
 
 sub available_fastfabric
 {
 	my $srcdir=$ComponentInfo{'fastfabric'}{'SrcDir'};
-	return ((rpm_resolve("$srcdir/RPMS/*/eth-mpi-apps", "any") ne "") &&
-			(rpm_resolve("$srcdir/RPMS/*/eth-tools-fastfabric", "any") ne ""));
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	return ((rpm_resolve("$pkg_dir/*/eth-mpi-apps", "any") ne "") &&
+			(rpm_resolve("$pkg_dir/*/eth-tools-fastfabric", "any") ne ""));
 }
 
 sub installed_fastfabric
@@ -69,7 +71,8 @@ sub installed_version_fastfabric
 sub media_version_fastfabric
 {
 	my $srcdir=$ComponentInfo{'fastfabric'}{'SrcDir'};
-	my $rpmfile = rpm_resolve("$srcdir/RPMS/*/eth-tools-fastfabric", "any");
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	my $rpmfile = rpm_resolve("$pkg_dir/*/eth-tools-fastfabric", "any");
 	my $version= rpm_query_version_release("$rpmfile");
 	# assume media properly built with matching versions for all rpms
 	return dot_version("$version");

@@ -17,8 +17,6 @@ iefsconfig
 Configures the Intel(R) Ethernet Fabric Suite Software through command line interface or TUI menus.
 .SH Syntax
 iefsconfig [-G] [-v|-vv] [-u|-s|-e  \fIcomp\fR] [-E \fIcomp\fR] [-D  \fIcomp\fR]
-.br
-
 [--answer  \fIkeyword=value\fR]
 .PP
 or
@@ -43,7 +41,7 @@ Produces full help text.
 .TP 10
 -G
 
-Installs GPU Direct components (must have NVidia drivers installed).
+Installs GPU Direct components (must have GPU drivers installed), either NVIDIA\(ulGPU\(ulDIRECT=<DIR> or INTEL\(ulGPU\(ulDIRECT=<DIR> must be in env
 
 .TP 10
 -v
@@ -93,7 +91,7 @@ Supported components may vary according to OS. Refer to
 
 , OS RPMs Installation Prerequisites for the list of components by supported OS.
 .IP
-Supported components include: eth\(ultools psm3 eth\(ulmodule fastfabric eth\(ulrdma openmpi\(ulgcc\(ulofi mpisrc delta\(uldebug
+Supported components include: eth\(ultools psm3 eth\(ulmodule fastfabric eth\(ulroce openmpi\(ulgcc\(ulofi mpisrc delta\(uldebug
 .IP
 Supported components when using command on a Management Node with Intel(R) Ethernet Fabric Suite installed, include: fastfabric
 .IP
@@ -118,8 +116,17 @@ Provides an answer to a question that may occur during the operation. Answers to
 .TP 10
 
 .sp
+PFC\(ulMODE
+PFC mode (0-Off, 1-Software DCB Willing, 2-Software DCB Unwilling, 3-Firmware DCB Willing)
+
+.RE
+
+.RS
+.TP 10
+
+.sp
 ARPTABLE\(ulTUNING
-Adjust kernel ARP table size for large fabrics?
+Adjust kernel ARP table size for large fabrics
 
 .RE
 
@@ -128,7 +135,7 @@ Adjust kernel ARP table size for large fabrics?
 
 .sp
 ROCE\(ulON
-RoCE RDMA transport?
+RoCE RDMA transport
 
 .RE
 
@@ -154,7 +161,7 @@ Intel Ethernet  \fIx.x.x.x.x\fR Software
    1) Show Installed Software
 .br
 
-   2) Reconfigure Eth RDMA
+   2) Reconfigure Eth RoCE
 .br
 
    3) Reconfigure Driver Autostart

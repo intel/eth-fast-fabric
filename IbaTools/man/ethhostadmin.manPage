@@ -14,7 +14,7 @@ ethhostadmin
 .PP
 Performs a number of multi-step host initialization and verification operations, including upgrading software, rebooting hosts, and other operations. In general, operations performed by ethhostadmin involve a login to one or more host systems.
 .SH Syntax
-ethhostadmin [-c] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
+ethhostadmin [-c] [-e] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
 .br
 [-r  \fIrelease\fR]
 [-I  \fIinstall\(uloptions\fR] [-U  \fIupgrade\(uloptions\fR] [-d  \fIdir\fR]
@@ -32,6 +32,11 @@ Produces full help text.
 -c
 
 Overwrites the result files from any previous run before starting this run.
+
+.TP 10
+-e
+
+exit after 1st operation which fails.
 
 .TP 10
 -f \fIhostfile\fR

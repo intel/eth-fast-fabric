@@ -63,6 +63,185 @@ Name of the enabled plane defined in Mgt config file, default is the first enabl
 
 .RE
 
+.RS
+.TP 10
+
+.sp
+-F/--focus \fIpoint\fR
+Specifies the focus area for report. Used to limit scope of report. Refer to
+\fIPoint Syntax\fR
+for details.
+
+.RE
+
+
+.SH Point Syntax
+
+.TP 10
+ifid:\fIvalue\fR
+
+\fIvalue\fR is numeric ifid.
+
+.TP 10
+ifid:\fIvalue\fR:node
+
+\fIvalue\fR is numeric ifid, selects node with given ifid.
+
+.TP 10
+ifid:\fIvalue\fR:port:\fIvalue2\fR
+
+\fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port number.
+
+.TP 10
+ifid:\fIvalue\fR:portid:\fIvalue2\fR
+
+\fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port id.
+
+.TP 10
+mgmtifaddr:\fIvalue\fR
+
+\fIvalue\fR is numeric port mgmtifaddr.
+
+.TP 10
+ifaddr:\fIvalue\fR
+
+\fIvalue\fR is numeric node ifaddr.
+
+.TP 10
+ifaddr:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port number.
+
+.TP 10
+ifaddr:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port id.
+
+.TP 10
+chassisid:\fIvalue\fR
+
+\fIvalue\fR is numeric chassisid.
+
+.TP 10
+chassisid:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port number.
+
+.TP 10
+chassisid:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port id.
+
+.TP 10
+node:\fIvalue\fR
+
+\fIvalue\fR is node description (node name).
+
+.TP 10
+node:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is node description (node name), \fIvalue2\fR is port number.
+
+.TP 10
+node:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is node description (node name), \fIvalue2\fR is port id.
+
+.TP 10
+nodepat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for node description (node name).
+
+.TP 10
+nodepat:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port number.
+
+.TP 10
+nodepat:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port id.
+
+.TP 10
+nodedetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for node details.
+
+.TP 10
+nodedetpat:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port number.
+
+.TP 10
+nodedetpat:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port id.
+
+.TP 10
+nodetype:\fIvalue\fR
+
+\fIvalue\fR is node type (SW or NIC).
+
+.TP 10
+nodetype:\fIvalue1\fR:port:\fIvalue2\fR
+
+\fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port number.
+
+.TP 10
+nodetype:\fIvalue1\fR:portid:\fIvalue2\fR
+
+\fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port id.
+
+.TP 10
+rate:\fIvalue\fR
+
+\fIvalue\fR is string for rate (25g, 50g, 75g, 100g), omits switch mgmt port 0.
+
+.TP 10
+portstate:\fIvalue\fR
+
+\fIvalue\fR is a string for state (up, down, testing, unknown, dormant, notactive).
+
+.TP 10
+portphysstate:\fIvalue\fR
+
+\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset)
+
+.TP 10
+mtucap:\fIvalue\fR
+
+\fIvalue\fR is MTU size (maximum size 65535), omits switch mgmt port 0.
+
+.TP 10
+linkdetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for link details.
+
+.TP 10
+portdetpat:\fIvalue\fR
+
+\fIvalue\fR is glob pattern for port details.
+
+.TP 10
+nodepatfile:\fIFILENAME\fR
+
+Specifies the name of file with the list of nodepats or node descriptions.
+
+.TP 10
+nodepairpatfile:\fIFILENAME\fR
+
+Specifies the name of file with the list of node pairs, separated by a colon.
+
+.TP 10
+ldr
+
+Specifies the ports with a non-zero link down reason or neighbor link down reason.
+
+.TP 10
+ldr:\fIvalue\fR
+
+Specifies the ports with a link down reason or neighbor link down reason equal to \fIvalue\fR.
+
 .SH Examples
 # List all the links in the fabric:
 .br
