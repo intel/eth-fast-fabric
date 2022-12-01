@@ -502,21 +502,19 @@ fi
 
 export CFG_HOSTS="$HOSTS"
 cfg_host_ports=""
+# CFG_HOST_PORTS maintains network interface names for each host.
+# If no ports are specified for a host, its ports value in CFG_HOST_PORTS
+# will be empty, in which case it's the test's responsibility to log into
+# the host to figure out all available ports if needed. E.g. rping and
+# pfctest figure out available ports for hosts in parallel.
 for host in $HOSTS; do
 	if [ -z "$cfg_host_ports" ]; then
-		export CFG_FIRST_PORTS=$(get_node_ports "$host")
-		export CFG_FIRST_IRDMAS=$(get_node_irdmas "$host")
-		cfg_host_ports="${host}:$CFG_FIRST_PORTS"
+		cfg_host_ports="${host}:$(get_node_ports "$host")"
 	else
 		cfg_host_ports="${cfg_host_ports};${host}:$(get_node_ports "$host")"
 	fi
 done
 export CFG_HOST_PORTS="${cfg_host_ports}"
-if [ -n "$CFG_FIRST_IRDMAS" ]; then
-	export CFG_MPI_DEV="+(${CFG_FIRST_IRDMAS// /|})"
-else
-	export CFG_MPI_DEV=
-fi
 
 export CFG_MPI_PROCESSES="$HOSTS"
 #export CFG_PERF_PAIRS=TBD

@@ -45,10 +45,11 @@ scratch=$(mktemp)
 
 rpm -qa >${scratch}
 
-if grep -q openblas ${scratch}; then
-	export BLAS_TYPE="OPENBLAS"
-elif grep -q mkl ${scratch}; then 
+if grep -q mkl ${scratch} && which icc >/dev/null 2>&1; then 
+	# we only support MKL when compiling with Intel C.
 	export BLAS_TYPE="MKL"
+elif grep -q openblas ${scratch}; then
+	export BLAS_TYPE="OPENBLAS"
 else
 	export BLAS_TYPE="UNKNOWN_MPI_CC"
 fi

@@ -112,6 +112,44 @@ proc build_mpd_hosts { file host host_list } {
 	return [array size mpd]
 }
 
+proc get_irdmas {} {
+# find irdma device names for homogeneous hosts
+#
+# Returns:
+#	A list includes:
+#	  irdma device names
+#         err message
+	global env
+	set driver "ice"
+
+	set first_host ""
+	set first_ports ""
+	set first_irdmas ""
+	foreach hp [split $env(CFG_HOST_PORTS) ";"] {
+		set key_value [split $hp ":"]
+		if {"$first_host" == ""} {
+			set first_host [lindex $key_value 0]
+			set first_ports [lindex $key_value 1]
+		} elseif {"$first_ports" ne "[lindex $key_value 1]"} {
+			return [list "" "All hosts must have the same port names. expect: '$first_ports', actual: '[lindex $key_value 1]'"]
+		}
+	}
+
+	target_root_sh $first_host
+	if {"$first_ports" == ""} {
+		send_unix_cmd "echo IRDMAS: \$(. /usr/lib/eth-tools/ff_funcs; get_irdmas \"\$(get_ifs_by_driver $driver)\")"
+	} else {
+		send_unix_cmd "echo IRDMAS: \$(. /usr/lib/eth-tools/ff_funcs; get_irdmas \"$first_ports\")"
+	}
+	set out [expect_list 20 {"(?n)^IRDMAS:.*"}]
+	if {![regexp {: ([\w ]+)} $out dummy first_irdmas]} {
+		return [list "" "No $driver interfaces found"]
+	}
+	check_exit_status 20 0
+	target_root_sh_exit
+	return [list "$first_irdmas" "OK"]
+}
+
 proc running_mpi_int_tests { } {
 # Determine if running MPI Integration tests, in which case
 # caller will need to get_mpi_info using $env(MPITYPE)
@@ -397,19 +435,20 @@ proc test_case_run_mvapich2_mpi_app { transport host host_list timelimit dir mpi
 	}
 }
 
-proc test_case_run_intelmpi_mpi_app { transport host host_list nic timelimit dir mpi_cmd mpi_args show_perf case_tag} {
+proc test_case_run_intelmpi_mpi_app { transport host host_list nic multirail timelimit dir mpi_cmd mpi_args show_perf case_tag} {
 ##
 ## test_case_run_intel_mpi_app
 ## -------------------------
 ## run an mpi application initiated by host with host_list processes
 ##
 ## Usage:
-##	test_case_run_intel_mpi_app transport host host_list timelimit dir mpi_cmd mpi_args show_perf case_tag
+##	test_case_run_intel_mpi_app transport host host_list nic multirail timelimit dir mpi_cmd mpi_args show_perf case_tag
 ## Arguments:
 ##	transport - not used for intelmpi
 ##	host - host initiate mpi run
 ##	host_list - hosts/processes to run
 ##	nic - device name
+##	multirail - multi rail indicator. empty value will use what is defined in intelmpi.params
 ##	dir - directory (if not absolute assumed relative to tests_dir) with command
 ##	timelimit - time to allow between output by command
 ##	mpi_cmd - MPI appl command
@@ -427,10 +466,11 @@ proc test_case_run_intelmpi_mpi_app { transport host host_list nic timelimit dir
 	upvar mpitype mpitype
 
 	
-	test_case "$host.$case_tag" "$host starts $mpitype $mpi_cmd" "$host starts $mpitype mpi command $mpi_cmd with args: $mpi_args \nagainst hosts: $host_list \nFile: TestTools/mpi.exp" case_setup case_cleanup {
+	test_case "$host.$case_tag" "$host starts $mpitype $mpi_cmd on $nic with multirail=$multirail" "$host starts $mpitype mpi command $mpi_cmd on $nic with multirail=$multirail and $mpi_args \nagainst hosts: $host_list \nFile: TestTools/mpi.exp" case_setup case_cleanup {
 		upvar host host
 		upvar host_list host_list
 		upvar nic nic
+		upvar multirail multirail
 		upvar dir dir
 		upvar timelimit timelimit
 		upvar mpi_cmd mpi_cmd
@@ -474,10 +514,19 @@ proc test_case_run_intelmpi_mpi_app { transport host host_list nic timelimit dir
 			set env(FF_MPI_APPS_DIR) "/usr/src/eth/mpi_apps"
 		}
 
+		if { [ catch {unix_cmd 20 0 "test -e $env(MPICH_PREFIX)/env/vars.sh"} res ] == 0 } {
+			unix_cmd 20 0 ". $env(MPICH_PREFIX)/env/vars.sh"
+		} elseif { [ catch {unix_cmd 20 0 "test -e $env(MPICH_PREFIX)/bin/mpivars.sh"} res ] == 0 } {
+			unix_cmd 20 0 ". $env(MPICH_PREFIX)/bin/mpivars.sh"
+		}
+
 		if { [ catch {unix_cmd 20 0 "test -e $env(FF_MPI_APPS_DIR)/intelmpi.params"} res ] == 0 } {
 			unix_cmd 20 0 ". $env(FF_MPI_APPS_DIR)/intelmpi.params"
 			if { ! [ string equal "$nic" "" ] } {
 				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -genv PSM3_NIC $nic\""
+			}
+			if { ! [ string equal "$multirail" "" ] } {
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -genv PSM3_MULTIRAIL $multirail\""
 			}
 			unix_cmd 20 "" {echo MPI_CMD_ARGS="$MPI_CMD_ARGS"}
 		} else {
@@ -486,6 +535,10 @@ proc test_case_run_intelmpi_mpi_app { transport host host_list nic timelimit dir
 			} else {
 				unix_cmd 20 0 "export MPI_CMD_ARGS=-genv PSM3_NIC $nic"
 			}
+			if { ! [ string equal "$multirail" "" ] } {
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -genv PSM3_MULTIRAIL $multirail\""
+			}
+			unix_cmd 20 "" {echo MPI_CMD_ARGS="$MPI_CMD_ARGS"}
 		}
 		
 		send_unix_cmd "$env(MPICH_PREFIX)/bin/mpirun -np $np -hostfile mpi_hosts \$MPI_CMD_ARGS $add_mpi_env ./$mpi_cmd $mpi_args; echo DONE"
@@ -509,19 +562,20 @@ proc test_case_run_intelmpi_mpi_app { transport host host_list nic timelimit dir
 	}
 
 }
-proc test_case_run_openmpi_mpi_app { transport host host_list nic timelimit dir mpi_cmd mpi_args show_perf case_tag { mpi_env_args "" } } {
+proc test_case_run_openmpi_mpi_app { transport host host_list nic multirail timelimit dir mpi_cmd mpi_args show_perf case_tag { mpi_env_args "" } } {
 ##
 ## test_case_run_openmpi_mpi_app
 ## -------------------------
 ## run an mpi application initiated by host with host_list processes
 ##
 ## Usage:
-##	test_case_run_openmpi_mpi_app transport host host_list timelimit dir mpi_cmd mpi_args show_perf case_tag
+##	test_case_run_openmpi_mpi_app transport host host_list nic multirail timelimit dir mpi_cmd mpi_args show_perf case_tag
 ## Arguments:
 ##	transport - not used for openmpi
 ##	host - host initiate mpi run
 ##	host_list - hosts/processes to run
 ##	nic - device name
+##	multirail - multi rail indicator. empty value will use what is defined in openmpi.params
 ##	dir - directory (if not absolute assumed relative to tests_dir) with command
 ##	timelimit - time to allow between output by command
 ##	mpi_cmd - MPI appl command
@@ -538,12 +592,13 @@ proc test_case_run_openmpi_mpi_app { transport host host_list nic timelimit dir 
 	global tools_case_status
 
 	upvar mpitype mpitype
-	test_case "$host.$case_tag" "$host starts $mpitype $mpi_cmd" "$host starts $mpitype mpi command $mpi_cmd with args: $mpi_args
+	test_case "$host.$case_tag" "$host starts $mpitype $mpi_cmd on $nic with multirail=$multirail" "$host starts $mpitype mpi command $mpi_cmd on $nic with multirail=$multirail and args: $mpi_args
 against hosts: $host_list
 File: TestTools/mpi.exp" case_setup case_cleanup {
 		upvar host host
 		upvar host_list host_list
 		upvar nic nic
+		upvar multirail multirail
 		upvar dir dir
 		upvar timelimit timelimit
 		upvar mpi_cmd mpi_cmd
@@ -618,10 +673,17 @@ File: TestTools/mpi.exp" case_setup case_cleanup {
 			set env(FF_MPI_APPS_DIR) "/usr/src/eth/mpi_apps"
 		}
 
+		if { [ catch {unix_cmd 20 0 "test -e $env(MPICH_PREFIX)/bin/mpivars.sh"} res ] == 0 } {
+			unix_cmd 20 0 ". $env(MPICH_PREFIX)/bin/mpivars.sh"
+		}
+
 		if { [ catch {unix_cmd 20 0 "test -e $env(FF_MPI_APPS_DIR)/openmpi.params"} res ] == 0 } {
 			unix_cmd 60 0 ". $env(FF_MPI_APPS_DIR)/openmpi.params"
 			if { ! [ string equal "$nic" "" ] } {
 				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_NIC $nic\""
+			}
+			if { ! [ string equal "$multirail" "" ] } {
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_MULTIRAIL $multirail\""
 			}
 			unix_cmd 20 "" {echo MPI_CMD_ARGS="$MPI_CMD_ARGS"}
 		} else {
@@ -630,6 +692,10 @@ File: TestTools/mpi.exp" case_setup case_cleanup {
 			} else {
 				unix_cmd 20 0 "export MPI_CMD_ARGS=-x PSM3_NIC $nic"
 			}
+			if { ! [ string equal "$multirail" "" ] } {
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_MULTIRAIL $multirail\""
+			}
+			unix_cmd 20 "" {echo MPI_CMD_ARGS="$MPI_CMD_ARGS"}
 		}
 	
 		send_unix_cmd "$env(MPICH_PREFIX)/bin/mpirun $mpiapi_env -np $np -allow-run-as-root --map-by node -machinefile mpi_hosts \$MPI_CMD_ARGS $openmpi_env ./$mpi_cmd $mpi_args; echo DONE"
@@ -735,7 +801,7 @@ proc get_mpi_info { mpitype {get_mpich_prefix 1}} {
 	return "$mpirunner $mpich_prefix $testdir_prefix $mpicompiler $api {$add_mpi_env}"
 }
 
-proc test_case_run_mpi_app_port { mpitype transport host host_list {nic ""} timelimit dir mpi_cmd { mpi_args "" } {show_perf 0 } {case_tag ""} { mpi_env_args "" } } {
+proc test_case_run_mpi_app_port { mpitype transport host host_list {nic ""} {multirail ""} timelimit dir mpi_cmd { mpi_args "" } {show_perf 0 } {case_tag ""} { mpi_env_args "" } } {
 ##
 ## test_case_run_mpi_app
 ## ---------------------
@@ -789,7 +855,7 @@ proc test_case_run_mpi_app_port { mpitype transport host host_list {nic ""} time
 		set case_tag "$mpi_cmd"
 	}
 	set case_tag "$case_prefix$case_tag"
-	eval $mpirunner $transport $host [list $host_list] {[string trim $nic]} $timelimit "{$newdir}" $mpi_cmd [list $mpi_args] $show_perf $case_tag $mpi_env_args
+	eval $mpirunner $transport $host [list $host_list] {[string trim $nic]} {[string trim $multirail]} $timelimit "{$newdir}" $mpi_cmd [list $mpi_args] $show_perf $case_tag $mpi_env_args
 }
 
 proc test_case_run_mpi_app { mpitype transport host host_list timelimit dir mpi_cmd { mpi_args "" } {show_perf 0 } {case_tag ""} { mpi_env_args "" } } {
@@ -818,5 +884,5 @@ proc test_case_run_mpi_app { mpitype transport host host_list timelimit dir mpi_
 ##	must be used within a test_suite's body, performs test_case calls
 ##	uses case_setup and case_cleanup provided by caller
 ##	no item_setup nor item_cleanup used
-	test_case_run_mpi_app_port $mpitype $transport $host $host_list "" $timelimit $dir $mpi_cmd $mpi_args $show_perf $case_tag $mpi_env_args
+	test_case_run_mpi_app_port $mpitype $transport $host $host_list "" "" $timelimit $dir $mpi_cmd $mpi_args $show_perf $case_tag $mpi_env_args
 }

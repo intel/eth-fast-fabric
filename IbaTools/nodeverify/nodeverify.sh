@@ -38,15 +38,18 @@
 # The following specify expected minimal configuration and performance
 MEMSIZE_EXPECTED=30601808   # size of memory (MemTotal) in k as shown in
 			    #  /proc/meminfo
-NIC_COUNT=1		# expected Number of Intel Ethernet NICs
-NIC_IFS=""      # space separated interface list used in fabric. Empty string will
-                # use interfaces defined in hosts file if it's specified. Otherwise
-                # will use all ICE interfaces
-ROCE_IFS=""     # space separated interface list used for RoCE (which will be
-                # used to check PFC settings). Empty string will use the NIC_IFS
-NIC_FW_VER=""   # expected Intel Ethernet NIC firmware version. Empty string will skip the check.
-ICE_VER=""      # expected Intel Ethernet NIC ice version. Empty string will skip the check.
-IRDMA_VER=""    # expected irdma version. Empty string will skip the check.
+NIC_IFS=""      # Space separated net interface (ifconfig) list used in fabric.
+                # Empty string will use interfaces defined in hosts file if
+                # it's specified. Otherwise will use all ICE interfaces
+ROCE_IFS=""     # Space separated net interface (ifconfig) list used for RoCE
+                # (which will be used to check PFC settings). Empty string will
+                # use the NIC_IFS if specified, should be a subset of NIC_IFS
+NIC_FW_VER=""   # expected Intel Ethernet NIC firmware version.
+                # Empty string will skip the check.
+ICE_VER=""      # expected Intel Ethernet NIC ice driver version or intree.
+                # Empty string will skip the check.
+IRDMA_VER=""    # expected irdma driver version or intree.
+                # Empty string will skip the check.
 LIMITS_SEL=5    # expected irdma Resource Limits Selector
 MTU=9000        # expected MTU. empty string will ignore MTU verification
 PCI_MAXPAYLOAD=256	  # expected value for PCI max payload
@@ -91,12 +94,16 @@ STREAM_MIN_BW=40000	 # minimum Triad bandwidth for each run of the
 HPL_CORES=
 
 # By default the problem size will be scaled to consume roughly 30% of RAM on
-# the target node.  This can be adjusted up or down between 0.0 and 0.9. Note
+# the target node.  This can be adjusted up or down between 0.1 and 0.9. Note
 # that larger values will cause the test to run for a longer time.
 HPL_PRESSURE=0.3
 
-# can adjust default list of tests below
-TESTS="pcicfg pcispeed initscripts memsize cpu hton irqbalance turbo cstates vtd snmp srp nic_settings stream"
+# can adjust default list of TESTS below. Tests available:
+# pcicfg pcispeed initscripts memsize vtd pstates_on pstates_off
+# driver_on driver_off governor cpu_pinned cpu_unpinned pmodules_off
+# cpu cpu_consist hton htoff turbo cstates vtd snmp srp
+# nic_settings stream hpl
+TESTS="pcicfg pcispeed initscripts memsize cpu hton turbo cstates vtd snmp srp nic_settings stream"
 
 Usage()
 {
@@ -141,7 +148,7 @@ Usage()
 	echo "  cstates - check if Intel C-States are enabled and optimally configured." >&2
 	echo "  hton - verify that Hyper Threading is enabled" >&2
 	echo "  htoff - verify that Hyper Threading is disabled" >&2
-	echo "  irqbalance - verify irqbalance is running with proper configuration" >&2
+	#echo "  irqbalance - verify irqbalance is running with proper configuration" >&2
 	echo "  snmp - verify SNMP daemon is running" >&2
 	echo "  srp - verify srp daemon is not running" >&2
 	echo "  stream - verify memory bandwidth" >&2
@@ -168,6 +175,7 @@ myfilter()
 }
 
 filter=myfilter
+hosts_file=
 while getopts vd:f: param
 do
 	case $param in
@@ -217,6 +225,12 @@ function pass_msg()
 	echo "`hostname -s`: PASS $TEST$1"
 }
 
+function skip_msg()
+{
+	set +x
+	echo "`hostname -s`: SKIP $TEST$1"
+}
+
 function fail()
 {
 	fail_msg "$1"
@@ -231,8 +245,7 @@ function pass()
 
 function skip()
 {
-	set +x
-	echo "`hostname -s`: SKIP $TEST$1"
+	skip_msg "$1"
 	exit 0
 }
 
@@ -243,19 +256,19 @@ function check_tool()
 
 outdir="$(mktemp --tmpdir -d hostverify.XXXXXXXXXX)" || fail "Cannot mktemp --tmpdir -d hostverify.XXXXXXXXXX"
 
-if [[ -z $NIC_IFS && -n $hosts_file && -e $hosts_file ]]; then
+if [[ -z $NIC_IFS && -n "$hosts_file" && -e "$hosts_file" ]]; then
 	shname="$(hostname -s)"
-	ports="$(egrep "^$shname(\..*:|:)" $hosts_file | head -n 1 | cut -d ':' -f2 | sed -e 's/,/ /g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-	if [[ -n $ports ]]; then
+	ports="$(egrep "^$shname(\..*:|:)" "$hosts_file" | head -n 1 | cut -d ':' -f2 | sed -e 's/,/ /g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+	if [[ -n "$ports" ]]; then
 		NIC_IFS="$ports"
 	fi
 fi
 
-if [[ -z $NIC_IFS ]]; then
+if [[ -z "$NIC_IFS" ]]; then
 	NIC_IFS="$(ls -l /sys/class/net/*/device/driver | grep 'ice$' | awk '{print $9}' | cut -d '/' -f5)"
 fi
 
-if [[ -z $ROCE_IFS ]]; then
+if [[ -z "$ROCE_IFS" ]]; then
 	ROCE_IFS="$NIC_IFS"
 fi
 
@@ -269,6 +282,8 @@ test_pcicfg()
 	failure=0
 	cd "${outdir}" || fail "Can't cd ${outdir}"
 
+	[ -n "$NIC_IFS" ] || fail "No NICs found"
+
 	lspci="${lspci:-/sbin/lspci}"
 	[ ! -x "${lspci}" ] && fail "Can't find lspci"
 
@@ -281,15 +296,15 @@ check_pcicfg()
 {
 	dev=$1
 	# get Intel Ethernet NIC information
-	slot_id=$(ls -la /sys/class/net | awk '{print $11}' | grep $dev | cut -d "/" -f 6 | cut -b 6-)
+	slot_id="$(ls -l /sys/class/net | awk '{print $11}' | grep $dev | cut -d "/" -f 6 | cut -b 6-)"
+	[ -n "$slot_id" ] || fail "Unable to determine PCIe slot for $dev"
 
 	rm -f pcicfg.stdout
 	"${lspci}" -vvv -s $slot_id 2>pcicfg.stderr | tee -a pcicfg.stdout || fail "Error running lspci against $dev"
 	set +x
 
-	nic_count=$(cat pcicfg.stdout|grep 'MaxPayload .* bytes, MaxReadReq .* bytes' | wc -l)
-	[ $nic_count -ne $NIC_COUNT ] && { fail_msg "Incorrect number of Intel Ethernet NICs for $dev: Expect $NIC_COUNT  Got: $nic_count"; failure=1; }
-	[ $NIC_COUNT -eq 0 ] && pass
+	nic_count="$(cat pcicfg.stdout|grep 'MaxPayload .* bytes, MaxReadReq .* bytes' | wc -l)"
+	[ $nic_count -ne 1 ] && fail "Unable to get PCI config for $dev"
 
 	cat pcicfg.stdout|egrep 'MaxPayload .* bytes, MaxReadReq .* bytes|^[0-9]' |
 		{
@@ -330,6 +345,8 @@ test_pcispeed()
 	failure=0
 	cd "${outdir}" || fail "Can't cd ${outdir}"
 
+	[ -n "$NIC_IFS" ] || fail "No NICs found"
+
 	lspci="${lspci:-/sbin/lspci}"
 	[ ! -x "${lspci}" ] && fail "Can't find lspci"
 
@@ -342,15 +359,15 @@ check_pcispeed()
 {
 	dev=$1
 	# get Intel Ethernet NIC information
-	slot_id=$(ls -la /sys/class/net | awk '{print $11}' | grep $dev | cut -d "/" -f 6 | cut -b 6-)
+	slot_id="$(ls -l /sys/class/net | awk '{print $11}' | grep $dev | cut -d "/" -f 6 | cut -b 6-)"
+	[ -n "$slot_id" ] || fail "Unable to determine PCIe slot for $dev"
 
 	rm -f pcispeed.stdout
 	"${lspci}" -vvv -s $slot_id 2>pcispeed.stderr | tee -a pcispeed.stdout || fail "Error running lspci against $dev"
 	set +x
 
-	nic_count=$(cat pcispeed.stdout|grep 'Speed .*, Width .*' pcispeed.stdout|egrep -v 'LnkCap|LnkCtl|Supported'| wc -l)
-	[ $nic_count -ne $NIC_COUNT ] && { fail_msg "Incorrect number of Intel Ethernet NICs for $dev: Expect $NIC_COUNT  Got: $nic_count"; failure=1; }
-	[ $NIC_COUNT -eq 0 ] && pass
+	nic_count="$(cat pcispeed.stdout|grep 'Speed .*, Width .*' pcispeed.stdout|egrep -v 'LnkCap|LnkCtl|Supported'| wc -l)"
+	[ $nic_count -ne 1 ] && fail "Unable to get PCI speed for $dev"
 
 	cat pcispeed.stdout|egrep 'Speed .*, Width .*|^[0-9]' pcispeed.stdout|egrep -v 'LnkCap|LnkCtl|Supported'|
 		{
@@ -404,9 +421,9 @@ test_initscripts()
 	for i in cpuspeed powerd
 	do
 		set -x
-		if [ -n "`systemctl list-units | grep $i`" ] 
+		if [ -n "$(systemctl list-units | grep $i)" ] 
 		then
-			[ -n "`systemctl is-enabled $i | grep enabled`" ] && fail "Undesirable systemd service enabled: $i"
+			[ -n "$(systemctl is-enabled $i | grep enabled)" ] && fail "Undesirable systemd service enabled: $i"
 		fi
 		set +x
 	done
@@ -422,7 +439,7 @@ test_irqbalance()
 
 	set -x
 
-	pid=$(pgrep irqbalance)
+	pid="$(pgrep irqbalance)"
 	#TODO: replace below with desired irqbalance behavior
 	if [ -n "$pid" ]; then
 		skip ": irqbalance is running with pid=$pid"
@@ -431,7 +448,7 @@ test_irqbalance()
 	fi
 #	[ -z "$pid" ] && fail "irqbalance process not running"
 
-#	cmdline=$(ps -o command --no-heading -p $pid)
+#	cmdline="$(ps -o command --no-heading -p $pid)"
 #	echo "$cmdline" | grep -q "exact" || fail "irqbalance is NOT running with hint policy 'exact'"
 	set +x
 
@@ -459,7 +476,7 @@ test_irqbalance()
 #	min="${min:-120000}"
 #	[ -z "${min}" ] && fail "invalid min"
 #
-#	nodeperf=$(cat nodeperf.stdout| grep '0 of 1' | head -1 | cut -d ' ' -f 12)
+#	nodeperf="$(cat nodeperf.stdout| grep '0 of 1' | head -1 | cut -d ' ' -f 12)"
 #	[ -z "${nodeperf}" ] && fail "Unable to obtain nodeperf result"
 #
 #	result="$(echo "if ( ${nodeperf} >= ${min} ) { print \"PASS\n\"; } else { print \"FAIL\n\"; }" | bc -lq)" || fail "Unable to analyze nodeperf result"
@@ -493,25 +510,32 @@ test_stream()
 	min="${min:-120000}"
 	[ -z "${min}" ] && fail "invalid min"
 
-	triadbw1=$(cat stream_1.stdout| grep '^Triad:' | sed -e 's/  */ /g' | cut -d ' ' -f 2)
+	triadbw1="$(cat stream_1.stdout| grep '^Triad:' | sed -e 's/  */ /g' | cut -d ' ' -f 2)"
 	[ -z "${triadbw1}" ] && fail "Triad result not found"
 
-	triadbw2=$(cat stream_2.stdout| grep '^Triad:' | sed -e 's/  */ /g' | cut -d ' ' -f 2)
+	triadbw2="$(cat stream_2.stdout| grep '^Triad:' | sed -e 's/  */ /g' | cut -d ' ' -f 2)"
 	[ -z "${triadbw2}" ] && fail "Triad result not found"
 
-	triadbw3=$(cat stream_3.stdout| grep '^Triad:' | sed -e 's/  */ /g' | cut -d ' ' -f 2)
+	triadbw3="$(cat stream_3.stdout| grep '^Triad:' | sed -e 's/  */ /g' | cut -d ' ' -f 2)"
 	[ -z "${triadbw3}" ] && fail "Triad result not found"
 
 	#result="$(echo "if ( (${triadbw1} + ${triadbw2} + ${triadbw3}) >= ${min} ) { print \"PASS\n\"; } else { print \"FAIL\n\"; }" | bc -lq)" || fail "Unable to analyze BW"
 	gbw=0
+	min_bw=1000000000000
+	max_bw=0
 	for x in 1 2 3; do
 	# The test below requires integers and errors out with floats
-		[ $(eval echo '$'triadbw$x | cut -d. -f1) -ge $STREAM_MIN_BW ] && (( gbw++ ))
+		bw=$(eval echo '$'triadbw$x | cut -d. -f1)
+		[ $x -eq 1 -o $bw -lt $min_bw ] && min_bw=$bw
+		[ $x -eq 1 -o $bw -gt $max_bw ] && max_bw=$bw
+		[ $bw -ge $STREAM_MIN_BW ] && (( gbw++ ))
 	done
-	[ $gbw -lt 2 ] && result="FAIL" || result="PASS"
-	[ "${result}" != "PASS" ] && fail "One or more Triad numbers are below 40000"
-
-	pass
+	if [ $gbw -lt 2 ]
+	then
+		fail "Two or more Triad numbers are below $STREAM_MIN_BW: $min_bw to $max_bw MB/s"
+	else
+		pass ": $min_bw to $max_bw MB/s"
+	fi
 }
 
 # verify server memory size
@@ -521,7 +545,8 @@ test_memsize()
 	echo "memsize test ..."
 	date
 	set -x
-	mem=$(cat  /proc/meminfo | head -1 | cut -f 2 -d : |cut -f 1 -d k)
+	mem="$(cat  /proc/meminfo | head -1 | cut -f 2 -d : |cut -f 1 -d k)"
+	[ -n "$mem" ] || fail "Unable to get MemTotal from /proc/meminfo"
 	set +x
 	echo "memory size: $mem"
 	if  [ $mem -lt $MEMSIZE_EXPECTED ]
@@ -581,7 +606,7 @@ function pstates_enabled()
 	date
 
 	set -x
-	driver=`head -n 1 /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver`
+	driver="$(head -n 1 /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver)"
 	set +x
 
 	return $([ "${driver}" = "intel_pstate" ])
@@ -612,7 +637,7 @@ function driver_loaded()
 	date
 
 	set -x
-	driver=`head -n 1 /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver`
+	driver="$(head -n 1 /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver)"
 	set +x
 
 	return $([ "${driver}" = ${CPU_DRIVER} ])
@@ -643,15 +668,15 @@ test_pmodules_off()
 
 	set -x
 	mod_dir=/lib/modules/$(uname -r)/kernel/drivers/cpufreq/ 
-	if [ -e ${mod_dir} ]
+	if [ -e "${mod_dir}" ]
 	then 
-		modules=$(ls ${mod_dir} | egrep *.ko | while read line; do basename ${line} .ko; done)
+		modules="$(ls ${mod_dir} | egrep *.ko | while read line; do basename ${line} .ko; done)"
 	fi
 	
 	ldmodules=
 	for mod in ${modules}
 	do 
-		tmp=$(lsmod | grep ${mod})
+		tmp="$(lsmod | grep ${mod})"
 		[ -n "${tmp}" ] && [ ${mod} != ${CPU_DRIVER} ] && ldmodules=${mod}' '${ldmodules} 
 	done
 
@@ -695,10 +720,10 @@ function cpu_pinned()
 	date
 
 	set -x
-	result=$(cpupower -c 0 frequency-info -p | grep -o '[0-9\.]\+ GHz')
+	result="$(cpupower -c 0 frequency-info -p | grep -o '[0-9\.]\+ GHz')"
 	lo_freq=$(echo ${result} | awk -F ' ' '{print $1*1000000}')
 	hi_freq=$(echo ${result} | awk -F ' ' '{print $3*1000000}')
-	max_freq=$(cpupower -c -0 frequency-info -l | tail -1 | cut -f 2 -d ' ')
+	max_freq="$(cpupower -c -0 frequency-info -l | tail -1 | cut -f 2 -d ' ')"
 
 	set +x
 	
@@ -734,9 +759,10 @@ test_cstates()
 	echo "cstates test ..."
 	date
 	set -x
-	driver=$(cat /sys/devices/system/cpu/cpuidle/current_driver)
+	driver="$(cat /sys/devices/system/cpu/cpuidle/current_driver)"
 	[ "${driver}" != "intel_idle" ] && fail "intel_idle not enabled in kernel, C-State config non-optimal."
-	max_cstate=$(cat /sys/module/intel_idle/parameters/max_cstate)
+	max_cstate="$(cat /sys/module/intel_idle/parameters/max_cstate)"
+	[ -n "$max_cstate" ] || fail "Unable to get C-States"
 	[ ! $max_cstate -gt 0 ] && fail "C-States are currently disabled."
 	set +x
 
@@ -752,7 +778,7 @@ test_turbo()
 	check_tool cpupower
 
 	set -x
-	result=$(cpupower frequency-info | sed -n "1,/boost state support/d;1,+1p")
+	result="$(cpupower frequency-info | sed -n '1,/boost state support/d;1,+1p')"
 	echo $result | grep -q "Supported: yes" || skip "Turbo not supported on platform"
 	echo $result | grep -q "Active: yes" || fail "Turbo is not enabled"
 	set +x
@@ -798,9 +824,13 @@ test_hpl()
 	date
 	cd "${MPI_APPS}" || fail "Can't cd ${MPI_APPS}"
 
+	if [[ -z "$(find . -name xhpl)" ]]; then
+		fail "HPL executable not found."
+	fi
+
 	# configure HPL2's HPL.dat file to control test
 	if [ -z "$HPL_CORES" ]; then
-		HPL_CORES=`cat /proc/cpuinfo | grep processor | wc -l`
+		HPL_CORES="$(cat /proc/cpuinfo | grep processor | wc -l)"
 	fi
 
 	MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
@@ -842,12 +872,12 @@ test_snmp()
 
 	set -x
 
-	pid=$(pgrep snmpd)
+	pid="$(pgrep snmpd)"
 	[ -n "$pid" ] || fail "SNMP daemon is not running"
 
 	check_tool snmpget
 
-	[[ $(snmpget -v2c -c public localhost sysName.0 | grep `hostname`) ]] || fail "snmpget query failed..."
+	[[ "$(snmpget -v2c -c public localhost sysName.0 | grep `hostname`)" ]] || fail "snmpget query failed..."
 
 	set +x
 
@@ -862,10 +892,10 @@ test_srp()
 
 	set -x
 
-	pid=$(pgrep srp_daemon)
+	pid="$(pgrep srp_daemon)"
 	[ -n "$pid" ] && fail "SRP process is running"
 
-	autostart=$(lsmod | grep ib_srp)
+	autostart="$(lsmod | grep ib_srp)"
 	[ -n "$autostart" ] && fail "SRP service is configured to start at boot."
 
 	set +x
@@ -883,14 +913,14 @@ test_nic_settings()
 	failure=0
 
 	#confirm ice is loaded
-	ice=$(lsmod | grep ice)
+	ice="$(lsmod | grep ice)"
 	[ -n "$ice" ] || fail "ice module not loaded"
 	#check ice version
 	if [[ "${ICE_VER,,}" = "intree" ]]; then
 		[[ "$(modinfo -F intree ice)" = "Y" ]] || \
 			 { fail_msg "ice module is not an in-tree module"; failure=1; }
 	elif [ -n "$ICE_VER" ]; then
-		ice_ver=$(modinfo -F version ice)
+		ice_ver="$(modinfo -F version ice)"
 		if [[ -z "$ice_ver" ]]; then
 			{ fail_msg "ice module has no version information. Expect $ICE_VER"; failure=1; }
 		elif [[ "$ice_ver" != "$ICE_VER" ]]; then
@@ -898,14 +928,14 @@ test_nic_settings()
 		fi
 	fi
 	#confirm irdma is loaded
-	irdma=$(lsmod | grep irdma)
+	irdma="$(lsmod | grep irdma)"
 	[ -n "$irdma" ] || { fail_msg "irdma module not loaded"; failure=1; }
 	#check irdma version
 	if [[ "${IRDMA_VER,,}" = "intree" ]]; then
 		[[ "$(modinfo -F intree irdma)" = "Y" ]] || \
 			 { fail_msg "irdma module is not an in-tree module"; failure=1; }
 	elif [ -n "$IRDMA_VER" ]; then
-		irdma_ver=$(modinfo -F version irdma)
+		irdma_ver="$(modinfo -F version irdma)"
 		if [[ -z "$irdma_ver" ]]; then
 			{ fail_msg "irdma module has no version information. Expect $IRDMA_VER"; failure=1; }
 		elif [[ "$irdma_ver" != "$IRDMAE_VER" ]]; then
@@ -914,14 +944,24 @@ test_nic_settings()
 	fi
 
 	#confirm irdma limits_sel is expected
-	sel=$(cat /sys/module/irdma/parameters/limits_sel)
-	[ $sel -ne $LIMITS_SEL ] && \
-		{ fail_msg "Incorrect irdma limits_sel: Expect $LIMITS_SEL  Got $sel"; failure=1; }
+	if [ -e /sys/module/irdma/parameters/limits_sel ]
+	then
+		sel="$(cat /sys/module/irdma/parameters/limits_sel)"
+		[ $sel -ne $LIMITS_SEL ] && \
+			{ fail_msg "Incorrect irdma limits_sel: Expect $LIMITS_SEL  Got $sel"; failure=1; }
+	else
+		skip_msg ": /sys/module/irdma/parameters/limits_sel not available"
+	fi
 
-	for dev in $ROCE_IFS; do
-		(check_nic_settings $dev)
-		[ $? -eq 0 ] || failure=1
-	done
+	if [ -n "$ROCE_IFS" ]
+	then
+		for dev in $ROCE_IFS; do
+			(check_nic_settings $dev)
+			[ $? -eq 0 ] || failure=1
+		done
+	else
+		skip_msg ": No ROCE NICs Found"
+	fi
 
 	[ $failure -ne 0 ] && exit 1
 
@@ -937,32 +977,34 @@ check_nic_settings()
 	then
 		#check firmware version
 		if [ -n "$NIC_FW_VER" ]; then
-			fw_ver=$(ethtool -i $dev | grep 'firmware-version:' | cut -d " " -f 2)
+			fw_ver="$(ethtool -i $dev | grep 'firmware-version:' | cut -d ' ' -f 2)"
 			[[ "$fw_ver" = "$NIC_FW_VER" ]] || \
 				{ fail_msg "Incorrect firmware version on $dev. Expect $NIC_FW_VER, got $fw_ver"; failure=1; }
 		fi
 		#confirm firmware DCB mode is enabled
-		[ $(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}') == "on" ] || \
+		[ "$(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}')" == "on" ] || \
 			{ fail_msg "fw-lldp-agent is off for $dev..."; failure=1; }
 
 		#confirm LFC is disabled
-		[[ $(ethtool -a $dev | grep RX | awk '{print $2}') == "on" || \
-			$(ethtool -a $dev | grep TX | awk '{print $2}') == "on" ]] && \
+		[[ "$(ethtool -a $dev | grep RX | awk '{print $2}')" == "on" || \
+			"$(ethtool -a $dev | grep TX | awk '{print $2}')" == "on" ]] && \
 			{ fail_msg "PFC not configured correctly; LFC is enabled for $dev..."; failure=1; }
 	else
 		fail_msg "Cannot find ethtool. Skipped PFC config check on $dev."
 		failure=1
 	fi
 
+	# get Intel Ethernet NIC slot
+	slot="$(ls -l /sys/class/net | grep $dev | awk '{print $11}' | cut -d '/' -f 6)"
+	[ -n "$slot" ] || fail "Cannot find device slot for $dev"
+
 	#confirm MTU
-	act_mtu=$(ip addr show dev $dev | head -n 1 | sed 's/^.* mtu \([0-9]\+\) .*/\1/g')
-	[[ -z "$MTU" || $act_mtu -eq $MTU ]] || \
+	act_mtu="$(ip addr show dev $dev | head -n 1 | sed 's/^.* mtu \([0-9]\+\) .*/\1/g')"
+	[[ -z "$MTU" || "$act_mtu" -eq $MTU ]] || \
 		{ fail_msg "Incorrect MTU on $dev. Expect $MTU, got $act_mtu"; failure=1; }
 
 	# get Intel Ethernet NIC information
-	slot=$(ls -l /sys/class/net | grep $dev | awk '{print $11}' | cut -d "/" -f 6)
-	[ -n "$slot" ] || fail "Cannot find device slot or $dev"
-	irdma_dev=$(ls $(find /sys/devices/ -name $slot)/infiniband)
+	irdma_dev="$(ls $(find /sys/devices/ -name $slot)/infiniband)"
 	[ -n "$irdma_dev" ] || fail "Cannot find irdma device for $dev"
 
 	# confirm RoCE

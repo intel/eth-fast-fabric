@@ -89,7 +89,7 @@ Usage()
 	exit 2
 }
 
-if [ -z "$1" ]
+if [ -z "$1" -o x"$1" = x"--help" ]
 then
 	Usage
 else

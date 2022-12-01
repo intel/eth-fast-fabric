@@ -89,7 +89,6 @@ if ( "$TOOLS_DIR" eq "" ) {
 }
 $FF_CONF_FILE = "$OPA_CONFIG_DIR/ethfastfabric.conf";
 my $FF_MGT_CONF = "$OPA_CONFIG_DIR/mgt_config.xml";
-my $TMP_MGT_CONF = "/tmp/mgt_config_$$.xml";
 $OWNER = "root";
 $GROUP = "root";
 
@@ -656,41 +655,6 @@ sub check_user
 	}
 }
 
-sub add_mgt_plane($$)
-{
-	my $conf = "$_[0]";
-	my $plane = "$_[1]";
-	if (-e $conf) {
-		system("sed -i 's/<\\\/Config>//' $conf");
-		open(FILE, ">>", "$conf") || die "Unable to open file $conf";
-		print FILE "	<Plane>\n";
-		print FILE "		<Name>$plane</Name>\n";
-		print FILE "		<Enable>1</Enable>\n";
-		print FILE "		<HostsFile>$FabricAdminHostsFile</HostsFile>\n";
-		print FILE "		<SwitchesFile>$FabricSwitchesFile</SwitchesFile>\n";
-		print FILE "	</Plane>\n";
-		print FILE "</Config>\n";
-		close(FILE);
-	}
-	print LOG_FD "Added plane '$plane' into $conf\n";
-}
-
-sub setup_mgt_conf
-{
-	if (! -e $TMP_MGT_CONF) {
-		if ( ! -e "$BIN_DIR/ethxmlfilter" ) {
-			print "preparing mgt_config.xml...\n";
-			print "ethxmlfilter requires $ComponentName{oftools} be installed\n";
-			HitKeyCont;
-			return 1;
-		}
-		system("ethxmlfilter -s 'Plane' $FF_MGT_CONF > $TMP_MGT_CONF");
-		add_mgt_plane($TMP_MGT_CONF, "plane");
-	}
-	return 0;
-}
-
-
 sub Usage
 {
 	# don't document -r option, its only used for MPI do_build and
@@ -1062,7 +1026,6 @@ sub fabricsetup_findgood
 		if (GetYesNo("Would you like to now use $OPA_CONFIG_DIR/good as Host File?", "y") ) {
 			$PrevFabricSetupHostsFile = "$FabricSetupHostsFile";
 			$FabricSetupHostsFile = "$OPA_CONFIG_DIR/good";
-			system "rm -f $TMP_MGT_CONF";
 		}
 	}
 	return 0;
@@ -1350,23 +1313,34 @@ sub fabricsetup_buildmpi
 			}
 		}
 	} until (GetYesNo("Are you sure you want to proceed?", "n") );
-			
+
 	if ( "$mode" ne "build" ) {
 		return 0;
 	}
 	if ( -e "$build_dir/.filelist" ) {
 		run_fabric_cmd("cd $build_dir; rm -rf `cat .filelist`", "skip_prompt");
 	}
+	my $src_vars_cmd = "";
+	# Source *vars.sh before building
+	if ( -e "$mpich_prefix/env/vars.sh" ) {
+		# Common Intel MPI (oneapi) path
+		$src_vars_cmd = "source $mpich_prefix/env/vars.sh; ";
+	} elsif ( -e "$mpich_prefix/bin/mpivars.sh" ) {
+		# Common OpenMPI and older Intel MPI path
+		$src_vars_cmd = "source $mpich_prefix/bin/mpivars.sh; ";
+	} else {
+		print "WARNING: Did not find *vars.sh file in $mpich_prefix";
+	}
 	run_fabric_cmd("mkdir -p $build_dir; cp -r -p $mpi_apps_dir/. $build_dir", "skip_prompt");
 	run_fabric_cmd("cd $mpi_apps_dir; find . -mindepth 1 > $build_dir/.filelist", "skip_prompt");
 	if (!installed_mpiapps()){
 		print "Package $ComponentName{mpiapps} not installed. Only building subset of MPI Apps\n";
 		HitKeyCont;
-		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber eth-base 2>&1|tee make.res")) {
+		if (run_fabric_cmd("$src_vars_cmd cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber eth-base 2>&1|tee make.res")) {
 			return 1;
 		}
-	} else{
-		if (run_fabric_cmd("cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber quick 2>&1|tee make.res")) {
+	} else {
+		if (run_fabric_cmd("$src_vars_cmd cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber quick 2>&1|tee make.res")) {
 			return 1;
 		}
 	}
@@ -1614,10 +1588,7 @@ sub fabricadmin_fabric_info
 		HitKeyCont;
 		return 1;
 	}
-	if (setup_mgt_conf()) {
-		return 1;
-	}
-	return run_fabric_cmd("$BIN_DIR/ethfabricinfo -E $TMP_MGT_CONF");
+	return run_fabric_cmd("$BIN_DIR/ethfabricinfo -p $PLANE -f $FabricAdminHostsFile");
 }
 #sub fabricadmin_ethpingall
 #{
@@ -1659,7 +1630,6 @@ sub fabricadmin_findgood
 		if (GetYesNo("Would you like to now use $OPA_CONFIG_DIR/good_$PLANE as Host File?", "y") ) {
 			$PrevFabricAdminHostsFile = "$FabricAdminHostsFile";
 			$FabricAdminHostsFile = "$OPA_CONFIG_DIR/good_$PLANE";
-			system("rm -f $TMP_MGT_CONF");
 		}
 	}
 	return 0;
@@ -1882,12 +1852,9 @@ sub fabricadmin_showallports
 	} while (length($inp) == 0);
 	$linkanalysis_file = $inp;
 	if ($linkanalysis) {
-		if (setup_mgt_conf()) {
-			return 1;
-		}
 		my $snapshot_suffix=`date +%Y%m%d-%H%M%S`;
 		chop $snapshot_suffix;
-		if ( run_fabric_cmd("$BIN_DIR/ethlinkanalysis -E $TMP_MGT_CONF $linkanalysis_opts -x '$snapshot_suffix' $linkanalysis_reports > $linkanalysis_file 2>&1", "skip_prompt") ) {
+		if ( run_fabric_cmd("$BIN_DIR/ethlinkanalysis -p $PLANE -f $FabricAdminHostsFile $linkanalysis_opts -x '$snapshot_suffix' $linkanalysis_reports > $linkanalysis_file 2>&1", "skip_prompt") ) {
 			return 1;
 		}
 	} else  {
@@ -1954,13 +1921,10 @@ sub fabricadmin_mpiperf
 sub fabricadmin_health
 {
 	# TBD -switches file
-	if (setup_mgt_conf()) {
-		return 1;
-	}
 	if (GetYesNo("Baseline present configuration?", "n") ) {
-		return run_fabric_cmd("$BIN_DIR/ethallanalysis -b -E $TMP_MGT_CONF");
+		return run_fabric_cmd("$BIN_DIR/ethallanalysis -b -p $PLANE -f $FabricAdminHostsFile");
 	} else {
-		return run_fabric_cmd("$BIN_DIR/ethallanalysis -E $TMP_MGT_CONF");
+		return run_fabric_cmd("$BIN_DIR/ethallanalysis -p $PLANE -f $FabricAdminHostsFile");
 	}
 }
 sub fabricadmin_cabletest
@@ -2379,8 +2343,6 @@ START:
 
 sub cleanup
 {
-	print LOG_FD "removing tmp file $TMP_MGT_CONF...\n";
-	system("rm -f $TMP_MGT_CONF");
 	print LOG_FD "closing log file...\n";
 	close_log;
 	exit(0);

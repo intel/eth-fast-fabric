@@ -38,7 +38,7 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-if [ -z "$1" ]
+if [ -z "$1" -o "$1" == "-h" -o "$1" == "--help" ]
 then 
 	echo " Usage: run_multi_lat5 number_processes"
 	echo " For example: ./run_multi_lat5 2"

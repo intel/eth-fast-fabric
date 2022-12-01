@@ -174,8 +174,8 @@ int check_counters(const char *nic, struct nic_info_s *nic_info)
 void get_nic_names(char **nic_args)
 {
 	char *nic;
-	struct dirent **namelist;
-	int n, i;
+	struct dirent **namelist = NULL;
+	int n=0, i=0;
 
 	if (! nic_args) {
 		// we will get NICs in sorted order
@@ -184,17 +184,19 @@ void get_nic_names(char **nic_args)
 			perror(CMD ": Unable to get list of NICs");
 			exit(1);
 		}
-		i = 0;
-		if (i < n)
-			nic = namelist[i]->d_name;
-		else
-			nic = NULL;
+		if (n == 0 || ! namelist) {
+			fprintf(stderr, "No NICs found");
+			exit(1);
+		}
+		nic = namelist[0]->d_name;
 	} else {
 		nic = *nic_args++;
 	}
 	while (nic) {
-		if (nic[0] == '.') {
+		if (! nic_args && nic[0] == '.') {
 			// skip . and .. and any hidden files/dirs
+		} else if (nic[0] == '.' || strchr(nic, '/')) {
+			fprintf(stderr, CMD ": Skipping NIC %s: suspicious NIC name\n", nic);
 		} else {
 			if (g_num_nics >= MAX_NICS) {
 				fprintf(stderr, CMD ": Too many NICs\n");

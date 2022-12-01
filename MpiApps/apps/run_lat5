@@ -39,18 +39,29 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
 
-NUM_PROCESSES=2
+CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_latency"
 APP=osu_latency
+
+if [ "$1" == "-h" -o "$1" == "--help" ]
+then 
+	echo " Usage: $0 [options]"
+	echo " For example: $0 -v"
+	echo " Always runs on exactly two hosts."
+	echo
+	echo -n " [options] are passed to ${APP}: "
+	${CMD} -h
+	exit 1
+fi
+
+NUM_PROCESSES=2
 LOGFILE=
 . ./prepare_run
-
-CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_latency"
 
 (
 	echo " Running Latency 5.9 ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD
+	$MPI_RUN_CMD $CMD $@
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 

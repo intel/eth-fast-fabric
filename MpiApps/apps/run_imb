@@ -38,13 +38,25 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-if [ -z "$1" ]
+IMB_CMD="imb/IMB-MPI1"
+if [ ! -x $IMB_CMD ]
+then
+	echo " $IMB_CMD: Not Found"
+	exit 1
+fi
+
+if [ -z "$1" -o "$1" == "-h" -o "$1" == "--help" ]
 then 
-	echo " Usage: run_imb number_processes [options]"
+	echo " Usage: run_imb number_processes [options] [benchmarks]"
 	echo " For example: ./run_imb 2"
 	echo " For example: ./run_imb 16 allreduce barrier"
 	echo "number_processes may be 'all' in which case one rank will be started for"
 	echo "every process in the mpi_hosts file"
+	echo
+	echo "For a list of the available IMB MPI1 benchmarks please see the Intel"
+	echo "MPI Benchmarks documentation."
+	echo
+	$IMB_CMD -help
 	exit 1
 fi
 
@@ -53,13 +65,6 @@ APP=IMB-MPI1
 shift
 LOGFILE=
 . ./prepare_run
-
-IMB_CMD="imb/IMB-MPI1"
-if [ ! -x $IMB_CMD ]
-then
-	echo " $IMB_CMD: Not Found"
-	exit 1
-fi
 
 # to run a reduced suite of tests, uncomment a different one of these lines
 # or specify test name on the command line

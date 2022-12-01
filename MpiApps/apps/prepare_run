@@ -155,6 +155,15 @@ USING_MPD=n #I think we can delete this variable
 if [ -e "$MPICH_PREFIX/bin/tune" ] #IntelMPI
 then
 	echo "IntelMPI Detected, running with mpirun." | tee -i -a $LOGFILE
+
+	if [ -e $MPICH_PREFIX/env/vars.sh ]
+	then
+		source $MPICH_PREFIX/env/vars.sh
+	elif [ -e $MPICH_PREFIX/bin/mpivars.sh ]
+	then
+		source $MPICH_PREFIX/bin/mpivars.sh
+	fi
+
 	if [ -e ./intelmpi.params ]
 	then
 		. ./intelmpi.params
@@ -163,10 +172,20 @@ then
 	then
 		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_NIC $CFG_MPI_DEV"
 	fi
+	if [ x"$CFG_MPI_MULTIRAIL" != x ]
+	then
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_MULTIRAIL $CFG_MPI_MULTIRAIL"
+	fi
 	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun  ${NUM_PROCESSES:+-np $NUM_PROCESSES} -hostfile $MPI_HOSTS $MPI_CMD_ARGS "
 elif [ -e "$MPICH_PREFIX/bin/ompi_info" ] #OpenMPI
 then
 	echo "OpenMPI Detected, running with mpirun." | tee -i -a $LOGFILE
+
+	if [ -e $MPICH_PREFIX/bin/mpivars.sh ]
+	then
+		source $MPICH_PREFIX/bin/mpivars.sh
+	fi
+
 	MPI_CMD_ARGS="-mca plm_rsh_no_tree_spawn 1"
 	if [ -e ./openmpi.params ]
 	then
@@ -175,6 +194,10 @@ then
 	if [ x"$CFG_MPI_DEV" != x ]
 	then
 		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_NIC $CFG_MPI_DEV"
+	fi
+	if [ x"$CFG_MPI_MULTIRAIL" != x ]
+	then
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_MULTIRAIL $CFG_MPI_MULTIRAIL"
 	fi
 	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun ${NUM_PROCESSES:+-np $NUM_PROCESSES} -map-by node --allow-run-as-root -machinefile $MPI_HOSTS $MPI_CMD_ARGS "
 else

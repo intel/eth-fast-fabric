@@ -37,6 +37,16 @@ Some useful make targets include:
 	clean          - remove all binaries. Useful when changing MPIs.
 	all/full/quick - currently synonyms. All build all targets.
 
+COMPILING HPL
+-------------
+
+A version of the High Performance Computing Linpack Benchmark (HPL) is
+provided, but requires that the build environment have either OpenBLAS or
+the Intel Math Kernel Library (MKL) available. When compiling the MPI test
+programs, the Makefile will look first for OpenBlas and then for MKL. If
+neither is found, compilation will fail with an error. If you wish to use
+a different BLAS library, please see the documentation in the HPL source
+for information on manually configuring and building HPL.
 
 
 RUNNING THE TEST PROGRAMS:
@@ -54,7 +64,13 @@ to run the bandwith test, simply type:
 The scripts log the output of the MPI programs to the 
 /usr/src/eth/mpi_apps/logs directory.
 
+RUNNING HPL
+-----------
 
+When running the provided version of HPL, an additional script has been
+provided for configuring it with common sample problem sizes. Use the
+provided "config_hpl2" script to select from one of several sample HPL
+configuration files before running HPL with the provided "run_hpl2" script.
 
 TUNING THE TEST PROGRAMS:
 -------------------------

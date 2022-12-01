@@ -40,7 +40,13 @@
 if [ -n "${I_MPI_ROOT}" ]
 then
 	# Found Intel MPI.
-	export MPICH_PREFIX=${I_MPI_ROOT}/intel64
+	if [[ -e ${I_MPI_ROOT}/intel64 ]]
+	then
+		# older versions of IMPI had both 64-bit and 32-bit versions.
+		export MPICH_PREFIX=${I_MPI_ROOT}/intel64
+	else
+		export MPICH_PREFIX=${I_MPI_ROOT}
+	fi
 elif [ -n "$(which mpicc 2>/dev/null)" ]
 then
 	export MPICH_PREFIX=`which mpicc 2>/dev/null| sed "s#/bin/mpicc##"`

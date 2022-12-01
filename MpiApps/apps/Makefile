@@ -182,18 +182,28 @@ endif
 
 HPL_VER=hpl-2.3
 XHPL2: SHOWMPI
-	@echo "Building HPL (Linpack)..."
-	export HPL_HOME_DIR=$(PWD)/$(HPL_VER); \
-	cd $(HPL_VER); \
-	if [[ "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
-		# intel compiler with OpenMPI \
-		make MPICC=$(MPICC) HPL_OPTS="-lirc" LINKFLAGS=-nofor_main arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
-	elif [[ "$(MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" ]]; then \
-		# intel compiler with IntelMPI \
-		make MPICC=$(MPICC) HPL_OPTS="-lirc" arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
+	if [[ `./get_mpi_blas.sh` == UNKNOWN_MPI_CC ]]; then \
+		echo ; \
+		echo "WARNING: No BLAS library found. Skipping HPL."; \
 	else \
-		# gcc compiler \
-		make MPICC=$(MPICC) arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
+		echo "Building HPL (Linpack)..."; \
+		export HPL_HOME_DIR=$(PWD)/$(HPL_VER); \
+		cd $(HPL_VER); \
+		if [[ "$(MPICH_PREFIX)" == *"oneapi"* ]]; then \
+			if [[ "`../get_mpi_blas.sh`" == *"MKL"* ]]; then \
+				# intel compiler with IntelMPI and MKL \
+				make MPICC=$(MPICH_PREFIX)/bin/mpiicc HPL_OPTS="-lirc" arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
+			else \
+				# IntelMPI, GCC and OPENBLAS \
+				make MPICC=$(MPICH_PREFIX)/bin/mpicc arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
+			fi \
+		elif [[ "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
+			# intel compiler with OpenMPI \
+			make MPICC=$(MPICC) HPL_OPTS="-lirc" LINKFLAGS=-nofor_main arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
+		else \
+			# gcc compiler \
+			make MPICC=$(MPICC) arch=ICS.`uname -s`.`../get_mpi_blas.sh`; \
+		fi \
 	fi
 	@echo
 .PHONY: XHPL2

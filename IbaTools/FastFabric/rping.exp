@@ -104,7 +104,8 @@ proc run_rdma_ping {server_host server_port srv_ip_addr client_host client_port 
 
 
 	target_root_sh $client_host
-	send_unix_cmd "ip a show dev $client_port"
+	# Pipe to cat will suppress any color output of ip tool
+	send_unix_cmd "ip a show dev $client_port | cat"
 	set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
 	if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy clt_ip_addr]} {
 		fail_test "Couldn't find ip address for $client_host:$client_port"
@@ -176,7 +177,8 @@ File: /usr/lib/eth-tools/rping.exp" case_setup case_cleanup {
 				upvar srv_ip_addr srv_ip_addr
 
 				target_root_sh $server
-				send_unix_cmd "ip a show dev $sport"
+				# Pipe to cat will suppress any color output of ip tool
+				send_unix_cmd "ip a show dev $sport | cat"
 				set out [expect_list 30 {"inet [0-9]+.[0-9]+.[0-9]+.[0-9]+/[0-9]+"} {"does not exist"}]
 				if {![regexp { ([0-9]+.[0-9]+.[0-9]+.[0-9]+)/} $out dummy srv_ip_addr]} {
 					fail_test "Couldn't find ip address for $server:$sport"

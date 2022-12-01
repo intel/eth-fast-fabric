@@ -71,6 +71,7 @@ List of command line options used in various Fast Fabric tools
                     header end tag
 -e extract_element  Specifies the name of the XML element to       ethxmlextract
                     extract
+-e                  exits after 1st test failure                   ethhostadmin (opatest, ethchassisadmin)
 -E file             Ethernet Mgt configuration file                ethallanalysis
 -E file             Specifies Ethernet Mgt configuration file      ethfabricanalysis
 -E file             Specifies the Intel Ethernet configuration     ethfabricinfo
@@ -80,6 +81,10 @@ List of command line options used in various Fast Fabric tools
                     file
 -F filename         Specifies the filename of hostverify script to ethverifyhosts
                     use
+-f host_files       Hosts files separated by space                 ethallanalysis
+-f host_files       Hosts files separated by space                 ethfabricanalysis
+-f host_files       Hosts files separated by space                 ethfabricinfo
+-f host_files       Hosts files separated by space                 ethlinkanalysis
 -f hostfile         the file with hosts to include in NIC-to-SW    ethcabletest
                     test
 -f hostfile         the file with hosts in cluster                 ethcaptureall
@@ -90,6 +95,7 @@ List of command line options used in various Fast Fabric tools
 -f hostfile         Specifies the file with the names of hosts in  ethhostadmin
                     a cluster
 -f hostfile         Specifies the file with hosts in cluster       ethpingall
+-f hostfile         Specifies the file with hosts in cluster       ethreport
 -f hostfile         Specifies the file with hosts in cluster       ethscpall
 -f hostfile         Specifies the file with hosts in cluster       ethsetupsnmp
 -f hostfile         Specifies the file with hosts in cluster       ethsetupssh

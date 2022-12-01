@@ -3837,6 +3837,7 @@ struct option options[] = {
 		{ "timeout", required_argument, NULL, '!' },
 		{ "ethconfig", required_argument, NULL, 'E' },
 		{ "plane", required_argument, NULL, 'p' },
+		{ "hostfile", required_argument, NULL, 'f' },
 		{ "help", no_argument, NULL, '$' },	// use an invalid option character
 
 		{ 0 }
@@ -3846,7 +3847,7 @@ void Usage_full(void)
 {
 	fprintf(stderr, "Usage: ethreport [-v][-q] [-o report] [-d detail] [-P|-H]\n"
 	                "                    [-N] [-x] [-X snapshot_input] [-T topology_input] [-s]\n"
-	                "                    [-A] [-c file] [-L] [-F point] [-Q] [-E file] [-p plane]\n");
+	                "                    [-A] [-c file] [-L] [-F point] [-Q] [-E file] [-p plane] [-f hostfile]\n");
 	fprintf(stderr, "              or\n");
 	fprintf(stderr, "       ethreport --help\n");
 	fprintf(stderr, "    --help - produce full help text\n");
@@ -3878,6 +3879,8 @@ void Usage_full(void)
 	fprintf(stderr, "                                %s\n", HPN_CONFIG_FILE);
 	fprintf(stderr, "    -p/--plane plane          - Name of the enabled plane defined in Mgt config file,\n");
 	fprintf(stderr, "                                default is the first enabled plane\n");
+	fprintf(stderr, "    -f/--hostfile file        - file with hosts in cluster. It overrides the HostsFile\n");
+	fprintf(stderr, "                                for the selected plane that is defined in Mgt config file\n");
 	fprintf(stderr, "    -L/--limit                - For port error counters check (-o errors)\n");
 	fprintf(stderr, "                                with -F limit operation to exact specified\n");
 	fprintf(stderr, "                                focus.\n");
@@ -4299,6 +4302,7 @@ int main(int argc, char ** argv)
 	FabricFlags_t		sweepFlags = FF_NONE;
 	uint8				find_flag = FIND_FLAG_FABRIC;	// always check fabric
 	boolean				has_mgt_conf;
+	char *hosts_file = NULL;
 
 	Top_setcmdname("ethreport");
 	PointInit(&focus);
@@ -4311,7 +4315,7 @@ int main(int argc, char ** argv)
 	}
 
 	// process command line arguments
-	while (-1 != (c = getopt_long(argc,argv, "vVAqo:d:sNLc:F:xX:T:E:p:Q", options, &index)))
+	while (-1 != (c = getopt_long(argc,argv, "vVAqo:d:sNLc:F:xX:T:E:p:f:Q", options, &index)))
 	{
                 switch (c)
 		{
@@ -4334,8 +4338,6 @@ int main(int argc, char ** argv)
 				break;
 			case 'o':	// select output record desired
 				report = (report_t) report | checkOutputType(optarg);
-				if (report & REPORT_ERRORS)
-					sweepFlags |= FF_STATS;
 				if (report & (REPORT_VERIFYNICS|REPORT_VERIFYSWS))
 					find_flag |= FIND_FLAG_ENODE;
 				if (report & (REPORT_VERIFYLINKS|REPORT_VERIFYEXTLINKS
@@ -4399,6 +4401,9 @@ int main(int argc, char ** argv)
 				// in our code a fabric is actually a fabric plane
 				snprintf(g_fabricId, HMGT_SHORT_STRING_SIZE, "%s", optarg);
 				break;
+			case 'f':	// hosts file
+				hosts_file = optarg;
+				break;
 			default:
 				fprintf(stderr, "ethreport: Invalid option -%c\n", c);
 				Usage();
@@ -4412,6 +4417,9 @@ int main(int argc, char ** argv)
 		Usage();
 		// NOTREACHED
 	}
+
+	if ((report & REPORT_ERRORS) && !g_snapshot_in_file)
+		sweepFlags |= FF_STATS;
 
 	// check for incompatible reports
 	if (report & REPORT_TOPOLOGY) {
@@ -4538,6 +4546,8 @@ int main(int argc, char ** argv)
 		if (g_fabricId[0])
 			fprintf(stderr, "ethreport: -p ignored for -X\n");
 		snprintf(g_fabricId, HMGT_SHORT_STRING_SIZE, "%s", g_Fabric.name);
+		if (hosts_file)
+			fprintf(stderr, "ethreport: -f ignored for -X\n");
 	}
 
 	// check plane name defined in topology file and use it if no -X
@@ -4576,6 +4586,11 @@ int main(int argc, char ** argv)
 
 		if (port_conf && !g_quiet) {
 			ProgressPrint(TRUE, "Use Plane '%s'...", port_conf->name);
+		}
+		if (port_conf && hosts_file && hosts_file[0]) {
+			snprintf(port_conf->hosts_file, HMGT_CONFIG_PARAMS_FILENAME_SIZE, "%s", hosts_file);
+			if (!g_quiet)
+				ProgressPrint(TRUE, "Override Hosts File with '%s'...", hosts_file);
 		}
 	}
 
