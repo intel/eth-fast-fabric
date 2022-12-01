@@ -1,19 +1,26 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2022, Intel Corporation                     *
+.\" .\" *             Copyright 2020-2022, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethshmcleanup 1 "Intel Corporation" "Copyright(C) 2022" "EFSFFCLIRG (Man Page)"
+.TH ethshmcleanup 1 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethshmcleanup
 
 
 .PP
-Cleans up not used POSIX shared memory files in /dev/shm directory.
-	
+If a PSM3 job terminates abnormally, such as with a segmentation fault, there could be POSIX shared memory files left over in the /dev/shm directory. This script is intended to remove unused files related to PSM3.
+.PP
+The unused files that are removed include:
+.IP \(bu
+/dev/shm/psm3\(ulshm*
+.IP \(bu
+/dev/shm/sem.psm3\(ulnic\(ulaffinity*
+.IP \(bu
+/dev/shm/psm3\(ulnic\(ulaffinity*
 .SH Syntax
 ethshmcleanup
 .SH Options
@@ -22,6 +29,5 @@ ethshmcleanup
 --help
 
 Produces full help text.
-
-.SH Example
+.SH Examples
 ethshmcleanup

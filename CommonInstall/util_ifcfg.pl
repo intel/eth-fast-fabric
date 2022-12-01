@@ -713,7 +713,7 @@ sub Config_ifcfg()
 
 	# get ICE device network interfaces
 	my @devs = `for dev in \$(ls /sys/class/net); do \
-		if [[ "\$(ethtool -i \${dev} 2>/dev/null | grep 'driver' | cut -d':' -f2 | tr -d ' ')" = "$TARGET_DRIVER" ]]; then \
+		if [ "\$(ethtool -i \${dev} 2>/dev/null | grep 'driver' | cut -d':' -f2 | tr -d ' ')" = "$TARGET_DRIVER" ]; then \
 		echo \${dev}; fi; done`;
 	for my $dev (@devs)
 	{
@@ -765,7 +765,7 @@ sub Reset_ifcfg()
 
 	# get ICE device network interfaces
 	my @devs = `for dev in \$(ls /sys/class/net); do \
-		if [[ "\$(ethtool -i \${dev} 2>/dev/null | grep 'driver' | cut -d':' -f2 | tr -d ' ')" = "$TARGET_DRIVER" ]]; then \
+		if [ "\$(ethtool -i \${dev} 2>/dev/null | grep 'driver' | cut -d':' -f2 | tr -d ' ')" = "$TARGET_DRIVER" ]; then \
 		echo \${dev}; fi; done`;
 	for my $dev (@devs)
 	{

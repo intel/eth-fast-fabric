@@ -41,7 +41,8 @@ use strict;
 sub get_rpms_dir_eth_tools
 {
 	my $srcdir=$ComponentInfo{'eth_tools'}{'SrcDir'};
-	return "$srcdir/RPMS/*";
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	return "$pkg_dir/*";
 }
 
 sub available_eth_tools
@@ -50,7 +51,8 @@ sub available_eth_tools
 # util_component.pl and simply put a list of rpms in the ComponentInfo
 # as well as perhaps config files
 	my $srcdir=$ComponentInfo{'eth_tools'}{'SrcDir'};
-	return (rpm_resolve("$srcdir/RPMS/*/eth-tools-basic", "any") ne "");
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	return (rpm_resolve("$pkg_dir/*/eth-tools-basic", "any") ne "");
 }
 
 sub installed_eth_tools
@@ -69,7 +71,8 @@ sub installed_version_eth_tools
 sub media_version_eth_tools
 {
 	my $srcdir=$ComponentInfo{'eth_tools'}{'SrcDir'};
-	my $rpmfile = rpm_resolve("$srcdir/RPMS/*/eth-tools-basic", "any");
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	my $rpmfile = rpm_resolve("$pkg_dir/*/eth-tools-basic", "any");
 	my $version= rpm_query_version_release("$rpmfile");
 	# assume media properly built with matching versions for all rpms
 	return dot_version("$version");

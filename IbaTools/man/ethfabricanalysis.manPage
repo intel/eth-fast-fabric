@@ -15,7 +15,7 @@ ethfabricanalysis
 Performs analysis of the fabric.
 .SH Syntax
 ethfabricanalysis [-b|-e] [-s] [-d  \fIdir\fR] [-c  \fIfile\fR]
-[-E file] [-p planes] [-T  \fItopology\(ulinputs\fR]
+[-E  \fIfile\fR] [-p  \fIplanes\fR] [-T  \fItopology\(ulinputs\fR] [-f  \fIhost\(ulfiles\fR]
 .SH Options
 
 .TP 10
@@ -35,11 +35,11 @@ Evaluates health only. Default is compare/check mode.
 
 Saves history of failures (errors/differences).
 .TP 10
--d dir
+-d \fIdir\fR
 
 Specifies the top-level directory for saving baseline and history of failed checks. Default is /var/usr/lib/eth-tools/analysis
 .TP 10
--c file
+-c \fIfile\fR
 
 Specifies the error thresholds config file.Default is /etc/eth-tools/ethmon.conf
 .TP 10
@@ -53,6 +53,11 @@ Specifies Ethernet Mgt configuration file. The default is /etc/eth-tools/mgt\(ul
 Specifies Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
 
 .TP 10
+-f \fIhost\(ulfiles\fR
+
+Hosts files separated by space. It overrides the HostsFiles defined in Mgt config file for the corresponding planes. Value \[aq]DEFAULT\[aq] will use the HostFile defined in Mgt config file for the corresponding plane
+
+.TP 10
 -T \fItopology\(ulinputs\fR
 
 Specifies the name of topology input filenames separated by space. See
@@ -62,6 +67,9 @@ and
 for more information.
 .SH Example
 ethfabricanalysis
+.br
+
+ethfabricanalysis -p \[aq]p1 p2\[aq] -f \[aq]hosts1 DEFAULT\[aq]
 .PP
 The fabric analysis tool checks the following:
 .IP \(bu

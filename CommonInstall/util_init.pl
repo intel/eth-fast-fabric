@@ -45,7 +45,7 @@ use Cwd;
 my $exit_code=0;
 
 my $Force_Install = 0;# force option used to force install on unsupported distro
-my $GPU_Install = 0;
+my $GPU_Install = "NONE";
 my $GPU_Dir = "";
 # When --user-space is selected we are targeting a user space container for
 # installation and will skip kernel modules and firmware
@@ -206,21 +206,23 @@ sub os_vendor_version($)
 	if ( -e "/etc/os-release" ) {
 		if ($vendor eq "ubuntu") {
 			$rval=`cat /etc/os-release | grep VERSION_ID | cut -d'=' -f2 | tr -d [\\"\\.]`;
+			chop($rval);
+			$rval="UB".$rval;
 		} else {
 			$rval=`cat /etc/os-release | grep VERSION_ID | cut -d'=' -f2 | tr -d [\\"\\.0]`;
-		}
-		chop($rval);
-		$rval="ES".$rval;
-		if ( -e "/etc/redhat-release" ) {
-			if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release") || !system("grep -qi almalinux /etc/redhat-release") || !system("grep -qi circle /etc/redhat-release")) {
-				$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
-				$rval =~ m/(\d+).(\d+)/;
-				if ($2 eq "0") {
-					$rval="ES".$1;
-				} else {
-					$rval="ES".$1.$2;
+			chop($rval);
+			$rval="ES".$rval;
+			if ( -e "/etc/redhat-release" ) {
+				if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release") || !system("grep -qi almalinux /etc/redhat-release") || !system("grep -qi circle /etc/redhat-release")) {
+					$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
+					$rval =~ m/(\d+).(\d+)/;
+					if ($2 eq "0") {
+						$rval="ES".$1;
+					} else {
+						$rval="ES".$1.$2;
+					}
 				}
-			}	
+			}
 		}
 	} elsif ($vendor eq "apple") {
 		$rval=`sw_vers -productVersion|cut -f1-2 -d.`;
@@ -345,7 +347,8 @@ sub determine_os_version()
 			"almalinux" => "redhat",
 			"circle" => "redhat",
 			"sles" => "SuSE",
-			"sle_hpc" => "SuSE"
+			"sle_hpc" => "SuSE",
+			"ubuntu" => "ubuntu"
 		);
 		my %network_conf_dir  = (
 			"rhel" => $NETWORK_CONF_DIR,
@@ -354,7 +357,8 @@ sub determine_os_version()
 			"almalinux" => $NETWORK_CONF_DIR,
 			"circle" => $NETWORK_CONF_DIR,
 			"sles" => "/etc/sysconfig/network",
-			"sle_hpc" => "/etc/sysconfig/network"
+			"sle_hpc" => "/etc/sysconfig/network",
+			"ubuntu" => "/etc/sysconfig/network-scripts",
 		);
 		my $os_id = `cat $os_release_file | grep '^ID=' | cut -d'=' -f2 | tr -d [\\"\\.0] | tr -d ["\n"]`;
 		$CUR_DISTRO_VENDOR = $distroVendor{$os_id};
@@ -430,38 +434,38 @@ sub verify_distrib_files
 		$archname=$ARCH;
 		if ( $ARCH eq "IA32") {
 			$archname="the Pentium Family";
-		} 
+		}
 		if ( $ARCH eq "IA64" ) {
 			$archname="the Itanium family";
-		} 
+		}
 		if ( $ARCH eq "X86_64" ) {
 			$archname="the EM64T or Opteron";
-		} 
+		}
 		if ( $ARCH eq "PPC64" ) {
 			$archname="the PowerPC 64 bit";
-		} 
+		}
 		if ( $ARCH eq "PPC" ) {
 			$archname="the PowerPC";
-		} 
-		
+		}
+
 		NormalPrint "$CUR_DISTRO_VENDOR $CUR_VENDOR_VER for $archname is not supported by this installation\n";
 		NormalPrint "This installation supports the following Linux Distributions:\n";
 		$supported_archname=$ARCH;
 		if ( $supported_arch eq "IA32") {
 			$supported_archname="the Pentium Family";
-		} 
+		}
 		if ( $supported_arch eq "IA64" ) {
 			$supported_archname="the Itanium family";
-		} 
+		}
 		if ( $supported_arch eq "X86_64" ) {
 			$supported_archname="the EM64T or Opteron";
-		} 
+		}
 		if ( $supported_arch eq "PPC64" ) {
 			$supported_archname="the PowerPC 64 bit";
-		} 
+		}
 		if ( $supported_arch eq "PPC" ) {
 			$supported_archname="the PowerPC";
-		} 
+		}
 		NormalPrint "For $supported_archname: $supported_distro_vendor.$supported_distro_vendor_ver\n";
 		if ( $Force_Install ) {
 			NormalPrint "Installation Forced, will proceed with risk of undefined results\n";

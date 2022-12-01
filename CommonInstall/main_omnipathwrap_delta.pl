@@ -58,23 +58,33 @@ my @EthAllComponents = (
 	"openmpi_gcc_cuda_ofi", #"openmpi_gcc", "openmpi_intel_ofi", "mpiRest",
 	"mpisrc", "delta_debug"	);
 
-my @Components_sles12_sp4 = ( @EthAllComponents );
-my @Components_sles12_sp5 = ( @EthAllComponents );
-my @Components_sles15 = ( @EthAllComponents );
-my @Components_sles15_sp1 = ( @EthAllComponents );
-my @Components_sles15_sp2 = ( @EthAllComponents );
-my @Components_sles15_sp3 = ( @EthAllComponents );
-my @Components_sles15_sp4 = ( @EthAllComponents );
-my @Components_rhel78 = ( @EthAllComponents );
-my @Components_rhel79 = ( @EthAllComponents );
-my @Components_rhel8 = ( @EthAllComponents );
-my @Components_rhel81 = ( @EthAllComponents );
-my @Components_rhel82 = ( @EthAllComponents );
-my @Components_rhel83 = ( @EthAllComponents );
-my @Components_rhel84 = ( @EthAllComponents );
-my @Components_rhel85 = ( @EthAllComponents );
-my @Components_rhel86 = ( @EthAllComponents );
-my @Components_rhel9 = ( @EthAllComponents );
+my @EthUbuntuComponents = (
+	"psm3",
+	"eth_module",
+	"eth_roce",
+);
+
+my %Components_by_distro = (
+	'SuSE*ES124'    => \@EthAllComponents,
+	'SuSE*ES125'    => \@EthAllComponents,
+	'SuSE*ES15'     => \@EthAllComponents,
+	'SuSE*ES151'    => \@EthAllComponents,
+	'SuSE*ES152'    => \@EthAllComponents,
+	'SuSE*ES153'    => \@EthAllComponents,
+	'SuSE*ES154'    => \@EthAllComponents,
+	'redhat*ES78'   => \@EthAllComponents,
+	'redhat*ES79'   => \@EthAllComponents,
+	'redhat*ES8'    => \@EthAllComponents,
+	'redhat*ES81'   => \@EthAllComponents,
+	'redhat*ES82'   => \@EthAllComponents,
+	'redhat*ES83'   => \@EthAllComponents,
+	'redhat*ES84'   => \@EthAllComponents,
+	'redhat*ES85'   => \@EthAllComponents,
+	'redhat*ES86'   => \@EthAllComponents,
+	'redhat*ES9'    => \@EthAllComponents,
+	'ubuntu*UB2004' => \@EthUbuntuComponents,
+	'ubuntu*UB2204' => \@EthUbuntuComponents,
+);
 
 @Components = ( );
 
@@ -464,6 +474,50 @@ my %eth_module_sles_comp_info = (
 					},
 );
 
+my %eth_module_debian_comp_info = (
+	"eth_module" =>	{ Name => "Eth Module",
+					  DefaultInstall => $State_Install,
+					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
+					  PreReq => " psm3 ", CoReq => " ",
+					  Hidden => 0, Disabled => 0, IsOFA => 1,
+					  KernelRpms => [ "kmod-iefs-kernel-updates", "iefs-kernel-updates-devel" ],
+					  KernelDkms => [ "iefs-kernel-updates-dkms", "iefs-kernel-updates-devel" ],
+					  FirmwareRpms => [ ],
+					  UserRpms => [ ],
+					  DebugRpms =>  [ ],
+					  HasStart => 1, HasFirmware => 0, DefaultStart => 1,
+					  StartPreReq => " iefsconfig ",
+					  StartComponents => [ "eth_module" ],
+					  StartupScript => "Rendezvous",
+					  StartupParams => [ ]
+					},
+);
+
+my %Comp_info_by_distro = (
+	'SuSE*ES124'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES125'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES15'     => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES151'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES152'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES153'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES154'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+
+	'redhat*ES78'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES79'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES8'    => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES81'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES82'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES83'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES84'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES85'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES86'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES9'    => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+
+	'ubuntu*UB2004' => { %ibacm_comp_info, %eth_module_debian_comp_info },
+	'ubuntu*UB2204' => { %ibacm_comp_info, %eth_module_debian_comp_info },
+);
+
+
 	# translate from startup script name to component/subcomponent name
 %StartupComponent = (
 				"iefsconfig" => "iefsconfig",
@@ -487,108 +541,13 @@ my %eth_module_sles_comp_info = (
 sub init_components
 {
 	# The component list has slight variations per distro
-	if ( "$CUR_VENDOR_VER" eq "ES124" ) {
-		@Components = ( @Components_sles12_sp4 );
+	my $distro = "$CUR_DISTRO_VENDOR*$CUR_VENDOR_VER";
+	if (exists $Components_by_distro{$distro}) {
+		@Components = @{$Components_by_distro{$distro}};
 		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES125" ) {
-		@Components = ( @Components_sles12_sp5 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES78" ) {
-		@Components = ( @Components_rhel78 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES79" ) {
-		@Components = ( @Components_rhel79 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
-		@Components = ( @Components_rhel8 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
-		@Components = ( @Components_rhel81 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
-		@Components = ( @Components_rhel82 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
-		@Components = ( @Components_rhel83 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
-		@Components = ( @Components_rhel84 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
-		@Components = ( @Components_rhel85 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
-		@Components = ( @Components_rhel86 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
-		@Components = ( @Components_rhel9 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_rhel_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
-		@Components = ( @Components_sles15 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {
-		@Components = ( @Components_sles15_sp1 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES152" ) {
-		@Components = ( @Components_sles15_sp2 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
-		@Components = ( @Components_sles15_sp3 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES154" ) {
-		@Components = ( @Components_sles15_sp4 );
-		@SubComponents = ( @SubComponents_newer );
-		%ComponentInfo = ( %ComponentInfo, %ibacm_comp_info,
-						%eth_module_sles_comp_info,
-						);
+		%ComponentInfo = ( %ComponentInfo,
+			%{$Comp_info_by_distro{$distro}}
+		);
 	} else {
 		# unknown or unsupported distro, leave lists empty
 		# verify_distrib_files will catch unsupported distro
@@ -624,7 +583,8 @@ sub disable_autostart2_iefsconfig()
 sub available_iefsconfig
 {
 	my $srcdir=$ComponentInfo{'iefsconfig'}{'SrcDir'};
-	return (rpm_resolve("$srcdir/*/iefsconfig", "any"));
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	return (rpm_resolve("$pkg_dir/*/iefsconfig", "any"));
 }
 
 sub installed_iefsconfig
@@ -641,7 +601,8 @@ sub installed_version_iefsconfig
 sub media_version_iefsconfig
 {
 	my $srcdir = $ComponentInfo{'iefsconfig'}{'SrcDir'};
-	my $rpm = rpm_resolve("$srcdir/RPMS/*/iefsconfig", "any");
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	my $rpm = rpm_resolve("$pkg_dir/*/iefsconfig", "any");
 	my $version = rpm_query_version_release($rpm);
 	return dot_version("$version");
 }
@@ -702,7 +663,8 @@ sub install_iefsconfig
 	config_arptbl_tunning();
 
 	# New Install Code
-	my $rpmfile = rpm_resolve("$srcdir/RPMS/*/iefsconfig", "any");
+	my $pkg_dir = get_binary_pkg_dir($srcdir);
+	my $rpmfile = rpm_resolve("$pkg_dir/*/iefsconfig", "any");
 	rpm_run_install($rpmfile, "any", " -U ");
 	# New Install Code
 
@@ -908,19 +870,19 @@ sub translate_comp
 	my($arg)=$_[0];
 	if ("$arg" eq "eth"){
 		my @res = ("eth_tools", "psm3", "eth_module", "openmpi_gcc_ofi");
-		if ($GPU_Install == 1) {
+		if ($GPU_Install eq "NV_GPU") {
 			push(@res, "openmpi_gcc_cuda_ofi");
 		}
 		return @res;
 	} elsif ("$arg" eq "mpi"){
 		my @res = ("openmpi_gcc_ofi");
-		if ($GPU_Install == 1) {
+		if ($GPU_Install eq "NV_GPU") {
 			push(@res, "openmpi_gcc_cuda_ofi");
 		}
 		return @res;
 	} elsif ("$arg" eq "psm_mpi"){
 		my @res = ("psm3", "eth_module", "openmpi_gcc_ofi");
-		if ($GPU_Install == 1) {
+		if ($GPU_Install eq "NV_GPU") {
 			push(@res, "openmpi_gcc_cuda_ofi");
 		}
 		return @res;
@@ -1112,10 +1074,10 @@ sub process_args
 					$GPU_Dir = $ENV{'NVIDIA_GPU_DIRECT'};
 					$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
 					$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
-					$GPU_Install=1;
+					$GPU_Install="NV_GPU";
 				} elsif (defined $ENV{'INTEL_GPU_DIRECT'} && -e "$ENV{'INTEL_GPU_DIRECT'}/Module.symvers" ) {
 					$GPU_Dir = $ENV{'INTEL_GPU_DIRECT'};
-					$GPU_Install=2;
+					$GPU_Install="INTEL_GPU";
 				} else {
 					printf STDERR "GPU Direct requested, but neither NVIDIA_GPU_DIRECT or INTEL_GPU_DIRECT set\n";
 					printf STDERR "or <path>/Module.symvers is missing\n";

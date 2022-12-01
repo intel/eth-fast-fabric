@@ -1020,3 +1020,77 @@ sub check_rpmbuild_dependencies($)
 	return $err;
 }
 
+sub get_binary_pkg_dir($)
+{
+	my ($base) = @_;
+	return "$base/RPMS";
+}
+
+sub get_source_pkg_dir($)
+{
+	my ($base) = @_;
+	return "$base/SRPMS";
+}
+
+sub make_build_dirs($$)
+{
+	my ($BUILD_ROOT, $RPM_DIR) = @_;
+	if (0 != system("mkdir -p $BUILD_ROOT $RPM_DIR/BUILD $RPM_DIR/RPMS $RPM_DIR/SOURCES $RPM_DIR/SPECS $RPM_DIR/SRPMS")) {
+		NormalPrint "ERROR - mkdir -p $BUILD_ROOT $RPM_DIR/BUILD $RPM_DIR/RPMS $RPM_DIR/SOURCES $RPM_DIR/SPECS $RPM_DIR/SRPMS FAILED\n";
+		return 1; # failure
+	}
+	return 0;
+}
+
+sub create_build_command_line($$$$)
+{
+	my ($SRC_RPM, $BUILD_OUTPUT_DIR, $BUILD_ROOT, $K_VER) = @_;
+	my $cmd = "rpmbuild --rebuild --define '_topdir $BUILD_OUTPUT_DIR'";
+	$cmd .=		" --define 'dist  %{nil}'";
+	$cmd .=		" --target $RPM_KERNEL_ARCH";
+	# IFS - also set build_root so we can cleanup and avoid conflicts
+	$cmd .=		" --buildroot '${BUILD_ROOT}'";
+	$cmd .=		" --define 'build_root ${BUILD_ROOT}'";
+	$cmd .=		" --define 'kver $K_VER'";
+	$cmd .=		" $SRC_RPM";
+	return $cmd;
+}
+
+# move rpms from build tree (srcdir) to install tree (destdir)
+sub delta_move_rpms($$)
+{
+	my $srcdir = shift();
+	my $destdir = shift();
+	my $err = 0;
+
+	DebugPrint("Moving from $srcdir to $destdir\n");
+
+	system("mkdir -p $destdir");
+	if (file_glob("$srcdir/$RPM_ARCH/*") ne "" ) {
+		DebugPrint("Moving from $srcdir/$RPM_ARCH/* to $destdir\n");
+		$err = system("mv $srcdir/$RPM_ARCH/* $destdir");
+	}
+	if (file_glob("$srcdir/$RPM_KERNEL_ARCH/*") ne "" ) {
+		DebugPrint("Moving from $srcdir/$RPM_KERNEL_ARCH/* to $destdir\n");
+		$err += system("mv $srcdir/$RPM_KERNEL_ARCH/* $destdir");
+	}
+	if (file_glob("$srcdir/noarch/*") ne "" ) {
+		DebugPrint("Moving from $srcdir/noarch/* to $destdir\n");
+		$err += system("mv $srcdir/noarch/* $destdir");
+	}
+	return $err;
+}
+
+sub move_packages($$$)
+{
+	my ($source_dir, $target_dir, $GPU_Install) = @_;
+	my $err = 0;
+	if ( $GPU_Install eq "NVGPU" ) {
+		$err = delta_move_rpms("$source_dir/RPMS", "$target_dir/CUDA");
+	} elsif ( $GPU_Install eq "IGPU" ) {
+		$err = delta_move_rpms("$source_dir/RPMS", "$target_dir/ONEAPI-ZE");
+	} else {
+		$err = delta_move_rpms("$source_dir/RPMS", "$target_dir");
+	}
+	return $err;
+}

@@ -19,7 +19,7 @@ In addition to being able to run assorted ethreport link analysis reports, and g
 ethlinkanalysis [-U] [-T  \fItopology\(ulinputs\fR] [-X  \fIsnapshot\(ulinput\fR] [-x  \fIsnapshot\(ulsuffix\fR]
 .br
 
-[-c  \fIfile\fR] [-E file] [-p planes] reports ...
+[-c  \fIfile\fR] [-E  \fIfile\fR] [-p  \fIplanes\fR] [-f  \fIhost\(ulfiles\fR]  \fIreports\fR ...
 .SH Options
 
 .TP 10
@@ -47,7 +47,7 @@ Performs analysis using data in  \fIsnapshot\(ulinput\fR.  \fIsnapshot\(ulinput\
 .TP 10
 -x \fIsnapshot\(ulsuffix\fR
 
-Creates a snapshot file. The files are created in FF\(ulRESULT\(ulDIR with names of the form: snapshotSUFFIX.xml.
+Creates a snapshot file. The files are created in FF\(ulRESULT\(ulDIR with names of the form: snapshotSUFFIX.<plane\(ulname>.xml.
 
 .TP 10
 -c \fIfile\fR
@@ -62,7 +62,12 @@ Ethernet Mgt configuration file. The default is /etc/eth-tools/mgt\(ulconfig.xml
 .TP 10
 -p \fIplanes\fR
 
-Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
+Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes
+
+.TP 10
+-f \fIhost\(ulfiles\fR
+
+Hosts files separated by space. It overrides the HostsFiles defined in Mgt config file for the corresponding planes. Value \[aq]DEFAULT\[aq] will use the HostFile defined in Mgt config file for the corresponding plane
 
 .TP 10
 \fIreports\fR
@@ -202,3 +207,6 @@ ethlinkanalysis errors
 .br
 
 ethlinkanalysis slowlinks
+.br
+
+ethlinkanalysis -p \[aq]p1 p2\[aq] -f \[aq]hosts1 DEFAULT\[aq] errors
