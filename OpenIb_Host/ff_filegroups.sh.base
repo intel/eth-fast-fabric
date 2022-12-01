@@ -4,7 +4,7 @@ basic_tools_sbin_sym=""
 
 basic_tools_opt="setup_self_ssh usemem ethipcalc stream ethudstress"
 
-basic_mans="ethcapture.1 ethshmcleanup.1"
+basic_mans="ethbw.1 ethcapture.1 ethshmcleanup.1"
 
 basic_configs="mgt_config.xml"
 

@@ -50,6 +50,9 @@ ICE_VER=""      # expected Intel Ethernet NIC ice driver version or intree.
                 # Empty string will skip the check.
 IRDMA_VER=""    # expected irdma driver version or intree.
                 # Empty string will skip the check.
+PFC_MODE="1"    # PFC mode that can be
+                #    0-Off, 1-Software DCB Willing,
+                #    2-Software DCB Unwilling, 3-Firmware DCB Willing
 LIMITS_SEL=5    # expected irdma Resource Limits Selector
 MTU=9000        # expected MTU. empty string will ignore MTU verification
 PCI_MAXPAYLOAD=256	  # expected value for PCI max payload
@@ -60,7 +63,8 @@ PCI_WIDTH="x16"	     # expected value for PCI width on Intel NIC
 MPI_APPS=$HOME/mpi_apps/    # where to find mpi_apps for HPL test
 MIN_FLOPS="115"	     # minimum flops expected from HPL test
 outputdir=/root	     # default outputdir is root -d $DIR overrides
-CPU_DRIVER="intel_pstate"   # power scaling driver for CPU
+CPU_DRIVER="intel_pstate"   # power scaling driver for CPU. E.g. when intel_pstate
+                            # runs in passive mode, the driver is intel_cpufreq
 CPU_GOVERNOR="performance"  # scaling governor for CPU
 STREAM_MIN_BW=40000	 # minimum Triad bandwidth for each run of the
 			    # STREAM memory benchmark (MB/s)
@@ -102,8 +106,8 @@ HPL_PRESSURE=0.3
 # pcicfg pcispeed initscripts memsize vtd pstates_on pstates_off
 # driver_on driver_off governor cpu_pinned cpu_unpinned pmodules_off
 # cpu cpu_consist hton htoff turbo cstates vtd snmp srp
-# nic_settings stream hpl
-TESTS="pcicfg pcispeed initscripts memsize cpu hton turbo cstates vtd snmp srp nic_settings stream"
+# nic_settings stream hpl rping pfc
+TESTS="pcicfg pcispeed initscripts memsize cpu hton turbo cstates vtd snmp srp nic_settings stream rping pfc"
 
 Usage()
 {
@@ -153,6 +157,7 @@ Usage()
 	echo "  srp - verify srp daemon is not running" >&2
 	echo "  stream - verify memory bandwidth" >&2
 	echo "  nic_settings - verify Ethernet NIC settings are configured as expected" >&2
+	echo "  rping - verify RDMA NICs can establish a lookback RDMA connection."
 	echo "  default - run all tests selected in TESTS" >&2
 	echo >&2
 	echo "Detailed output is written to stdout and appended to" >&2
@@ -606,10 +611,15 @@ function pstates_enabled()
 	date
 
 	set -x
+	mode="$(head -n 1  /sys/devices/system/cpu/intel_pstate/status)"
 	driver="$(head -n 1 /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver)"
 	set +x
 
-	return $([ "${driver}" = "intel_pstate" ])
+	if [[ "$mode" = "passive" ]]; then
+		return $([ "${driver}" = "intel_cpufreq" ])
+	else
+		return $([ "${driver}" = "intel_pstate" ])
+	fi
 }
 
 
@@ -968,6 +978,50 @@ test_nic_settings()
 	pass
 }
 
+test_rping()
+{
+	TEST="rping"
+	echo "rping..."
+	date
+
+	check_tool rping
+
+	set -x
+
+	failure=0
+	for DEV in $ROCE_IFS
+	do
+		LINK4=($(ip addr show ${DEV} up | grep -Go 'inet [0-9.]\+' | cut -f2 -d\ ))
+
+		if [[ -z "${LINK4}" ]]; then
+			fail_msg "${DEV} Link down or no IPv4 address."
+			failure=1
+		else
+			for L in ${LINK4[*]}
+			do
+				pkill -f "rping -s -a ${L} -I ${L}"
+
+				rping -s -a ${L} -I ${L} >/dev/null 2>&1 &
+				sleep 2
+				rping -c -a ${L} -I ${L} -C 2 >/dev/null 2>&1
+
+				if [[ $? -eq 0 ]]; then
+					pass_msg " ${DEV}/${L}"
+				else
+					fail_msg "${DEV}/${L} rping failed."
+					failure=1
+				fi
+
+				pkill -f "rping -s -a ${L} -I ${L}"
+			done
+		fi
+	done
+
+	[ $failure -ne 0 ] && exit 1
+
+	pass
+}
+
 check_nic_settings()
 {
 	dev=$1
@@ -981,16 +1035,13 @@ check_nic_settings()
 			[[ "$fw_ver" = "$NIC_FW_VER" ]] || \
 				{ fail_msg "Incorrect firmware version on $dev. Expect $NIC_FW_VER, got $fw_ver"; failure=1; }
 		fi
-		#confirm firmware DCB mode is enabled
-		[ "$(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}')" == "on" ] || \
-			{ fail_msg "fw-lldp-agent is off for $dev..."; failure=1; }
 
 		#confirm LFC is disabled
 		[[ "$(ethtool -a $dev | grep RX | awk '{print $2}')" == "on" || \
 			"$(ethtool -a $dev | grep TX | awk '{print $2}')" == "on" ]] && \
 			{ fail_msg "PFC not configured correctly; LFC is enabled for $dev..."; failure=1; }
 	else
-		fail_msg "Cannot find ethtool. Skipped PFC config check on $dev."
+		fail_msg "Cannot find ethtool. Skipped firmware check on $dev."
 		failure=1
 	fi
 
@@ -1017,15 +1068,6 @@ check_nic_settings()
 		failure=1
 	fi
 
-	#confirm pfc setting
-	if type dcb > /dev/null
-	then
-		dcb pfc show dev $dev | grep "prio-pfc .*[0-9]:on" || \
-		{ fail_msg "PFC not configured correctly; none of the priorities enabled pfc on $dev..."; failure=1; }
-	else
-		echo "`hostname -s`: skipped PFC config check because dcb command not found. Please make sure iproute2 5.11 or later is installed"
-	fi
-
 	#confirm IPv4 GID
 	cat /sys/class/infiniband/$irdma_dev/ports/1/gids/* | egrep -e "^0000:0000:0000:0000:0000:ffff:[a-fA-F0-9]+:[a-fA-F0-9]+$" || \
 		{ fail_msg "IPv4 GID not found on $dev"; failure=1; }
@@ -1036,7 +1078,76 @@ check_nic_settings()
 	pass " $dev"
 }
 
+test_pfc()
+{
+	TEST="pfc"
+	echo "pfc..."
+	date
 
+	set -x
+
+	failure=0
+
+	check_tool lldptool
+	if [[ " 0 1 2 3 " != *" ${PFC_MODE} "* ]]
+	then
+		fail "Unknown PFC Mode '${PFC_MODE}'"
+	fi
+	if [[ "${PFC_MODE}" = "1" || "${PFC_MODE}" = "2" ]]
+	then
+		systemctl is-active lldpad || fail "lldpad service is inactive"
+	fi
+
+	for dev in $ROCE_IFS
+	do
+		if type dcb > /dev/null
+		then
+			if [[ "${PFC_MODE}" = "0" ]]
+			then
+				dcb pfc show dev $dev | grep "prio-pfc .*[0-9]:on" && \
+				{ fail_msg "$dev: PFC enabled priority reported from DCB subsystem"; failure=1; }
+			else
+				dcb pfc show dev $dev | grep "prio-pfc .*[0-9]:on" || \
+				{ fail_msg "$dev: No PFC enabled priority reported from DCB subsystem"; failure=1; }
+			fi
+		fi
+
+		# if lldpad service is inactive, $enabled shall be empty
+		enabled="$(lldptool -ti $dev -V PFC -c enabled)"
+		if [[ "${PFC_MODE}" = "3" ]]
+		then
+			# FW DCB Willing
+			[[ "$(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}')" = "on" ]] || \
+				{ fail_msg "$dev: Firmware DCB is off"; failure=1; }
+			# check no SW DCB
+			[[ -z "$enabled" || "$enabled" = "enabled=" || "$enabled" = "enabled=0" ]] || \
+				{ fail_msg "$dev: LLDPAD has local set on PFC enabled priority"; failure=1; }
+		else
+			#confirm firmware DCB mode is disabled
+			[[ "$(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}')" = "off" ]] || \
+				{ fail_msg "$dev: FW DCB is on"; failure=1; }
+			#confirm local PFC enabled priority
+			[[ -z "$enabled" || "$enabled" = "enabled=" || "$enabled" = "enabled=0" ]] && \
+				{ fail_msg "$dev: LLDPAD has no local set on PFC enabled priority"; failure=1; }
+			if [[ "${PFC_MODE}" = "1" ]]
+			then
+				# comment out below because LLDPAD neighbor TLV is unstable
+#				enabled="$(lldptool -nti $dev -V PFC | grep 'PFC enabled:' | awk '{print $3}')"
+#				[[ -z "$enabled" || "$enabled" = "none" ]] \
+#					&& { fail_msg "$dev: LLDPAD has no PFC enabled priority data from neighbor"; failure=1; }
+				[[ "$(lldptool -ti $dev -V PFC -c willing)" = "willing=yes" ]] \
+					|| { fail_msg "$dev: PFC is not on willing mode"; failure=1; }
+			elif [[ "${PFC_MODE}" = "2" ]]
+			then
+				[[ "$(lldptool -ti $dev -V PFC -c willing)" = "willing=no" ]] \
+					|| { fail_msg "$dev: PFC is not on unwilling mode"; failure=1; }
+			fi
+		fi
+	done
+
+	[ $failure -ne 0 ] && exit 1
+	pass
+}
 
 (
 	for i in $tests

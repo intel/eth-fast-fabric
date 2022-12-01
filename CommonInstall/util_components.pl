@@ -1708,6 +1708,10 @@ sub show_install_menu($)
 					}
 				}
 			}
+			if ( "$WrapperComponent" ne "" && comp_check_os_prereqs($WrapperComponent) != 0 ) {
+				$have_all_os_prereqs=0;
+				NormalPrint "Lacking OS Prereqs for $ComponentInfo{$WrapperComponent}{'Name'}\n";
+			}
 			if (! $have_all_os_prereqs) {
 				HitKeyCont;
 				last;

@@ -22,6 +22,7 @@ List of command line options used in various Fast Fabric tools
 -b                  Specifies the baseline mode                    ethfabricanalysis
 -b                  bind address                                   ethudstress
 -B                  sockets listener "service" "port number"       ethudstress
+-B                  sender interface name (scp/ssh bind address)   ethscpall
 -C                  Performs more topology file validation         eth2rm
 -C                  Outputs list of supported components           iefsconfig
 -C                  message count                                  ethustress
@@ -187,12 +188,14 @@ List of command line options used in various Fast Fabric tools
 -q                  Disables progress reports                      eth2rm
 -q                  Quiet mode, do not show command to execute     ethcmdall
 -q                  Disables progress reports                      ethreport
+-q                  Quiet mode, do not show files                  ethscpall
 -Q                  Excludes focus description from report         ethreport
 -r                  Reverses output to show the least busy hosts   ethcheckload
 -r                  recursive download of directories              ethdownloadall
 -R                  Skips the running test (SSH)                   ethfindgood
 -r                  Performs recursive copy of directories         ethscpall
 -R                  Skips setup of SSH to local host               ethsetupssh
+-R                  Use rsync instead of scp                       ethscpall
 -r                  Performs recursive upload of directories       ethuploadall
 -r release          Specifies the software version to load/upgrade ethhostadmin
                     to
@@ -269,6 +272,7 @@ List of command line options used in various Fast Fabric tools
 -X snapshot_input   Generates a report using the data in the       ethreport
                     snapshot_input file
 -x snapshot_suffix  Creates a snapshot file with the suffix        ethlinkanalysis
+-Z option           tar compression option to use                  ethscpall
 
 
 Output Type Descriptions used by Fast Fabric tools

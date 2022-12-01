@@ -38,6 +38,13 @@
 ## ==========================================================================
 #
 #Installation Prequisites array for delta components
+my @iefsconfig_prereq = (
+    "bash",
+    "iproute",
+    "lldpad",
+);
+$comp_prereq_hash{'iefsconfig_prereq'} = \@iefsconfig_prereq;
+
 my @eth_module_prereq = (
     "bash",
     "kernel-core",

@@ -65,7 +65,8 @@ INCLUDE_TARGETS	= \
 MAN_PAGE_1_FILES = \
 				ethcapture.1 \
 				iefsconfig.1 \
-				ethshmcleanup.1
+				ethshmcleanup.1 \
+				ethbw.1
 				# Add more man pages for chapter 1
 MAN_PAGE_8_FILES = \
 				eth2rm.8 \

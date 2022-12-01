@@ -32,7 +32,7 @@
 
 # If a PSM3 job terminates abnormally, such as with a segmentation fault, there could
 # be POSIX shared memory files left over in the /dev/shm directory. This script is
-# intended to remove not used file
+# intended to remove unused file
 
 readonly BASENAME="$(basename $0)"
 
@@ -43,12 +43,12 @@ Usage_full()
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 	echo >&2
-	echo "Clean up not used POSIX shared memory files in /dev/shm:"  >&2
+	echo "Clean up unused PSM3 POSIX shared memory files in /dev/shm:"  >&2
 	echo "    /dev/shm/psm3_shm.*" >&2
 	echo "    /dev/shm/sem.psm3_nic_affinity*" >&2
 	echo "    /dev/shm/psm3_nic_affinity*" >&2
 	echo >&2
-    echo "example:">&2
+	echo "example:">&2
 	echo "   ${BASENAME}" >&2	
 	exit 0
 }
@@ -96,7 +96,8 @@ do
 
 	if [ -z "$rc" ];
 	then
-		rm -f $file > /dev/null 2>&1;
+		echo "rm -f $file"
+		rm -f $file
 	fi;
 done;
 

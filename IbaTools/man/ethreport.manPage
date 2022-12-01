@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2021, Intel Corporation                *
+.\" .\" *             Copyright 2020-2022, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethreport 8 "Intel Corporation" "Copyright(C) 2020\-2021" "EFSFFCLIRG (Man Page)"
+.TH ethreport 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethreport
 
@@ -284,11 +284,6 @@ ifid:\fIvalue\fR:port:\fIvalue2\fR
 \fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port number.
 
 .TP 10
-ifid:\fIvalue\fR:portid:\fIvalue2\fR
-
-\fIvalue\fR is numeric ifid of node, \fIvalue2\fR is port id.
-
-.TP 10
 mgmtifaddr:\fIvalue\fR
 
 \fIvalue\fR is numeric port mgmtifaddr.
@@ -304,11 +299,6 @@ ifaddr:\fIvalue1\fR:port:\fIvalue2\fR
 \fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port number.
 
 .TP 10
-ifaddr:\fIvalue1\fR:portid:\fIvalue2\fR
-
-\fIvalue1\fR is numeric node ifaddr, \fIvalue2\fR is port id.
-
-.TP 10
 chassisid:\fIvalue\fR
 
 \fIvalue\fR is numeric chassisid.
@@ -317,11 +307,6 @@ chassisid:\fIvalue\fR
 chassisid:\fIvalue1\fR:port:\fIvalue2\fR
 
 \fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port number.
-
-.TP 10
-chassisid:\fIvalue1\fR:portid:\fIvalue2\fR
-
-\fIvalue1\fR is numeric chassisid, \fIvalue2\fR is port id.
 
 .TP 10
 node:\fIvalue\fR
@@ -334,11 +319,6 @@ node:\fIvalue1\fR:port:\fIvalue2\fR
 \fIvalue1\fR is node description (node name), \fIvalue2\fR is port number.
 
 .TP 10
-node:\fIvalue1\fR:portid:\fIvalue2\fR
-
-\fIvalue1\fR is node description (node name), \fIvalue2\fR is port id.
-
-.TP 10
 nodepat:\fIvalue\fR
 
 \fIvalue\fR is glob pattern for node description (node name).
@@ -347,11 +327,6 @@ nodepat:\fIvalue\fR
 nodepat:\fIvalue1\fR:port:\fIvalue2\fR
 
 \fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port number.
-
-.TP 10
-nodepat:\fIvalue1\fR:portid:\fIvalue2\fR
-
-\fIvalue1\fR is the glob pattern for the node description (node name), \fIvalue2\fR is port id.
 
 .TP 10
 nodedetpat:\fIvalue\fR
@@ -364,11 +339,6 @@ nodedetpat:\fIvalue1\fR:port:\fIvalue2\fR
 \fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port number.
 
 .TP 10
-nodedetpat:\fIvalue1\fR:portid:\fIvalue2\fR
-
-\fIvalue1\fR is the glob pattern for the node details, \fIvalue2\fR is port id.
-
-.TP 10
 nodetype:\fIvalue\fR
 
 \fIvalue\fR is node type (SW or NIC).
@@ -377,11 +347,6 @@ nodetype:\fIvalue\fR
 nodetype:\fIvalue1\fR:port:\fIvalue2\fR
 
 \fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port number.
-
-.TP 10
-nodetype:\fIvalue1\fR:portid:\fIvalue2\fR
-
-\fIvalue1\fR is node type (SW or NIC), \fIvalue2\fR is port id.
 
 .TP 10
 rate:\fIvalue\fR

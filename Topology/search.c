@@ -225,7 +225,7 @@ FSTATUS FindPortGuidPoint(FabricData_t *fabricp, EUI64 guid, Point *pPoint, uint
 	}
 	if (! PointValid(pPoint)) {
 		if(!silent)
-			fprintf(stderr, "%s: Port GUID Not Found: 0x%016"PRIx64"\n", g_Top_cmdname, guid);
+			fprintf(stderr, "%s: Port MgmtIfAddr Not Found: 0x%016"PRIx64"\n", g_Top_cmdname, guid);
 		return FNOT_FOUND;
 	}
 	PointCompress(pPoint);
@@ -409,7 +409,7 @@ FSTATUS FindNodeGuidPoint(FabricData_t *fabricp, EUI64 guid, Point *pPoint, uint
 	}
 	if (! PointValid(pPoint)) {
 		if(!silent)
-			fprintf(stderr, "%s: Node GUID Not Found: 0x%016"PRIx64"\n", g_Top_cmdname, guid);
+			fprintf(stderr, "%s: Node IfAddr Not Found: 0x%016"PRIx64"\n", g_Top_cmdname, guid);
 		return FNOT_FOUND;
 	}
 	PointCompress(pPoint);

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2021, Intel Corporation                *
+.\" .\" *             Copyright 2020-2022, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethgentopology 8 "Intel Corporation" "Copyright(C) 2020\-2021" "EFSFFCLIRG (Man Page)"
+.TH ethgentopology 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethgentopology
 
@@ -26,12 +26,12 @@ ethxmlgenerate -X /usr/share/eth-tools/samples/ethtopology\(ul1.txt -d \\; -h Li
 -g Rate -g MTU -g Internal -g LinkDetails -h Cable -g CableLength -g CableLabel \\
 .br
 
--g CableDetails -e Cable -h Port -g IfAddr -g PortNum -g NodeDesc -g MgmtIfAddr \\
+-g CableDetails -e Cable -h Port -g IfAddr -g PortNum -g PortId -g NodeDesc
 .br
-
--g NodeType -g PortDetails -e Port  -h Port -g IfAddr -g PortNum -g NodeDesc \\
+\\
+-g MgmtIfAddr -g NodeType -g PortDetails -e Port  -h Port -g IfAddr -g PortNum \\
+-g PortId -g NodeDesc
 .br
-
 -g MgmtIfAddr -g NodeType -g PortDetails -e Port -e Link
 
 
@@ -82,19 +82,19 @@ The following example exceeds the available width of the page. For readability, 
 .br
 25g;2048;0;IO Server Link;11m;S4567;cable
 .br
-model 456;0x0002c9020020e004;1;bender-eth2;0x0002c9020020e004;NIC;
+model 456;0x0002c9020020e004;1;20e004,bender-eth2;0x0002c9020020e004;NIC;
 .br
-Some info about port;0x0011750007000df6;7;Switch 1234 Leaf 4;;SW;
-.br
-
-
-
+Some info about port;0x0011750007000df6;7;Eth7;Switch 1234 Leaf 4;;SW;
 .br
 
+
+
 .br
-25g;;0;;;;;0x0002c9020025a678;1;mindy2-eth2;;NIC;;
+
 .br
-0x0011750007000e6d;4;Switch 2345 Leaf 5;;SW;
+25g;;0;;;;;0x0002c9020025a678;1;25a678;mindy2-eth2;;NIC;;
+.br
+0x0011750007000e6d;4;Eth4;Switch 2345 Leaf 5;;SW;
 
 .SH ethtopology\(ulNICs.txt
 
@@ -183,6 +183,7 @@ When run against the supplied topology input files, /usr/share/eth-tools/samples
 <PortNum>1</PortNum>
 .br
 
+<PortId>20e004</PortId>
 <NodeDesc>bender-eth2</NodeDesc>
 .br
 
@@ -207,6 +208,7 @@ When run against the supplied topology input files, /usr/share/eth-tools/samples
 <PortNum>7</PortNum>
 .br
 
+<PortId>Eth7</PortId>
 <NodeDesc>Switch 1234 Leaf 4</NodeDesc>
 .br
 
@@ -243,6 +245,7 @@ When run against the supplied topology input files, /usr/share/eth-tools/samples
 <PortNum>1</PortNum>
 .br
 
+<PortId>25a678</PortId>
 <NodeDesc>mindy2-eth2</NodeDesc>
 .br
 
@@ -261,6 +264,7 @@ When run against the supplied topology input files, /usr/share/eth-tools/samples
 <PortNum>4</PortNum>
 .br
 
+<PortId>Eth4</PortId>
 <NodeDesc>Switch 2345 Leaf 5</NodeDesc>
 .br
 

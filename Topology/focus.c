@@ -346,7 +346,7 @@ static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, boolean is_portn
 			ASSERT(0);	// should not get here
 			break;
 		case POINT_TYPE_NODE:
-			fprintf(stderr, "%s: Node %.*s GUID 0x%016"PRIx64" ",
+			fprintf(stderr, "%s: Node %.*s IfAddr 0x%016"PRIx64" ",
 				g_Top_cmdname, STL_NODE_DESCRIPTION_ARRAY_SIZE,
 				(char*)pPoint->u.nodep->NodeDesc.NodeString,
 				pPoint->u.nodep->NodeInfo.NodeGUID);

@@ -226,7 +226,7 @@ FSTATUS AddSystemNode(FabricData_t *fabricp, NodeData *nodep)
 	nodep->systemp = systemp;
 	if (cl_qmap_insert(&systemp->Nodes, nodep->NodeInfo.NodeGUID, &nodep->SystemNodesEntry) != &nodep->SystemNodesEntry)
 	{
-		fprintf(stderr, "%s: Duplicate NodeGuids found in nodeRecords: 0x%"PRIx64"\n",
+		fprintf(stderr, "%s: Duplicate IfAddr found in nodeRecords: 0x%"PRIx64"\n",
 					   g_Top_cmdname, nodep->NodeInfo.NodeGUID);
 		goto fail;
 	}
@@ -528,7 +528,7 @@ void PortDataFreeCongestionControlTableEntries(FabricData_t *fabricp, PortData *
 
 void AllLidsRemove(FabricData_t *fabricp, PortData *portp)
 {
-	if (! portp->PortGUID)
+	if (! portp->PortGUID || ! portp->EndPortLID)
 		return;	// quietly ignore
 	switch (portp->PortInfo.PortStates.s.PortState) {
 	default:
@@ -721,7 +721,7 @@ void PortDataStateChanged(FabricData_t *fabricp, PortData *portp)
 	if (ETH_PORT_UP == portp->PortInfo.PortStates.s.PortState
 		|| ETH_PORT_DORMANT == portp->PortInfo.PortStates.s.PortState) {
 		if (FSUCCESS != AllLidsAdd(fabricp, portp, TRUE)) {
-			fprintf(stderr, "%s: Overwrote Duplicate LID found in portRecords: PortGUID 0x%016"PRIx64" LID 0x%x Port %u Node %.*s\n",
+			fprintf(stderr, "%s: Overwrote Duplicate IfID found in portRecords: MgmtIfAddr 0x%016"PRIx64" IfID 0x%x Port %u Node %.*s\n",
 				g_Top_cmdname,
 				portp->PortGUID, portp->EndPortLID,
 				portp->PortNum, STL_NODE_DESCRIPTION_ARRAY_SIZE,
@@ -1049,7 +1049,7 @@ PortData* NodeDataAddPort(FabricData_t *fabricp, NodeData *nodep, EUI64 guid, ST
 
 	if (cl_qmap_insert(&nodep->Ports, portp->PortNum, &portp->NodePortsEntry) != &portp->NodePortsEntry)
 	{
-		fprintf(stderr, "%s: Duplicate PortNums found in portRecords: LID 0x%x Port %u Node: %.*s\n",
+		fprintf(stderr, "%s: Duplicate PortNums found in portRecords: IfID 0x%x Port %u Node: %.*s\n",
 					   	g_Top_cmdname,
 					   	portp->EndPortLID,
 					   	portp->PortNum, STL_NODE_DESCRIPTION_ARRAY_SIZE,
@@ -1057,9 +1057,10 @@ PortData* NodeDataAddPort(FabricData_t *fabricp, NodeData *nodep, EUI64 guid, ST
 		MemoryDeallocate(portp);
 		goto fail;
 	}
-	if (FSUCCESS != AllLidsAdd(fabricp, portp, FALSE))
+	if ((!(fabricp->flags & FF_DOWNPORTINFO) || portp->EndPortLID)
+	    && FSUCCESS != AllLidsAdd(fabricp, portp, FALSE))
 	{
-		fprintf(stderr, "%s: Duplicate LIDs found in portRecords: PortGUID 0x%016"PRIx64" LID 0x%x Port %u Node %.*s\n",
+		fprintf(stderr, "%s: Duplicate IfIDs found in portRecords: MgmtIfAddr 0x%016"PRIx64" IfID 0x%x Port %u Node %.*s\n",
 			   	g_Top_cmdname,
 			   	portp->PortGUID, portp->EndPortLID,
 			   	portp->PortNum, STL_NODE_DESCRIPTION_ARRAY_SIZE,
@@ -1102,7 +1103,7 @@ NodeData *FabricDataAddNode(FabricData_t *fabricp, STL_NODE_RECORD *pNodeRecord,
 		fprintf(stderr, "%s: Unable to allocate memory\n", g_Top_cmdname);
 		goto fail;
 	}
-	//printf("process NodeRecord LID: 0x%x\n", pNodeRecords->RID.s.LID);
+	//printf("process NodeRecord IfID: 0x%x\n", pNodeRecords->RID.s.LID);
 	//DisplayNodeRecord(pNodeRecord, 0);
 
 	cl_qmap_init(&nodep->Ports, NULL);
@@ -1182,7 +1183,7 @@ FSTATUS FabricDataAddLink(FabricData_t *fabricp, PortData *p1, PortData *p2)
 	if (p1->neighbor == p2 && p2->neighbor == p1)
 		goto fail;
 	if (p1->neighbor) {
-		fprintf(stderr, "%s: Skipping Duplicate Link Record reference to port: LID 0x%x Port %u Node %.*s\n",
+		fprintf(stderr, "%s: Skipping Duplicate Link Record reference to port: IfID 0x%x Port %u Node %.*s\n",
 			   	g_Top_cmdname,
 			   	p1->EndPortLID,
 			   	p1->PortNum, NODE_DESCRIPTION_ARRAY_SIZE,
@@ -1190,7 +1191,7 @@ FSTATUS FabricDataAddLink(FabricData_t *fabricp, PortData *p1, PortData *p2)
 		goto fail;
 	}
 	if (p2->neighbor) {
-		fprintf(stderr, "%s: Skipping Duplicate Link Record reference to port: LID 0x%x Port %u Node %.*s\n",
+		fprintf(stderr, "%s: Skipping Duplicate Link Record reference to port: IfID 0x%x Port %u Node %.*s\n",
 			   	g_Top_cmdname,
 			   	p2->EndPortLID,
 			   	p2->PortNum, NODE_DESCRIPTION_ARRAY_SIZE,
@@ -1259,14 +1260,14 @@ FSTATUS FabricDataAddLinkRecord(FabricData_t *fabricp, STL_LINK_RECORD *pLinkRec
 	//printf("process LinkRecord LID: 0x%x\n", pLinkRecord->RID.s.LID);
 	p1 = FindLidPort(fabricp, pLinkRecord->RID.FromLID, pLinkRecord->RID.FromPort);
 	if (! p1) {
-		fprintf(stderr, "%s: Can't find \"From\" Lid 0x%x Port %u: Skipping\n",
+		fprintf(stderr, "%s: Can't find \"From\" IfID 0x%x Port %u: Skipping\n",
 				g_Top_cmdname,
 				pLinkRecord->RID.FromLID, pLinkRecord->RID.FromPort);
 		return FERROR;
 	}
 	p2 = FindLidPort(fabricp, pLinkRecord->ToLID, pLinkRecord->ToPort);
 	if (! p2) {
-		fprintf(stderr, "%s: Can't find \"To\" Lid 0x%x Port %u: Skipping\n",
+		fprintf(stderr, "%s: Can't find \"To\" IfID 0x%x Port %u: Skipping\n",
 				g_Top_cmdname,
 				pLinkRecord->ToLID, pLinkRecord->ToPort);
 		return FERROR;
@@ -1283,7 +1284,7 @@ FSTATUS FabricDataRemoveLink(FabricData_t *fabricp, PortData *p1)
 	if (! p1->neighbor)
 		goto fail;
 	if (p1 == p2) {
-		fprintf(stderr, "%s: Corrupted Topology, port linked to self: LID 0x%x Port %u Node %.*s\n",
+		fprintf(stderr, "%s: Corrupted Topology, port linked to self: IfID 0x%x Port %u Node %.*s\n",
 			   	g_Top_cmdname,
 			   	p1->EndPortLID,
 			   	p1->PortNum, NODE_DESCRIPTION_ARRAY_SIZE,
@@ -1291,7 +1292,7 @@ FSTATUS FabricDataRemoveLink(FabricData_t *fabricp, PortData *p1)
 		goto fail;
 	}
 	if (p2->neighbor != p1) {
-		fprintf(stderr, "%s: Corrupted Topology, port linked inconsistently: LID 0x%x Port %u Node %.*s\n",
+		fprintf(stderr, "%s: Corrupted Topology, port linked inconsistently: IfID 0x%x Port %u Node %.*s\n",
 			   	g_Top_cmdname,
 			   	p1->EndPortLID,
 			   	p1->PortNum, NODE_DESCRIPTION_ARRAY_SIZE,

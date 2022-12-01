@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2021, Intel Corporation                *
+.\" .\" *             Copyright 2020-2022, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethscpall 8 "Intel Corporation" "Copyright(C) 2020\-2021" "EFSFFCLIRG (Man Page)"
+.TH ethscpall 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethscpall
 
@@ -83,12 +83,12 @@ Specifies the file or list of source files to copy.
 .TP 10
 \fIsource\(uldir\fR
 
-Specifies the name of the source directory to copy. If omitted. is used.
+Specifies the name of the source directory to copy. If omitted, current working directory is used.
 
 .TP 10
 \fIdest\(ulfile\fR or \fIdest\(uldir\fR
 
-Specifies the name of the destination file or directory to copy to. If more than one source file, this must be a directory. If omitted current directory name is used.
+Specifies the name of the destination file or directory. If copying multiple files, use a directory name instead as the destination. If the file or directory name is omitted, the source file or current directory name is used respectively.
 
 .SH Example
 # efficiently copy an entire directory tree

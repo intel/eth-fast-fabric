@@ -124,7 +124,7 @@ File: /usr/lib/eth-tools/load.exp" case_setup case_cleanup {
 			# given driver, its possible that its not on the media
 			# so we can't expect it to be installed
 			# for now assume Stack or Enablement tools are always on media
-			set drivers {{((Eth Module)|(PSM3)|(Eth Tools)|{Eth RDMA})}}
+			set drivers {{((Eth Module)|(PSM3)|(Eth Tools)|{Eth RoCE})}}
 
 			install_all $host "$drivers" 1 1 0 "" "$env(CFG_RELEASE)" "$env(CFG_INSTALL_OPTIONS)" "$env(CFG_SCPFROMDIR)" "$env(CFG_PRODUCT)"
 		}

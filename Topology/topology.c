@@ -112,7 +112,7 @@ static const char *FormatPortSelector(PortSelector *portselp)
 		offset += sprintf(format, "NodeDesc: %s", portselp->NodeDesc);
 	}
 	if (portselp->NodeGUID) {
-		offset += sprintf(&format[offset], "%*sNodeGUID: 0x%016"PRIx64, offset?1:0, "", portselp->NodeGUID);
+		offset += sprintf(&format[offset], "%*sIfAddr: 0x%016"PRIx64, offset?1:0, "", portselp->NodeGUID);
 	}
 	if (portselp->gotPortNum) {
 		offset += sprintf(&format[offset], "%*sPortNum: %u", offset?1:0, "", portselp->PortNum);
@@ -121,7 +121,7 @@ static const char *FormatPortSelector(PortSelector *portselp)
 		offset += sprintf(&format[offset], "%*sPortId: %s", offset?1:0, "", portselp->PortId);
 	}
 	if (portselp->PortGUID) {
-		offset += sprintf(&format[offset], "%*sPortGUID: 0x%016"PRIx64, offset?1:0, "", portselp->PortGUID);
+		offset += sprintf(&format[offset], "%*sMgmtIfAddr: 0x%016"PRIx64, offset?1:0, "", portselp->PortGUID);
 	}
 	if (portselp->NodeType) {
 		offset += sprintf(&format[offset], "%*sNodeType: %s", offset?1:0, "",
@@ -631,7 +631,7 @@ static const char *FormatExpectedNode(ExpectedNode *enodep)
 		offset += sprintf(format, "NodeDesc: %s", enodep->NodeDesc);
 	}
 	if (enodep->NodeGUID) {
-		offset += sprintf(&format[offset], "%*sNodeGUID: 0x%016"PRIx64, offset?1:0, "", enodep->NodeGUID);
+		offset += sprintf(&format[offset], "%*sIfAddr: 0x%016"PRIx64, offset?1:0, "", enodep->NodeGUID);
 	}
 	if (enodep->NodeType) {
 		offset += sprintf(&format[offset], "%*sNodeType: %s", offset?1:0, "",
@@ -1056,12 +1056,12 @@ static FSTATUS TopologyValidateLinkPort(FabricData_t *fabricp, ExpectedLink *eli
 	if(portselp->NodeGUID) {
 		enodep = FindExpectedNodeByNodeGuid(fabricp, portselp->NodeGUID);
 		if(!enodep){
-			fprintf(stderr, "Topology file line %"PRIu64": No node found with matching NodeGUID for link port: %s\n", elinkp->lineno, FormatPortSelector(portselp));
+			fprintf(stderr, "Topology file line %"PRIu64": No node found with matching IfAddr for link port: %s\n", elinkp->lineno, FormatPortSelector(portselp));
 			return FNOT_FOUND;	
 		} 
 		if(portselp->NodeDesc){
 			if(enodep->NodeDesc && strcmp(portselp->NodeDesc, enodep->NodeDesc) != 0) {	
-				fprintf(stderr, "Topology file line %"PRIu64": Node GUIDs match, but inconsistent NodeDesc for Node: %.*s link port: %s\n",
+				fprintf(stderr, "Topology file line %"PRIu64": Node IfAddr match, but inconsistent NodeDesc for Node: %.*s link port: %s\n",
 					elinkp->lineno, NODE_DESCRIPTION_ARRAY_SIZE, enodep->NodeDesc, FormatPortSelector(portselp));
 				return FERROR;
 			}
@@ -1074,7 +1074,7 @@ static FSTATUS TopologyValidateLinkPort(FabricData_t *fabricp, ExpectedLink *eli
 			return FNOT_FOUND;
 		}
 	} else {
-		fprintf(stderr, "Topology file line %"PRIu64": Link port specification with no NodeGUID or NodeDesc: %s; other side of link: %s\n",
+		fprintf(stderr, "Topology file line %"PRIu64": Link port specification with no IfAddr or NodeDesc: %s; other side of link: %s\n",
 			elinkp->lineno, FormatPortSelector(portselp),
 			elinkp->portselp1 == portselp?
 				FormatPortSelector(elinkp->portselp2)
@@ -1225,7 +1225,7 @@ static FSTATUS TopologyValidate(FabricData_t *fabricp, int quiet, TopoVal_t vali
         	if (enodep->portsSize > 0 && enodep->ports[0] != NULL
 				&& enodep->ports[0]->PortGuid && enodep->NodeGUID
 				&& enodep->ports[0]->PortGuid != NodeGUIDtoPortGUID(enodep->NodeGUID, 0)) {
-			fprintf(stderr, "Topology file line %"PRIu64": mismatched NodeGUID and PortGUID for switch port 0: %s\n", enodep->lineno, FormatExpectedNode(enodep));
+			fprintf(stderr, "Topology file line %"PRIu64": mismatched IfAddr and MgmtIfAddr for switch port 0: %s\n", enodep->lineno, FormatExpectedNode(enodep));
 			if (TOPOVAL_SOMEWHAT_STRICT <= validation)
 				status = FERROR;
 		}

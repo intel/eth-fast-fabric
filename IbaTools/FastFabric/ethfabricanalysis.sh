@@ -156,7 +156,8 @@ fi
 # available_fids will be in format <plane_name>;<topology_file>, e.g
 # plane1;topology.p1.xml
 # plane2;topology.p2.xml
-available_fids="$($ETHXMLEXTRACT -H -e Plane.Name -e Plane.TopologyFile -X "$mgt_file")"
+cfgdir="$($ETHXMLEXTRACT -H -e ConfigDir -X "$mgt_file" | sed 's/\//\\\//g')"
+available_fids="$($ETHXMLEXTRACT -H -e Plane.Name -e Plane.TopologyFile -X "$mgt_file" | sed "s/;\([^\/]\)/;$cfgdir\/\1/")"
 if [ -z "$available_fids" ]
 then
 	# shouldn't happen
