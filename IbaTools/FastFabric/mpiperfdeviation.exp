@@ -132,5 +132,5 @@ File: /usr/lib/eth-tools/mpiperfdeviation.exp" suite_setup noop {
 
 	set mpitype [determine_mpitype "$env(FF_MPI_APPS_DIR)"]
 
-	test_case_run_mpi_app $mpitype default localhost $host_pairs 60 "$env(FF_MPI_APPS_DIR)/deviation" "deviation" "$env(FF_DEVIATION_ARGS)" 1
+	test_case_run_mpi_app_port $mpitype default localhost $host_pairs $env(CFG_MPI_DEV) 60 "$env(FF_MPI_APPS_DIR)/deviation" "deviation" "$env(FF_DEVIATION_ARGS)" 1
 }

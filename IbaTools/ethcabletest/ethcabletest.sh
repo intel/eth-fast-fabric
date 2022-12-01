@@ -122,6 +122,14 @@ done
 shift $((OPTIND -1))
 
 check_host_args $BASENAME
+
+first_irdmas=$(get_node_irdmas $(echo "$HOSTS" | head -n 1))
+if [ -n "$first_irdmas" ]; then
+	export CFG_MPI_DEV="+(${first_irdmas// /|})"
+else
+	export CFG_MPI_DEV=
+fi
+
 # HOSTS now lists all the hosts, pass it along to the commands below via env
 export HOSTS
 unset HOSTS_FILE

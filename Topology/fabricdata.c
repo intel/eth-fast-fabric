@@ -114,7 +114,7 @@ FSTATUS InitFabricData(FabricData_t *fabricp, FabricFlags_t flags)
 		cl_qmap_init(&fabricp->u.AllLids, NULL);
 	}
 	fabricp->ms_timeout = RESP_WAIT_TIME;
-	fabricp->flags = flags & (FF_LIDARRAY|FF_PMADIRECT|FF_SMADIRECT|FF_DOWNPORTINFO|FF_CABLELOWPAGE);
+	fabricp->flags = flags & (FF_LIDARRAY|FF_PMADIRECT|FF_SMADIRECT|FF_DOWNPORTINFO|FF_CABLELOWPAGE|FF_STATS);
 	cl_qmap_init(&fabricp->AllSystems, NULL);
 	cl_qmap_init(&fabricp->ExpectedNodeGuidMap, NULL);
 	QListInitState(&fabricp->AllPorts);
@@ -1016,12 +1016,14 @@ PortData* NodeDataAddPort(FabricData_t *fabricp, NodeData *nodep, EUI64 guid, ST
 		goto fail;
 	}
 
-	portp->pPortCounters = (STL_PORT_COUNTERS_DATA *)MemoryAllocate2AndClear(sizeof(STL_PORT_COUNTERS_DATA),
-		IBA_MEM_FLAG_PREMPTABLE, MYTAG);
-	if (! portp->pPortCounters) {
-		fprintf(stderr, "%s: Unable to allocate memory for Port Counters\n", g_Top_cmdname);
-		MemoryDeallocate(portp);
-		goto fail;
+	if (fabricp->flags & FF_STATS) {
+		portp->pPortCounters = (STL_PORT_COUNTERS_DATA *)MemoryAllocate2AndClear(sizeof(STL_PORT_COUNTERS_DATA),
+			IBA_MEM_FLAG_PREMPTABLE, MYTAG);
+		if (! portp->pPortCounters) {
+			fprintf(stderr, "%s: Unable to allocate memory for Port Counters\n", g_Top_cmdname);
+			MemoryDeallocate(portp);
+			goto fail;
+		}
 	}
 
 	ListItemInitState(&portp->AllPortsEntry);

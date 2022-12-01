@@ -159,6 +159,10 @@ then
 	then
 		. ./intelmpi.params
 	fi
+	if [ x"$CFG_MPI_DEV" != x ]
+	then
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_NIC $CFG_MPI_DEV"
+	fi
 	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun  ${NUM_PROCESSES:+-np $NUM_PROCESSES} -hostfile $MPI_HOSTS $MPI_CMD_ARGS "
 elif [ -e "$MPICH_PREFIX/bin/ompi_info" ] #OpenMPI
 then
@@ -167,6 +171,10 @@ then
 	if [ -e ./openmpi.params ]
 	then
 		. ./openmpi.params
+	fi
+	if [ x"$CFG_MPI_DEV" != x ]
+	then
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_NIC $CFG_MPI_DEV"
 	fi
 	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun ${NUM_PROCESSES:+-np $NUM_PROCESSES} -map-by node --allow-run-as-root -machinefile $MPI_HOSTS $MPI_CMD_ARGS "
 else

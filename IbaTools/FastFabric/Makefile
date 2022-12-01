@@ -63,7 +63,7 @@ DEFFILE			=
 INCLUDE_TARGETS	= \
 				# Add more h hpp files here
 # Non-compiled files
-MISC_FILES		= switches allhosts-sample chassis-sample esm_chassis-sample \
+MISC_FILES		= switches allhosts-sample allhosts_mp-sample chassis-sample esm_chassis-sample \
 				hosts-sample switches-sample ports-sample osid_wrapper \
 				mac_to_dhcp opa_ca_openssl.cnf opa_comp_openssl.cnf \
 				opa_ca_openssl.cnf-sample opa_comp_openssl.cnf-sample
@@ -194,8 +194,8 @@ include $(TL_DIR)/Makerules/Maketargets.install
 #include $(TL_DIR)/Makerules/Maketargets.stage
 STAGE::
 	$(VS)$(STAGE_INSTALL) $(STAGE_INSTALL_DIR_OPT) $(PROJ_STAGE_FASTFABRIC_DIR) ethsetupsnmp ethsetupssh ethscpall ethuploadall ethdownloadall ethpingall ethcmdall ethshowallports ethcaptureall ethhostadmin ethfabricanalysis opachassisanalysis ethallanalysis ethfastfabric opaswenableall opaswdisableall ethexpandfile ff_funcs ethfastfabric.conf.def show_counts opacablehealthcron
-	$(VS)$(STAGE_INSTALL) $(STAGE_INSTALL_DIR_OPT) $(PROJ_STAGE_IBTOOLS_DIR) tcl_proc $(TCL_SOURCES) ethfastfabric.conf.def ff_funcs ports hosts allhosts switches chassis esm_chassis osid_wrapper
-	$(VS)$(STAGE_INSTALL) $(STAGE_INSTALL_DIR_OPT) $(PROJ_STAGE_FASTFABRIC_DIR)/samples allhosts-sample chassis-sample hosts-sample switches-sample ports-sample mac_to_dhcp ethfastfabric.conf-sample opa_ca_openssl.cnf-sample opa_comp_openssl.cnf-sample esm_chassis-sample
+	$(VS)$(STAGE_INSTALL) $(STAGE_INSTALL_DIR_OPT) $(PROJ_STAGE_IBTOOLS_DIR) tcl_proc $(TCL_SOURCES) ethfastfabric.conf.def ff_funcs ports hosts allhosts allhosts_mp switches chassis esm_chassis osid_wrapper
+	$(VS)$(STAGE_INSTALL) $(STAGE_INSTALL_DIR_OPT) $(PROJ_STAGE_FASTFABRIC_DIR)/samples allhosts-sample allhosts_mp-sample chassis-sample hosts-sample switches-sample ports-sample mac_to_dhcp ethfastfabric.conf-sample opa_ca_openssl.cnf-sample opa_comp_openssl.cnf-sample esm_chassis-sample
 	$(VS)$(STAGE_INSTALL) $(STAGE_INSTALL_DIR_OPT) $(PROJ_STAGE_ETC_DIR)/cron.d opa-cablehealth
 
 # Unit test execution

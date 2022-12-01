@@ -140,6 +140,22 @@ get_node_ports()
 	echo "${LC_NODE_PORTS[${node,,}]}"
 }
 
+# Find the irdma devices for a given node.
+get_node_irdmas()
+{
+	node=$1
+	devs=
+	for port in ${LC_NODE_PORTS[${node,,}]}
+	do
+		dev=$(sck_to_irdma $port)
+		if [ -n "$dev" ]
+		then
+			devs="$devs$dev "
+		fi
+	done
+	echo "${devs% }"
+}
+
 extract_node_ports()
 {
 	content=$1
@@ -364,11 +380,11 @@ get_ifs_by_driver()
 	ls -l /sys/class/net/*/device/driver | grep "${driver}$" | awk '{print $9}' | cut -d '/' -f5
 }
 
-# find the corresponding irdma device based on given eth interface
+# find the corresponding irdma device based on given socket interface
 # return empty if not found
-eth_to_irdma()
+sck_to_irdma()
 {
-	node=$1
+	dev=$1
 	slot=$(ls -l /sys/class/net | grep $dev | awk '{print $11}' | cut -d '/' -f 6)
 	if [[ -n $slot ]]; then
 		ls $(find /sys/devices/ -name $slot)/infiniband 2> /dev/null

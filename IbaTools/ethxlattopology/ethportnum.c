@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 			buffer[line_len - 1] = '\0';
 		}
 
-		strncpy(ports[count++], buffer, MAX_NAME);
+		snprintf(ports[count++], MAX_NAME+1, "%s", buffer);
 		pn_gen_register(&model, buffer);
 	}
 	fclose(fp);

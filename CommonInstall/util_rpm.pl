@@ -730,8 +730,7 @@ sub rpm_resolve($$)
 	} else {
 		my $osver = rpm_tr_os_version("$mode");	# OS version
 		# we expect 1 match, ignore all other filenames returned
-		if ( "$CUR_VENDOR_VER" eq 'ES124' || "$CUR_VENDOR_VER" eq 'ES125' || "$CUR_VENDOR_VER" eq 'ES15'
-			|| "$CUR_VENDOR_VER" eq 'ES151' || "$CUR_VENDOR_VER" eq 'ES152' || "$CUR_VENDOR_VER" eq 'ES153')
+		if ( "$CUR_DISTRO_VENDOR" eq 'SuSE' )
 		{
 			DebugPrint("Checking for Kernel Rpm: ${rpmpath}-${osver}_k*.${cpu}.rpm\n");
 			$rpmfile = file_glob("${rpmpath}-${osver}_k*.${cpu}.rpm");

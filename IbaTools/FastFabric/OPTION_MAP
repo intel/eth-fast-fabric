@@ -15,7 +15,7 @@ List of command line options used in various Fast Fabric tools
 
 -a                  Shows all hosts                                ethcheckload
 -A                  Skips the active test                          ethfindgood
--A                  Gets PortInfo for down switch ports            ethreport         (may remove it)
+-A                  Gets PortInfo for down switch ports            ethreport
 -a admin            Specifies the list of admin hosts that can     ethsetupsnmp
                     SNMP query
 -b                  Sets the baseline mode                         ethallanalysis
@@ -190,6 +190,7 @@ List of command line options used in various Fast Fabric tools
                     to
 -r                  sender sends reply messages                    ethudstress
 -S                  Performs strict topology file validation       eth2rm
+-s                  get performance stats for all ports            ethreport
 -s                  Saves history of failures (errors/differences) ethallanalysis
 -s                  Enables autostart for all installed drivers    iefsconfig
 -s                  Saves history of failures                      ethfabricanalysis

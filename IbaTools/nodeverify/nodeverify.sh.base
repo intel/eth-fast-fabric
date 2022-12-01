@@ -44,6 +44,9 @@ NIC_IFS=""      # space separated interface list used in fabric. Empty string wi
                 # will use all ICE interfaces
 ROCE_IFS=""     # space separated interface list used for RoCE (which will be
                 # used to check PFC settings). Empty string will use the NIC_IFS
+NIC_FW_VER=""   # expected Intel Ethernet NIC firmware version. Empty string will skip the check.
+ICE_VER=""      # expected Intel Ethernet NIC ice version. Empty string will skip the check.
+IRDMA_VER=""    # expected irdma version. Empty string will skip the check.
 LIMITS_SEL=5    # expected irdma Resource Limits Selector
 MTU=9000        # expected MTU. empty string will ignore MTU verification
 PCI_MAXPAYLOAD=256	  # expected value for PCI max payload
@@ -879,11 +882,36 @@ test_nic_settings()
 	set -x
 	failure=0
 
-	#confirm ice and irdma are loaded
+	#confirm ice is loaded
 	ice=$(lsmod | grep ice)
 	[ -n "$ice" ] || fail "ice module not loaded"
+	#check ice version
+	if [[ "${ICE_VER,,}" = "intree" ]]; then
+		[[ "$(modinfo -F intree ice)" = "Y" ]] || \
+			 { fail_msg "ice module is not an in-tree module"; failure=1; }
+	elif [ -n "$ICE_VER" ]; then
+		ice_ver=$(modinfo -F version ice)
+		if [[ -z "$ice_ver" ]]; then
+			{ fail_msg "ice module has no version information. Expect $ICE_VER"; failure=1; }
+		elif [[ "$ice_ver" != "$ICE_VER" ]]; then
+			{ fail_msg "Incorrect ice module version. Expect $ICE_VER, got $ice_ver"; failure=1; }
+		fi
+	fi
+	#confirm irdma is loaded
 	irdma=$(lsmod | grep irdma)
 	[ -n "$irdma" ] || { fail_msg "irdma module not loaded"; failure=1; }
+	#check irdma version
+	if [[ "${IRDMA_VER,,}" = "intree" ]]; then
+		[[ "$(modinfo -F intree irdma)" = "Y" ]] || \
+			 { fail_msg "irdma module is not an in-tree module"; failure=1; }
+	elif [ -n "$IRDMA_VER" ]; then
+		irdma_ver=$(modinfo -F version irdma)
+		if [[ -z "$irdma_ver" ]]; then
+			{ fail_msg "irdma module has no version information. Expect $IRDMA_VER"; failure=1; }
+		elif [[ "$irdma_ver" != "$IRDMAE_VER" ]]; then
+			{ fail_msg "Incorrect irdma module version. Expect $IRDMA_VER, got $irdma_ver"; failure=1; }
+		fi
+	fi
 
 	#confirm irdma limits_sel is expected
 	sel=$(cat /sys/module/irdma/parameters/limits_sel)
@@ -907,6 +935,12 @@ check_nic_settings()
 
 	if type ethtool > /dev/null
 	then
+		#check firmware version
+		if [ -n "$NIC_FW_VER" ]; then
+			fw_ver=$(ethtool -i $dev | grep 'firmware-version:' | cut -d " " -f 2)
+			[[ "$fw_ver" = "$NIC_FW_VER" ]] || \
+				{ fail_msg "Incorrect firmware version on $dev. Expect $NIC_FW_VER, got $fw_ver"; failure=1; }
+		fi
 		#confirm firmware DCB mode is enabled
 		[ $(ethtool --show-priv-flags $dev | grep fw-lldp-agent | awk '{print $3}') == "on" ] || \
 			{ fail_msg "fw-lldp-agent is off for $dev..."; failure=1; }

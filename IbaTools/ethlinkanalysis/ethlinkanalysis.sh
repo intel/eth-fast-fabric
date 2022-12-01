@@ -65,7 +65,7 @@ Usage_full()
 	echo "             See ethreport for more information on topology_input files" >&2
 	echo "   -X snapshot_input - perform analysis using data in snapshot_input" >&2
 	echo "             snapshot_input must have been generated via a previous" >&2
-	echo "             ethreport -o snapshot run." >&2
+	echo "             ethreport [-s] -o snapshot run. '-s' is required for 'errors' report." >&2
 	echo "   -x snapshot_suffix - create a snapshot file per selected plane" >&2
 	echo "             The files will be created in FF_RESULT_DIR with names of the form:">&2
 	echo "             snapshotSUFFIX.<plane_name>.xml.">&2
@@ -451,10 +451,10 @@ done
 
 snapshot_plane=
 snapshot_top=
-snapshopt_opts=
+snapshot_opts=
 if [ $errors = y ]
 then
-	#snapshopt_opts="-s"
+	snapshot_opts="-s"
 	report_opts="$report_opts -c '$config_file'"
 fi
 
@@ -572,9 +572,9 @@ do_analysis()
 		ETHREPORT="/usr/sbin/ethreport -E $mgt_file"
 		if [ x"$plane_name" != x ]
 		then
-			$ETHREPORT -p $plane_name $snapshopt_opts -o snapshot > $snapshot_input
+			$ETHREPORT -p $plane_name $snapshot_opts -o snapshot > $snapshot_input
 		else
-			$ETHREPORT $snapshopt_opts -o snapshot > $snapshot_input
+			$ETHREPORT $snapshot_opts -o snapshot > $snapshot_input
 		fi
 		ETHREPORT="$ETHREPORT -q"
 	fi

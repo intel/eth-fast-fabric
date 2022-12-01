@@ -119,6 +119,9 @@ endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES86"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL86.pl
 endif
+ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES9"
+        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL9.pl
+endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES124"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES124.pl
 endif

@@ -425,9 +425,15 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup noop {
 	parallel hindex $hrange {
 		set receiver [lindex [array names HOST_PORTS] $hindex]
 		set senders {}
+		set sender_proc 0
 		for {set i 1} {$i < $group_size} {incr i} {
 			set index [expr ($hindex + $i) % [llength $hrange]]
-			lappend senders [lindex [array names HOST_PORTS] $index]
+			set sender [lindex [array names HOST_PORTS] $index]
+			incr sender_proc [llength $host_port_ip($sender)]
+			lappend senders $sender
+			if { $i >= 2 && $sender_proc >= 8 } {
+				break
+			}
                 }
 		test_case_pfc $receiver $senders 1
 	}
