@@ -55,16 +55,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //};
 
 struct sysclass_counter_s {
-	char filename[MAX_CNTR_FILENAME];
+	char *filename;
 	unsigned long value;
 };
 	
 
 unsigned int g_interval = 1;
 #define MAX_INTERVAL 60	// make sure 100g will fit in 6 digits of MBs
+unsigned int g_duration = UINT_MAX;
 
 #define MAX_NICS 16
-#define MB (1024 * 1024)
+#define MB (1000 * 1000)
 int g_num_nics=0;
 struct nic_info_s {
 	char *name;
@@ -136,14 +137,19 @@ char bf_clear_screen[] = {27, '[', 'H', 27, '[', '2', 'J', 0};
 int init_sysclass_counter(const char *nic, const char *counter,
 						 struct sysclass_counter_s *cntr)
 {
-	snprintf(cntr->filename, MAX_CNTR_FILENAME, "/sys/class/infiniband/%s/ports/1/hw_counters/%s", nic, counter);
-	if (access(cntr->filename, R_OK) == 0) 
+	char filename[MAX_CNTR_FILENAME];
+
+	snprintf(filename, MAX_CNTR_FILENAME, "/sys/class/infiniband/%s/ports/1/hw_counters/%s", nic, counter);
+	cntr->filename = realpath(filename, NULL);
+	if (cntr->filename && access(cntr->filename, R_OK) == 0) 
 		return 0;
 
 	// alternate directory name for some 3rd party drivers
-	snprintf(cntr->filename, MAX_CNTR_FILENAME, "/sys/class/infiniband/%s/ports/1/counters/%s", nic, counter);
-	if (access(cntr->filename, R_OK) != 0) {
-		cntr->filename[0] = '\0';
+	snprintf(filename, MAX_CNTR_FILENAME, "/sys/class/infiniband/%s/ports/1/counters/%s", nic, counter);
+	cntr->filename = realpath(filename, NULL);
+	if (!cntr->filename || access(cntr->filename, R_OK) != 0) {
+		free(cntr->filename);
+		cntr->filename = NULL;
 		return -1;
 	} else
 		return 0;
@@ -211,9 +217,10 @@ void get_nic_names(char **nic_args)
 		}
 
 		if (! nic_args) {
-			free(namelist[i]);
+			if (namelist)	/* klockwork */
+				free(namelist[i]);
 			i++;
-			if (i < n)
+			if (i < n && namelist)	/* klockwork wants namelist tested */
 				nic = namelist[i]->d_name;
 			else
 				nic = NULL;
@@ -239,7 +246,7 @@ unsigned long get_counter(struct sysclass_counter_s *cntr)
 	int r;
 	char *end;
 
-	if (! cntr->filename[0])	// counter unavailable
+	if (! cntr->filename)	// counter unavailable
 		return 0;
 
 	f = fopen(cntr->filename, "r");
@@ -363,21 +370,24 @@ void show_counters(void)
 
 void Usage(int exit_code)
 {
-	fprintf(stderr, "Usage: " CMD " [-i] [nic ... ]\n");
+	fprintf(stderr, "Usage: " CMD " [-i seconds] [-d seconds] [nic ... ]\n");
 	fprintf(stderr, "    -i/--interval seconds     - interval at which bandwidth will be shown\n");
 	fprintf(stderr, "                                Values of 1-60 allowed. Default 1\n");
+	fprintf(stderr, "    -d/--duration seconds     - duration to monitor for.  Default is 'infinite'\n");
 	fprintf(stderr, "Where each nic specified is an RDMA nic name\n");
 	fprintf(stderr, "If no nics are specified, all RDMA nics will be monitored\n");
 	fprintf(stderr, "\nfor example:\n");
 	fprintf(stderr, "   ethbw\n");
 	fprintf(stderr, "   ethbw irdma1 irdma3\n");
+	fprintf(stderr, "   ethbw -i 2 -d 300 irdma1 irdma3\n");
 	exit(exit_code);
 }
 
 // command line options
 struct option options[] = {
 	{ "help", no_argument, NULL, '$' }, // use an invalid option character
-	{ "interval", no_argument, NULL, 'i' },
+	{ "interval", required_argument, NULL, 'i' },
+	{ "duration", required_argument, NULL, 'd' },
 	{ 0 }
 };
 
@@ -387,8 +397,9 @@ int main(int argc, char **argv)
 	int c, index;
 	unsigned long temp;
 	char *endptr;
+	time_t end;
 
-	while (-1 != (c = getopt_long(argc, argv, "i:", options, &index)))
+	while (-1 != (c = getopt_long(argc, argv, "i:d:", options, &index)))
     {
 		switch (c) {
 		case '$':
@@ -402,6 +413,19 @@ int main(int argc, char **argv)
 				Usage(2);
 			}
 			g_interval = (unsigned int)temp;
+			break;
+		case 'd':
+			if (strcmp(optarg, "infinite") == 0) {
+				temp = UINT_MAX;
+			} else {
+				errno = 0;
+				temp = strtoul(optarg, &endptr, 0);
+				if (temp > UINT_MAX || errno || ! endptr || *endptr != '\0') {
+					fprintf(stderr, CMD ": Invalid duration: %s\n", optarg);
+					Usage(2);
+				}
+			}
+			g_duration = (unsigned int)temp;
 			break;
 		default:
 			//fprintf(stderr, CMD ": Invalid option -%c\n", c);
@@ -417,9 +441,10 @@ int main(int argc, char **argv)
 	}
 	heading();
 	init_counters();
-	while (1) {
+	end = time(NULL) + g_duration;
+	do {
 		sleep(g_interval);
 		show_counters();
-	}
+	} while (g_duration == UINT_MAX || time(NULL) < end);
 	return 0;
 }

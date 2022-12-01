@@ -1047,19 +1047,19 @@ sub check_os_prereqs_psm3
 }
 
 # ==========================================================================
-# Eth RDMA installation
+# Eth RoCE installation
 
-sub available_eth_rdma()
+sub available_eth_roce()
 {
 	return 1;
 }
 
-sub installed_eth_rdma()
+sub installed_eth_roce()
 {
 	return 1;
 }
 
-sub installed_version_eth_rdma()
+sub installed_version_eth_roce()
 {
 	if (rpm_is_installed("ethmeta_eth_module", "any")) {
 		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
@@ -1072,12 +1072,12 @@ sub installed_version_eth_rdma()
 	}
 }
 
-sub media_version_eth_rdma()
+sub media_version_eth_roce()
 {
 	return media_version_delta();
 }
 
-sub build_eth_rdma($$$$)
+sub build_eth_roce($$$$)
 {
 	my $osver = shift();
 	my $debug = shift();	# enable extra debug of build itself
@@ -1086,29 +1086,29 @@ sub build_eth_rdma($$$$)
 	return 0;	# success
 }
 
-sub need_reinstall_eth_rdma($$)
+sub need_reinstall_eth_roce($$)
 {
 	my $install_list = shift();	# total that will be installed when done
 	my $installing_list = shift();	# what items are being installed/reinstalled
 
-	return (need_reinstall_delta_comp('eth_rdma', $install_list, $installing_list));
+	return (need_reinstall_delta_comp('eth_roce', $install_list, $installing_list));
 }
 
-sub preinstall_eth_rdma($$)
+sub preinstall_eth_roce($$)
 {
 	my $install_list = shift();	# total that will be installed when done
 	my $installing_list = shift();	# what items are being installed/reinstalled
 
-	return preinstall_delta("eth_rdma", $install_list, $installing_list);
+	return preinstall_delta("eth_roce", $install_list, $installing_list);
 }
 
-sub install_eth_rdma($$)
+sub install_eth_roce($$)
 {
 	my $install_list = shift();	# total that will be installed when done
 	my $installing_list = shift();	# what items are being installed/reinstalled
 
-	print_comp_install_banner('eth_rdma');
-	install_comp_rpms('eth_rdma', " -U --nodeps ", $install_list);
+	print_comp_install_banner('eth_roce');
+	install_comp_rpms('eth_roce', " -U --nodeps ", $install_list);
 
 	# bonding is more involved, require user to edit to enable that
 	config_roce("y");
@@ -1116,29 +1116,47 @@ sub install_eth_rdma($$)
 	Config_ifcfg();
 	#Config_IPoIB_cfg;
 	need_reboot();
-	$ComponentWasInstalled{'eth_rdma'}=1;
+	$ComponentWasInstalled{'eth_roce'}=1;
 }
 
-sub postinstall_eth_rdma($$)
+sub postinstall_eth_roce($$)
 {
 	my $install_list = shift();	# total that will be installed when done
 	my $installing_list = shift();	# what items are being installed/reinstalled
 	return 0;
 }
 
-sub uninstall_eth_rdma($$)
+sub uninstall_eth_roce($$)
 {
 	my $install_list = shift();	# total that will be left installed when done
 	my $uninstalling_list = shift();	# what items are being uninstalled
 
-	print_comp_uninstall_banner('eth_rdma');
-	uninstall_comp_rpms('eth_rdma', ' --nodeps ', $install_list, $uninstalling_list, 'verbose');
+	print_comp_uninstall_banner('eth_roce');
+	uninstall_comp_rpms('eth_roce', ' --nodeps ', $install_list, $uninstalling_list, 'verbose');
 	#TODO: we are setting back to default. Need a better solution to restore rather than reset configs
 	config_roce("n");
 	restore_lmtsel();
 	Reset_ifcfg();
 	need_reboot();
-	$ComponentWasInstalled{'eth_rdma'}=0;
+	$ComponentWasInstalled{'eth_roce'}=0;
+}
+sub IsAutostart2_eth_roce()
+{
+	return status_autostartconfig("LLDPAD");
+}
+
+sub autostart_desc_eth_roce()
+{
+	return autostart_desc_comp('eth_roce');
+}
+sub enable_autostart2_eth_roce()
+{
+	enable_autostartconfig("LLDPAD");
+}
+
+sub disable_autostart2_eth_roce()
+{
+	disable_autostartconfig("LLDPAD");
 }
 
 # ==========================================================================

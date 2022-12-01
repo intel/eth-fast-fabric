@@ -41,19 +41,21 @@
 #
 # export MYVAR=`get_mpi_blas.sh`
 
-scratch=$(mktemp)
+if [[ -z ${BLAS_TYPE} ]]; then
+	scratch=$(mktemp)
+	rpm -qa >${scratch}
 
-rpm -qa >${scratch}
+	if [[ ! -z $MKLROOT && "$I_MPI_CC" == "icc" ]]; then 
+		# we only support MKL when compiling with Intel C.
+		export BLAS_TYPE="MKL"
+	elif grep -q openblas ${scratch}; then
+		export BLAS_TYPE="OPENBLAS"
+	else
+		export BLAS_TYPE="UNKNOWN_MPI_CC"
+	fi
 
-if grep -q mkl ${scratch} && which icc >/dev/null 2>&1; then 
-	# we only support MKL when compiling with Intel C.
-	export BLAS_TYPE="MKL"
-elif grep -q openblas ${scratch}; then
-	export BLAS_TYPE="OPENBLAS"
-else
-	export BLAS_TYPE="UNKNOWN_MPI_CC"
+	rm -f ${scratch}
 fi
 
-rm -f ${scratch}
 
 echo $BLAS_TYPE

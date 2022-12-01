@@ -54,7 +54,7 @@ $FirstIPoIBInterface=0; # first device is ib0
 
 my @EthAllComponents = (
 	"eth_tools", "psm3", "eth_module", "fastfabric",
-	"eth_rdma", "openmpi_gcc_ofi",
+	"eth_roce", "openmpi_gcc_ofi",
 	"openmpi_gcc_cuda_ofi", #"openmpi_gcc", "openmpi_intel_ofi", "mpiRest",
 	"mpisrc", "delta_debug"	);
 
@@ -220,7 +220,7 @@ $WrapperComponent = "iefsconfig";
 					  StartupParams => [ ]
 					},
 # a virtual component with install and uninstall behaviors so we can config and restore RDMA confs
-	"eth_rdma" =>	{ Name => "Eth RDMA",
+	"eth_roce" =>	{ Name => "Eth RoCE",
 					  DefaultInstall => $State_Install,
 					  SrcDir => "",
 					  PreReq => "", CoReq => "",
@@ -230,10 +230,10 @@ $WrapperComponent = "iefsconfig";
 					  FirmwareRpms => [ ],
 					  UserRpms => [ ],
 					  DebugRpms => [ ],
-					  HasStart => 0, HasFirmware => 0, DefaultStart => 0,
+					  HasStart => 1, HasFirmware => 0, DefaultStart => 1,
 					  StartPreReq => " iefsconfig ",
-					  StartComponents => [ ],
-					  StartupScript => "",
+					  StartComponents => [ "eth_roce" ],
+					  StartupScript => "lldpad",
 					  StartupParams => [ ]
 					},
 	"psm3" =>	{ Name => "PSM3",
@@ -473,7 +473,7 @@ my %eth_module_sles_comp_info = (
 				"ibacm" => 0,
 				"eth_tools" => 0,
 				"fastfabric" => 0,
-				"eth_rdma" => 0,
+				"eth_roce" => 0,
 				"openmpi_gcc" => 0,
 				"openmpi_gcc_ofi" => 0,
 				"openmpi_gcc_cuda_ofi" => 0,
@@ -1108,22 +1108,17 @@ sub process_args
 			} elsif ( "$arg" eq "--force" ) {
 				$Force_Install=1;
 			} elsif ( "$arg" eq "-G") {
-				if (defined $ENV{'NVIDIA_GPU_DIRECT'}) {
+				if (defined $ENV{'NVIDIA_GPU_DIRECT'} && -e "$ENV{'NVIDIA_GPU_DIRECT'}/Module.symvers" ) {
 					$GPU_Dir = $ENV{'NVIDIA_GPU_DIRECT'};
 					$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
 					$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
 					$GPU_Install=1;
-				} elsif (defined $ENV{'INTEL_GPU_DIRECT'}) {
+				} elsif (defined $ENV{'INTEL_GPU_DIRECT'} && -e "$ENV{'INTEL_GPU_DIRECT'}/Module.symvers" ) {
 					$GPU_Dir = $ENV{'INTEL_GPU_DIRECT'};
 					$GPU_Install=2;
 				} else {
-					printf STDERR "GPU Direct requested, but niether NVIDIA_GPU_DIRECT or INTEL_GPU_DIRECT set\n";
-					Usage;
-				}
-				if ( -e "$GPU_Dir/Module.symvers" ) {
-					# Found correct file
-				} else {
-					printf STDERR "GPU Direct requested, but $GPU_Dir/Module.symvers is missing\n";
+					printf STDERR "GPU Direct requested, but neither NVIDIA_GPU_DIRECT or INTEL_GPU_DIRECT set\n";
+					printf STDERR "or <path>/Module.symvers is missing\n";
 					Usage;
 				}
 			} elsif ( "$arg" eq "-C" ) {
@@ -1281,7 +1276,7 @@ sub show_menu
 	} else {
 		printf ("   1) Show Installed Software\n");
 	}
-	printf ("   2) Reconfigure $ComponentInfo{'eth_rdma'}{'Name'}\n");
+	printf ("   2) Reconfigure $ComponentInfo{'eth_roce'}{'Name'}\n");
 	printf ("   3) Reconfigure Driver Autostart \n");
 	printf ("   4) Generate Supporting Information for Problem Report\n");
 	printf ("   5) FastFabric (Host/Admin)\n");
@@ -1378,7 +1373,7 @@ do{
 		}
 		elsif ($INSTALL_CHOICE == 2)
 		{
-			my $selected_comp = 'eth_rdma';
+			my $selected_comp = 'eth_roce';
 			if ( $Default_SameAutostart ) {
 				NormalPrint "Leaving configuration on $ComponentInfo{$selected_comp}{'Name'} at its previous value.\n";
 			} else {

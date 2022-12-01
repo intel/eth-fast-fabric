@@ -40,87 +40,87 @@ use strict;
 	# delta_debug must be last
 my @delta_Components_sles12_sp4 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_sles12_sp5 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel78 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel79 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel8 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel81 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel82 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel83 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel84 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel85 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel86 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_rhel9 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_sles15 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_sles15_sp1 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_sles15_sp2 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_sles15_sp3 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 my @delta_Components_sles15_sp4 = (
 	"psm3",
-	"eth_rdma",
+	"eth_roce",
 	"delta_debug",
 	);
 

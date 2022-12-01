@@ -4315,7 +4315,7 @@ int main(int argc, char ** argv)
 	}
 
 	// process command line arguments
-	while (-1 != (c = getopt_long(argc,argv, "vVAqo:d:sNLc:F:xX:T:E:p:f:Q", options, &index)))
+	while (-1 != (c = getopt_long(argc,argv, "vVAqo:d:sPHNLc:F:xX:T:E:p:f:Q", options, &index)))
 	{
                 switch (c)
 		{

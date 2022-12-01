@@ -44,7 +44,7 @@ export FF_PRODUCT=${FF_PRODUCT:-IntelEth-Basic.`cat /usr/lib/eth-tools/osid_wrap
 export FF_PRODUCT_VERSION=${FF_PRODUCT_VERSION:-`cat /etc/eth-tools/version_wrapper 2>/dev/null`}
 
 # IntelEth packages to install during ethhostadmin load [-P option]
-export FF_PACKAGES=${FF_PACKAGES:-eth eth_rdma}
+export FF_PACKAGES=${FF_PACKAGES:-eth eth_roce}
 
 # Additional INSTALL options during ethhostadmin load
 #export FF_INSTALL_OPTIONS=${FF_INSTALL_OPTIONS:- --answer LIMITS_SEL=4}

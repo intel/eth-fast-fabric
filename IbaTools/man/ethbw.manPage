@@ -1,0 +1,54 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH ethbw X "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.SH NAME
+ethbw
+
+
+.PP
+ethbw gathers RDMA data movement statistics via counters in /sys/class/infiniband. The delta in counter values over the interval (default of 1 second), results in the average bandwidth for the given interval. Both transmit (xmt) and receive (rcv) bandwidth is monitored. ethbw also monitors Intel NICs for any RDMA retransmit or input packet discards, in which case, the xmt or rcv respectively, is shown as red.
+.PP
+
+.PP
+The following cases may present the need to improve PFC tuning:
+
+.IP 1) 4n
+Retransmits can represent packet loss or corruption in the network and may indicate opportunities to improve PFC tuning or high bit error rates (BER) on some cables or devices.
+
+.IP 2) 4n
+Input packet discards indicate packets the NIC itself dropped upon receipt. This can represent opportunities to improve PFC tuning but can also be normal for some environments. Retransmits at the remote NICs which are communicating with this NIC are a stronger indicator of PFC or BER causes for packet loss.
+
+.SH Syntax
+ethbw [-i seconds] [-d seconds] [nic ... ]
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+
+.TP 10
+-i/--interval seconds
+
+Interval at which bandwidth will be shown. Values of 1-60 allowed. Defaults to 1.
+
+.TP 10
+-d/--duration seconds
+
+Duration to monitor for. Default is \[aq]infinite\[aq].
+
+.TP 10
+nic
+
+Where each nic specified is an RDMA NIC name. If no NICs are specified, all RDMA NICs will be monitored.
+
+.SH Examples
+ethbw
+ethbw irdma1 irdma3
+ethbw -i 2 -d 300 irdma1 irdma3

@@ -519,7 +519,8 @@ then
 	done
 fi
 
-available_planes="$($ETHXMLEXTRACT -H -e Plane.Name -e Plane.TopologyFile -X "$mgt_file")"
+cfgdir="$($ETHXMLEXTRACT -H -e ConfigDir -X "$mgt_file" | sed 's/\//\\\//g')"
+available_planes="$($ETHXMLEXTRACT -H -e Plane.Name -e Plane.TopologyFile -X "$mgt_file" | sed "s/;\([^\/]\)/;$cfgdir\/\1/")"
 if [ -z "$available_planes" ]
 then
 	# shouldn't happen

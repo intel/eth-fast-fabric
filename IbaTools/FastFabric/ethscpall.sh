@@ -47,23 +47,63 @@ temp="$(mktemp --tmpdir "$BASENAME.XXXXXX")"
 trap "rm -f $temp; exit 1" SIGHUP SIGTERM SIGINT
 trap "rm -f $temp" EXIT
 
+# Copy behaviors:
+# if copying 1 source directory
+# if dest doesn't exist
+#	-r creates dir and copies into it, source dir not a dir under
+#	-R makes trash/ and copies to it, source directory becomes directory under
+#	-t creates dir and copies into it, source dir not a dir under
+# if dest does exist (and empty or no prior copy of files)
+#	-r copies to it, source directory becomes directory under
+#	-R copies to it, source directory becomes directory under
+#	-t copies into it, source dir not a dir under
+# if dest does exist (and may have prior copy of files)
+#	-r copies to it, source directory becomes directory under
+#	-R copies only what has changed since prior copy
+#	-t copies into it, source dir not a dir under
+
+# if copying > 1 source directory or file
+# if dest doesn't exist
+#	-r fails
+#	-R makes trash/ and copies to it, source directory becomes directory under
+#	-t not allowed
+# if dest does exist (and empty or no prior copy of files)
+#	-r copies to it, source directory becomes directory under
+#	-R copies to it, source directory becomes directory under
+#	-t not allowed
+# if dest does exist (and may have prior copy of files)
+#	-r copies to it, source directory becomes directory under
+#	-R copies only what has changed since prior copy
+#	-t not allowed
+# differences above for -r are an unfortunate consequence of scp
+
 Usage_full()
 {
-	echo "Usage: $BASENAME [-p] [-r] [-f hostfile] [-h 'hosts'] [-u user]" >&2
-	echo "                    source_file ... dest_file" >&2
-	echo "       $BASENAME -t [-p] [-f hostfile] [-h 'hosts'] [-u user] " >&2
-	echo "                    [source_dir [dest_dir]]" >&2
+	echo "Usage: $BASENAME [-pq] [-r|-R] [-f hostfile] [-h 'hosts'] [-u user]" >&2
+	echo "                    [-B interface] source_file ... dest_file" >&2
+	echo "       $BASENAME -t [-pq] [-Z tarcomp] [-f hostfile] [-h 'hosts'] [-u user]" >&2
+	echo "                    [-B interface] [source_dir [dest_dir]]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -r - recursive copy of directories" >&2
+	echo "   -q - don't list files being transferred" >&2
+	echo "   -r - recursive copy of directories using scp" >&2
+	echo "   -R - recursive copy of directories using rsync (only copy changed files)" >&2
 	echo "   -t - optimized recursive copy of directories using tar" >&2
 	echo "        if dest_dir omitted, defaults to current directory name" >&2
 	echo "        if source_dir and dest_dir omitted, both default to current directory" >&2
 	echo "   -h hosts - list of hosts to copy to" >&2
 	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
 	echo "   -u user - user to perform copy to, default is current user code" >&2
+	echo "   -B interface - local network interface to use for scp or rsync" >&2
+	echo "        Note the destination hosts specified must be accessible via the given" >&2
+	echo "        interface's IP subnet.  This may imply the use of alternate" >&2
+	echo "        hostnames or IP addresses for the destination hosts" >&2 
+	echo "   -Z tarcomp - a simple tar compression option to use.  Such as --xz or --lzip" >&2
+	echo "        When host list is large better compression may be preferred." >&2
+	echo "        When host list is small faster compression may be preferred." >&2
+ 	echo "        -Z '' will not use compression. Default is -z" >&2
 	echo "   source_file - list of source files to copy" >&2
 	echo "   source_dir - source directory to copy, if omitted . is used" >&2
 	echo "   dest_file - destination for copy." >&2
@@ -78,21 +118,33 @@ Usage_full()
 	echo "   $BASENAME -t -p /usr/src/eth/mpi_apps /usr/src/eth/mpi_apps" >&2
 	echo "   $BASENAME a b c /root/tools/" >&2
 	echo "   $BASENAME -h 'arwen elrond' a b c /root/tools" >&2
+	echo "   $BASENAME -h 'arwen elrond' -B eth2 a b c /root/tools" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME a b c /root/tools" >&2
 	echo "user@ syntax cannot be used in filenames specified" >&2
 	echo "To copy from hosts in the cluster to this host, use ethuploadall" >&2
+	echo "Beware: For the -r option, when copying a single source directory, if the" >&2
+	echo "destination directory does not exist it will be created and the source files" >&2
+	echo "placed directly in it." >&2
+	echo "In other situations, the -r option will copy the source directory as a" >&2
+	echo "directory under the destination directory." >&2
+	echo "The -R option will always copy the source directory as a directory under the" >&2
+	echo "destination directory." >&2
+	echo "The -t option will always place the files found in source_dir directly in the" >&2
+	echo "destination directory." >&2
 	exit 0
 }
 
 Usage()
 {
-	echo "Usage: $BASENAME [-p] [-r] [-f hostfile] source_file ... dest_file" >&2
-	echo "       $BASENAME -t [-p] [-f hostfile] [source_dir [dest_dir]]" >&2
+	echo "Usage: $BASENAME [-pq] [-r|-R] [-f hostfile] source_file ... dest_file" >&2
+	echo "       $BASENAME -t [-pq] [-f hostfile] [source_dir [dest_dir]]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -r - recursive copy of directories" >&2
+	echo "   -q - don't list files being transferred" >&2
+	echo "   -r - recursive copy of directories using scp" >&2
+	echo "   -R - recursive copy of directories using rsync (only copy changed files)" >&2
 	echo "   -t - optimized recursive copy of directories using tar" >&2
 	echo "        if dest_dir omitted, defaults to current directory name" >&2
 	echo "        if source_dir and dest_dir omitted, both default to current directory" >&2
@@ -108,6 +160,15 @@ Usage()
 	echo "   $BASENAME a b c /root/tools/" >&2
 	echo "user@ syntax cannot be used in filenames specified" >&2
 	echo "To copy from hosts in the cluster to this host, use ethuploadall" >&2
+	echo "Beware: For the -r option, when copying a single source directory, if the" >&2
+	echo "destination directory does not exist it will be created and the source files" >&2
+	echo "placed directly in it." >&2
+	echo "In other situations, the -r option will copy the source directory as a" >&2
+	echo "directory under the destination directory." >&2
+	echo "The -R option will always copy the source directory as a directory under the" >&2
+	echo "destination directory." >&2
+	echo "The -t option will always place the files found in source_dir directly in the" >&2
+	echo "destination directory." >&2
 	exit 2
 }
 
@@ -116,15 +177,22 @@ then
 	Usage_full
 fi
 
+# gzip compression by default
+tarcomp='-z'
 user=`id -u -n`
-opts=
+scpopts=
+sshopts=
+rsyncopts=
 topt=n
 popt=n
+ropt=
+Bopt=
 status=0
-
 pids=''
+rsyncverbose='-P'
+tarverbose='-v'
 
-while getopts f:h:u:prt param
+while getopts f:h:u:B:pqrRtZ: param
 do
 	case $param in
 	h)
@@ -133,13 +201,47 @@ do
 		HOSTS_FILE="$OPTARG";;
 	u)
 		user="$OPTARG";;
+	B)
+		if [ -n "$Bopt" ]
+		then
+		    echo "$BASENAME: -B can only be specified once" >&2
+		    Usage
+		fi
+		scpopts="$scpopts -o BindInterface=$OPTARG"
+		sshopts="$sshopts -o BindInterface=$OPTARG"
+		Bopt="$OPTARG";;
 	p)
-		opts="$opts -q"
+		scpopts="$scpopts -q"
+		rsyncopts="$rsyncopts -q"
 		popt=y;;
+	q)
+		scpverbose='-q'
+		rsyncverbose='-q'
+		tarverbose=;;
 	r)
-		opts="$opts -r";;
+		if [ -n "$ropt" -o "$topt" = "y" ]
+		then
+			echo "$BASENAME: only one of -r, -R or -t permitted" >&2
+			Usage
+		fi
+		scpopts="$scpopts -r"
+		ropt=r;;
+	R)
+		if [ -n "$ropt" -o "$topt" = "y" ]
+		then
+			echo "$BASENAME: only one of -r, -R or -t permitted" >&2
+			Usage;
+		fi
+		ropt=R;;
 	t)
+		if [ -n "$ropt" ]
+		then
+			echo "$BASENAME: only one of -r, -R or -t permitted" >&2
+			Usage;
+		fi
 		topt=y;;
+	Z)
+		tarcomp="$OPTARG";;
 	?)
 		Usage;;
 	esac
@@ -150,6 +252,10 @@ then
 	Usage
 fi
 if [ "$topt" = "y" -a $# -gt 2 ]
+then
+	Usage
+fi
+if [ "$topt" = "n" -a "x$tarcomp" != "x-z" ]
 then
 	Usage
 fi
@@ -180,14 +286,38 @@ then
 			   wait
 			   running=0
 		   fi
-		   echo "scp $opts $files $user@[$hostname]:$dest"
-		   scp $opts $files $user@\[$hostname\]:$dest & 
+		   if [ "$ropt" = "R" ]
+		   then
+			if [ -n "$Bopt" ]
+			then
+			    echo "rsync -a -e 'ssh -B $Bopt' $rsyncopts $files $user@[$hostname]:$dest"
+			    rsync -a -e "ssh -B $Bopt" $rsyncopts $files $user@\[$hostname\]:$dest & 
+			else
+			    echo "rsync -a $rsyncopts $files $user@[$hostname]:$dest"
+			    rsync -a $rsyncopts $files $user@\[$hostname\]:$dest & 
+			fi
+		   else
+			echo "scp $scpopts $files $user@[$hostname]:$dest"
+			scp $scpopts $files $user@\[$hostname\]:$dest & 
+		   fi
 		   pid=$!
            pids="$pids $pid"
 		   running=$(( $running + 1))
 	    else
-		echo "scp $opts $files $user@[$hostname]:$dest"
-		scp $opts $files $user@\[$hostname\]:$dest
+		   if [ "$ropt" = "R" ]
+		   then
+			if [ -n "$Bopt" ]
+			then
+			    echo "rsync -a $rsyncverbose -e 'ssh -B $Bopt' $rsyncopts $files $user@[$hostname]:$dest"
+			    rsync -a $rsyncverbose -e "ssh -B $Bopt" $rsyncopts $files $user@\[$hostname\]:$dest
+			else
+			    echo "rsync -a $rsyncverbose $rsyncopts $files $user@[$hostname]:$dest"
+			    rsync -a $rsyncverbose $rsyncopts $files $user@\[$hostname\]:$dest
+			fi
+		   else
+			echo "scp $scpverbose $scpopts $files $user@[$hostname]:$dest"
+			scp $scpverbose $scpopts $files $user@\[$hostname\]:$dest
+		   fi
 		if [ "$?" -ne 0 ]
 		  then
 		    status=1
@@ -223,8 +353,8 @@ else
 		echo "$BASENAME: $srcdir: No such directory" >&2
 		Usage
 	fi
-	cd $srcdir
-	tar cvfz $temp .
+	echo "cd $srcdir; tar c $tarcomp $tarverbose -f $temp ."
+	cd $srcdir; tar c $tarcomp $tarverbose -f $temp .
 
 	running=0
 	for hostname in $HOSTS
@@ -237,23 +367,15 @@ else
 				running=0
 			fi
 			(
-                echo "scp $opts $temp $user@[$hostname]:$temp"
-                scp $opts $temp $user@\[$hostname\]:$temp
-                echo "$user@$hostname: mkdir -p $destdir; cd $destdir; tar xfz $temp; rm -f $temp"
-                ssh $user@$hostname "mkdir -p $destdir; cd $destdir; tar xfz $temp; rm -f $temp"
+                echo "$user@$hostname: mkdir -p $destdir; cd $destdir; tar x $tarcomp"
+                ssh $sshopts $user@$hostname "mkdir -p $destdir; cd $destdir; tar x $tarcomp" < $temp
 			) &
 			pid=$!
 		   	pids="$pids $pid"
 			running=$(( $running + 1))
 		else
-			echo "scp $opts $temp $user@[$hostname]:$temp"
-			scp $opts $temp $user@\[$hostname\]:$temp
-			if [ "$?" -ne 0 ]
-		  	  then
-		    	     status=1
-	        	fi		   
-			echo "$user@$hostname: mkdir -p $destdir; cd $destdir; tar xfz $temp; rm -f $temp"
-			ssh $user@$hostname "mkdir -p $destdir; cd $destdir; tar xfz $temp; rm -f $temp"
+			echo "$user@$hostname: mkdir -p $destdir; cd $destdir; tar x $tarcomp"
+			ssh $sshopts $user@$hostname "mkdir -p $destdir; cd $destdir; tar x $tarcomp" < $temp
 			if [ "$?" -ne 0 ]
 		  	  then
 		    	     status=1

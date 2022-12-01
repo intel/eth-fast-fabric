@@ -153,13 +153,7 @@ do
 		j=$((j + 1))
 	fi
 
-	k=0
-	while [ $k -lt $numprocs ]
-	do
-		k=$((k + 1))
-		echo ${host[$i]} >> $MPI_GROUP_HOSTS
-	done
-		
+	echo ${host[$i]} >> $MPI_GROUP_HOSTS
 	i=$((i + 1))
 done
 

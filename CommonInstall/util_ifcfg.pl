@@ -45,6 +45,10 @@ use strict;
 
 my $FirstIPoIBInterface=0; # first device is ib0
 my $MAX_HFI_PORTS=20;	# maximum valid ports
+my $PFC_NAME="PFC_MODE";
+my $PFC_DESC="PFC mode (0-Off, 1-Software DCB Willing, 2-Software DCB Unwilling, 3-Firmware DCB Willing)";
+my $PFC_DEFAULT=1;
+AddAnswerHelp("$PFC_NAME", "$PFC_DESC");
 
 # Validate the passed in IP address (or netmask).
 # Verify there are enough dots '.' and same number of
@@ -702,6 +706,10 @@ sub Config_ifcfg()
 		NormalPrint("Couldn't find file $ETH_SYSTEMCFG_FILE\n");
 		return;
 	}
+	my $pfc_default = $PFC_DEFAULT;
+	if ( exists $AnswerMemory{"$PFC_NAME"}) {
+		$pfc_default = $AnswerMemory{"$PFC_NAME"};
+	}
 
 	# get ICE device network interfaces
 	my @devs = `for dev in \$(ls /sys/class/net); do \
@@ -714,18 +722,28 @@ sub Config_ifcfg()
 		{
 			# my $mtu = GetNumericValue("MTU value", 9000, 68, 655356);
 			# Config_MTU($dev, $mtu);
-			NormalPrint "Flow Control config, recommend willing mode Priority Flow Control...\n";
+			NormalPrint "Flow Control config, recommend willing mode Priority Flow Control (PFC)...\n";
 			if (GetYesNo("Turn off Link Level Flow Control?", "y") == 1)
 			{
 				system "$ETH_SYSTEMCFG_FILE --disable LFC $dev";
 			} else {
 				system "$ETH_SYSTEMCFG_FILE --enable LFC $dev";
 			}
-			if (GetYesNo("Turn on firmware DCB?", "y") == 1)
+			my $sel = GetNumericValue("$PFC_DESC?", $pfc_default, 0, 3);
+			if ( $sel == 0 )
+			{
+				system "$ETH_SYSTEMCFG_FILE --disable FW_DCB $dev";
+				system "$ETH_SYSTEMCFG_FILE --disable WW_DCB_Willing $dev";
+				system "$ETH_SYSTEMCFG_FILE --disable WW_DCB_Unwilling $dev";
+			} elsif ( $sel == 1 )
+			{
+				system "$ETH_SYSTEMCFG_FILE --enable SW_DCB_Willing $dev";
+			} elsif ( $sel == 2 )
+			{
+				system "$ETH_SYSTEMCFG_FILE --enable SW_DCB_Unwilling $dev";
+			} elsif ( $sel == 3 )
 			{
 				system "$ETH_SYSTEMCFG_FILE --enable FW_DCB $dev";
-			} else {
-				system "$ETH_SYSTEMCFG_FILE --disable FW_DCB $dev";
 			}
 			need_reboot();
 		}
@@ -738,6 +756,11 @@ sub Reset_ifcfg()
 	{
 		NormalPrint("Couldn't find file $ETH_SYSTEMCFG_FILE.\n");
 		return;
+	}
+
+	my $pfc_default = $PFC_DEFAULT;
+	if ( exists $AnswerMemory{"$PFC_NAME"}) {
+		$pfc_default = $AnswerMemory{"$PFC_NAME"};
 	}
 
 	# get ICE device network interfaces
@@ -760,11 +783,21 @@ sub Reset_ifcfg()
 		} else {
 			system "$ETH_SYSTEMCFG_FILE --enable LFC $dev";
 		}
-		if (GetYesNo("Turn on firmware DCB?", "y") == 1)
+		my $sel = GetNumericValue("$PFC_DESC?", $pfc_default, 0, 3);
+		if ( $sel == 0 )
+		{
+			system "$ETH_SYSTEMCFG_FILE --disable FW_DCB $dev";
+			system "$ETH_SYSTEMCFG_FILE --disable WW_DCB_Willing $dev";
+			system "$ETH_SYSTEMCFG_FILE --disable WW_DCB_Unwilling $dev";
+		} elsif ( $sel == 1 )
+		{
+			system "$ETH_SYSTEMCFG_FILE --enable SW_DCB_Willing $dev";
+		} elsif ( $sel == 2 )
+		{
+			system "$ETH_SYSTEMCFG_FILE --enable SW_DCB_Unwilling $dev";
+		} elsif ( $sel == 3 )
 		{
 			system "$ETH_SYSTEMCFG_FILE --enable FW_DCB $dev";
-		} else {
-			system "$ETH_SYSTEMCFG_FILE --disable FW_DCB $dev";
 		}
 		need_reboot();
 	}

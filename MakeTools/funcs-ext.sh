@@ -737,6 +737,9 @@ function os_vendor()
             fedora)
                 rval=redhat
                 ;;
+            ubuntu)
+                rval=ubuntu
+                ;;
             *)
                 rval=""
                 ;;
@@ -799,8 +802,8 @@ function os_vendor_version()
 		# - use VERSION_ID - it has a common format among distros 
 		# - mimic old way and drop $minor if eq 0 (see redhat handling below)
 		# - drop '.'(dot)
-		if [ $1 = "ubuntu" ]; then
-			rval=ES$(echo $VERSION_ID | sed -e 's/\.//')
+		if [ "$1" = "ubuntu" ]; then
+			rval=UB$(echo $VERSION_ID | sed -e 's/\.//')
 		else
 			rval=ES$(echo $VERSION_ID | sed -e 's/\.[0]//' -e 's/\.//')
         	fi
@@ -899,8 +902,10 @@ function os_vendor_version()
 function set_os_identifier()
 {
 	local arch ver
-    arch=`echo $BUILD_TARGET | tr '[:upper:]' '[:lower:]'`
+	arch=`echo $BUILD_TARGET | tr '[:upper:]' '[:lower:]'`
 	case "$BUILD_TARGET_OS_VENDOR" in
+	ubuntu)
+		ver=UBUNTU$(echo $BUILD_TARGET_OS_VENDOR_VERSION|sed -e 's/UB//' -e 's/\..*//');;
 	redhat)
 		ver=RH$(echo $BUILD_TARGET_OS_VENDOR_VERSION|sed -e 's/ES/EL/' -e 's/\..*//');;
 	SuSE)

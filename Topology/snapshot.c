@@ -479,14 +479,14 @@ static int Snapshot_PortDataComplete(IXmlParserState_t * state, void * object, v
 		// port 0 (the "virtual management port")
 		// should not have PortGUID if PortNum != 0
 		if (portp->PortGUID && portp->PortNum != 0) {
-			IXmlParserPrintError(state, "Invalid fields in Port: PortGUID not allowed for Switch port!=0");
+			IXmlParserPrintError(state, "Invalid fields in Port: MgmtIfAddr not allowed for Switch port!=0");
 			return FERROR;
 		}
 	} else {
 		portp->PortInfo.LocalPortNum = portp->PortNum ;
 		// should have PortGUID
 		if (portp->PortGUID == 0 || portp->PortNum == 0) {
-			IXmlParserPrintError(state, "Invalid/missing fields in Port, PortGUID required for non-Switch");
+			IXmlParserPrintError(state, "Invalid/missing fields in Port, MgmtIfAddr required for non-Switch");
 			return FERROR;
 		}
 	}
@@ -498,7 +498,7 @@ static int Snapshot_PortDataComplete(IXmlParserState_t * state, void * object, v
 	}
 	if (FSUCCESS != AllLidsAdd(fabricp, portp, FALSE))
 	{
-		IXmlParserPrintError(state, "Duplicate LIDs found in portRecords: LID 0x%x Port %u Node: %.*s\n",
+		IXmlParserPrintError(state, "Duplicate IfIDs found in portRecords: IfID 0x%x Port %u Node: %.*s\n",
 					portp->EndPortLID,
 					portp->PortNum, STL_NODE_DESCRIPTION_ARRAY_SIZE,
 					(char*)nodep->NodeDesc.NodeString);
@@ -661,13 +661,13 @@ static void NodeDataXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *fie
 	mi = cl_qmap_insert(&fabricp->AllNodes, nodep->NodeInfo.NodeGUID, &nodep->AllNodesEntry);
 	if (mi != &nodep->AllNodesEntry)
 	{
-		IXmlParserPrintError(state, "Duplicate NodeGuid: 0x%"PRIx64"\n", nodep->NodeInfo.NodeGUID);
+		IXmlParserPrintError(state, "Duplicate IfAddr: 0x%"PRIx64"\n", nodep->NodeInfo.NodeGUID);
 		goto failinsert;
 	}
 
 	//printf("processed NodeRecord GUID: 0x%"PRIx64"\n", nodep->NodeInfo.NodeGUID);
 	if (FSUCCESS != AddSystemNode(fabricp, nodep)) {
-		IXmlParserPrintError(state, "Unable to track systems for NodeGuid: 0x%"PRIx64"\n", nodep->NodeInfo.NodeGUID);
+		IXmlParserPrintError(state, "Unable to track systems for IfAddr: 0x%"PRIx64"\n", nodep->NodeInfo.NodeGUID);
 		goto failsystem;
 	}
 	return;

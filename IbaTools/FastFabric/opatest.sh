@@ -497,7 +497,7 @@ then
 fi
 if [ "x$CFG_INSTALL_OPTIONS" = "x" ]
 then
-	CFG_INSTALL_OPTIONS='-i eth -i eth_rdma'
+	CFG_INSTALL_OPTIONS='-i eth -i eth_roce'
 fi
 
 export CFG_HOSTS="$HOSTS"

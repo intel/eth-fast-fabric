@@ -1,7 +1,7 @@
 #!/bin/sh
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,8 +37,8 @@
 #   MPICH_PREFIX  - path to MPICH tools
 #   MPI_HOSTS  - mpi_hosts file to use (default is $PWD/mpi_hosts)
 #   MPI_TASKSET - arguments to /bin/taskset to control CPU selection
-#                 default is to not use /bin/taskset
-#                 may be set in environment or param file
+#                    default is to not use /bin/taskset
+#                    may be set in environment or param file
 #   SHOW_MPI_HOSTS - set to "y" if MPI_HOSTS contents should be output prior
 #                    to starting job.  Set to "n" to disable
 #                    defaults to "y"
@@ -46,9 +46,11 @@
 #                    Only lines applicable to job will be shown.
 #                    Note the file might include some comment lines
 #   NUM_PROCESSES - number of processes in job, if "" no count is specified
-#                if "all" use wc -l $MPI_HOSTS as the process count
+#                    if "all" use wc -l $MPI_HOSTS as the process count
 #   MIN_PROCESSES - minimum number of processes in job (default of 2)
 #   MULT_PROCESSES - NUM_PROCESSES must be a multiple of this (default of 1)
+#   PROCS_PER_NODE - How many processes should be launched on a host before
+#                    going to the next host. (default of 1)
 #   PARAM_FILE - Native IB param file to use, if "" no param file is specified
 #   APP - application name for use a prefix to LOGFILE name
 #   LOGFILE - logfile to append results of run to, if "" this script will define
@@ -104,6 +106,8 @@ fi
 
 MIN_PROCESSES=${MIN_PROCESSES:-2}
 MULT_PROCESSES=${MULT_PROCESSES:-1}
+PROCS_PER_NODE=${PROCS_PER_NODE:-1}
+
 if [ z"$NUM_PROCESSES" = zall ]
 then
 	# skip comment and blank lines
@@ -176,7 +180,7 @@ then
 	then
 		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_MULTIRAIL $CFG_MPI_MULTIRAIL"
 	fi
-	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun  ${NUM_PROCESSES:+-np $NUM_PROCESSES} -hostfile $MPI_HOSTS $MPI_CMD_ARGS "
+	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun  ${NUM_PROCESSES:+-np $NUM_PROCESSES} -hostfile $MPI_HOSTS $MPI_CMD_ARGS -ppn $PROCS_PER_NODE"
 elif [ -e "$MPICH_PREFIX/bin/ompi_info" ] #OpenMPI
 then
 	echo "OpenMPI Detected, running with mpirun." | tee -i -a $LOGFILE
@@ -199,7 +203,7 @@ then
 	then
 		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_MULTIRAIL $CFG_MPI_MULTIRAIL"
 	fi
-	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun ${NUM_PROCESSES:+-np $NUM_PROCESSES} -map-by node --allow-run-as-root -machinefile $MPI_HOSTS $MPI_CMD_ARGS "
+	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun ${NUM_PROCESSES:+-np $NUM_PROCESSES} -map-by ppr:${PROCS_PER_NODE}:node --allow-run-as-root -machinefile $MPI_HOSTS $MPI_CMD_ARGS "
 else
 	echo "MPI Not Recognized!i exiting" | tee -i -a $LOGFILE
 	exit 1

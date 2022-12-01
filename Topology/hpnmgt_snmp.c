@@ -2520,10 +2520,10 @@ QUICK_LIST* process_dev_data(SNMPHost *host, SNMPResult *res,
 		cl_qmap_t *portIdMap = &rawNode->portIdMap;
 		cl_qmap_init(portIdMap, NULL);
 		nodeRec = rawNode->node;
-		TRACEPRINT("FabricDataAddNode Node=%s LID=0x%04x GUID=0x%016"PRIx64"\n",
+		TRACEPRINT("FabricDataAddNode Node=%s IfID=0x%04x IfAddr=0x%016"PRIx64"\n",
 				nodeRec->NodeDesc.NodeString, nodeRec->RID.LID,
 				nodeRec->NodeInfo.NodeGUID);
-		if (nodeRec->RID.LID == 0) {
+		if (!(pFabric->flags & FF_DOWNPORTINFO) && nodeRec->RID.LID == 0) {
 			// invalid node. Happens on the host interface that has no IP addr
 			continue;
 		}
@@ -2648,7 +2648,7 @@ HMGT_STATUS_T process_fab_data(QUICK_LIST **allNodes, int numHosts,
 				// skip invalid nodes
 				continue;
 			}
-			TRACEPRINT("Create Node Map - Add node with GUID 0x%016"PRIx64"\n",
+			TRACEPRINT("Create Node Map - Add node with IfAddr 0x%016"PRIx64"\n",
 					nodeData->NodeInfo.NodeGUID);
 			cl_map_obj_t *mapObj = create_map_obj(rawNode);
 			if (mapObj) {
