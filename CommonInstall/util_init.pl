@@ -324,8 +324,10 @@ sub determine_os_version()
 		$CUR_DISTRO_VENDOR = "redhat";
 	} elsif ( -s "/etc/almalinux-release" ) {
 		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/circle-releas" ) {
+	} elsif ( -s "/etc/circle-release" ) {
 		$CUR_DISTRO_VENDOR = "redhat";
+	} elsif ( -s "/etc/opencloudos-stream-release" ) {
+		$CUR_DISTRO_VENDOR = "opencloudos";
 	} elsif ( -s "/etc/UnitedLinux-release" ) {
 		$CUR_DISTRO_VENDOR = "UnitedLinux";
 		$NETWORK_CONF_DIR = "/etc/sysconfig/network";
@@ -346,6 +348,7 @@ sub determine_os_version()
 			"rocky" => "redhat",
 			"almalinux" => "redhat",
 			"circle" => "redhat",
+			"opencloudos" => "opencloudos",
 			"sles" => "SuSE",
 			"sle_hpc" => "SuSE",
 			"ubuntu" => "ubuntu"
@@ -356,6 +359,7 @@ sub determine_os_version()
 			"rocky" => $NETWORK_CONF_DIR,
 			"almalinux" => $NETWORK_CONF_DIR,
 			"circle" => $NETWORK_CONF_DIR,
+			"opencloudos" => $NETWORK_CONF_DIR,
 			"sles" => "/etc/sysconfig/network",
 			"sle_hpc" => "/etc/sysconfig/network",
 			"ubuntu" => "/etc/sysconfig/network-scripts",
@@ -392,6 +396,8 @@ sub determine_os_version()
 			$CUR_DISTRO_VENDOR = "redhat";
 		} elsif ($CUR_DISTRO_VENDOR eq "circle") {
 			$CUR_DISTRO_VENDOR = "redhat";
+		} elsif ($CUR_DISTRO_VENDOR eq "opencloudos") {
+			$CUR_DISTRO_VENDOR = "opencloudos";
 		}
 	}
 	if ( $CUR_DISTRO_VENDOR eq "SuSE" )

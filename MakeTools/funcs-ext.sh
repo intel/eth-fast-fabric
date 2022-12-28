@@ -740,6 +740,9 @@ function os_vendor()
             ubuntu)
                 rval=ubuntu
                 ;;
+            opencloudos)
+                rval=opencloudos
+                ;;
             *)
                 rval=""
                 ;;
@@ -777,6 +780,9 @@ function os_vendor()
 		elif [ $rval = 'circle' ]
 		then
 			rval=redhat
+		elif [ $rval = 'opencloudos' ]
+		then
+			rval=opencloudos
 		elif [ $rval != 'os' ]
 		then
 			break
@@ -824,6 +830,9 @@ function os_vendor_version()
 		;;
 	mandrake)
 		rval=`cat /etc/mandrake-release | cut -d' ' -f4`
+		;;
+	opencloudos)
+		rval=`cat /etc/opencloudos-stream-release | cut -d' ' -f4`
 		;;
 	fedora)
 		if grep -qi core /etc/fedora-release
