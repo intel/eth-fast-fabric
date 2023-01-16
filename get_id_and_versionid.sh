@@ -41,6 +41,10 @@ else
 			elif [ $rval = 'opencloudos' ]
 			then
 				rval=opencloudos
+			elif [ $rval = 'oracle' ]
+			then
+				rval=ol
+				break
 			elif [ $rval != 'os' ]
 			then
 				break
@@ -57,6 +61,9 @@ else
 		;;
 	opencloudos)
 		id=ocs
+		;;
+	ol)
+		id=ol
 		;;
 	*)
 		id=""
@@ -109,6 +116,9 @@ else
 		;;
 	ocs)
 		rval=`cat /etc/opencloudos-stream-release | cut -d' ' -f4`
+		;;
+	ol)
+		rval=`cat /etc/oracle-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]])*+$/\1.\2/'`
 		;;
 	*)
 		rval=""
