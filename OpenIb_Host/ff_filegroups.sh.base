@@ -8,7 +8,7 @@ basic_mans="ethbw.1 ethcapture.1 ethshmcleanup.1"
 
 basic_configs="mgt_config.xml"
 
-basic_samples="mgt_config.xml-sample"
+basic_samples="dsa_setup dsa.service mgt_config.xml-sample"
 
 ff_tools_opt=""
 

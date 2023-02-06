@@ -85,12 +85,13 @@ do
 	# So, if output is empty, no one uses shm file and it
 	# could be removed
 	# If error is detected during fuser command execution,
-	# no any actions are performed.
+	# no actions are performed.
 	#
 	# Note, that return code of "fuser" cannot be used here,
 	# because fuser returns a non-zero return code if no one uses file
-	# or in case of a fatal error. So we can relay only on 0 code,
-	# but this case means that file is used.
+	# or upon a fatal error.  So we use empty stdout and stderr to indicate
+	# file is not in use (which implies a successful return since no error
+	# messages).
 
 	rc=`fuser $file 2>&1`;
 

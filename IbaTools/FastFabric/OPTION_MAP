@@ -9,6 +9,7 @@ List of command line options used in various Fast Fabric tools
                     of common options
 --list              Lists all available utilities                  ethautostartconfig
 --list              Lists all available utilities                  ethsystemconfig
+--list              Lists DSA configuration                        dsa_setup
 --status            Shows status of setting                        ethautostartconfig
 --status            Shows status of setting                        ethsystemconfig
 --timeout           Specifies the timeout (wait time for response) ethreport
@@ -229,6 +230,8 @@ List of command line options used in various Fast Fabric tools
                     commands
 -T timelimit        Specifies the time limit in seconds for host   ethfindgood
                     to respond to SSH
+-T timelimit        Specifies the time limit to wait for devices   dsa_setup
+                    in seconds
 -T timelimit        Specifies the time limit in seconds for host   ethverifyhosts
                     to complete tests
 -T timeout          timeout for test                               ethudtress
@@ -256,6 +259,7 @@ List of command line options used in various Fast Fabric tools
 -u user             Specifies the user on remote system to allow   ethsetupssh
                     this user to SSH to
 -u user             Specifies the user to perform copy to          ethuploadall
+-u user             Specifies the user:group to own queues         dsa_setup
 -v                  verbose logging                                iefsconfig
 -V                  Outputs version                                iefsconfig
 -v                  Returns verbose output                         ethreport
@@ -263,6 +267,7 @@ List of command line options used in various Fast Fabric tools
 -v                  Produces verbose output                        ethxmlgenerate
 -v level            Specifies the verbose level                    ethxlattopology
 -vv                 very verbose debug logging                     iefsconfig
+-w workload         Workload style to configure DSA for            dsa_setup
 -x                  Produces output in XML                         ethreport
 -X input_file       Parses XML from input_file                     ethxmlextract
 -X input_file       Generates XML from CSV in input_file           ethxmlgenerate

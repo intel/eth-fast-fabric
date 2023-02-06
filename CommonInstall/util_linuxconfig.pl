@@ -265,7 +265,7 @@ sub rebuild_ramdisk()
 
 sub do_rebuild_ramdisk()
 {
-	if ($CallDracut && -d '/boot') {
+	if ($CallDracut && -d '/boot' && $CUR_DISTRO_VENDOR ne "ubuntu") {
 		my $cmd = $DRACUT_EXE_FILE . ' --stdlog 0';
 		if ( -d '/dev') {
 			$cmd = $DRACUT_EXE_FILE;
@@ -297,6 +297,8 @@ sub do_rebuild_ramdisk()
 			NormalPrint("$cmd not found, cannot update initial ram disk.");
 			$exit_code = 1;
 		}
+	} elsif ($CallDracut && -d '/boot' && $CUR_DISTRO_VENDOR eq "ubuntu") {
+		LogPrint("Skip Ramdisk Rebuild on Ubuntu")
 	}
 }
 
