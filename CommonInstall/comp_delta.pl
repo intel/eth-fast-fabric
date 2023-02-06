@@ -793,8 +793,8 @@ sub installed_delta_eth_module()
 # only called if installed_eth_module is true
 sub installed_version_eth_module()
 {
-	if (rpm_is_installed("ethmeta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+	if (rpm_is_installed("meta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("meta_eth_module");
 		return dot_version("$version");
 	}
 	if ( -e "$BASE_DIR/version_delta" ) {
@@ -1022,8 +1022,8 @@ sub installed_eth_roce()
 
 sub installed_version_eth_roce()
 {
-	if (rpm_is_installed("ethmeta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+	if (rpm_is_installed("meta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("meta_eth_module");
 		return dot_version("$version");
 	}
 	if ( -e "$BASE_DIR/version_delta" ) {
@@ -1151,8 +1151,8 @@ sub installed_delta_debug()
 # only called if installed_delta_debug is true
 sub installed_version_delta_debug()
 {
-	if (rpm_is_installed("ethmeta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+	if (rpm_is_installed("meta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("meta_eth_module");
 		return dot_version("$version");
 	}
 	if ( -e "$BASE_DIR/version_delta" ) {

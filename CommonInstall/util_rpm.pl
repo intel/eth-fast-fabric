@@ -1085,9 +1085,9 @@ sub move_packages($$$)
 {
 	my ($source_dir, $target_dir, $GPU_Install) = @_;
 	my $err = 0;
-	if ( $GPU_Install eq "NVGPU" ) {
+	if ( $GPU_Install eq "NV_GPU" ) {
 		$err = delta_move_rpms("$source_dir/RPMS", "$target_dir/CUDA");
-	} elsif ( $GPU_Install eq "IGPU" ) {
+	} elsif ( $GPU_Install eq "INTEL_GPU" ) {
 		$err = delta_move_rpms("$source_dir/RPMS", "$target_dir/ONEAPI-ZE");
 	} else {
 		$err = delta_move_rpms("$source_dir/RPMS", "$target_dir");

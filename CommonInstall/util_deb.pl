@@ -834,9 +834,9 @@ sub move_packages($$$)
 	my ($source_dir, $target_dir, $GPU_Install) = @_;
 	my $err = 0;
 	my $real_target = $target_dir;
-	if ( $GPU_Install eq "NVGPU" ) {
+	if ( $GPU_Install eq "NV_GPU" ) {
 		$real_target = "$target_dir/CUDA";
-	} elsif ( $GPU_Install eq "IGPU" ) {
+	} elsif ( $GPU_Install eq "INTEL_GPU" ) {
 		$real_target = "$target_dir/ONEAPI-ZE";
 	}
 	system("mkdir -p $real_target");

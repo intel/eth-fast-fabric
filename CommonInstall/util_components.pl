@@ -1092,7 +1092,7 @@ sub uninstall_comp_rpms($$$$$)
 	}
 
 	# try to uninstall meta pkg if it exists
-	my $metapkg = "ethmeta_$comp";
+	my $metapkg = "meta_$comp";
 	rpm_uninstall_matches($metapkg, $metapkg, '', "");
 
 	rpm_uninstall_list2("any", "$option", $verbosity,
@@ -1394,7 +1394,7 @@ sub show_install_menu($)
 			$inp='P';
 		} else {
 			system "clear";
-			printf ("$BRAND Ethernet Install ($VERSION $DBG_FREE) Menu\n\n");
+			printf ("$BRAND Install ($VERSION $DBG_FREE) Menu\n\n");
 			my $screens = int((scalar(@Components) - $num_hidden_comps + $maxlines-1)/$maxlines);
 
 			if ($GPU_Install eq "NV_GPU") {
@@ -1634,7 +1634,10 @@ sub show_install_menu($)
 			}
 
 			# remove any alias pkgs if it exists. Meta pkgs will be handled in comp uninstall.
+			# for upgrade/downgrade, consider both ethnode_ and node_
 			rpm_uninstall_matches("ethnode_", "ethnode_", "", "");
+			rpm_uninstall_matches("node_eth_", "^node_eth_", "", "");
+			rpm_uninstall_matches("node_basic", "^node_basic", "", "");
 
 			# first uninstall what will be removed, do this in reverse order
 			# so dependency issues are avoided
@@ -1816,7 +1819,7 @@ sub show_installed($)
 	my $i;
 
 	system "clear";
-	printf ("$BRAND Ethernet Installed Software ($VERSION)\n\n");
+	printf ("$BRAND Installed Software ($VERSION)\n\n");
 	my $index=0;
 	for ($i=0; $i < scalar(@Components); $i++)
 	{
@@ -1884,7 +1887,7 @@ sub show_uninstall_menu($)
 			$inp="P";
 		} else {
 			system "clear";
-			printf ("$BRAND Ethernet Uninstall Menu ($VERSION)\n\n");
+			printf ("$BRAND Uninstall Menu ($VERSION)\n\n");
 			my $screens = int((scalar(@Components)-$num_hidden_comps + $maxlines-1)/$maxlines);
 			if ($screens > 1 ) {
 				printf ("Please Select Uninstall Action (screen %d of $screens):\n",
@@ -2066,7 +2069,10 @@ sub show_uninstall_menu($)
 			}
 
 			# remove any alias pkgs if it exists. Meta pkgs will be handled in comp uninstall.
+			# for upgrade/downgrade, consider both ethnode_ and node_
 			rpm_uninstall_matches("ethnode_", "ethnode_", "", "");
+			rpm_uninstall_matches("node_eth_", "^node_eth_", "", "");
+			rpm_uninstall_matches("node_basic", "^node_basic", "", "");
 
 			# perform the uninstall, work backwards through list
 			foreach $comp ( reverse(@Components) )
@@ -2268,7 +2274,7 @@ sub show_autostart_menu($)
 			$inp='P';
 		} else {
 			system "clear";        
-			printf ("$BRAND Ethernet Autostart ($VERSION $DBG_FREE) Menu\n\n");
+			printf ("$BRAND Autostart ($VERSION $DBG_FREE) Menu\n\n");
 			my $screens = int((scalar(@PromptAutostart) + $maxlines-1)/$maxlines);
 			if ($screens > 1 ) {
 				printf ("Please Select Autostart Option (screen %d of $screens):\n",
