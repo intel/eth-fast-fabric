@@ -38,139 +38,16 @@ use strict;
 	# Names of supported install components
 	# must be listed in dependency order such that prereqs appear 1st
 	# delta_debug must be last
-my @delta_Components_sles12_sp4 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_sles12_sp5 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel78 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel79 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel8 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel81 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel82 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel83 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel84 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel85 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel86 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_rhel9 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_sles15 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_sles15_sp1 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_sles15_sp2 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_sles15_sp3 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
-my @delta_Components_sles15_sp4 = (
-	"psm3",
-	"eth_roce",
-	"delta_debug",
-	);
+my @delta_Components_default = ( "psm3", "eth_roce", "delta_debug" );
 
 @Components = ( );
 # RHEL7.3 and newer AND SLES12.2 and newer
 my @delta_SubComponents_newer = ( "snmp" );
 @SubComponents = ( );
-
 # override some of settings in main_omnipathwrap_delta.pl
 sub overrides()
 {
-	# The component list has slight variations per distro
-	if ( "$CUR_VENDOR_VER" eq "ES124" ) {
-		@Components = ( @delta_Components_sles12_sp4 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES125" ) {
-		@Components = ( @delta_Components_sles12_sp5 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES78" ) {
-		@Components = ( @delta_Components_rhel78 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES79" ) {
-		@Components = ( @delta_Components_rhel79 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
-		@Components = ( @delta_Components_rhel8 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
-		@Components = ( @delta_Components_rhel81 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
-		@Components = ( @delta_Components_rhel82 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
-		@Components = ( @delta_Components_rhel83 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
-		@Components = ( @delta_Components_rhel84 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
-		@Components = ( @delta_Components_rhel85 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
-		@Components = ( @delta_Components_rhel86 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
-		@Components = ( @delta_Components_rhel9 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
-		@Components = ( @delta_Components_sles15 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {
-		@Components = ( @delta_Components_sles15_sp1 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES152" ) {
-		@Components = ( @delta_Components_sles15_sp2 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
-		@Components = ( @delta_Components_sles15_sp3 );
-	} elsif ( "$CUR_VENDOR_VER" eq "ES154" ) {
-		@Components = ( @delta_Components_sles15_sp4 );
-	} else {
-		# unsupported OS
-		@Components = ( );
-	}
+	@Components = ( @delta_Components_default );
 
 	# Sub components for autostart processing
 	@SubComponents = ( @delta_SubComponents_newer );
