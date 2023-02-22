@@ -100,6 +100,17 @@ BuildRequires: net-snmp-devel\n"
 	#Setup Epoch tags for RHEL rpms
 	sed -i "s/__RPM_EPOCH/Epoch: 1/g" eth-tools.spec
 
+elif [ "$id" = "opencloudos" ]
+then
+	sed -i "s/__RPM_REQ_BASIC1/expect, tcl, libibverbs-utils, librdmacm-utils, net-snmp, net-snmp-utils/g" eth-tools.spec
+	sed -i "/__RPM_REQ_BASIC2/d" eth-tools.spec
+
+	sed -i "s/__RPM_BLDREQ1/make, expat-devel, gcc-c++, tcl-devel, rdma-core-devel, net-snmp-devel/g" eth-tools.spec
+	sed -i "/__RPM_BLDREQ2/d" eth-tools.spec
+	sed -i "/__RPM_DEBUG_PKG/,+1d" eth-tools.spec
+
+	#opencloudos does not have epoch.
+	sed -i "s/__RPM_EPOCH//g" eth-tools.spec
 else
 	echo ERROR: Unsupported distribution: $id $versionid
 	exit 1
