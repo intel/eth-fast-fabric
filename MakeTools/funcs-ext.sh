@@ -734,6 +734,9 @@ function os_vendor()
             circle)
                 rval=redhat
                 ;;
+            ol)
+                rval=redhat
+                ;;
             fedora)
                 rval=redhat
                 ;;
@@ -783,6 +786,9 @@ function os_vendor()
 		elif [ $rval = 'opencloudos' ]
 		then
 			rval=opencloudos
+		elif [ $rval = 'oracle' ]
+		then
+			rval=redhat
 		elif [ $rval != 'os' ]
 		then
 			break
@@ -872,6 +878,10 @@ function os_vendor_version()
 		then
 			# Circle Linux
 			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
+		elif grep -qi oracle /etc/oracle-release
+		then
+			# Oracle Linux
+			rval="ES"`cat /etc/oracle-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).*$/\1\2/'`
 		elif grep -qi scientific /etc/redhat-release
 		then
 			# Scientific Linux.

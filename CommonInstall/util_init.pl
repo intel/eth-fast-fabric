@@ -213,7 +213,7 @@ sub os_vendor_version($)
 			chop($rval);
 			$rval="ES".$rval;
 			if ( -e "/etc/redhat-release" ) {
-				if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release") || !system("grep -qi almalinux /etc/redhat-release") || !system("grep -qi circle /etc/redhat-release")) {
+				if (!system("grep -qi centos /etc/redhat-release") || !system("grep -qi rocky /etc/redhat-release") || !system("grep -qi almalinux /etc/redhat-release") || !system("grep -qi circle /etc/redhat-release") || ( -e "/etc/oracle-release" && !system("grep -qi oracle /etc/oracle-release")) {
 					$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
 					$rval =~ m/(\d+).(\d+)/;
 					if ($2 eq "0") {
@@ -265,6 +265,12 @@ sub os_vendor_version($)
 			# Find a number of the form "#.#" and output the portion
 			# to the left of the decimal point.
 			$rval = `cat /etc/redhat-release`;
+			$rval =~ m/(\d+).(\d+)/;
+			$rval="ES".$1.$2;
+		} elsif ( -e "/etc/oracle-release" && !system("grep -qi oracle /etc/oracle-release")) {
+			# Find a number of the form "#.#" and output the portion
+			# to the left of the decimal point.
+			$rval = `cat /etc/oracle-release`;
 			$rval =~ m/(\d+).(\d+)/;
 			$rval="ES".$1.$2;
 		} elsif (!system("grep -qi Scientific /etc/redhat-release")) {
@@ -328,6 +334,8 @@ sub determine_os_version()
 		$CUR_DISTRO_VENDOR = "redhat";
 	} elsif ( -s "/etc/opencloudos-stream-release" ) {
 		$CUR_DISTRO_VENDOR = "opencloudos";
+	} elsif ( -s "/etc/oracle-release" ) {
+		$CUR_DISTRO_VENDOR = "redhat";
 	} elsif ( -s "/etc/UnitedLinux-release" ) {
 		$CUR_DISTRO_VENDOR = "UnitedLinux";
 		$NETWORK_CONF_DIR = "/etc/sysconfig/network";
@@ -349,6 +357,7 @@ sub determine_os_version()
 			"almalinux" => "redhat",
 			"circle" => "redhat",
 			"opencloudos" => "opencloudos",
+			"oracle" => "redhat",
 			"sles" => "SuSE",
 			"sle_hpc" => "SuSE",
 			"ubuntu" => "ubuntu"
@@ -360,6 +369,7 @@ sub determine_os_version()
 			"almalinux" => $NETWORK_CONF_DIR,
 			"circle" => $NETWORK_CONF_DIR,
 			"opencloudos" => $NETWORK_CONF_DIR,
+			"oracle" => $NETWORK_CONF_DIR,
 			"sles" => "/etc/sysconfig/network",
 			"sle_hpc" => "/etc/sysconfig/network",
 			"ubuntu" => "/etc/sysconfig/network-scripts",
@@ -398,6 +408,8 @@ sub determine_os_version()
 			$CUR_DISTRO_VENDOR = "redhat";
 		} elsif ($CUR_DISTRO_VENDOR eq "opencloudos") {
 			$CUR_DISTRO_VENDOR = "opencloudos";
+		} elsif ($CUR_DISTRO_VENDOR eq "oracle") {
+			$CUR_DISTRO_VENDOR = "redhat";
 		}
 	}
 	if ( $CUR_DISTRO_VENDOR eq "SuSE" )
