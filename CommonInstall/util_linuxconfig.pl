@@ -196,12 +196,10 @@ sub config_roce($)
 	if ("$ENV{'ETH_ROCE_ON'}" eq "1") {
 		if ( "$status" ne "RoCE [ENABLED]" ) {
 			system "$ETH_SYSTEMCFG_FILE --enable RoCE";
-			rebuild_ramdisk();
 		}
 	} else {
 		if ( "$status" ne "RoCE [DISABLED]" ) {
 			system "$ETH_SYSTEMCFG_FILE --disable RoCE";
-			rebuild_ramdisk();
 		}
 	}
 }
@@ -229,7 +227,6 @@ sub config_lmtsel($)
 		if ( "$cur_val" ne "" ) {
 			if ( "$cur_val" ne "$sel") {
 				system "sed -i 's/^\\s*options\\s\\+irdma\\s\\+limits_sel\\s*=.*\$/$LMTSEL_STR=$sel/g' $LMTSEL_CONF";
-				rebuild_ramdisk();
 			}
 			return;
 		}
@@ -243,7 +240,6 @@ sub restore_lmtsel()
 		if ( -e $LMTSEL_CONF_BAK) {
 			if (system "diff $LMTSEL_CONF_BAK $LMTSEL_CONF > /dev/null") {
 				system "mv -f $LMTSEL_CONF_BAK $LMTSEL_CONF";
-				rebuild_ramdisk();
 			}
 		} else {
 			#shouldn't happen
@@ -265,7 +261,7 @@ sub rebuild_ramdisk()
 
 sub do_rebuild_ramdisk()
 {
-	if ($CallDracut && -d '/boot') {
+	if ($CallDracut && -d '/boot' && $CUR_DISTRO_VENDOR ne "ubuntu") {
 		my $cmd = $DRACUT_EXE_FILE . ' --stdlog 0';
 		if ( -d '/dev') {
 			$cmd = $DRACUT_EXE_FILE;
@@ -297,6 +293,8 @@ sub do_rebuild_ramdisk()
 			NormalPrint("$cmd not found, cannot update initial ram disk.");
 			$exit_code = 1;
 		}
+	} elsif ($CallDracut && -d '/boot' && $CUR_DISTRO_VENDOR eq "ubuntu") {
+		LogPrint("Skip Ramdisk Rebuild on Ubuntu")
 	}
 }
 

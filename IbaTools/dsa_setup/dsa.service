@@ -1,10 +1,10 @@
-#!/usr/bin/make -f
-#
-# Copyright (c) 2017, Intel Corporation
-#
+# BEGIN_ICS_COPYRIGHT8 ****************************************
+# 
+# Copyright (c) 2022, Intel Corporation
+# 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#
+# 
 #     * Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
 #     * Neither the name of Intel Corporation nor the names of its contributors
 #       may be used to endorse or promote products derived from this software
 #       without specific prior written permission.
-#
+# 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,29 +24,33 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# END_ICS_COPYRIGHT8   ****************************************
+
+#[ICS VERSION STRING: unknown]
 #
+# Sample systemd service file to run dsa_setup at system boot
+# To use this:
+# 1. copy /usr/share/eth-tools/samples/dsa_setup to /usr/local/bin/dsa_setup
+# 2. edit /usr/local/bin/dsa_setup as needed to define the desired workload
+# 3. copy this file to /etc/systemd/system/dsa.service
+# 4. edit /etc/systemd/system/dsa.service to use the proper -w and -u options
+#    for the dsa_setup command below.  Make other edits as needed.
+# 5. run: systemctl --now enable dsa.service
+#    or run systemctl enable dsa.service and reboot
+#
+[Unit]
+Description=Create DSA workqueues via dsa_setup
+# unfortunately, there is not an existing service which represents
+# idxd driver device enumeration, these selections will put dsa.service
+# late in the boot and then as needed the dsa_setup -T option will wait
+After=network.target loadmodules.service local-fs.target
+#After=multi-user.target
 
-ifndef RELEASE_TAG
-	export RELEASE_TAG := $(shell dpkg-parsechangelog -Sversion)
-endif
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/dsa_setup -T 10 -w ai -u :mygroup
+TimeoutSec=0
 
-DESTDIR := debian/tmp
-
-%:
-	dh $@ --with systemd --parallel
-
-override_dh_auto_clean:
-	rm -rf $(DESTDIR)
-
-override_dh_auto_build:
-	# WA for PR139393
-	unset LDFLAGS; \
-	cd OpenIb_Host; \
-	./ff_build.sh $(CURDIR) $(BUILD_ARGS)
-
-override_dh_auto_install:
-	BUILDDIR=$(CURDIR) \
-	DESTDIR=$(CURDIR)/$(DESTDIR) \
-	LIBDIR=/usr/lib \
-	OpenIb_Host/ff_install.sh
-
+[Install]
+WantedBy=multi-user.target

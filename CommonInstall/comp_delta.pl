@@ -858,8 +858,6 @@ sub postinstall_eth_module($$)
 	my $install_list = shift();     # total that will be installed when done
 	my $installing_list = shift();  # what items are being installed/reinstalled
 	delta_restore_autostart('eth_module');
-
-	rebuild_ramdisk();
 }
 
 sub uninstall_eth_module($$)
@@ -872,7 +870,6 @@ sub uninstall_eth_module($$)
 	uninstall_comp_rpms('eth_module', ' --nodeps ', $install_list, $uninstalling_list, 'verbose');
 	need_reboot();
 	$ComponentWasInstalled{'eth_module'}=0;
-	rebuild_ramdisk();
 }
 
 sub check_os_prereqs_eth_module

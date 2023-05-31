@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2022, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,31 +28,19 @@
 #
 # END_ICS_COPYRIGHT8   ****************************************
 
-. $ICSBIN/funcs.sh
+#[ICS VERSION STRING: unknown]
+debversion=$1
+debrelease=$2
+workingdir=$3
 
-# Simple script to perform builds for current system/OS type
-export PRODUCT=${PRODUCT:-OPENIB_FF}
-export BUILD_TARGET=${BUILD_TARGET:-`uname -m`}
+rm -rf ${workingdir}/debian
+cp -r ${workingdir}/debian.template ${workingdir}/debian
 
-export BUILD_CONFIG=${BUILD_CONFIG:-"debug"}
-export PRODUCT_DIRNAME=${PRODUCT_DIRNAME:-`basename ${PWD}`}
+find ${workingdir}/debian/ -type f -exec sed -i \
+	-e "s/@DEBNAME@/eth-mpi-apps/g" \
+	-e "s/@DEBRELEASE@/$debrelease/g" \
+	-e "s/@DEBVERSION@/$debversion/g" \
+{} \;
 
-set -x
-{
-	echo "Environment:"
-	env
-	echo "----------------------------------------------------------------------------"
-	echo
-	./runmake -B $BUILD_CONFIG $* || exit 1
-} 2>&1|tee build.res
 
-# Check Exit Status
-exit_status=${PIPESTATUS[0]}
-if [ $exit_status -ne 0 ] ; then
-	echo "FAILED BUILD: A command exited with non-zero status: $exit_status" >> build.res
-fi
-
-set +x
-
-# Check the results of the build for errors and unexpected warnings.
-./check_results -r build.res build.err build.warn
+exit 0

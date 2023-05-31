@@ -811,6 +811,9 @@ sub create_build_command_line($$$$)
 	my ($SRC_PKG, $BUILD_OUTPUT_DIR, $BUILD_ROOT, $K_VER) = @_;
 
 	my $kernel_version = rpm_tr_os_version($K_VER);
+	# get revision from source package revision
+	my $rev = $SRC_PKG;
+	$rev =~ s/.*-([0-9]+)\.dsc$/$1/;
 
 	my $cmd = "( ";
 	$cmd .= "set -e; ";
@@ -818,7 +821,7 @@ sub create_build_command_line($$$$)
 	$cmd .=	"dpkg-source -x $SRC_PKG; ";
 	$cmd .=	"cd *; ";
 	$cmd .= "export DEBEMAIL='root <root\@localhost>'; ";
-	$cmd .= "dch -b --newversion=$kernel_version \"Build for current kernel\"; ";
+	$cmd .= "dch -b --newversion=$kernel_version-$rev \"Build for current kernel\"; ";
 	$cmd .= "export KERNEL_MOD_SIGNING_ENABLED=0; ";
 	$cmd .= "export kver=$K_VER; ";
 	$cmd .=	"dpkg-buildpackage -uc -us; ";

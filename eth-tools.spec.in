@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.5.0.0
-Release: 73%{?dist}
+Release: 86%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -65,6 +65,10 @@ __RPM_FF_FILES
 
 
 %changelog
+* Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-86
+- Added tool dsa_setup to aid creation of DSA devices
+- Added Ubuntu support on building fastfabric package
+
 * Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-73
 - Improved to support RHEL 9.1
 - Fixed RV rebuild issue under SLES 15.4 to support Intel GPU

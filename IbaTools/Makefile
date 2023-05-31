@@ -36,6 +36,7 @@ DSP_SOURCES = Makefile
 
 DIRS			= \
 				$(shell ls -d disable_ports 2>/dev/null) \
+				$(shell ls -d dsa_setup 2>/dev/null) \
 				$(shell ls -d FastFabric 2>/dev/null) \
 				$(shell ls -d fabric_info 2>/dev/null) \
 				$(shell ls -d setup_self_ssh 2>/dev/null) \

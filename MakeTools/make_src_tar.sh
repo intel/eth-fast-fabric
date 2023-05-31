@@ -38,11 +38,12 @@ USE_UNIFDEF="$3"
 ARCHIVE="$4"
 FILES_TO_TAR="$5"
 FILE_TO_EXCLUDE="$6"
+CUSTOM_TAR_ARGS="$7"
 
-comp_arg=
+comp_arg="UNKNOWN_COMPONENT"
 if echo $ARCHIVE | grep eth-tools.tgz > /dev/null
 then
-	comp_arg=FF
+	comp_arg="FF"
 fi
 
 if [[ "${RELEASE_TYPE}" == "EMBARGOED" ]]
@@ -88,7 +89,7 @@ do
 	fi
 done < ${TL_DIR}/Fd/BaseFiles
 
-tar cvzf ${ARCHIVE} -C ${SrcTmp} --exclude-vcs --ignore-case $FILE_TO_EXCLUDE ${FILES_TO_TAR}
+tar czf ${ARCHIVE} -C ${SrcTmp} --exclude-vcs --ignore-case $FILE_TO_EXCLUDE ${FILES_TO_TAR} ${CUSTOM_TAR_ARGS}
 
 # Remove temp dir
 if [[ "${RELEASE_TYPE}" == "EMBARGOED" ]] ; then
