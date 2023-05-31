@@ -602,7 +602,7 @@ GetAVFromPath2( IN uint64 PortGuid,	/* only needed for UD AVs */
 		*PathMTU = pPathRecord->Mtu;
 }
 
-/* This function is depricated, will be dropped in 3.1 release,
+/* This function is deprecated, will be dropped in 3.1 release,
  * use GetAVFromPath2 above
  */
 static __inline void

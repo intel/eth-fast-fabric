@@ -177,7 +177,7 @@ typedef enum _IB_LINK_WIDTH {
  */
 typedef enum _IB_LINK_SPEED {
 	IB_LINK_SPEED_NOP		=	0,		/* no change, valid only for enabled */
-	IB_LINK_SPEED_DEFAULT	=	1,		/* 2.5Gbps (SDR) */	/* depricated */
+	IB_LINK_SPEED_DEFAULT	=	1,		/* 2.5Gbps (SDR) */	/* deprecated */
 	IB_LINK_SPEED_2_5G		=	1,		/* 2.5Gbps (SDR) */	/* use this one */
 	IB_LINK_SPEED_5G		=	2,		/* 5.0Gbps (DDR) */
 	IB_LINK_SPEED_10G		=	4,		/* 10.0Gbps (QDR) */

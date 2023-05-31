@@ -256,7 +256,12 @@ then
 	then
 		running_file="${running_file}_${plane}"
 	fi
-	mycomm12 <(to_canon < ${candidate_file_hostonly}) <(ethcmdall -h '' -f ${candidate_file_hostonly} -P -p -T ${timelimit} 'echo 123' |grep ': 123'|sed 's/:.*//'|ff_filter_dups|to_canon) | ethsorthosts > ${running_hostonly}
+	if [ -s ${candidate_file_hostonly} ]
+	then
+		mycomm12 <(to_canon < ${candidate_file_hostonly}) <(ethcmdall -h '' -f ${candidate_file_hostonly} -P -p -T ${timelimit} 'echo 123' |grep ': 123'|sed 's/:.*//'|ff_filter_dups|to_canon) | ethsorthosts > ${running_hostonly}
+	else
+		> ${running_hostonly}
+	fi
 	append_punchlist ${candidate_file_hostonly} ${running_hostonly} "Can't ssh"
 	to_nodes_ports ${running_hostonly} ${running_file}
 	good_meaning="${good_meaning}, running"

@@ -337,12 +337,12 @@ typedef enum _IB_STATIC_RATE {
 	IB_STATIC_RATE_DONTCARE = 0,	/* allowed for SA query */
 									/* for ADDRESS_VECTOR means local port rate */
 	IB_STATIC_RATE_1GB = 1,		/* obsolete, now reserved */
-	IB_STATIC_RATE_1X = 2,		/* depricated, use IB_STATIC_RATE_2_5G */
+	IB_STATIC_RATE_1X = 2,		/* deprecated, use IB_STATIC_RATE_2_5G */
 	IB_STATIC_RATE_2_5G = 2,	/* 2.5 Gb/sec (1X SDR) */
 	IB_STATIC_RATE_MIN = 2,		/* lowest standard rate */
-	IB_STATIC_RATE_4X = 3,		/* depricated, use IB_STATIC_RATE_10G */
+	IB_STATIC_RATE_4X = 3,		/* deprecated, use IB_STATIC_RATE_10G */
 	IB_STATIC_RATE_10G = 3,		/* 10.0 Gb/sec (4X SDR, 1X QDR) */
-	IB_STATIC_RATE_12X = 4,		/* depricated, use IB_STATIC_RATE_30G */
+	IB_STATIC_RATE_12X = 4,		/* deprecated, use IB_STATIC_RATE_30G */
 	IB_STATIC_RATE_30G = 4,		/* 30.0 Gb/sec (12X SDR) */
 	IB_STATIC_RATE_5G = 5,		/* 5.0 Gb/sec (1X DDR) */
 	IB_STATIC_RATE_20G = 6,		/* 20.0 Gb/sec (4X DDR, 8X SDR) */

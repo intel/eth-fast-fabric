@@ -276,12 +276,12 @@ IBA_API VPI_CLOSECA iba_close_ca;
  * 
  */
 
-/* depricated, use ALLOCATEPD2 */
+/* deprecated, use ALLOCATEPD2 */
 typedef FSTATUS (VPI_ALLOCATEPD)(
 	IN  IB_HANDLE	CaHandle,
 	OUT IB_HANDLE	*PdHandle
 	);
-VPI_ALLOCATEPD AllocatePD;	/* internal use only, depricated */
+VPI_ALLOCATEPD AllocatePD;	/* internal use only, deprecated */
 
 /* Version2 of API, supports control on limit of Address Vectors in PD */
 typedef FSTATUS (VPI_ALLOCATEPD2)(
@@ -948,7 +948,7 @@ IBA_API VPI_SETCQCOMPLETIONHANDLER iba_set_cq_compl_handler;
 /* 
  * Set the completion handler and context for the kernel CQ given a handle
  * previously provided by iba_get_kernel_cq
- * this function is depricated, it is only provided for backward compatibility
+ * this function is deprecated, it is only provided for backward compatibility
  * with uDAPL
  *
  * INPUTS:
@@ -1099,7 +1099,7 @@ typedef FSTATUS (VPI_REGISTERPHYSMEMREGION)(
 	OUT IB_L_KEY			*Lkey,
 	OUT IB_R_KEY			*Rkey
 	);
-VPI_REGISTERPHYSMEMREGION RegisterPhysMemRegion;	/* internal use only, depricated */
+VPI_REGISTERPHYSMEMREGION RegisterPhysMemRegion;	/* internal use only, deprecated */
 
 /* Version2 of API, supports 64 bit IO virtual addresses */
 typedef FSTATUS (VPI_REGISTERPHYSMEMREGION2)(
@@ -1194,7 +1194,7 @@ typedef FSTATUS (VPI_QUERYMEMREGION)(
 	OUT IB_L_KEY			*Lkey,
 	OUT IB_R_KEY			*Rkey
 	);
-VPI_QUERYMEMREGION QueryMemRegion;	/* internal use only, depricated */
+VPI_QUERYMEMREGION QueryMemRegion;	/* internal use only, deprecated */
 
 /* Version2 of API, supports 64 bit IO virtual addresses */
 typedef FSTATUS (VPI_QUERYMEMREGION2)(
@@ -1329,7 +1329,7 @@ typedef FSTATUS (VPI_MODIFYPHYSMEMREGION)(
 	OUT IB_L_KEY			*Lkey,
 	OUT IB_R_KEY			*Rkey
 	);
-VPI_MODIFYPHYSMEMREGION ModifyPhysMemRegion;	/* internal use only, depricated */
+VPI_MODIFYPHYSMEMREGION ModifyPhysMemRegion;	/* internal use only, deprecated */
 
 /* Version2 of API, supports 64 bit IO virtual addresses */
 typedef FSTATUS (VPI_MODIFYPHYSMEMREGION2)(
@@ -1441,7 +1441,7 @@ typedef FSTATUS (VPI_REGISTERSHAREDMEMREGION)(
 	OUT IB_L_KEY			*Lkey,
 	OUT IB_R_KEY			*Rkey
 	);
-VPI_REGISTERSHAREDMEMREGION RegisterSharedMemRegion;	/* internal use only, depricated */
+VPI_REGISTERSHAREDMEMREGION RegisterSharedMemRegion;	/* internal use only, deprecated */
 
 /* Version2 of API, supports 64 bit IO virtual addresses */
 typedef FSTATUS (VPI_REGISTERSHAREDMEMREGION2)(
@@ -1556,7 +1556,7 @@ typedef FSTATUS (VPI_POSTMEMWINDOWBIND)(
 	IN  IB_MW_BIND_OPTIONS	Options,
 	OUT IB_R_KEY			*NewRkey
 	);
-VPI_POSTMEMWINDOWBIND PostMemWindowBind;	/* internal use only, depricated */
+VPI_POSTMEMWINDOWBIND PostMemWindowBind;	/* internal use only, deprecated */
 
 
 /* Version2 of API, supports 64 bit IO virtual addresses */
@@ -1597,7 +1597,7 @@ IBA_API VPI_DESTROYMEMWINDOW iba_destroy_mw;
 
 /*PostSend/iba_post_send
  *post a work request to the 'send' queue of a specific queue pair.
- * this is depricated, use iba_post_send2
+ * this is deprecated, use iba_post_send2
  *
  * INPUTS:
  *		QpHandle		Handle of the queue pair
@@ -1645,7 +1645,7 @@ IBA_API VPI_POSTSEND2 iba_post_send2;
 /*PostRecv/iba_post_recv
  *
  *post a work request to the 'receive' queue of a specific queue pair.
- * this is depricated, use iba_post_recv2
+ * this is deprecated, use iba_post_recv2
  *
  * INPUTS:
  *		QpHandle		Handle of the queue pair

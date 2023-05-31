@@ -164,7 +164,16 @@ then
 		echo "" >> /$dir/fw_details
 	done
 else
-	echo "Warning: Skipped NIC dev info collection because no ethtool found"
+	echo "Warning: Skipped NIC dev info collection because ethtool not found"
+fi
+
+echo "Capturing RDMA Device Information"
+if type ibv_devices > /dev/null 2>&1
+then
+	ibv_devices > /$dir/ibv_devices 2>&1
+	ibv_devinfo -v > /$dir/ibv_devinfo 2>&1
+else
+	echo "Warning: Skipped RDMA dev info collection because ibv_devices not found"
 fi
 
 echo "Obtaining OS configuration ..."
@@ -242,7 +251,7 @@ then
 		echo "" >> /$dir/fw_stats
 	done
 else
-	echo "Warning: Skipped because no ethtool found."
+	echo "Warning: Skipped because ethtool not found."
 fi
 
 echo "Obtaining MPI configuration ..."
@@ -252,7 +261,7 @@ then
 	mpi-selector --system --query > /$dir/mpi-selector-system
 	mpi-selector --user --query > /$dir/mpi-selector-user
 else
-	echo "Warning: Skipped because no mpi-selector found."
+	echo "Warning: Skipped because mpi-selector not found."
 fi
 
 mkdir /$dir/proc
@@ -278,7 +287,7 @@ if type cpupower >/dev/null 2>&1
 then
 	cpupower frequency-info > /$dir/cpupower-freq-info
 else
-	echo "Warning: Skipped because no cpupower found."
+	echo "Warning: Skipped because cpupower not found."
 fi
 
 # Check if ice driver debug data dir) is present; log only if present
@@ -349,6 +358,13 @@ then
 		then
 			rm -f /$dir/$f
 			cp -p -r $f/ /$dir/sys/class/infiniband/ 2>/dev/null
+			if [ -h $f/device ]
+			then
+				iface=`basename $f`
+				rm -f /$dir/$f/device
+				mkdir -p /$dir/sys/class/infiniband/$iface/ 2>/dev/null
+				cp -r $f/device/ /$dir/sys/class/infiniband/$iface/ 2>/dev/null
+			fi
 		fi
 	done
 fi
@@ -388,6 +404,26 @@ if [ -e /sys/module ]
 then
 	echo "Copying configuration and statistics data from /sys/module ..."
 	cp -p -r /sys/module /$dir/sys 2>/dev/null 
+fi
+
+if [ -e /sys/class/pci_bus ]
+then
+	echo "Copying device information from /sys/class/pci_bus ..."
+	mkdir -p /$dir/sys/class
+	for f in /sys/class/pci_bus/*
+	do
+		if [ -h $f ]
+		then
+			rm -f /$dir/$f
+			cp -p -r $f/ /$dir/sys/class/pci_bus/ 2>/dev/null
+		fi
+	done
+fi
+
+if [ -e /sys/devices ]
+then
+	echo "Copying device information from /sys/devices ..."
+	cp -p -r /sys/devices /$dir/sys/ 2>/dev/null 
 fi
 
 if [ $detail -ge 2 ]

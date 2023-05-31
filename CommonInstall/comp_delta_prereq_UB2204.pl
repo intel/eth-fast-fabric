@@ -48,7 +48,6 @@
 		"linux-headers",
 		"debhelper",
 		"linux-image",
-		"dkms",
 	],
 	'psm3_prereq' => [
 		"rdma-core",

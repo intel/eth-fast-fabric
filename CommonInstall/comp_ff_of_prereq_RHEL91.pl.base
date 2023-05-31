@@ -37,24 +37,44 @@
 #
 ## ==========================================================================
 #
-#Installation Prequisites array for delta components
-%comp_prereq_hash = (
-	'iefsconfig_prereq' => [
-		"bash",
-		"iproute2",
-		"lldpad",
-	],
-	'eth_module_prereq' => [
-		"linux-headers",
-		"debhelper",
-		"linux-image",
-	],
-	'psm3_prereq' => [
-		"rdma-core",
-		"libibverbs-dev",
-		"librdmacm-dev",
-		"libfabric-dev",
-		"libfabric1",
-		"libfabric-bin",
-	],
+#Installation Prequisites array for fast fabric
+#and of tools component
+my @eth_tools_prereq = (
+    "bash",
+    "bc",
+    "expat",
+    "expect",
+    "glibc",
+    "libgomp",
+    "libibumad",
+    "libibverbs-utils",
+    "librdmacm-utils",
+    "net-snmp",
+    "net-snmp-utils",
+    "openssl",
+    "openssl-libs",
+    "perl",
+    "rdma-core",
+    "tcl",
 );
+$comp_prereq_hash{'eth_tools_prereq'} = \@eth_tools_prereq;
+
+my @fastfabric_prereq = (
+    "bash",
+    "cronie",
+    "expat",
+    "expect",
+    "glibc",
+    "libgcc",
+    "libibumad",
+    "libibverbs",
+    "librdmacm",
+    "libstdc++",
+    "ncurses-libs",
+    "net-snmp-libs",
+    "openssl-libs",
+    "perl",
+    "tcl",
+    "zlib",
+);
+$comp_prereq_hash{'fastfabric_prereq'} = \@fastfabric_prereq;

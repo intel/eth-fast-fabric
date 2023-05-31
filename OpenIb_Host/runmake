@@ -43,17 +43,17 @@
 ##	runmake -r [-B 'build_config'] [-iCRP] [-n]
 ##
 ## Arguments:
-##	-f options_file - depricated, see -B
+##	-f options_file - deprecated, see -B
 ##	-B build_config	release types to build, (debug/release). default is release
-##	-V os_version	- depricated, N/A
+##	-V os_version	- deprecated, N/A
 ##	-r		rerun the build in place without doing a new checkout/tag
 ##	-i		allow incremental builds by building in-place before package rpm
 ##	-R		skip building rpm, just leave in-place files
 ##	-C		don't clobber prior to the rerun
 ##	-P		skip building and packaging IntelEth-Tests
-##	-O		depricated, N/A
+##	-O		deprecated, N/A
 ##	-n		No build.  Useful for checking build machine
-##	-T PROJ_FILE_DIR - depricated, PROJ_FILE_DIR always set to OpenIb_Host
+##	-T PROJ_FILE_DIR - deprecated, PROJ_FILE_DIR always set to OpenIb_Host
 ##
 ## In addition, the following environment variables are expected to be set:
 ##	RELEASE_TAG, BRANCH_TAG, BUILD_TARGET, PRODUCT, RELEASE_HOME, BUILD_CONFIG 
@@ -153,9 +153,9 @@ buildtests=y
 while getopts f:B:V:riRPCOnT: param
 do
 	case $param in
-	V)	echo "Depricated -V os_versions ignored." >&2 ;;
+	V)	echo "Deprecated -V os_versions ignored." >&2 ;;
 	f)
-		echo "Depricated -f options_file ignored." >&2 ;;
+		echo "Deprecated -f options_file ignored." >&2 ;;
 	r)
 		rerun=y;;
 	B)
@@ -171,9 +171,9 @@ do
 	P)
 		buildtests=n;;
 	O)
-		echo "Depricated -O ignored." >&2 ;;
+		echo "Deprecated -O ignored." >&2 ;;
 	T)
-		echo "Depricated -T PROJ_FILE_DIR ignored." >&2 ;;
+		echo "Deprecated -T PROJ_FILE_DIR ignored." >&2 ;;
 	?)
 		Usage
 	esac

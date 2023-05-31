@@ -46,7 +46,7 @@ extern const char* FCmStatusText[];
 /* prefered way to convert FSTATUS to a string */
 IBA_API const char* iba_fstatus_msg(FSTATUS status);
 
-/* depricated macro to convert FSTATUS_MSG to a string */
+/* deprecated macro to convert FSTATUS_MSG to a string */
 /* FCM_WAIT_OBJECT0 == 64, < 74 allows for 0-9 */
 #define FSTATUS_MSG(errcode) \
 	(((GET_MODULE(errcode) == IB_MOD_CM) && (GET_MODERR(errcode) < 74)) ? \

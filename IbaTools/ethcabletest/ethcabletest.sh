@@ -49,7 +49,7 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-	echo "Usage: $BASENAME [-p plane] [-f hostfile] [-h 'hosts'] [-n numprocs] [start|stop] ..." >&2
+	echo "Usage: $BASENAME [-p plane] [-f hostfile] [-h 'hosts'] [-n numprocs] start|stop" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -58,7 +58,7 @@ Usage_full()
 	echo "   -f hostfile - file with hosts to include in NIC-SW test. It overrides the" >&2
 	echo "                 HostsFile defined in Mgt config file for the plane" >&2
 	echo "   -h hosts - list of hosts to include in NIC-SW test" >&2
-	echo "   -n numprocs - number of processes per host for NIC-SW test" >&2
+	echo "   -n numprocs - number of processes per host for NIC-SW test (default 3)" >&2
 	echo "   start - start the NIC-SW tests" >&2
 	echo "   stop - stop the NIC-SW tests" >&2
 	echo >&2
@@ -71,8 +71,8 @@ Usage_full()
 	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
 	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
 	echo "example:">&2
-	echo "   $BASENAME -p plane1" >&2
-	echo "   $BASENAME -f good" >&2
+	echo "   $BASENAME -p plane1 start" >&2
+	echo "   $BASENAME -f good stop" >&2
 	echo "   $BASENAME -h 'arwen elrond' start" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME stop" >&2
 	rm -f $tempfile
@@ -81,7 +81,7 @@ Usage_full()
 
 Usage()
 {
-	echo "Usage: $BASENAME [-n numprocs] [-p plane] [-f hostfile] [start|stop] ..." >&2
+	echo "Usage: $BASENAME [-n numprocs] [-p plane] [-f hostfile] start|stop" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
@@ -99,8 +99,8 @@ Usage()
 	echo " Environment:" >&2
 	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
 	echo "example:">&2
-	echo "   $BASENAME -p plane1" >&2
-	echo "   $BASENAME -f good" >&2
+	echo "   $BASENAME -p plane1 start" >&2
+	echo "   $BASENAME -f good stop" >&2
 	echo "   $BASENAME stop" >&2
 	rm -f $tempfile
 	exit 2
@@ -172,6 +172,11 @@ stop()
 	# use an echo at end so exit status is good
 	/usr/sbin/ethcmdall -p -T 60 "pkill -9 -f '[m]pi_groupstress'; echo -n"
 }
+
+if [ $# -eq 0 ]
+then
+	Usage
+fi
 
 while [ $# -ne 0 ]
 do

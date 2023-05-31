@@ -126,6 +126,7 @@ my %source_pkgs_by_distro = (
 	'redhat*ES86'   => [ \%redhat_srpm ],
 	'redhat*ES87'   => [ \%redhat_srpm ],
 	'redhat*ES9'    => [ \%redhat_srpm ],
+	'redhat*ES91'   => [ \%redhat_srpm ],
 	'ubuntu*UB2004' => [ \%debian_tarball ],
 	'ubuntu*UB2204' => [ \%debian_tarball ],
 );
@@ -767,6 +768,8 @@ sub installed_delta_eth_module()
 	} elsif ( "$CUR_VENDOR_VER" eq "ES87" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
+		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
+	} elsif ( "$CUR_VENDOR_VER" eq "ES91" ) {
 		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
 	} elsif ( "$CUR_VENDOR_VER" eq "ES124" ) {
 		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);

@@ -27,7 +27,7 @@
 # 
 # END_ICS_COPYRIGHT8   ****************************************
 # Paths to basic tools when BUILD_PLATFORM=DOS
-# settings to build embedded products under DOS - depricated
+# settings to build embedded products under DOS - deprecated
 
 BINTOOLS	= /bin
 TOOLCHAIN_DIR	= $(TORNADO_BIN_DIR)

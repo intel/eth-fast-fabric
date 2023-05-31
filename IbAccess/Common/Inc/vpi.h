@@ -418,9 +418,9 @@ typedef struct _IB_QP_ATTRIBUTES_CREATE {
 	IB_HANDLE		RecvCQHandle;	/* Handle of CQ associated with RecvQ */
 	IB_HANDLE		PDHandle;		/* Handle for Protection Domain */
 	IB_HANDLE		RDDHandle;		/* Reliable Datagram Domain if RD QP */
-				/* SendSignaledCompletions as a boolean is depricated */
+				/* SendSignaledCompletions as a boolean is deprecated */
 	uint8			CompletionFlags;/* set bits in IB_COMPL_CNTL_FLAGS */
-#define SendSignaledCompletions CompletionFlags	/* depricated */
+#define SendSignaledCompletions CompletionFlags	/* deprecated */
 	uint8			Reserved1;
 	uint16			Reserved2;
 	uint32			SendQDepth;		/* Outstanding WRs permitted on SendQ */
@@ -444,11 +444,11 @@ typedef struct _IB_QP_ATTRIBUTES_QUERY {
 	IB_HANDLE			RecvCQHandle;	/* CQ Handle associated with RecvQ */
 	IB_HANDLE			PDHandle;
 	IB_HANDLE			RDDHandle;		/* Reliable Datagram Domain if RD */
-				/* SendSignaledCompletions as a boolean is depricated */
+				/* SendSignaledCompletions as a boolean is deprecated */
 	uint8				CompletionFlags;/* set bits in IB_COMPL_CNTL_FLAGS */
-#define SendSignaledCompletions CompletionFlags	/* depricated */
+#define SendSignaledCompletions CompletionFlags	/* deprecated */
 	uint8				Reserved3;
-	uint16				MaxInlineData;	/* depricated, for VAPI compatibility */
+	uint16				MaxInlineData;	/* deprecated, for VAPI compatibility */
 										/* valid when SendDSListDepth is valid */
 	uint32				Attrs;		/* Flags to indicate the valid */
 									/* attributes below. IB_QP_ATTRS */
@@ -826,7 +826,7 @@ typedef union _IB_SEND_OPTIONS {
 		uint16		Reserved1:			3;	/* Must be zero */
 		uint16		InlineData:			1;	/* post as inline send or RDMA Write */
 											/* L-Keys in DSList[] ignored */
-											/* depricated, for VAPI */
+											/* deprecated, for VAPI */
 											/* compatibility only */
 											/* N/A for SMI/GSI nor Raw QPs */
 											/* N/A for RdmaRead nor Atomics */
@@ -866,7 +866,7 @@ typedef union _IB_MW_BIND_OPTIONS {
  * queues.
  */
 
-/* this is depricated, use IB_WORK_REQ2 family of structures */
+/* this is deprecated, use IB_WORK_REQ2 family of structures */
 typedef struct _IB_WORK_REQ {
 	uint64					WorkReqId;	/* Consumer supplied value returned */
 										/* on a work completion */

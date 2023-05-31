@@ -38,23 +38,65 @@
 ## ==========================================================================
 #
 #Installation Prequisites array for delta components
-%comp_prereq_hash = (
-	'iefsconfig_prereq' => [
-		"bash",
-		"iproute2",
-		"lldpad",
-	],
-	'eth_module_prereq' => [
-		"linux-headers",
-		"debhelper",
-		"linux-image",
-	],
-	'psm3_prereq' => [
-		"rdma-core",
-		"libibverbs-dev",
-		"librdmacm-dev",
-		"libfabric-dev",
-		"libfabric1",
-		"libfabric-bin",
-	],
+my @iefsconfig_prereq = (
+    "bash",
+    "iproute",
+    "lldpad",
 );
+$comp_prereq_hash{'iefsconfig_prereq'} = \@iefsconfig_prereq;
+
+my @eth_module_prereq = (
+    "bash",
+    "kernel-core",
+    "kmod",
+);
+$comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
+
+my @psm3_prereq = (
+    "bash",
+    "glibc",
+    "libfabric",
+    "libgcc",
+    "libibverbs",
+    "numactl-libs",
+    "libuuid",
+    "rdma-core",
+);
+$comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;
+
+my @openmpi_prereq = (
+    "bash",
+    "glibc",
+    "libgcc",
+    "libgfortran",
+    "gcc-gfortran",
+    "libgomp",
+    "libibverbs",
+    "libquadmath",
+    "librdmacm",
+    "libstdc++",
+    "libstdc++-devel",
+    "opensm-libs",
+    "pkgconf",
+    "zlib",
+);
+$comp_prereq_hash{'openmpi_prereq'} = \@openmpi_prereq;
+
+my @openmpi_gcc_ofi_prereq = (
+    "bash",
+    "glibc",
+    "libfabric",
+    "libgcc",
+    "libgfortran",
+    "libnl3",
+    "libquadmath",
+    "perl",
+    "pkgconf-pkg-config",
+    "zlib",
+);
+$comp_prereq_hash{'openmpi_gcc_ofi_prereq'} = \@openmpi_gcc_ofi_prereq;
+
+my @openmpi_intel_ofi_prereq = (
+    "bash",
+);
+$comp_prereq_hash{'openmpi_intel_ofi_prereq'} = \@openmpi_intel_ofi_prereq;

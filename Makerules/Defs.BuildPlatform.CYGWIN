@@ -27,7 +27,7 @@
 # 
 # END_ICS_COPYRIGHT8   ****************************************
 # Paths to basic tools when BUILD_PLATFORM=CYGWIN
-# settings to build embedded products under cygwin - depricated
+# settings to build embedded products under cygwin - deprecated
 
 BINTOOLS	= /bin
 TOOLCHAIN_DIR	= $(TORNADO_BIN_DIR)

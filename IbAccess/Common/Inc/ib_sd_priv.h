@@ -144,7 +144,7 @@ typedef
 	 IN PQUERY				pInputQuery,	/* input request */
   IN PQUERY_RESULT_VALUES pQueryResults	/* results returned from Manager */
 								 );
-typedef SDK_QUERY_CALLBACK *PQUERY_CALLBACK;/* depricated */
+typedef SDK_QUERY_CALLBACK *PQUERY_CALLBACK;/* deprecated */
 
 /* perform a query of a manager (SA, etc)
  * using 1st active port
@@ -189,7 +189,7 @@ typedef
   IN uint32					MadStatus	/* for FSUCCESS or FERROR Status: */
 		  /* manager's Mad Status code from resp */
 											);
-typedef SDK_FABRIC_OPERATION_CALLBACK *PFABRIC_OPERATION_CALLBACK;/* depricated */
+typedef SDK_FABRIC_OPERATION_CALLBACK *PFABRIC_OPERATION_CALLBACK;/* deprecated */
 
 /* perform a fabric operation (eg. set/delete, etc) against a manager
  * using 1st active port

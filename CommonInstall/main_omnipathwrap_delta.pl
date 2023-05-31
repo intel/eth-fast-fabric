@@ -83,6 +83,7 @@ my %Components_by_distro = (
 	'redhat*ES86'   => \@EthAllComponents,
 	'redhat*ES87'   => \@EthAllComponents,
 	'redhat*ES9'    => \@EthAllComponents,
+	'redhat*ES91'   => \@EthAllComponents,
 	'ubuntu*UB2004' => \@EthUbuntuComponents,
 	'ubuntu*UB2204' => \@EthUbuntuComponents,
 );
@@ -514,6 +515,7 @@ my %Comp_info_by_distro = (
 	'redhat*ES86'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES87'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES9'    => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES91'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 
 	'ubuntu*UB2004' => { %ibacm_comp_info, %eth_module_debian_comp_info },
 	'ubuntu*UB2204' => { %ibacm_comp_info, %eth_module_debian_comp_info },
@@ -1089,9 +1091,12 @@ sub process_args
 				} elsif (defined $ENV{'INTEL_GPU_DIRECT'} && -e "$ENV{'INTEL_GPU_DIRECT'}/Module.symvers" ) {
 					$GPU_Dir = $ENV{'INTEL_GPU_DIRECT'};
 					$GPU_Install="INTEL_GPU";
+				} elsif (defined $ENV{'INTEL_GPU_DIRECT'} && "$ENV{'INTEL_GPU_DIRECT'}" eq "CURRENT_KERNEL" ) {
+					$GPU_Dir = $ENV{'INTEL_GPU_DIRECT'};
+					$GPU_Install="INTEL_GPU";
 				} else {
 					printf STDERR "GPU Direct requested, but neither NVIDIA_GPU_DIRECT or INTEL_GPU_DIRECT set\n";
-					printf STDERR "or <path>/Module.symvers is missing\n";
+					printf STDERR "or <path>/Module.symvers is missing or not equal to 'CURRENT_KERNEL'\n";
 					Usage;
 				}
 			} elsif ( "$arg" eq "-C" ) {

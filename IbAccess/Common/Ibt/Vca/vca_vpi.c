@@ -196,7 +196,7 @@ iba_close_ca(
 	return status;
 }
 
-// depricated interface
+// deprecated interface
 FSTATUS
 AllocatePD(
 	IN  IB_HANDLE	CaHandle,
@@ -813,7 +813,7 @@ iba_register_mr(
 	return status;
 }
 
-// depricated
+// deprecated
 FSTATUS
 RegisterPhysMemRegion(
 	IN  IB_HANDLE			CaHandle,
@@ -953,7 +953,7 @@ iba_register_contig_pmr(
 	return status;
 }
 
-// depricated
+// deprecated
 FSTATUS
 QueryMemRegion(
 	IN  IB_HANDLE			MrHandle,
@@ -1082,7 +1082,7 @@ iba_modify_mr(
 	return status;
 }
 
-// depricated
+// deprecated
 FSTATUS
 ModifyPhysMemRegion(
 	IN  IB_HANDLE			MrHandle,
@@ -1243,7 +1243,7 @@ iba_modify_contig_pmr(
 }
 
 
-// depricated
+// deprecated
 FSTATUS
 RegisterSharedMemRegion(
 	IN  IB_HANDLE			MrHandle,
@@ -1389,7 +1389,7 @@ iba_query_mw(
 }
 
 
-// depricated
+// deprecated
 FSTATUS
 PostMemWindowBind(
 	IN  IB_HANDLE			QpHandle,

@@ -504,7 +504,7 @@ sub rpm_run_install($$$)
 
 	NormalPrint "installing ${fullname}...\n";
 
-	my $cmd = "dpkg -i $options $debfile";
+	my $cmd = "dpkg --force-confnew -i $options $debfile";
 	LogPrint $cmd."\n";
 	$out=`$cmd 2>&1`;
 	if ( $? == 0 ) {

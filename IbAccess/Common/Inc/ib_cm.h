@@ -1138,11 +1138,11 @@ typedef struct _CM_CEP_INFO {
 typedef struct _CM_CEP_ADDR {
 	/* For ListenAddr, SID is used */
 	/* For RemoteAddr, ignored */
-	/* QPN, EECN fields are ignored, depricated */
+	/* QPN, EECN fields are ignored, deprecated */
 	struct {
-		uint32		QPN:24;			/* ignored, depricated */
+		uint32		QPN:24;			/* ignored, deprecated */
 		uint32		Reserved1:8;	/* Padding */
-		uint32		EECN:24;		/* ignored, depricated */
+		uint32		EECN:24;		/* ignored, deprecated */
 		uint32		Reserved2:8;
 		uint64		SID;			/* only used in ListenAddr */
 	} EndPt;

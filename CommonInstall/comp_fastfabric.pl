@@ -121,7 +121,7 @@ sub install_fastfabric
 	my $install_list = $_[0];	# total that will be installed when done
 	my $installing_list = $_[1];	# what items are being installed/reinstalled
 
-	my $depricated_dir = "/etc/sysconfig/eth-tools";
+	my $deprecated_dir = "/etc/sysconfig/eth-tools";
 
 	my $version=media_version_fastfabric();
 	chomp $version;
@@ -135,12 +135,12 @@ sub install_fastfabric
 	system "chmod ug+x /usr/share/eth-tools/samples/hostverify.sh";
 	system "rm -f /usr/share/eth-tools/samples/nodeverify.sh";
 
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/ethmon.conf", $depricated_dir);
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/ethfastfabric.conf", $depricated_dir);
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/allhosts", $depricated_dir);
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/hosts", $depricated_dir);
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/switches", $depricated_dir);
-	check_rpm_config_file("$CONFIG_DIR/eth-tools/mgt_config.xml", $depricated_dir);
+	check_rpm_config_file("$CONFIG_DIR/eth-tools/ethmon.conf", $deprecated_dir);
+	check_rpm_config_file("$CONFIG_DIR/eth-tools/ethfastfabric.conf", $deprecated_dir);
+	check_rpm_config_file("$CONFIG_DIR/eth-tools/allhosts", $deprecated_dir);
+	check_rpm_config_file("$CONFIG_DIR/eth-tools/hosts", $deprecated_dir);
+	check_rpm_config_file("$CONFIG_DIR/eth-tools/switches", $deprecated_dir);
+	check_rpm_config_file("$CONFIG_DIR/eth-tools/mgt_config.xml", $deprecated_dir);
 # TBD - this should not be a config file
 	check_rpm_config_file("/usr/lib/eth-tools/osid_wrapper");
 
