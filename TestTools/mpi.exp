@@ -680,22 +680,22 @@ File: TestTools/mpi.exp" case_setup case_cleanup {
 		if { [ catch {unix_cmd 20 0 "test -e $env(FF_MPI_APPS_DIR)/openmpi.params"} res ] == 0 } {
 			unix_cmd 60 0 ". $env(FF_MPI_APPS_DIR)/openmpi.params"
 			if { ! [ string equal "$nic" "" ] } {
-				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_NIC $nic\""
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_NIC=$nic\""
 			}
 			if { ! [ string equal "$multirail" "" ] } {
-				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_MULTIRAIL $multirail\""
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_MULTIRAIL=$multirail\""
 			}
 			unix_cmd 20 "" {echo MPI_CMD_ARGS="$MPI_CMD_ARGS"}
 		} else {
 			if { [ string equal "$nic" "" ] } {
 				unix_cmd 20 0 "export MPI_CMD_ARGS="
 			} else {
-				unix_cmd 20 0 "export MPI_CMD_ARGS=-x PSM3_NIC $nic"
+				unix_cmd 20 0 "export MPI_CMD_ARGS=-x PSM3_NIC=$nic"
 			}
 			if { ! [ string equal "$multirail" "" ] } {
-				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_MULTIRAIL $multirail\""
+				unix_cmd 20 0 "export MPI_CMD_ARGS=\"\$MPI_CMD_ARGS -x PSM3_MULTIRAIL=$multirail\""
 			}
-			unix_cmd 20 "" {echo MPI_CMD_ARGS="$MPI_CMD_ARGS"}
+			unix_cmd 20 "" {echo MPI_CMD_ARGS=\"\$MPI_CMD_ARGS\"}
 		}
 	
 		send_unix_cmd "$env(MPICH_PREFIX)/bin/mpirun $mpiapi_env -np $np -allow-run-as-root --map-by node -machinefile mpi_hosts \$MPI_CMD_ARGS $openmpi_env ./$mpi_cmd $mpi_args; echo DONE"
@@ -705,7 +705,7 @@ File: TestTools/mpi.exp" case_setup case_cleanup {
 		} else {
 		    set perf_var ""
 		}
-		expect_progress $timelimit {[0-9]} { "echo DONE" {[0-9]} "DONE" } { "FAIL" "DISCONNECT" "[tT]imeout" "ERROR" "usage:" "Usage:" "THH" "No such" "rejected" "Assertion" "Fatal" "Abort:" "No route to host" "Killing" "Abort signal" "Failed to find or execute" "exiting without calling" "egmentation fault" "died unexpectedly" "more processes than the ppr" "revise the conflict and try again" "unable to launch" } $perf_var
+		expect_progress $timelimit {[0-9]} { "echo DONE" {[0-9]} "DONE" } { "fail" "FAIL" "DISCONNECT" "[tT]imeout" "ERROR" "usage:" "Usage:" "THH" "No such" "rejected" "Assertion" "Fatal" "Abort:" "No route to host" "Killing" "Abort signal" "Failed to find or execute" "exiting without calling" "egmentation fault" "died unexpectedly" "more processes than the ppr" "revise the conflict and try again" "unable to launch" } $perf_var
 		expect_unix_prompt 60
 	}
 	test_execute {} {

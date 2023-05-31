@@ -80,9 +80,7 @@
 # This variable is only used for Usage() help text.  When adding a new
 # setup_all_WORKLOAD function, also add WORKLOAD to this list so it appears
 # in help text.
-workloads="ai hpc none restart"
-
-
+workloads="ai hpc shared none restart"
 
 # This sample config is well suited to low process per node workloads such as
 # AI Training where each process may have multiple communication threads
@@ -134,9 +132,27 @@ setup_all_hpc()
 	done
 }
 
+# This sample config is well suited to Multiple clients or when the number of 
+# processes per server exceeds the total number of DSA engines available. 
+# Also useful for some middlewares which only implement use of shared DSA WQs. 
+#
+# This sample removes all previous DSA workqueues and creates
+# 1 shared work queue per DSA device. The work queues created will
+# make use of all DSA engines within the corresponding DSA device.
+setup_all_shared()
+{
+	# for each DSA device found in the system
+	for dsa in $(list_dsa_devices)
+	do
+		echo "Removing all work queues on DSA device $dsa"
+		( setup_dsa -d$dsa )	# clear previous settings
 
-
-
+		engines=`cat $DSA_CONFIG_PATH/$dsa/max_engines`
+		wq_size=`cat $DSA_CONFIG_PATH/$dsa/max_work_queues_size`
+		echo "Creating 1 shared work queue on DSA device $dsa"
+		( setup_dsa -d$dsa -w1 -ms -s$wq_size -e$engines )
+	done
+}
 
 # -----------------------------------------------------------------------------
 # Do not edit code below.

@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <arpa/inet.h>
 #include <stl_helper.h>
 #include <hpnmgt.h>
+#include <errno.h>
 //#include <umad.h>
 #include <time.h>
 #include <string.h>

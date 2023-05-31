@@ -197,120 +197,28 @@ sub set_libdir()
 # determine the os vendor release level based on build system
 # this script is stolen from funcs-ext.sh and should
 # be maintained in parallel
-sub os_vendor_version($)
+sub os_vendor_version($$)
 {
 	my $vendor = shift();
+	my $ver_num = shift();
 
 	my $rval = "";
-	my $mn = "";
-	if ( -e "/etc/os-release" ) {
-		if ($vendor eq "ubuntu") {
-			$rval=`cat /etc/os-release | grep VERSION_ID | cut -d'=' -f2 | tr -d [\\"\\.]`;
-			chop($rval);
-			$rval="UB".$rval;
-		} else {
-			$rval=`cat /etc/os-release | grep VERSION_ID | cut -d'=' -f2 | tr -d [\\"\\.0]`;
-			chop($rval);
-			$rval="ES".$rval;
-			if ( -e "/etc/redhat-release" ) {
-				if (!system("grep -qiE 'centos|rocky|almalinux|circle' /etc/redhat-release") || !system("grep -qi oracle /etc/oracle-release")) {
-					$rval = `cat /etc/redhat-release | cut -d' ' -f4`;
-					$rval =~ m/(\d+).(\d+)/;
-					if ($2 eq "0") {
-						$rval="ES".$1;
-					} else {
-						$rval="ES".$1.$2;
-					}
-				}
-			}
-		}
-	} elsif ($vendor eq "apple") {
-		$rval=`sw_vers -productVersion|cut -f1-2 -d.`;
-		chop($rval);
-	} elsif ($vendor eq "rocks") {
-		$rval=`cat /etc/rocks-release | cut -d' ' -f3`;
-		chop($rval);
-	} elsif ($vendor eq "scyld") {
-		$rval=`cat /etc/scyld-release | cut -d' ' -f4`;
-		chop($rval);
-	} elsif ($vendor eq "mandrake") {
-		$rval=`cat /etc/mandrake-release | cut -d' ' -f4`;
-		chop($rval);
-	} elsif ($vendor eq "fedora") {
-		$rval=`cat /etc/fedora-release | cut -d' ' -f4`;
-		chop($rval);
-	} elsif ($vendor eq "redhat") {
-		if (!system("grep -qi advanced /etc/redhat-release")) {
-			$rval=`cat /etc/redhat-release | cut -d' ' -f7`;
-			chop($rval);
-		} elsif (!system("grep -qi centos /etc/redhat-release")) {
-			# Find a number of the form "#.#" and output the portion
-			# to the left of the decimal point.
-			$rval = `cat /etc/redhat-release`;
-			$rval =~ m/(\d+).(\d+)/;
-			$rval="ES".$1.$2;
-		} elsif (!system("grep -qi rocky /etc/redhat-release")) {
-			# Find a number of the form "#.#" and output the portion
-			# to the left of the decimal point.
-			$rval = `cat /etc/redhat-release`;
-			$rval =~ m/(\d+).(\d+)/;
-			$rval="ES".$1.$2;
-		} elsif (!system("grep -qi almalinux /etc/redhat-release")) {
-			# Find a number of the form "#.#" and output the portion
-			# to the left of the decimal point.
-			$rval = `cat /etc/redhat-release`;
-			$rval =~ m/(\d+).(\d+)/;
-			$rval="ES".$1.$2;
-		} elsif (!system("grep -qi circle /etc/redhat-release")) {
-			# Find a number of the form "#.#" and output the portion
-			# to the left of the decimal point.
-			$rval = `cat /etc/redhat-release`;
-			$rval =~ m/(\d+).(\d+)/;
-			$rval="ES".$1.$2;
-		} elsif (!system("grep -qi oracle /etc/oracle-release")) {
-			# Find a number of the form "#.#" and output the portion
-			# to the left of the decimal point.
-			$rval = `cat /etc/oracle-release`;
-			$rval =~ m/(\d+).(\d+)/;
-			$rval="ES".$1.$2;
-		} elsif (!system("grep -qi Scientific /etc/redhat-release")) {
-			# Find a number of the form "#.#" and output the portion
-			# to the left of the decimal point.
-			$rval = `cat /etc/redhat-release`;
-			$rval =~ m/(\d+).(\d+)/;
-			$rval="ES".$1;
-		} elsif (!system("grep -qi enterprise /etc/redhat-release")) {
-			# Red Hat Enterprise Linux Server release $a.$b (name)
-			#PR 110926
-			$rval=`cat /etc/redhat-release | cut -d' ' -f7 | cut -d'.' -f1`;
-			$mn=`cat /etc/redhat-release | cut -d' ' -f7 | cut -d'.' -f2`;
-			chop($rval);
-			if ( (($rval >= 7) && ($mn > 0)) ||
-				(($rval == 6) && ($mn >= 7)) ) {
-				chomp($mn);
-				$rval=join "","ES","$rval","$mn";
-			} else {
-				$rval="ES".$rval;
-			}
-		} else {
-			$rval=`cat /etc/redhat-release | cut -d' ' -f5`;
-			chop($rval);
-		}
-	} elsif ($vendor eq "UnitedLinux") {
-		$rval=`grep United /etc/UnitedLinux-release | cut -d' ' -f2`;
-		chop($rval);
-	} elsif ($vendor eq "SuSE") {
-		if (!system("grep -qi enterprise /etc/SuSE-release")) {
-			$rval=`grep -i enterprise /etc/SuSE-release | cut -d' ' -f5`;
-			chop($rval);
-			$rval="ES".$rval;
-		} else {
-			$rval=`grep SuSE /etc/SuSE-release | cut -d' ' -f3`;
-			chop($rval);
-		}
-	} elsif ($vendor eq "turbolinux") {
-		$rval=`cat /etc/turbolinux-release | cut -d' ' -f3`;
-		chop($rval);
+	$rval = $ver_num;
+	$rval =~ m/(\d+).(\d+)/;
+	if ($2 eq "0") {
+		$rval = $1;
+	} else {
+		$rval = $1.$2;
+	}
+	chomp($rval);
+
+	if ($vendor eq "ubuntu") {
+		$rval = "UB".$rval;
+	} elsif ($vendor =~ /^(SuSE|redhat|opencloudos)$/) {
+		$rval = "ES".$rval;
+	} else {
+		# Should not Happen
+		Abort "Please contact your support representative...\n";
 	}
 	return $rval;
 }
@@ -320,104 +228,60 @@ sub os_vendor_version($)
 sub determine_os_version()
 {
 	# we use the current system to select the distribution
-	# TBD we expect client image for diskless client install to have these files
-	my $os_release_file = "/etc/os-release";
-	if ( -e "/etc/redhat-release" && !(-l "/etc/redhat-release") ) {
-		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/centos-release" ) {
-		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/rocky-release" ) {
-		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/almalinux-release" ) {
-		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/circle-release" ) {
-		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/oracle-release" ) {
-		$CUR_DISTRO_VENDOR = "redhat";
-	} elsif ( -s "/etc/opencloudos-stream-release" ) {
-		$CUR_DISTRO_VENDOR = "opencloudos";
-	} elsif ( -s "/etc/UnitedLinux-release" ) {
-		$CUR_DISTRO_VENDOR = "UnitedLinux";
-		$NETWORK_CONF_DIR = "/etc/sysconfig/network";
-	} elsif ( -s "/etc/SuSE-release" ) {
-		$CUR_DISTRO_VENDOR = "SuSE";
-		$NETWORK_CONF_DIR = "/etc/sysconfig/network";
-	} elsif ( -e "/usr/bin/lsb_release" ) {
-		$CUR_DISTRO_VENDOR = `/usr/bin/lsb_release -is`;
-		chop($CUR_DISTRO_VENDOR);
-		$CUR_DISTRO_VENDOR = lc($CUR_DISTRO_VENDOR);
-		if ($CUR_DISTRO_VENDOR eq "suse") {
-			$CUR_DISTRO_VENDOR = "SuSE";
-		}
-	} elsif ( -e $os_release_file) {
-		my %distroVendor = (
-			"rhel" => "redhat",
-			"centos" => "redhat",
-			"rocky" => "redhat",
-			"almalinux" => "redhat",
-			"circle" => "redhat",
-			"oracle" => "redhat",
-			"opencloudos" => "opencloudos",
-			"sles" => "SuSE",
-			"sle_hpc" => "SuSE",
-			"ubuntu" => "ubuntu"
-		);
-		my %network_conf_dir  = (
-			"rhel" => $NETWORK_CONF_DIR,
-			"centos" => $NETWORK_CONF_DIR,
-			"rocky" => $NETWORK_CONF_DIR,
-			"almalinux" => $NETWORK_CONF_DIR,
-			"circle" => $NETWORK_CONF_DIR,
-			"oracle" => $NETWORK_CONF_DIR,
-			"opencloudos" => $NETWORK_CONF_DIR,
-			"sles" => "/etc/sysconfig/network",
-			"sle_hpc" => "/etc/sysconfig/network",
-			"ubuntu" => "/etc/sysconfig/network-scripts",
-		);
-		my $os_id = `cat $os_release_file | grep '^ID=' | cut -d'=' -f2 | tr -d [\\"\\.0] | tr -d ["\n"]`;
-		$CUR_DISTRO_VENDOR = $distroVendor{$os_id};
-		$NETWORK_CONF_DIR = $network_conf_dir{$os_id};
+	# All modern OSes (we support) use os-release file in one of 2 locations:
+	#  /etc and /usr/lib (/etc is often symlink to /usr/lib)
+	# Check if '^ID=' is in file
+	my $os_release_file = "";
+	if ( -e "/etc/os-release" && !system("cat /etc/os-release | grep -q '^ID='")) {
+		$os_release_file = "/etc/os-release";
+	} elsif ( -e "/usr/lib/os-release" && !system("cat /usr/lib/os-release | grep -q '^ID='")) {
+		$os_release_file = "/usr/lib/os-release";
 	} else {
-		# autodetermine the distribution
-		open DISTRO_VENDOR, "ls /etc/*-release|grep -v lsb\|^os 2>/dev/null |"
-			|| die "Unable to open pipe\n";
-		$CUR_DISTRO_VENDOR="";
-		while (<DISTRO_VENDOR>) {
-			chop;
-			if (!(-l $_)) {
-				my $CDV  = fileparse($_, '-release');
-				if ( "$CDV" ne "rocks" ) {
-					$CUR_DISTRO_VENDOR = $CDV;
-				}
-			}
-		}
-		close DISTRO_VENDOR;
-		if ( $CUR_DISTRO_VENDOR eq "" )
-		{
-			NormalPrint "Unable to determine current Linux distribution.\n";
-			Abort "Please contact your support representative...\n";
-		} elsif ($CUR_DISTRO_VENDOR eq "SuSE") {
-			$NETWORK_CONF_DIR = "/etc/sysconfig/network";
-		} elsif ($CUR_DISTRO_VENDOR eq "centos") {
-			$CUR_DISTRO_VENDOR = "redhat";
-		} elsif ($CUR_DISTRO_VENDOR eq "rocky") {
-			$CUR_DISTRO_VENDOR = "redhat";
-		} elsif ($CUR_DISTRO_VENDOR eq "almalinux") {
-			$CUR_DISTRO_VENDOR = "redhat";
-		} elsif ($CUR_DISTRO_VENDOR eq "circle") {
-			$CUR_DISTRO_VENDOR = "redhat";
-		} elsif ($CUR_DISTRO_VENDOR eq "oracle") {
-			$CUR_DISTRO_VENDOR = "redhat";
-		} elsif ($CUR_DISTRO_VENDOR eq "opencloudos") {
-			$CUR_DISTRO_VENDOR = "opencloudos";
-		}
+		NormalPrint "INSTALL could not read 'ID=...' in os-release file(s)\n";
+		Abort "Please contact your support representative...\n";
 	}
-	if ( $CUR_DISTRO_VENDOR eq "SuSE" )
-	{
+
+	my %distroVendor = (
+		"rhel" => "redhat",
+		"centos" => "redhat",
+		"rocky" => "redhat",
+		"almalinux" => "redhat",
+		"circle" => "redhat",
+		"oracle" => "redhat",
+		"opencloudos" => "opencloudos",
+		"sles" => "SuSE",
+		"sle_hpc" => "SuSE",
+		"ubuntu" => "ubuntu"
+	);
+	my %network_conf_dir  = (
+		"rhel" => $NETWORK_CONF_DIR,
+		"centos" => $NETWORK_CONF_DIR,
+		"rocky" => $NETWORK_CONF_DIR,
+		"almalinux" => $NETWORK_CONF_DIR,
+		"circle" => $NETWORK_CONF_DIR,
+		"oracle" => $NETWORK_CONF_DIR,
+		"opencloudos" => $NETWORK_CONF_DIR,
+		"sles" => "/etc/sysconfig/network",
+		"sle_hpc" => "/etc/sysconfig/network",
+		"ubuntu" => "/etc/sysconfig/network-scripts",
+	);
+	my $os_id = `cat $os_release_file | grep '^ID=' | cut -d'=' -f2 | tr -d [\\"\\.0] | tr -d ["\n"]`;
+	if (! exists $distroVendor{$os_id}) {
+		NormalPrint "INSTALL does not support this vendor ($os_id)\n";
+		Abort "Please contact your support representative...\n";
+	}
+	$CUR_DISTRO_VENDOR = $distroVendor{$os_id};
+	$NETWORK_CONF_DIR = $network_conf_dir{$os_id};
+	if ( $CUR_DISTRO_VENDOR eq "SuSE" ) {
 		$OFA_CONFIG_DIR = "/etc/rdma/modules";
 	}
 
-	$CUR_VENDOR_VER = os_vendor_version($CUR_DISTRO_VENDOR);
+	my $os_ver = `cat $os_release_file | grep '^VERSION_ID=' | cut -d'=' -f2 | tr -d [\\"] | tr -d ["\n"]`;
+	if ($os_ver eq "") {
+		NormalPrint "INSTALL could not read '^VERSION_ID=...' from os-release file(s)\n";
+		Abort "Please contact your support representative...\n";
+	}
+	$CUR_VENDOR_VER = os_vendor_version($CUR_DISTRO_VENDOR, $os_ver);
 	$CUR_VENDOR_MAJOR_VER = $CUR_VENDOR_VER;
 	$CUR_VENDOR_MAJOR_VER =~ s/\..*//;	# remove any . version suffix
 }

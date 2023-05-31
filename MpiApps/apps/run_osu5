@@ -40,22 +40,25 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 
 BASE_DIR="osu-micro-benchmarks-5.9/mpi/"
 
-if [ -z "$1" -o "$1" == "-h" -o "$1" == "--help" ]
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo "Usage: run_osu5 <number_of_processes> <command> <arg1> <arg2>...<argn> "
-	echo "For example: ./run_osu5 2 osu_allgatherv"
-	echo "number_processes may be 'all' in which case one rank will be"
-	echo "started for every process in the mpi_hosts file."
-	echo "The remaining arguments are passed to the target command."
+	echo "Usage: $0 <number_of_processes> <command> [options]"
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file."
+	echo "    <command> osu benchmark to run"
+	echo "    [options] are passed to <command>"
+	echo "For example: $0 2 osu_allgatherv -f"
 	echo
-	echo "Possible commands are:"
+	echo -n "Possible commands are: "
+	sep=""
 	for f in $(find ${BASE_DIR} -executable -type f); do
-		echo -n $(basename $f)", "
+		echo -n $sep$(basename $f)
+		sep=", "
 	done
 	echo
 	echo
-	echo "To see the list of options for each individual benchmark add \"-h\""
-	echo "to the benchmark name. For example: \"./run_osu5 2 osu_fop_latency -h\"."
+	echo "To get more details about [options] available: $0 2 <command> -h"
+	echo "For example: $0 2 osu_fop_latency -h"
 	exit 1
 fi
 

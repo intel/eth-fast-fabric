@@ -40,14 +40,14 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 
 if [ -z "$1" -o x"$1" = x"-h" -o x"$1" = x"--help" ]
 then
-    echo " Usage: run_mandel number_processes"
-    echo " For example: ./run_mandel 2"
-	echo "number_processes may be 'all' in which case one rank will be started for"
-	echo "every process in the mpi_hosts file"
+	echo "Usage: $0 number_processes"
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file"
+	echo "For example: $0 2"
 	echo 
-	echo " Use click-and-drag to zoom into image."
-	echo " Use CTRL-C to terminate."
-    exit 1
+	echo "Use click-and-drag to zoom into image."
+	echo "Use CTRL-C to terminate."
+	exit 1
 fi
 
 NUM_PROCESSES=$1

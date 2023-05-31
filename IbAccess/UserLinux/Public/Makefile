@@ -45,25 +45,26 @@ DIRS			=
 CFILES			= \
 				iarray.c \
 				ibitvector.c \
-				icmdthread.c \
 				idebugdump.c \
 				idebug_linux.c \
-				ievent.c \
-				ieventthread.c \
 				ilist.c \
 				imath.c \
 				imemory.c \
 				imemory_osd.c \
 				iobjmgr.c \
 				iquickmap.c \
-				isemaphore.c \
 				ispinlock.c \
-				ithread.c \
-				ithreadpool.c \
 				itimer.c \
 				statustext.c \
 				# Add more c files here
 				# ireaper.c \
+				# files below removed as unused in ff
+				# ievent.c \
+				# ieventthread.c \
+				# icmdthread.c \
+				# ithreadpool.c \
+				# isemaphore.c \
+				# ithread.c \
 
 CFILES			+= \
 # C++ files (.cpp)
@@ -86,11 +87,8 @@ INCLUDE_TARGETS	= \
 				$(COMMON_SRCDIR)/iarray.h \
 				$(COMMON_SRCDIR)/ibitvector.h \
 				$(COMMON_SRCDIR)/ibyteswap.h \
-				$(COMMON_SRCDIR)/icmdthread.h \
 				$(COMMON_SRCDIR)/idebug.h \
 				$(COMMON_SRCDIR)/iethernet.h \
-				$(COMMON_SRCDIR)/ievent.h \
-				$(COMMON_SRCDIR)/ieventthread.h \
 				$(COMMON_SRCDIR)/iheapmanager.h \
 				$(COMMON_SRCDIR)/ilist.h \
 				$(COMMON_SRCDIR)/imath.h \
@@ -99,28 +97,33 @@ INCLUDE_TARGETS	= \
 				$(COMMON_SRCDIR)/imutex.h \
 				$(COMMON_SRCDIR)/iobjmgr.h \
 				$(COMMON_SRCDIR)/iquickmap.h \
-				$(COMMON_SRCDIR)/isemaphore.h \
 				$(COMMON_SRCDIR)/ispinlock.h \
 				$(COMMON_SRCDIR)/itcpip.h \
-				$(COMMON_SRCDIR)/ithread.h \
-				$(COMMON_SRCDIR)/ithreadpool.h \
 				$(COMMON_SRCDIR)/itimer.h \
 				$(COMMON_SRCDIR)/statustext.h \
 				datatypes_osd.h \
 				idebug_osd.h \
-				ievent_osd.h \
 				imemory_osd.h \
 				imutex_osd.h \
 				ipackoff.h \
 				ipackon.h \
-				isemaphore_osd.h \
 				ispinlock_osd.h \
-				ithread_osd.h \
 				itimer_osd.h \
 				ibyteswap_osd.h
 				# Add more h hpp files here
+				# ievent and other unused headers were removed as a result of cleanup
+				# performed due to Coverity complains
+				# ievent_osd.h \
+				# isemaphore_osd.h \
+				# ithread_osd.h \
+				# $(COMMON_SRCDIR)/ievent.h \
 				# $(COMMON_SRCDIR)/ipassivelock.h \
 				# $(COMMON_SRCDIR)/ireaper.h \
+				# $(COMMON_SRCDIR)/icmdthread.h \
+				# $(COMMON_SRCDIR)/ieventthread.h \
+				# $(COMMON_SRCDIR)/ithreadpool.h \
+				# $(COMMON_SRCDIR)/isemaphore.h \
+				# $(COMMON_SRCDIR)/ithread.h \
 
 # Non-compiled files
 MISC_FILES		= 

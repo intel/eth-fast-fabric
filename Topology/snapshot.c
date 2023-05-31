@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* [ICS VERSION STRING: unknown] */
 
+#include <errno.h>
 #include "topology.h"
 #include "topology_internal.h"
 #include <stl_helper.h>

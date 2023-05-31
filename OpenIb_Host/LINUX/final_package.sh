@@ -40,19 +40,23 @@ if [ "${OPA_FEATURE_SET}" != "opa10" ]; then
 	cp ${snapconfig} $dir/
 	cp ${snapconfig} ${RELEASE_DIR}/
 fi
+basic_debuginfo=$(eval echo ${RPMSDIR}/eth-tools-basic-${DEBUGINFO}${SEPARATOR}${MKRPM_VER}-${MKRPM_REL}${DEBUG_EXT})
+cp ${basic_debuginfo} $rpmdir/
+cp ${basic_debuginfo} $basicrpmdir/
 if [ "${BUILD_TARGET_OS_VENDOR}" = "redhat" ]; then
 	rh_debuginfo=$(eval echo ${RPMSDIR}/eth-tools-${DEBUGINFO}${SEPARATOR}${MKRPM_VER}-${MKRPM_REL}${DEBUG_EXT} )
 	cp ${rh_debuginfo} $rpmdir/
+	rh_debugsource=$(eval echo ${RPMSDIR}/eth-tools-debugsource${SEPARATOR}${MKRPM_VER}-${MKRPM_REL}${RPM_EXT})
+	cp ${rh_debugsource} $rpmdir/
+	cp ${rh_debugsource} $basicrpmdir/
 fi
 if [ "${BUILD_TARGET_OS_VENDOR}" = "SuSE" ]; then
 	suse_debuginfo=$(eval echo ${RPMSDIR}/eth-tools-debugsource${SEPARATOR}${MKRPM_VER}-${MKRPM_REL}${RPM_EXT})
 	cp ${suse_debuginfo} $rpmdir/
+	cp ${suse_debuginfo} $basicrpmdir/
 fi
 if [ "${BUILD_TARGET_OS_VENDOR}" = "SuSE" -o "${BUILD_TARGET_OS_VENDOR}" = "ubuntu" ]; then
-	basic_debuginfo=$(eval echo ${RPMSDIR}/eth-tools-basic-${DEBUGINFO}${SEPARATOR}${MKRPM_VER}-${MKRPM_REL}${DEBUG_EXT})
 	ff_debuginfo=$(eval echo ${RPMSDIR}/eth-tools-fastfabric-${DEBUGINFO}${SEPARATOR}${MKRPM_VER}-${MKRPM_REL}${DEBUG_EXT})
-	cp ${basic_debuginfo} $rpmdir/
-	cp ${basic_debuginfo} $basicrpmdir/
 	cp ${ff_debuginfo}    $rpmdir/
 fi
 cd $dir

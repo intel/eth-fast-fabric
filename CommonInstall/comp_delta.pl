@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # BEGIN_ICS_COPYRIGHT8
 #
-# Copyright (c) 2015-2022, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -125,8 +125,10 @@ my %source_pkgs_by_distro = (
 	'redhat*ES85'   => [ \%redhat_srpm ],
 	'redhat*ES86'   => [ \%redhat_srpm ],
 	'redhat*ES87'   => [ \%redhat_srpm ],
+	'redhat*ES88'   => [ \%redhat_srpm ],
 	'redhat*ES9'    => [ \%redhat_srpm ],
 	'redhat*ES91'   => [ \%redhat_srpm ],
+	'redhat*ES92'   => [ \%redhat_srpm ],
 	'ubuntu*UB2004' => [ \%debian_tarball ],
 	'ubuntu*UB2204' => [ \%debian_tarball ],
 );

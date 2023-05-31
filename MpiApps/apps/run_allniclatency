@@ -49,15 +49,15 @@ CSV=
 
 usage() {
 	echo
-	echo "$0 is a specialized stress test for large fabrics. It iterates through"
-	echo "every possible pairing of NICs and performs a latency test on each"
+	echo "$0 is a specialized stress test for large fabrics. It iterates"
+	echo "through every possible pairing of NICs and performs a latency test on each"
 	echo "pair. At the end of each round of testing, the fastest and slowest"
 	echo "pairs are reported."
 	echo
 	echo "This has no real value as a performance benchmark but is"
 	echo "extremely useful for checking for cabling problems in the fabric."
 	echo
-	echo "$0 requires no arguments, but can take three optional arguments."
+	echo "$0 requires no arguments, but can take 3 optional arguments."
 	echo
 	echo "$0 nn dd ss"
 	echo

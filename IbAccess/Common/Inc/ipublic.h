@@ -39,15 +39,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef OPEN_SOURCE_12200
 #include "iba/public/iarray.h"
 #include "iba/public/ibitvector.h"
-#include "iba/public/icmdthread.h"
+// Commented out headers with double asterisk (**) are not used in fastfabric code
+// cleanup performed to avoid Coverity complains about outdated ievent implementation
+// (**) #include "iba/public/icmdthread.h"
 #include "iba/public/idebug.h"
-#include "iba/public/ievent.h"
-#include "iba/public/ieventthread.h"
+// (**) #include "iba/public/ievent.h"
+// (**) #include "iba/public/ieventthread.h"
 #include "iba/public/iheapmanager.h"
 #include "iba/public/imutex.h"
 #include "iba/public/iobjmgr.h"
-#include "iba/public/isemaphore.h"
-#include "iba/public/ithread.h"
+// (**) #include "iba/public/isemaphore.h"
+// (**) #include "iba/public/ithread.h"
 #endif
 #ifndef IB_STACK_OPENIB
 #include "iba/public/igrowpool.h"
@@ -85,7 +87,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "iba/public/isysutil.h"
 #endif
 #ifndef IB_STACK_OPENIB
-#include "iba/public/ithreadpool.h"
+// (**) #include "iba/public/ithreadpool.h"
 #endif
 #include "iba/public/itimer.h"
 #include "iba/public/statustext.h"

@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MINRANDXFER 1024
 #define MAXRANDXFER 32768
 #define NUMRANDXFERS 65536
-#define RANDOMLEN() (MINRANDXFER + (random() % (MAXRANDXFER-MINRANDXFER)))
+#define RANDOMLEN() (MINRANDXFER + (rand() % (MAXRANDXFER-MINRANDXFER)))
 
 #define MAX(a,b) ((a>b)?a:b)
 #define MIN(a,b) ((a<b)?a:b)
@@ -108,7 +108,9 @@ struct option options[] = {
 	{"noslow", no_argument, &doSlow, 0},
 	{"random", no_argument, &doRandom, 1},
 	{"norandom", no_argument, &doRandom, 0},
+	{"seed", required_argument, NULL, 's'},
 	{"sendoffset", no_argument, &useSendOffset, 1},
+	{"help", no_argument, NULL, 'h'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -160,12 +162,6 @@ typedef struct {
 	unsigned int length;
 } RandomRecord;
 
-static void
-initrandom(  )
-{
-	srandom(time(NULL));
-}
-
 /* 
  * Randomize mode pairs up the nodes and performs a "drunkards" walk
  * between them - it performs a large number of sends and receives
@@ -175,7 +171,7 @@ initrandom(  )
  * other tests use.
  */
 int
-randomize( int myid, int numProcs, int minSize, int maxSize, int maxIters )
+randomize( int myid, int numProcs, int minSize, int maxSize, int maxIters, unsigned long randSeed )
 {
 	int i, size, partner, sendMode, numRecords, iters;
 	int retCode = MPI_SUCCESS;
@@ -189,8 +185,9 @@ randomize( int myid, int numProcs, int minSize, int maxSize, int maxIters )
 
 	ROOTPRINT( "Beginning Randomize Test Section\n" );
 	ROOTPRINT( "(Node sends random length messages to each other.)\n" );
+	ROOTPRINT( "Rand seed for reference is %lu\n", randSeed );
 
-	initrandom(  );
+	srand(randSeed);
 
 	memset( request, 0, sizeof( MPI_Request ) * NUMRANDXFERS );
 	memset( status, 0, sizeof( MPI_Status ) * NUMRANDXFERS );
@@ -224,9 +221,9 @@ randomize( int myid, int numProcs, int minSize, int maxSize, int maxIters )
 				/* Initialize the buffer with some random data. */
 				/* Every 4th byte is a check sum of the previous 3. */
 				for ( i = 0; i < ( size - 3 ); i += 4 ) {
-					buffer[i] = random(  ) % 256;
-					buffer[i + 1] = random(  ) % 256;
-					buffer[i + 2] = random(  ) % 256;
+					buffer[i] = rand(  ) % 256;
+					buffer[i + 1] = rand(  ) % 256;
+					buffer[i + 2] = rand(  ) % 256;
 					buffer[i + 3] =
 						( buffer[i] + buffer[i + 1] + buffer[i + 2] ) % 256;
 				}
@@ -249,11 +246,11 @@ randomize( int myid, int numProcs, int minSize, int maxSize, int maxIters )
 				/* Note that numRecords is now the length of records. */
 
 				/* Swap a few records, for extra evil. */
-				i = random(  ) % SHUFFLERATE;
+				i = rand(  ) % SHUFFLERATE;
 				while ( i < NUMRANDXFERS && records[i].length ) {
 					unsigned int j;
 
-					j = i + ( random(  ) % SHUFFLERATE );
+					j = i + ( rand(  ) % SHUFFLERATE );
 					if ( ( j != i ) && ( j < NUMRANDXFERS )
 						 && ( records[j].length ) ) {
 						RandomRecord r;
@@ -870,6 +867,7 @@ main( int argc, char *argv[] )
 {
 	int retCode, myid, numProcs, i;
 	time_t t1, t2, t3;
+	unsigned long randSeed = time(NULL);
 
 	t1 = time( NULL );
 	MPI_Init( &argc, &argv );
@@ -898,6 +896,13 @@ main( int argc, char *argv[] )
 		case '?':
 			usage(  );
 			goto done;
+		case 'h':
+			if (myid == 0)
+				usage(  );
+			goto done;
+		case 's':
+			randSeed = strtoul( optarg, NULL, 0 );
+			break;
 		default:
 			break;
 		}
@@ -932,7 +937,7 @@ main( int argc, char *argv[] )
 	}
 	if ( doRandom ) {
 		MPI_Barrier( MPI_COMM_WORLD );
-		retCode = randomize( myid, numProcs, minSize, maxSize, maxIters );
+		retCode = randomize( myid, numProcs, minSize, maxSize, maxIters, randSeed );
 		ERRABORT( retCode );
 	}
 

@@ -1100,19 +1100,18 @@ proc target_get_stack_type { { checkrun "y"} { host "" } } {
 	}
 
 	# see if IbAccess installed, 0 -> yes
-	send_unix_cmd {test -e /etc/init.d/iba -o -e /lib/modules/`uname -r`/iba/ibt.ko}
-	set iba_not_installed [ get_exit_status 60 ]
+	send_unix_cmd {modinfo --filename ibt}
+	set iba_installed [expr 0 == [ get_exit_status 60 ]]
 
 	# see if Open IB installed, 0 -> yes
-	send_unix_cmd {test -e /etc/init.d/openibd -o -e /lib/modules/`uname -r`/kernel/drivers/infiniband/core/ib_umad.ko -o -e /lib/modules/`uname -r`/kernel/drivers/infiniband/core/ib_umad.ko.xz}
-	set openib_not_installed [ get_exit_status 60 ]
+	send_unix_cmd {modinfo --filename ib_umad}
+	set openib_installed [expr 0 == [ get_exit_status 60 ]]
 
 	# newer distros include openib, so if both appear installed also assume iba
 	# presently this is only called with checkrun=n for automated tests configio
-	if { ! $iba_not_installed } {
+	if { $iba_installed } {
 		return "IBACCESS"
-	}
-	if { $iba_not_installed && ! $openib_not_installed } {
+	} elseif {$openib_installed} {
 		return "OPENIB"
 	}
 	set info "Unable to Determine IB Stack Type"

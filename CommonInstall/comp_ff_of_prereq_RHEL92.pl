@@ -1,11 +1,11 @@
-#!/bin/bash
-# BEGIN_ICS_COPYRIGHT8 ****************************************
-# 
-# Copyright (c) 2015, Intel Corporation
-# 
+#!/usr/bin/perl
+## BEGIN_ICS_COPYRIGHT8 ****************************************
+#
+# Copyright (c) 2015-2023, Intel Corporation
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -14,7 +14,7 @@
 #     * Neither the name of Intel Corporation nor the names of its contributors
 #       may be used to endorse or promote products derived from this software
 #       without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,47 +25,56 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
-# END_ICS_COPYRIGHT8   ****************************************
+#
+## END_ICS_COPYRIGHT8   ****************************************
+#
+## [ICS VERSION STRING: unknown]
+#use strict;
+##use Term::ANSIColor;
+##use Term::ANSIColor qw(:constants);
+##use File::Basename;
+##use Math::BigInt;
+#
+## ==========================================================================
+#
+#Installation Prequisites array for fast fabric
+#and of tools component
+my @eth_tools_prereq = (
+    "bash",
+    "bc",
+    "expat",
+    "expect",
+    "glibc",
+    "libgomp",
+    "libibumad",
+    "libibverbs-utils",
+    "librdmacm-utils",
+    "net-snmp",
+    "net-snmp-utils",
+    "openssl",
+    "openssl-libs",
+    "perl",
+    "rdma-core",
+    "tcl",
+);
+$comp_prereq_hash{'eth_tools_prereq'} = \@eth_tools_prereq;
 
-# [ICS VERSION STRING: unknown]
-
-# BASE PATH TO MPI EXECUTABLES: To use an alternate location,
-# either edit this line or set MPICH_PREFIX in your environment.
-# see select_mpi for the set of default MPI selections
-# default to MPI used for build
-MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
-
-trap "exit 1" SIGHUP SIGTERM SIGINT
-
-CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_multi_lat"
-APP=osu_multi_lat
-
-if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
-then 
-	echo "Usage: $0 number_processes [options]"
-	echo "    number_processes may be 'all' in which case one rank will be started for"
-	echo "                     every process in the mpi_hosts file"
-	echo "    [options] are passed to ${APP}"
-	echo "This application requires an even number of processes"
-	echo "For example: $0 2"
-	echo
-	echo "To get more details about [options] available: $0 2 -h"
-	exit 1
-fi
-
-NUM_PROCESSES=$1
-shift
-MULT_PROCESSES=2
-LOGFILE=
-. ./prepare_run
-
-
-(
-	echo " Running Multi-Latency 5.9 ..."
-	show_mpi_hosts
-	set -x
-	$MPI_RUN_CMD $CMD "$@"
-	set +x
-) 2>&1 | tee -i -a $LOGFILE
-echo "########################################### " >> $LOGFILE
+my @fastfabric_prereq = (
+    "bash",
+    "cronie",
+    "expat",
+    "expect",
+    "glibc",
+    "libgcc",
+    "libibumad",
+    "libibverbs",
+    "librdmacm",
+    "libstdc++",
+    "ncurses-libs",
+    "net-snmp-libs",
+    "openssl-libs",
+    "perl",
+    "tcl",
+    "zlib",
+);
+$comp_prereq_hash{'fastfabric_prereq'} = \@fastfabric_prereq;

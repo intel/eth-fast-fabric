@@ -42,10 +42,10 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 
 if [ -z "$1" -o x"$1" = x"-h" -o x"$1" = x"--help" ]
 then 
-	echo " Usage: run_hpl number_processes"
-	echo " For example: ./run_hpl2 2"
-	echo "number_processes may be 'all' in which case one rank will be started for"
-	echo "every process in the mpi_hosts file"
+	echo "Usage: $0 number_processes"
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file"
+	echo "For example: $0 2"
 	exit 1
 fi
 

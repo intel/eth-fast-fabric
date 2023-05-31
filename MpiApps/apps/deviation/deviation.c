@@ -873,7 +873,12 @@ parseInputParameters(int argc,char *argv[])
 	/* parse args */
 	for (opt = 1; opt < argc; opt++)
 	{
-		if (strcasecmp(argv[opt], "-bwtol") == 0) {
+		if (strcasecmp(argv[opt], "-help") == 0) {
+			if (myrank == 0) {
+				Usage();
+			}
+			return -1;
+		} else if (strcasecmp(argv[opt], "-bwtol") == 0) {
 			use_bwtol = true;
 			errno = 0;
 			opt++;
@@ -1765,8 +1770,10 @@ Usage()
 					"                 [-bwloop count] [-bwsize size] [-bwbidir|-bwunidir]\n"
 					"                 [-lattol %%] [-latdelta usec] [-latthres usec]\n"
 					"                 [-latloop count] [-latsize size]\n"
-				    "                 [-c] [-b] [-v] [-vv] [-h reference_host]\n");
-
+					"                 [-c] [-b] [-v] [-vv] [-h reference_host]\n"
+					"           or\n"
+					"       deviation -help\n");
+	fprintf(stderr, " -help      Output this usage information\n");
 	fprintf(stderr, " -bwtol     Percent of bandwidth degradation allowed below Avg value\n");
 	fprintf(stderr, " -bwdelta   Limit in MB/s of bandwidth degradation allowed below Avg value\n");
 	fprintf(stderr, " -bwthres   Lower Limit in MB/s of bandwidth allowed\n");

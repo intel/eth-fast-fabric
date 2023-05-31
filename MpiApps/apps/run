@@ -37,10 +37,10 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-if [ -z "$1" ]
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo " Usage: run number_processes [full]."
-	echo " For example: ./run 2"
+	echo "Usage: $0 number_processes [full]."
+	echo "For example: $0 2"
 	exit 1
 fi
 full=n
@@ -57,18 +57,17 @@ APP=multi
 LATENCY_CMD="latency/latency 100000 0"
 LATENCY_CMD2="latency/latency 100000 4"
 BANDWIDTH_CMD="bandwidth/bw 100 100000"
-#PMB_CMD="PMB2.2/SRC/PMB-MPI1"
-PMB_CMD="PMB2.2.1/SRC_PMB/PMB-MPI1"
+IMB_CMD="imb/IMB-MPI1"
 NPB_CMD="NPB2.3/bin/$test.$class.$NUM_PROCESSES"
 HPL_CMD="./xhpl"
-HPL_DIR="$PWD/hpl/bin/ICS.`uname -s`.`./get_mpi_cc.sh`"
+HPL_DIR="$PWD/hpl-2.3/bin/ICS.`uname -s`.`./get_mpi_blas.sh`"
 
 {
 if [ $USING_MPD = y ]
 then
-    MPI_RUN_HPL="$MPI_RUN_CMD -wdir $HPL_DIR"
+    MPI_RUN_CMD_HPL="$MPI_RUN_CMD -wdir $HPL_DIR"
 else
-    MPI_RUN_HPL="$MPI_RUN_CMD"
+    MPI_RUN_CMD_HPL="$MPI_RUN_CMD"
 fi
 
 show_mpi_hosts
@@ -95,15 +94,15 @@ then
 fi
 echo "########################################### "
 	
-echo " Running Pallas Benchmarks ..."
+echo " Running IMB Benchmarks ..."
 date
 set -x
-$MPI_RUN_CMD $PMB_CMD
+$MPI_RUN_CMD $IMB_CMD
 set +x
 date
 echo "########################################### "
 
-if [ "$full" = y ]
+if [ "$full" = y -a -d NPB3.2.1/NPB3.2-MPI/bin ]
 then
 	echo " Running NASA Parallel Benchmarks ..."
 	class="B"
@@ -126,7 +125,7 @@ then
 	date
 	set -x
 	# need to cd so HPL.dat in current directory
-	(cd $HPL_DIR; $MPI_RUN_HPL $HPL_CMD )
+	(cd $HPL_DIR; $MPI_RUN_CMD_HPL $HPL_CMD )
 	set +x
 	date
 	echo "########################################### "

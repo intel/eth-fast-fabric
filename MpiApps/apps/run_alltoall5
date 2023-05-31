@@ -41,15 +41,15 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 CMD="osu-micro-benchmarks-5.9/mpi/collective/osu_alltoall"
 APP=osu_alltoall
 
-if [ -z "$1" -o "$1" == "-h" -o "$1" == "--help" ]
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo " Usage: $0 <number_processes> [options]"
-	echo " For example: $0 2"
-	echo " <number_processes> may be 'all' in which case one rank will be started for"
-	echo " every process in the mpi_hosts file"
+	echo "Usage: $0 <number_processes> [options]"
+	echo "    <number_processes> may be 'all' in which case one rank will be started for"
+	echo "                       every process in the mpi_hosts file"
+	echo "    [options] are passed to ${APP}"
+	echo "For example: $0 2"
 	echo
-	echo -n " [options] are passed to ${APP}: "
-	${CMD} -h
+	echo "To get more details about [options] available: $0 2 -h"
 	exit 1
 fi
 
@@ -63,7 +63,7 @@ LOGFILE=
 	echo " Running AlltoAll 5.9 ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD $@
+	$MPI_RUN_CMD $CMD "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 echo "########################################### " >> $LOGFILE

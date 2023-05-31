@@ -84,6 +84,7 @@ are performing, it is not intended as a benchmark.
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <assert.h>
 
 #define	 stringize(x) #x
 #define	 add_quotes(x) stringize(x)
@@ -440,10 +441,17 @@ static char *usage_text[] = {
 	"Message Size. Should be between " add_quotes(MIN_MSG_SIZE) " and " add_quotes(MAX_MSG_SIZE),
 	"The duration of the test, in minutes. Defaults to "
 		add_quotes(DEFAULT_MINUTES) " minutes or use -1 to run forever.",
-	"Outputs raw data in a CSV file format, suitable for use in Excel."
+	"Outputs raw data in a CSV file format, suitable for use in Excel.",
 	"Provides this help text.",
 	0
 };
+
+#define ARRAY_ELEMENTS(x) ((sizeof(x))/(sizeof(x[0])))
+
+static_assert(
+	ARRAY_ELEMENTS(long_options) == ARRAY_ELEMENTS(usage_text),
+	"usage_text elements count not equal to long_options elements count."
+);
 
 static void 
 usage() 

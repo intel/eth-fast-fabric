@@ -83,7 +83,7 @@ PARAM_FILE=
 
 # any relevant input data files which should be saved per run as part of record
 # this should be files which you plan to change between runs as you tune
-INPUT_FILES=hpl/bin/ICS.$(uname -s).$(./get_mpi_cc.sh)/HPL.dat
+INPUT_FILES=hpl/bin/ICS.$(uname -s).$(./get_mpi_blas.sh)/HPL.dat
 
 # any output files generated which should be saved per run as part of record
 OUTPUT_FILES=
@@ -108,12 +108,12 @@ then
 	loop=y
 	shift
 fi
-if [ -z "$1" ]
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo " Usage: run_app [-l] number_processes ['reason for run']"
-	echo " For example: ./run_app 2 'run with 2t problem size'"
-	echo "number_processes may be 'all' in which case one rank will be started for"
-	echo "every process in the mpi_hosts file"
+	echo "Usage: $0 [-l] number_processes ['reason for run']"
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file"
+	echo "For example: $0 2 'run with 2t problem size'"
 	exit 1
 else
 	NUM_PROCESSES=$1

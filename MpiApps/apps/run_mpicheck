@@ -38,28 +38,32 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-if [ -z "$1" -o "$1" == "-h" -o "$1" == "--help" ]
+CMD="mpicheck/mpicheck"
+APP=mpicheck
+
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo " Usage: run_mpicheck number_processes"
-	echo " For example: ./run_mpicheck 2 [options]"
-	echo "number_processes may be 'all' in which case one rank will be started for"
-	echo "every process in the mpi_hosts file"
+	echo "Usage: $0 number_processes [options]"
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file"
+	echo "    [options] are passed to ${APP}"
+	echo "For example: $0 2 --random"
+	echo
+	echo "To get more details about [options] available: $0 2 --help"
 	exit 1
 fi
 
 NUM_PROCESSES=$1
-OPTIONS="$2 $3 $4 $5 $6 $7 $8 $9"
-APP=mpicheck
+shift
 LOGFILE=
 . ./prepare_run
 
-CMD="mpicheck/mpicheck"
 
 (
 	echo " Running MpiCheck ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD  $OPTIONS
+	$MPI_RUN_CMD $CMD "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 echo "########################################### " >> $LOGFILE

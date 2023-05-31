@@ -41,55 +41,33 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 bwtol=20
 lattol=50
 
+CMD="deviation/deviation"
+APP=deviation
+
 Usage()
 {
-	echo "Usage: run_deviation number_processes ['ff' | bwtol lattol]" >&2
-	echo "                        [other deviation arguments]" >&2
-	echo "  number_processes may be 'all' in which case one rank will be started for"
-	echo "           every process in the mpi_hosts file"
-	echo " 'ff'      When specified, the configured FF_DEVIATION_ARGS will be used" >&2
-	echo " bwtol     Percent of bandwidth degradation allowed below Avg value" >&2
- 	echo " lattol    Percent of latency degradation allowed above Avg value" >&2
-	echo  >&2
-	echo "Other deviation arguments:" >&2
-	echo "       [-bwdelta MBs] [-bwthres MBs] [-bwloop count] [-bwsize size]" >&2
-   	echo "       [-bwbidir|-bwunidir]" >&2
-	echo "       [-latdelta usec] [-latthres usec] [-latloop count] [-latsize size]" >&2
-	echo "       [-c] [-b] [-v] [-vv] [-h reference_host]" >&2
-	echo "    -bwdelta   Limit in MB/s of bandwidth degradation allowed below Avg value" >&2
-	echo "    -bwthres   Lower Limit in MB/s of bandwidth allowed" >&2
-	echo "    -bwloop    Number of loops to execute each bandwidth test" >&2
-	echo "    -bwsize    Size of message to use for bandwidth test" >&2
-	echo "    -bwbidir   Perform a bidirectional bandwidth test" >&2
-	echo "    -bwunidir  Perform a unidirectional bandwidth test (default)" >&2
-	echo "    -latdelta  Limit in usec of latency degradation allowed above Avg value" >&2
-	echo "    -latthres  Upper Limit in usec of latency allowed" >&2
-	echo "    -latloop   Number of loops to execute each latency test" >&2
-	echo "    -latsize   Size of message to use for latency test" >&2
-	echo "    -c         Run test pairs concurrently instead of the default of sequential" >&2
-	echo "    -b         When comparing results against tolerance and delta use best" >&2
-	echo "               instead of Avg" >&2
-	echo "    -v         verbose output" >&2
-	echo "    -vv        Very verbose output" >&2
-	echo "    -h         Baseline host to use for sequential pairing" >&2
-	echo "Both bwtol and bwdelta must be exceeded to fail bandwidth test" >&2
-	echo "When bwthres is supplied, bwtol and bwdelta are ignored" >&2
-	echo "Both lattol and latdelta must be exceeded to fail latency test" >&2
-	echo "When latthres is supplied, lattol and latdelta are ignored" >&2
-	echo  >&2
-	echo "For consistency with OSU benchmarks MB/s is defined as 1000000 bytes/s" >&2
-	echo  >&2
+	echo "Usage: $0 number_processes ['ff' | bwtol lattol] [other options]" >&2
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file"
+	echo "    'ff'      When specified, the configured FF_DEVIATION_ARGS will be used" >&2
+	echo "    bwtol     Percent of bandwidth degradation allowed below Avg value" >&2
+	echo "              passed via -bwtol to $APP" >&2
+ 	echo "    lattol    Percent of latency degradation allowed above Avg value" >&2
+	echo "              passed via -lattol to $APP" >&2
+	echo "    [other options] are passed to ${APP}" >&2
 	echo "Examples:" >&2
-	echo "   ./run_deviation 20 ff" >&2
-	echo "   ./run_deviation 20 ff -v" >&2
-	echo "   ./run_deviation 20 20 50 -c" >&2
-	echo "   ./run_deviation 20 '' '' -c -v -bwthres 1200.5 -latthres 3.5" >&2
-	echo "   ./run_deviation 20 20 50 -c -h compute0001" >&2
-	echo "   ./run_deviation 20 0 0 -bwdelta 200 -latdelta 0.5" >&2
+	echo "   $0 20 ff" >&2
+	echo "   $0 20 ff -v" >&2
+	echo "   $0 20 20 50 -c" >&2
+	echo "   $0 20 '' '' -c -v -bwthres 1200.5 -latthres 3.5" >&2
+	echo "   $0 20 20 50 -c -h compute0001" >&2
+	echo "   $0 20 0 0 -bwdelta 200 -latdelta 0.5" >&2
+	echo  >&2
+	echo "To get more details about [other options] available: $0 2 -help"
 	exit 2
 }
 
-if [ -z "$1" -o x"$1" = x"--help" ]
+if [ -z "$1" -o x"$1" = x"-h" -o x"$1" = x"--help" ]
 then
 	Usage
 else
@@ -138,9 +116,6 @@ else
 	other_args="-bwtol $bwtol -lattol $lattol"
 fi
 
-CMD="deviation/deviation $other_args $@"
-
-APP=deviation
 LOGFILE=
 . ./prepare_run
 
@@ -148,7 +123,7 @@ LOGFILE=
 	echo " Running Deviation ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD
+	$MPI_RUN_CMD $CMD $other_args "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 echo "########################################### " >> $LOGFILE

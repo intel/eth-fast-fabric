@@ -42,15 +42,22 @@ trap "exit 1" SIGHUP SIGTERM SIGINT
 CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_latency"
 APP=osu_latency
 
-if [ "$1" == "-h" -o "$1" == "--help" ]
+if [ x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo " Usage: $0 [options]"
-	echo " For example: $0 -v"
-	echo " Always runs on exactly two hosts."
+	echo "Usage: $0 [options]"
+	echo "    [options] are passed to ${APP}"
+	echo "Always runs on exactly two hosts."
+	echo "For example: $0 -v"
 	echo
-	echo -n " [options] are passed to ${APP}: "
-	${CMD} -h
+	echo "To get more details about [options] available: $0 -hh"
 	exit 1
+fi
+
+help=
+if [ x"$1" == x"-hh" ]
+then
+	help="-h"
+	shift
 fi
 
 NUM_PROCESSES=2
@@ -61,7 +68,7 @@ LOGFILE=
 	echo " Running Latency 5.9 ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD $@
+	$MPI_RUN_CMD $CMD $help "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 

@@ -38,31 +38,46 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-IMB_CMD="imb/IMB-MPI1"
-if [ ! -x $IMB_CMD ]
-then
-	echo " $IMB_CMD: Not Found"
-	exit 1
-fi
+BASE_DIR="imb/"
 
-if [ -z "$1" -o "$1" == "-h" -o "$1" == "--help" ]
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo " Usage: run_imb number_processes [options] [benchmarks]"
-	echo " For example: ./run_imb 2"
-	echo " For example: ./run_imb 16 allreduce barrier"
-	echo "number_processes may be 'all' in which case one rank will be started for"
-	echo "every process in the mpi_hosts file"
+	echo "Usage: $0 number_processes [suite] [options]"
+	echo "    number_processes may be 'all' in which case one rank will be started for"
+	echo "                     every process in the mpi_hosts file"
+	echo "    [suite] is the benchmark suite to run (default MPI1)"
+	echo "    [options] are passed to the suite"
 	echo
-	echo "For a list of the available IMB MPI1 benchmarks please see the Intel"
+	echo -n "Possible suites are: "
+	sep=""
+	for f in ${BASE_DIR}IMB-*; do
+		[ ! -x "$f" ] && continue;
+		echo -n $sep$(basename $f|sed -e 's/IMB-//')
+		sep=", "
+	done
+	echo
+	echo
+	echo "For example: $0 2"
+	echo "For example: $0 16 allreduce barrier"
+	echo "For example: $0 2 P2P pingpong"
+	echo
+	echo "For a list of the available IMB benchmarks please see the Intel"
 	echo "MPI Benchmarks documentation."
 	echo
-	$IMB_CMD -help
+	echo "To get more details about [options] available: $0 2 -help"
 	exit 1
 fi
 
 NUM_PROCESSES=$1
-APP=IMB-MPI1
 shift
+if [ -x "$BASE_DIR/IMB-$1" ]
+then
+	APP="IMB-$1"
+	shift
+else
+	APP=IMB-MPI1
+fi
+IMB_CMD="$BASE_DIR$APP"
 LOGFILE=
 . ./prepare_run
 

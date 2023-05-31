@@ -38,25 +38,18 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
+CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_mbw_mr"
+APP=osu_mbw_mr
+
 if [ -z "$1" -o x"$1" = x"-h" -o x"$1" = x"--help" ]
 then
-	echo "Usage: run_mbw_mr5 number_processes [osu_mbw_mr arguments]]" >&2
-	echo "number_processes may be 'all' in which case one rank will be started for" >&2
-	echo "every process in the mpi_hosts file" >&2
+	echo "Usage: $0 number_processes [options]]" >&2
+	echo "    number_processes may be 'all' in which case one rank will be started for" >&2
+	echo "                     every process in the mpi_hosts file" >&2
+	echo "    [options] are passed to ${APP}"
 	echo "This application requires an even number of processes" >&2
 	echo  >&2
-	echo "osu_mbw_mr arguments:" >&2
-	echo "  -r=<0,1>         Print uni-directional message rate (default 1)" >&2
-	echo "  -p=<pairs>       Number of pairs involved (default np / 2)" >&2
-	echo "  -w=<window>      Number of messages sent before acknowledgement (64, 10)" >&2
-	echo "                   [cannot be used with -v]" >&2
-	echo "  -v               Vary the window size (default no)" >&2
-	echo "                   [cannot be used with -w]" >&2
-	echo "  -h               Print this help" >&2
-	echo  >&2
-	echo "  Note: This benchmark relies on block ordering of the ranks.  Please see" >&2
-	echo "        the OSU benchmarks README for more information." >&2
-	echo  >&2
+	echo "To get more details about [options] available: $0 2 -h" >&2
 	exit 2
 else
 	NUM_PROCESSES=$1
@@ -65,9 +58,6 @@ fi
 
 MULT_PROCESSES=2
 
-CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_mbw_mr $@"
-
-APP=osu_mbw_mr
 LOGFILE=
 . ./prepare_run
 
@@ -75,7 +65,7 @@ LOGFILE=
 	echo " Running Multi-Bandwidth 5.9 ..."
 	show_mpi_hosts
 	set -x
-	$MPI_RUN_CMD $CMD
+	$MPI_RUN_CMD $CMD "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
 echo "########################################### " >> $LOGFILE

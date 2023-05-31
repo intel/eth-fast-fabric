@@ -46,9 +46,9 @@ BATCH_SIZE=${BATCH_SIZE:-24}	# now many hosts per mpi job
 # jobs are nohup'ed so they can run for long duration in the background
 
 Usage() {
-	echo "Usage: ./run_batch_cabletest [-v] [-n numprocs] [duration [minmsg [maxmsg]]]" >&2
+	echo "Usage: $0 [-v] [-n numprocs] [duration [minmsg [maxmsg]]]" >&2
 	echo "           or" >&2
-	echo "       ./run_batch_cabletest --help" >&2
+	echo "       $0 --help" >&2
 	echo >&2
 	echo "    -v - verbose mode.  Additional output generated to nohup files" >&2
 	echo "    -n numprocs - number of processes per host (default 3)" >&2
@@ -68,13 +68,13 @@ Usage() {
 	echo "                hosts will be paired sequentially (1st & 2nd, 3rd & 4th, ...)" >&2 
 	echo "    BATCH_SIZE - maximum hosts per MPI job, default is 18, must be even" >&2
 	echo "Examples:" >&2
-	echo "    ./run_batch_cabletest" >&2
-	echo "    MPI_HOSTS=good ./run_batch_cabletest 1440" >&2
-	echo "    BATCH_SIZE=16 MPI_HOSTS=good ./run_batch_cabletest infinite" >&2
+	echo "    $0" >&2
+	echo "    MPI_HOSTS=good $0 1440" >&2
+	echo "    BATCH_SIZE=16 MPI_HOSTS=good $0 infinite" >&2
 	exit 2
 }
 
-if [ x"$1" = x"--help" -o x"$1" = x"-h" ]
+if [ x"$1" = x"-h" -o x"$1" = x"--help" ]
 then
 	Usage
 fi

@@ -699,102 +699,62 @@ function settarget()
     fi        
 } # end function
 
+
 # NOTE: This function is changed whenever we add different platform or
 #       target support.
 #---------------------------------------------------------------------------
-# Function:	os_vendor
-# In Script:	funcs-ext.sh
-# Arguments:	none
-# Description:	determine the os vendor based on build system
+# Function:     os_release_file
+# In Script:    funcs-ext.sh
+# Arguments:    none
+# Description:  determine the os-release to use based on location of ID var
+#---------------------------------------------------------------------------
+function os_release_file()
+{
+    if [ -e /etc/os-release ] && grep -q '^ID=' /etc/os-release 2>/dev/null; then
+        echo "/etc/os-release"
+    elif [ -e /usr/lib/os-release ] && grep -q '^ID=' /usr/lib/os-release 2>/dev/null; then
+        # Fall Back for known Bug in Rocky 8.6 GA where /etc/ file was broken
+        echo "/usr/lib/os-release"
+    else
+        echo ""
+        return 1
+    fi
+}
+
+# NOTE: This function is changed whenever we add different platform or
+#       target support.
+#---------------------------------------------------------------------------
+# Function:     os_vendor
+# In Script:    funcs-ext.sh
+# Arguments:    none
+# Description:  determine the os vendor based on build system
 #---------------------------------------------------------------------------
 function os_vendor()
 {
-    if [ -f /etc/os-release ]
-    then
-        id=$(grep ^ID= /etc/os-release | cut -f2 -d= | cut -f2 -d\")
-        case $id in
-            rhel)
-                rval=redhat
-                ;;
-            sles)
-                rval=SuSE
-                ;;
-            sle_hpc)
-                rval=SuSE
-                ;;
-            centos)
-                rval=redhat
-                ;;
-            rocky)
-                rval=redhat
-                ;;
-            almalinux)
-                rval=redhat
-                ;;
-            circle)
-                rval=redhat
-                ;;
-            ol)
-                rval=redhat
-                ;;
-            opencloudos)
-                rval=opencloudos
-                ;;
-            fedora)
-                rval=redhat
-                ;;
-            ubuntu)
-                rval=ubuntu
-                ;;
-            *)
-                rval=""
-                ;;
-        esac
-    elif [ `uname -s` == "Darwin" ]
-    then
-        # Apple Mac
-        rval=apple
-    else
-        filelist=($('ls' /etc/*-release | egrep -v lsb | egrep -v os))
-        rval=""
-        if [ ${#filelist[@]} -eq 0 ] && [ -f /etc/lsb-release ]; then
-            rval=$(cat /etc/lsb-release | egrep DISTRIB_ID | cut -d'=' -f2 | tr '[:upper:]' '[:lower:]')
+    local rval
+    declare -A vendor_map=(
+        [rhel]="redhat"
+        [centos]="redhat"
+        [fedora]="redhat"
+        [rocky]="redhat"
+        [almalinux]="redhat"
+        [circle]="redhat"
+        [ol]="redhat"
+        [opencloudos]="opencloudos"
+        [sles]="SuSE"
+        [sle_hpc]="SuSE"
+        [ubuntu]="ubuntu"
+    )
+    local os_file=$(os_release_file)
+
+    if [ "${os_file}" ]; then
+        . ${os_file}
+        # - use ID - it has a common format among distros
+        # if found in map, it will print 'found' else it will be empty string.
+        if [ "${vendor_map[${ID}]+found}" == "found" ]
+        then
+            rval=${vendor_map[${ID}]}
         fi
-        for file in $filelist
-        do
-	    if [ -f $file ]
-	    then
-		rval=$(basename $file -release)
-		if [ $rval = 'SuSE' ]
-		then
-			if [ -f /etc/UnitedLinux-release ]
-			then
-				rval=UnitedLinux
-			fi
-		elif [ $rval = 'centos' ]
-		then
-			rval=redhat
-		elif [ $rval = 'rocky' ]
-		then
-			rval=redhat
-		elif [ $rval = 'almalinux' ]
-		then
-			rval=redhat
-		elif [ $rval = 'circle' ]
-		then
-			rval=redhat
-		elif [ $rval = 'oracle' ]
-		then
-			rval=redhat
-		elif [ $rval = 'opencloudos' ]
-		then
-			rval=opencloudos
-		elif [ $rval != 'os' ]
-		then
-			break
-		fi
-	    fi
-        done
     fi
     echo $rval
 }
@@ -802,110 +762,26 @@ function os_vendor()
 # NOTE: This function is changed whenever we add different platform or
 #       target support.
 #---------------------------------------------------------------------------
-# Function:	os_vendor_version
-# In Script:	funcs-ext.sh
-# Arguments:	1 = os_vendor
-# Description:	determine the os vendor release level based on build system
+# Function:     os_vendor_version
+# In Script:    funcs-ext.sh
+# Arguments:    1 = os_vendor
+# Description:  determine the os vendor release level based on build system
 #---------------------------------------------------------------------------
 function os_vendor_version()
 {
-	if [[ -e /etc/os-release ]]; then
-		. /etc/os-release
-		# - use VERSION_ID - it has a common format among distros 
-		# - mimic old way and drop $minor if eq 0 (see redhat handling below)
-		# - drop '.'(dot)
-		if [ "$1" = "ubuntu" ]; then
-			rval=UB$(echo $VERSION_ID | sed -e 's/\.//')
-		else
-			rval=ES$(echo $VERSION_ID | sed -e 's/\.[0]//' -e 's/\.//')
-        	fi
-		echo $rval
-		return
-	fi
-
-	# using old way if '/etc/os-release' not found
-	case $1 in
-	apple)
-    	rval=`sw_vers -productVersion|cut -f1-2 -d.`
-		;;
-	rocks)
-		rval=`cat /etc/rocks-release | cut -d' ' -f3`
-		;;
-	scyld)
-		rval=`cat /etc/scyld-release | cut -d' ' -f4`
-		;;
-	mandrake)
-		rval=`cat /etc/mandrake-release | cut -d' ' -f4`
-		;;
-	opencloudos)
-		rval=`cat /etc/opencloudos-stream-release | cut -d' ' -f4`
-		;;
-	fedora)
-		if grep -qi core /etc/fedora-release
-		then
-			rval=`cat /etc/fedora-release | cut -d' ' -f4`
-		else
-			rval=`cat /etc/fedora-release | cut -d' ' -f3`
-		fi
-		;;
-	redhat)
-		if grep -qi advanced /etc/redhat-release
-		then
-			rval=`cat /etc/redhat-release | cut -d' ' -f7`
-		elif grep -qi enterprise /etc/redhat-release
-		then
-			# /etc/redhat-release = "Red Hat Enterprise Linux Server release $a.$b ($c)"
-			rval="ES"`cat /etc/redhat-release | cut -d' ' -f7 | cut -d. -f1`
-			major=`cat /etc/redhat-release | cut -d' ' -f7 | cut -d. -f1`
-			minor=`cat /etc/redhat-release | cut -d' ' -f7 | cut -d. -f2`
-			if [ \( $major -ge 7 -a $minor -ne 0 \) -o \( $major -eq 6 -a $minor -ge 7 \) ]
-			then
-				rval=$rval$minor
-			fi
-		elif grep -qi centos /etc/redhat-release
-		then
-			# CentOS 
-			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
-		elif grep -qi rocky /etc/redhat-release
-		then
-			# Rocky Linux
-			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
-		elif grep -qi almalinux /etc/redhat-release
-		then
-			# AlmaLinux
-			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
-		elif grep -qi circle /etc/redhat-release
-		then
-			# Circle Linux
-			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1\2/'`
-		elif grep -qi oracle /etc/oracle-release
-		then
-			# Oracle Linux
-			rval="ES"`cat /etc/oracle-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).*$/\1\2/'`
-		elif grep -qi scientific /etc/redhat-release
-		then
-			# Scientific Linux.
-			rval="ES"`cat /etc/redhat-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]]).+$/\1/'`
-		else
-			rval=`cat /etc/redhat-release | cut -d' ' -f5`
-		fi
-		;;
-	UnitedLinux)
-		rval=`grep United /etc/UnitedLinux-release | cut -d' ' -f2`
-		;;
-	SuSE)
-		if grep -qi enterprise /etc/SuSE-release
-		then
-			rval="ES"`grep -i enterprise /etc/SuSE-release | cut -d' ' -f5`
-		else
-			rval=`grep -i SuSE /etc/SuSE-release | cut -d' ' -f3`
-		fi
-		;;
-	turbolinux)
-		rval=`cat /etc/turbolinux-release | cut -d' ' -f3`
-		;;
-	esac
-	echo $rval
+    local os_file=$(os_release_file)
+    if [ "${os_file}" ]; then
+        . ${os_file}
+        # - use VERSION_ID - it has a common format among distros
+        # - mimic old way and drop $minor if eq 0 (see redhat handling below)
+        # - drop '.'(dot)
+        if [ "$1" = "ubuntu" ]; then
+            rval=UB$(echo $VERSION_ID | sed -e 's/\.//')
+        else
+            rval=ES$(echo $VERSION_ID | sed -e 's/\.[0]//' -e 's/\.//')
+        fi
+    fi
+    echo $rval
 }
 
 # NOTE: This function is changed whenever we add different platform or

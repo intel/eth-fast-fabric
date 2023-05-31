@@ -77,7 +77,7 @@ MPI_APPS_TAR="${TAR_DIR}/eth-mpi-apps.tgz"
 
 if [ "$build_deb" = "yes" ]; then
 	BUILDDIR="${TL_DIR}/debbuild"
-	ETH_TOOLS_DIR="${BUILDDIR}/eth-tools-${pkgversion}"
+	ETH_TOOLS_DIR="${BUILDDIR}/eth-fast-fabric-${pkgversion}"
 	MPI_APPS_DIR="${BUILDDIR}/eth-mpi-apps-${pkgversion}"
 	mkdir -p "${ETH_TOOLS_DIR}"
 	mkdir -p "${MPI_APPS_DIR}"

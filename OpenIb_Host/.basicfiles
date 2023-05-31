@@ -1,0 +1,69 @@
+Name: eth-tools
+Version: __RPM_VERSION
+Release: __RPM_RELEASE
+Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
+
+License: BSD
+Url: https://github.com/intel/eth-fast-fabric
+Source: %url/releases/download/v%{version_no_tilde}/eth-fast-fabric-%{version_no_tilde}.tar.gz
+ExclusiveArch: x86_64
+# The Intel(R) Ethernet Fabric Suite product line is only available on x86_64 platforms at this time.
+
+__RPM_DEBUG_PKG
+
+__RPM_EPOCH
+
+%description
+This package contains the tools necessary to manage an Intel Ethernet fabric.
+
+%package basic
+Summary: Management level tools and scripts
+
+Requires: rdma bc
+
+__RPM_DEPENDENCIES
+
+%description basic
+Contains basic tools for fabric management necessary on all compute nodes.
+
+%package fastfabric
+Summary: Management level tools and scripts
+Requires: perl
+Requires: eth-tools-basic%{?_isa} >= %{version}-%{release}
+
+%description fastfabric
+Contains tools for managing fabric on a management node.
+
+%prep
+%autosetup -cn eth-fast-fabric-%{version_no_tilde}
+
+%build
+cd OpenIb_Host
+__RPM_FS ./ff_build.sh %{_builddir}
+
+%install
+BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_libdir} OpenIb_Host/ff_install.sh
+
+%files basic
+%dir %{_sysconfdir}/eth-tools/
+%{_sbindir}/ethbw
+%{_sbindir}/ethcapture
+%{_sbindir}/ethshmcleanup
+%{_prefix}/lib/eth-tools/setup_self_ssh
+%{_prefix}/lib/eth-tools/usemem
+%{_prefix}/lib/eth-tools/ethipcalc
+%{_prefix}/lib/eth-tools/stream
+%{_prefix}/lib/eth-tools/ethudstress
+%{_mandir}/man1/ethbw.1*
+%{_mandir}/man1/ethcapture.1*
+%{_mandir}/man1/ethshmcleanup.1*
+%{_datadir}/eth-tools/samples/dsa_setup
+%{_datadir}/eth-tools/samples/dsa.service
+%{_datadir}/eth-tools/samples/mgt_config.xml-sample
+%config(noreplace) %{_sysconfdir}/eth-tools/mgt_config.xml
+
+%files fastfabric
+__RPM_FF_FILES
+
+%changelog
+__RPM_CHANGELOG
