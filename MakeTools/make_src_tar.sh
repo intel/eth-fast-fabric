@@ -1,3 +1,4 @@
+#!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
 # Copyright (c) 2015-2020, Intel Corporation
@@ -28,7 +29,6 @@
 # END_ICS_COPYRIGHT8   ****************************************
 
 #[ICS VERSION STRING: unknown]
-#!/bin/sh
 # This script is used to to create source tar for rpm
 # Required arguments: $RELEASE_TYPE $SrcRoot $USE_UNIFDEF $ARCHIVE $FILES_TO_TAR $FILE_TO_EXCLUDE
 set -x

@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.5.0.0
-Release: 86%{?dist}
+Release: 89%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -65,24 +65,8 @@ __RPM_FF_FILES
 
 
 %changelog
-* Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-86
-- Added tool dsa_setup to aid creation of DSA devices
-- Added Ubuntu support on building fastfabric package
-
-* Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-73
-- Improved to support RHEL 9.1
-- Fixed RV rebuild issue under SLES 15.4 to support Intel GPU
-- Fixed installation issue under Ubuntu when there are conflict files
-- Improved stability on ethcabletest and ethfindgood
-
-* Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-53
-- Improved to support RHEL 8.7
-- Added Ubuntu support on RV and mpiapps
-- Fixed minor bugs on nodeverify.sh, ethshowallports and ethfindgood
-- Improved below tools to support fabric plane
--- ethcabletest.sh
--- ethshowallports.sh
--- ethhostadmin
+* Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-89
+- Changed script shebang to use /bin/bash rather than /bin/sh
 
 * Thu Dec 1 2022 Jijun Wang <jijun.wang@intel.com> - 11.4.0.0-198
 - Added Ubuntu support to INSTALL script
