@@ -71,6 +71,10 @@ export I_MPI_FABRICS=shm:ofi
 export I_MPI_OFI_PROVIDER=psm3
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv FI_PROVIDER=psm3"
 
+# This defines where external providers are loaded from
+#export FI_PROVIDER_PATH=${FI_PROVIDER_PATH:-/usr/lib64/libfabric:/usr/lib/x86_64-linux-gnu/libfabric}
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv FI_PROVIDER_PATH=$FI_PROVIDER_PATH"
+
 # This defines the order in which PSM interfaces are tested for
 # reachability to another rank of an MPI job. You will not normally need
 # to change this.

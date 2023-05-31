@@ -46,14 +46,17 @@ readonly TL_DIR=/usr/lib/eth-tools
 
 Usage_full()
 {
-	echo "Usage: $BASENAME [-f hostfile] [-h 'hosts']" >&2
+	echo "Usage: $BASENAME [-p plane] [-f hostfile] [-h 'hosts']" >&2
 #	echo "Usage: $BASENAME [-C] [-f hostfile] [-F switchesfile]" >&2
 #	echo "                    [-h 'hosts'] [-H 'switches'] [-S]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 #	echo "   -C - perform operation against switches, default is hosts" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p plane - fabric plane the operations will apply on. Default is the first" >&2
+	echo "              active plane defined in Mgt config file" >&2
+	echo "   -f hostfile - file with hosts in cluster. It overrides the HostsFile defined" >&2
+	echo "                 in Mgt config file for the plane" >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "   -h hosts - list of hosts to show ports for" >&2
@@ -63,11 +66,13 @@ Usage_full()
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
 #	echo "   SWITCHES - list of switches, used if -H option not supplied" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
+	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
 #	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 #	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switch: telnet or ssh" >&2
 #	echo "   FF_SWITCH_ADMIN_PASSWORD - admin password for switch, used in absence of -S" >&2
 	echo "example:">&2
 	echo "   $BASENAME" >&2
+	echo "   $BASENAME -p plane1" >&2
 	echo "   $BASENAME -h 'elrond arwen'" >&2
 	echo "   HOSTS='elrond arwen' $BASENAME" >&2
 #	echo "   $BASENAME -C" >&2
@@ -79,13 +84,15 @@ Usage_full()
 
 Usage()
 {
-	echo "Usage: $BASENAME [-f hostfile]" >&2
+	echo "Usage: $BASENAME [-p plane] [-f hostfile]" >&2
 #	echo "Usage: $BASENAME [-C] [-f hostfile] [-F switchesfile] [-S]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
 #	echo "   -C - perform operation against switches, default is hosts" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p plane - fabric plane the operations will apply on, default is the first" >&2
+	echo "              active plane defined in Mgt config file" >&2
+	echo "   -f hostfile - file with hosts in cluster" >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "   -S - securely prompt for password for admin on switches" >&2
@@ -103,7 +110,7 @@ fi
 host=0
 switches=0
 Sopt=n
-while getopts f:h: param
+while getopts p:f:h: param
 #while getopts Cf:F:h:H:S param
 do
 	case $param in
@@ -112,6 +119,9 @@ do
 	f)
 		host=1
 		HOSTS_FILE="$OPTARG";;
+	p)
+		host=1
+		FABRIC_PLANE="$OPTARG";;
 #	F)
 #		switches=1
 #		SWITCHES_FILE="$OPTARG";;
@@ -145,20 +155,36 @@ fi
 if [ "$switches" -eq 0 ]
 then
 
-	check_host_args $BASENAME
+	check_host_args $BASENAME 1
 	driver="ice"
 	for hostname in $HOSTS
 	do
 		echo "--------------------------------------------------------------------"
 		echo "$hostname:"
-		cmd="
-		    devs=\"$(ls -l /sys/class/net/*/device/driver | grep "$driver$" | awk "{print \$9}" | cut -d '/' -f5)\"
-		    for dev in \$devs; do
-		    	ethtool \$dev
-		    	echo \"Statistics for \$dev:\"
-		    	ethtool -S \$dev | grep --color=never '^\s\+[tr]x_\(bytes\|errors\|dropped\):'
-		    done
-		    "
+		devs="$(get_node_ports "$hostname")"
+		if [ -z "$devs" ]
+		then
+			# show settings and statistics for all ICE ports
+			cmd="
+				devs=\"$(ls -l /sys/class/net/*/device/driver | grep "$driver$" | awk "{print \$9}" | cut -d '/' -f5)\"
+				for dev in \$devs; do
+					echo
+					ethtool \$dev
+					echo \"Statistics for \$dev:\"
+					ethtool -S \$dev | grep --color=never '^\s\+[tr]x_\(bytes\|errors\|dropped\):'
+				done
+				"
+		else
+			# show settings and statistics for all specified ports
+			cmd="
+			    for dev in $devs; do
+					echo
+					ethtool \$dev
+					echo \"Statistics for \$dev:\"
+					ethtool -S \$dev | grep --color=never '^\s\+[tr]x_\(bytes\|errors\|dropped\):'
+				done
+			    "
+		fi
 		$TL_DIR/tcl_proc hosts_run_cmd "$hostname" "root" "$cmd" 1
 	done
 else

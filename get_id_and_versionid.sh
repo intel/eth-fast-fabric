@@ -38,13 +38,6 @@ else
 			elif [ $rval = 'circle' ]
 			then
 				rval=redhat
-			elif [ $rval = 'opencloudos' ]
-			then
-				rval=opencloudos
-			elif [ $rval = 'oracle' ]
-			then
-				rval=ol
-				break
 			elif [ $rval != 'os' ]
 			then
 				break
@@ -58,12 +51,6 @@ else
 		;;
 	SuSE)
 		id=sles
-		;;
-	opencloudos)
-		id=ocs
-		;;
-	ol)
-		id=ol
 		;;
 	*)
 		id=""
@@ -113,12 +100,6 @@ else
 		v1=$(grep VERSION /etc/SuSE-release | cut -d' ' -f3)
 		v2=$(grep PATCHLEVEL /etc/SuSE-release | cut -d' ' -f3)
 		rval=${v1}.$v2
-		;;
-	ocs)
-		rval=`cat /etc/opencloudos-stream-release | cut -d' ' -f4`
-		;;
-	ol)
-		rval=`cat /etc/oracle-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]])*+$/\1.\2/'`
 		;;
 	*)
 		rval=""

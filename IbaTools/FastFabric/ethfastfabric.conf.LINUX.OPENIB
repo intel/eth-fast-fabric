@@ -12,7 +12,7 @@ then
 fi
 
 # Override default location for HOSTS_FILE
-export HOSTS_FILE=${HOSTS_FILE:-$CONFIG_DIR/eth-tools/hosts}
+#export HOSTS_FILE=${HOSTS_FILE:-$CONFIG_DIR/eth-tools/hosts}
 
 # Override default location for SWITCHES_FILE
 export SWITCHES_FILE=${SWITCHES_FILE:-$CONFIG_DIR/eth-tools/switches}

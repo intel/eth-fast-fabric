@@ -49,12 +49,14 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-	echo "Usage: $BASENAME [-f hostfile] [-h 'hosts'] [-n numprocs] [start|stop] ..." >&2
+	echo "Usage: $BASENAME [-p plane] [-f hostfile] [-h 'hosts'] [-n numprocs] [start|stop] ..." >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-	echo "   -f hostfile - file with hosts to include in NIC-SW test," >&2
-	echo "                 default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p plane - fabric plane the operations will apply on. Default is the first" >&2
+	echo "              active plane defined in Mgt config file" >&2
+	echo "   -f hostfile - file with hosts to include in NIC-SW test. It overrides the" >&2
+	echo "                 HostsFile defined in Mgt config file for the plane" >&2
 	echo "   -h hosts - list of hosts to include in NIC-SW test" >&2
 	echo "   -n numprocs - number of processes per host for NIC-SW test" >&2
 	echo "   start - start the NIC-SW tests" >&2
@@ -66,8 +68,10 @@ Usage_full()
 	echo " Environment:" >&2
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
+	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
 	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
 	echo "example:">&2
+	echo "   $BASENAME -p plane1" >&2
 	echo "   $BASENAME -f good" >&2
 	echo "   $BASENAME -h 'arwen elrond' start" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME stop" >&2
@@ -77,12 +81,13 @@ Usage_full()
 
 Usage()
 {
-	echo "Usage: $BASENAME [-n numprocs] [-f hostfile] [start|stop] ..." >&2
+	echo "Usage: $BASENAME [-n numprocs] [-p plane] [-f hostfile] [start|stop] ..." >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo "   --help - produce full help text" >&2
-	echo "   -f hostfile - file with hosts to include in NIC-SW test," >&2
-	echo "                 default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p plane - fabric plane the operations will apply on, default is the first" >&2
+	echo "              active plane defined in Mgt config file" >&2
+	echo "   -f hostfile - file with hosts to include in NIC-SW test" >&2
 	echo "   -n numprocs - number of processes per host for NIC-SW test" >&2
 	echo >&2
 	echo "   start - start the NIC-SW tests" >&2
@@ -94,6 +99,7 @@ Usage()
 	echo " Environment:" >&2
 	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
 	echo "example:">&2
+	echo "   $BASENAME -p plane1" >&2
 	echo "   $BASENAME -f good" >&2
 	echo "   $BASENAME stop" >&2
 	rm -f $tempfile
@@ -106,13 +112,15 @@ then
 fi
 
 numprocs=3
-while getopts f:h:n: param
+while getopts p:f:h:n: param
 do
 	case $param in
 	h)
 		HOSTS="$OPTARG";;
 	f)
 		HOSTS_FILE="$OPTARG";;
+	p)
+		FABRIC_PLANE="$OPTARG";;
 	n)
 		numprocs="$OPTARG";;
 	?)
@@ -121,7 +129,7 @@ do
 done
 shift $((OPTIND -1))
 
-check_host_args $BASENAME
+check_host_args $BASENAME 1
 
 first_node=$(echo "$HOSTS" | head -n 1 | cut -d ' ' -f 1)
 first_ports=$(get_node_ports "$first_node")

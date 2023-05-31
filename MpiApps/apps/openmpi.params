@@ -71,7 +71,7 @@ export MPI_CMD_ARGS="-mca plm_rsh_no_tree_spawn 1"
 export MPI_CMD_ARGS="${MPI_CMD_ARGS} --mca btl ^ofi"
 
 # This defines where external providers are loaded from
-export FI_PROVIDER_PATH=${FI_PROVIDER_PATH:-/usr/lib64/libfabric}
+export FI_PROVIDER_PATH=${FI_PROVIDER_PATH:-/usr/lib64/libfabric:/usr/lib/x86_64-linux-gnu/libfabric}
 
 # export FI_PROVIDER=psm3
 # exclude all but the psm3 provider this includes excluding the psm3;ofi_rxd layered provider as it is not performant

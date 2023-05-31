@@ -81,6 +81,7 @@ my %Components_by_distro = (
 	'redhat*ES84'   => \@EthAllComponents,
 	'redhat*ES85'   => \@EthAllComponents,
 	'redhat*ES86'   => \@EthAllComponents,
+	'redhat*ES87'   => \@EthAllComponents,
 	'redhat*ES9'    => \@EthAllComponents,
 	'ubuntu*UB2004' => \@EthUbuntuComponents,
 	'ubuntu*UB2204' => \@EthUbuntuComponents,
@@ -511,6 +512,7 @@ my %Comp_info_by_distro = (
 	'redhat*ES84'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES85'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES86'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES87'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES9'    => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 
 	'ubuntu*UB2004' => { %ibacm_comp_info, %eth_module_debian_comp_info },
@@ -580,11 +582,22 @@ sub disable_autostart2_iefsconfig()
 	disable_autostart("iefs");
 }
 
-sub available_iefsconfig
+sub get_rpms_dir_iefsconfig()
 {
 	my $srcdir=$ComponentInfo{'iefsconfig'}{'SrcDir'};
 	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	return (rpm_resolve("$pkg_dir/*/iefsconfig", "any"));
+	return "$pkg_dir/*";
+}
+
+sub pkg_iefsconfig
+{
+	my $pkg_dir = get_rpms_dir_iefsconfig();
+	return (rpm_resolve("$pkg_dir/iefsconfig", "any"));
+}
+
+sub available_iefsconfig
+{
+	return (pkg_iefsconfig() ne "");
 }
 
 sub installed_iefsconfig
@@ -600,9 +613,7 @@ sub installed_version_iefsconfig
 
 sub media_version_iefsconfig
 {
-	my $srcdir = $ComponentInfo{'iefsconfig'}{'SrcDir'};
-	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	my $rpm = rpm_resolve("$pkg_dir/*/iefsconfig", "any");
+	my $rpm = pkg_iefsconfig();
 	my $version = rpm_query_version_release($rpm);
 	return dot_version("$version");
 }

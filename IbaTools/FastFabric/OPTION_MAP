@@ -163,6 +163,7 @@ List of command line options used in various Fast Fabric tools
 -o output           output type                                    eth2rm
 -o report           Specifies the report type for output           ethreport
 -o report           Specifies the report type for output           ethxlattopology
+-p plane            Plane name                                     ethcabletest
 -p                  Performs capture upload in parallel            ethcaptureall
 -p                  Runs command in parallel on all hosts          ethcmdall
 -P                  Outputs the hostname as prefix to each output  ethcmdall
@@ -177,13 +178,18 @@ List of command line options used in various Fast Fabric tools
 -P                  Skips ping of host                             ethsetupssh
 -p                  Performs copy in parallel on all hosts         ethuploadall
 -P packages         Specifies the packages to install.             ethhostadmin
+-p plane            Plane name                                     ethhostadmin
 -P param_file       Reads command parameters from param_file       ethxmlextract
 -P param_file       Uses input command line options (parameters)   ethxmlgenerate
                     from param_file
 -p plane            Plane name                                     ethxlattopology
 -p planes           Fabric planes separated by space               ethallanalysis
 -p planes           Specifies Fabric planes separated by space.    ethfabricanalysis
+-p planes           Specifies Fabric planes separated by space.    ethfabricinfo
+-p plane            Plane name                                     ethfindgood
 -p planes           Fabric planes separated by space.              ethlinkanalysis
+-p plane            Plane name                                     ethreport
+-p plane            Plane name                                     ethshowallports
 -p prefix           the prefix to prepend to all NIC hostnames     eth2rm
 -q                  Disables progress reports                      eth2rm
 -q                  Quiet mode, do not show command to execute     ethcmdall

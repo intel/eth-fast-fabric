@@ -68,7 +68,7 @@ failed_tests=
 
 Usage_ethhostadmin_full()
 {
-	echo "Usage: ethhostadmin [-c] [-e] [-f hostfile] [-h 'hosts'] [-r release] " >&2
+	echo "Usage: ethhostadmin [-c] [-e] [-p plane] [-f hostfile] [-h 'hosts'] [-r release] " >&2
 #	echo "              [-i ipoib_suffix] [-m netmask]" >&2
 	echo "              [-I install_options] [-U upgrade_options] [-d dir]" >&2
 	echo "              [-T product] [-P packages] [-S] operation ..." >&2
@@ -79,7 +79,10 @@ Usage_ethhostadmin_full()
 	echo "  -e - exit after 1st operation which fails" >&2
 #	echo "  -i ipoib_suffix - suffix to apply to host names to create ipoib host names" >&2
 #	echo "                    default is '$FF_IPOIB_SUFFIX'" >&2
-	echo "  -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "  -p plane - fabric plane the operations will apply on. Default is the first" >&2
+	echo "             active plane defined in Mgt config file" >&2
+	echo "  -f hostfile - file with hosts in cluster. It overrides the HostsFile defined" >&2
+	echo "                in Mgt config file for the plane" >&2
 	echo "  -h hosts - list of hosts to execute operation against" >&2
 	echo "  -r release - IntelEth release to load/upgrade to, default is $FF_PRODUCT_VERSION" >&2
 	echo "  -d dir - directory to get product.release.tgz from for load/upgrade" >&2
@@ -107,6 +110,7 @@ Usage_ethhostadmin_full()
 	echo " Environment:" >&2
 	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
 	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
+	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
 	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
 	echo "   FF_SERIALIZE_OUTPUT - serialize output of parallel operations (yes or no)" >&2
 	echo "   FF_TIMEOUT_MULT - Multiplier for all timeouts associated with this command." >&2
@@ -114,6 +118,7 @@ Usage_ethhostadmin_full()
 	echo "for example:" >&2
 	echo "   ethhostadmin -c reboot" >&2
 	echo "   ethhostadmin upgrade" >&2
+	echo "   ethhostadmin -p plane1 rping" >&2
 	echo "   ethhostadmin -h 'elrond arwen' reboot" >&2
 	echo "   HOSTS='elrond arwen' ethhostadmin reboot" >&2
 	echo "During run the following files are produced:" >&2
@@ -218,14 +223,16 @@ Usage_full()
 }
 Usage_ethhostadmin()
 {
-	echo "Usage: ethhostadmin [-c] [-e] [-f hostfile] [-r release] [-d dir]" >&2
+	echo "Usage: ethhostadmin [-c] [-e] [-p plane] [-f hostfile] [-r release] [-d dir]" >&2
 	echo "              [-T product] [-P packages] [-S] operation ..." >&2
 	echo "              or" >&2
 	echo "       ethhostadmin --help" >&2
 	echo "  --help - produce full help text" >&2
 	echo "  -c - clobber result files from any previous run before starting this run" >&2
 	echo "  -e - exit after 1st operation which fails" >&2
-	echo "  -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "  -p plane - fabric plane the operations will apply on, default is the first" >&2
+	echo "             active plane defined in Mgt config file" >&2
+	echo "  -f hostfile - file with hosts in cluster" >&2
 	echo "  -r release - IntelEth release to load/upgrade to, default is $FF_PRODUCT_VERSION" >&2
 	echo "  -d dir - directory to get product.release.tgz from for load/upgrade" >&2
 	echo "  -T product - IntelEth product type to install" >&2
@@ -402,7 +409,7 @@ sopt=n
 securityFiles="notsupplied"
 exit_on_fail=0
 case $mode in
-ethhostadmin) host=1; options='cd:eh:f:r:I:U:P:T:S';;
+ethhostadmin) host=1; options='cd:ep:h:f:r:I:U:P:T:S';;
 #ethhostadmin) host=1; options='cd:eh:f:i:r:I:U:P:T:m:S';;
 #opachassisadmin) switches=1; options='a:eI:cH:F:P:d:Ss:';;
 esac
@@ -446,7 +453,9 @@ do
 #	m)
 #		export CFG_IPOIB_NETMASK="$OPTARG";;
 	p)
-		export PORTS="$OPTARG";;
+		host=1
+		FABRIC_PLANE="$OPTARG";;
+#		export PORTS="$OPTARG";;
 	t)
 		export PORTS_FILE="$OPTARG";;
 	s)
@@ -482,7 +491,7 @@ then
 	exit 1
 fi
 
-check_host_args $cmd
+check_host_args $cmd 1
 
 if [ "$packages" = "notsupplied" ]
 then

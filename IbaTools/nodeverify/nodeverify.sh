@@ -136,7 +136,7 @@ Usage()
 	echo "	useful to determine if all hosts perform consistently" >&2
 	echo "  pstates_on - check if Intel P-States are enabled and optimally configured" >&2
 	echo "  pstates_off - check if Intel P-States are disabled" >&2
-	echo "  driver_on - check if power scaling driver (default isintel_pstates) enabled" >&2
+	echo "  driver_on - check if power scaling driver (default is intel_pstates) enabled" >&2
 	echo "	             generalized version of pstates_on" >&2
 	echo "  driver_off - check if power scaling driver (default is intel_pstates)" >&2
 	echo "                generalized version of pstates_off" >&2 

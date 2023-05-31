@@ -46,6 +46,8 @@ then
 	export CONFIG_DIR
 fi
 
+FF_MGT_CONF=$CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml
+
 resolve_file()
 {
 	# $1 is command name
@@ -173,33 +175,100 @@ extract_node_ports()
 	done
 }
 
+ff_get_default_plane()
+{
+	ret="$(ethxmlextract -X $FF_MGT_CONF -H -e Plane.Name -e Plane.Enable | grep ';1$' | head -n 1)"
+	if [ -n "$ret" ]
+	then
+		echo "${ret%%;*}"
+	else
+		echo "Cannot find active plane in $FF_MGT_CONF" >&2
+		echo ""
+	fi
+}
+
+ff_get_hostfile()
+{
+	l_plane="$1"
+	ret="$(ethxmlextract -X $FF_MGT_CONF -H -e Plane.Name -e Plane.HostsFile | grep "^$l_plane;" | head -n 1)"
+	if [ -n "$ret" ]
+	then
+		echo "${ret##*;}"
+	else
+		echo "Cannot find HostsFile for plane '$l_plane' in $FF_MGT_CONF" >&2
+		echo ""
+	fi
+}
+
 check_host_args()
 {
 	# $1 is command name
-	# uses $HOSTS and $HOSTS_FILE
+	# $2 indicates whether check plane. 1 - check plane, other values
+	#    will be ignored, and we do not check FABRIC_PLANE
+	# uses $HOSTS, $HOSTS_FILE or $FABRIC_PLANE
 	# sets $HOSTS or calls Usage which should exit
 	local l_hosts_file
 
-	if [ "$HOSTS_FILE" = "" ]
-	then
-		HOSTS_FILE=$CONFIG_DIR/$FF_PRD_NAME/hosts
-	fi
 	if [ "$HOSTS" = "" ]
 	then
+		# check plane when no HOSTS_FILE defined
+		if [ "$2" = "1" -a -z "$HOSTS_FILE" ]
+		then
+			if [ "$FABRIC_PLANE" = "" ]
+			then
+				FABRIC_PLANE="$(ff_get_default_plane)"
+			fi
+			# it shouldn't happen, but in theory a mgt_config.xml can
+			# have no active plane, and lead to empty FABRIC_PLANE.
+			# when it happens, we ignore it and will use default HOSTS_FILE
+			if [ -n "$FABRIC_PLANE" ]
+			then
+				l_hosts_file="$(ff_get_hostfile "$FABRIC_PLANE")"
+				# if FABRIC_PLANE is invalid plane name, l_hosts_file will
+				# be empty. We ignore it and will use default HOSTS_FILE
+				if [ -n "$l_hosts_file" ]
+				then
+					HOSTS_FILE="$l_hosts_file"
+				else
+					# can not continue. Note ff_get_hostfile already print out err msg
+					exit 1
+				fi
+			else
+				# can not continue. Note ff_get_default_plane already print out err msg
+				exit 1
+			fi
+		fi
+		if [ "$HOSTS_FILE" = "" ]
+		then
+			HOSTS_FILE=$CONFIG_DIR/$FF_PRD_NAME/hosts
+		fi
+
 		l_hosts_file=$HOSTS_FILE
 		HOSTS_FILE=`resolve_file "$1" "$HOSTS_FILE"`
 		if [ "$HOSTS_FILE" = "" ]
 		then
-			echo "$1: HOSTS env variable is empty and the file $l_hosts_file does not exist" >&2 
-			echo "$1: Must export HOSTS or HOSTS_FILE or use -f or -h option" >&2
+			echo "$1: HOSTS env variable is empty and the file $l_hosts_file does not exist" >&2
+			if [ $2 -eq 1 ]
+			then
+				echo "$1: Must export FABRIC_PLANE or HOSTS_FILE or HOSTS" >&2
+				echo "$1: or use -p or -f or -h option" >&2
+			else
+				echo "$1: Must export HOSTS_FILE or HOSTS or use -f or -h option" >&2
+			fi
 			Usage
 		fi
 		CONTENTS=`expand_file "$1" "$HOSTS_FILE"`
 		HOSTS=`extract_device_name "$1" "$CONTENTS"`
 		if [ "$HOSTS" = "" ]
 		then
-			echo "$1: HOSTS env variable and the file $HOSTS_FILE are both empty" >&2
-			echo "$1: Must export HOSTS or HOSTS_FILE or use -f or -h option" >&2
+			echo "$1: HOSTS env variable and the file $l_hosts_file are both empty" >&2
+			if [ $2 -eq 1 ]
+			then
+				echo "$1: Must export FABRIC_PLANE or HOSTS_FILE or HOSTS" >&2
+				echo "$1: or use -p or -f or -h option" >&2
+			else
+				echo "$1: Must export HOSTS_FILE or HOSTS or use -f or -h option" >&2
+			fi
 			Usage
 		fi
 	else

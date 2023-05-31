@@ -47,12 +47,22 @@ sub get_rpms_dir_fastfabric
 	return "$pkg_dir/*";
 }
 
+sub pkg_fastfabric
+{
+	my $pkg_dir = get_rpms_dir_fastfabric();
+	return (rpm_resolve("$pkg_dir/eth-tools-fastfabric", "any"));
+}
+
+sub pkg_mpiapps
+{
+	my $pkg_dir = get_rpms_dir_fastfabric();
+	return (rpm_resolve("$pkg_dir/eth-mpi-apps", "any"));
+}
+
+
 sub available_fastfabric
 {
-	my $srcdir=$ComponentInfo{'fastfabric'}{'SrcDir'};
-	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	return ((rpm_resolve("$pkg_dir/*/eth-mpi-apps", "any") ne "") &&
-			(rpm_resolve("$pkg_dir/*/eth-tools-fastfabric", "any") ne ""));
+	return ((pkg_fastfabric() ne "") && (pkg_mpiapps() ne ""));
 }
 
 sub installed_fastfabric
@@ -70,9 +80,7 @@ sub installed_version_fastfabric
 # only called if available_fastfabric is true
 sub media_version_fastfabric
 {
-	my $srcdir=$ComponentInfo{'fastfabric'}{'SrcDir'};
-	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	my $rpmfile = rpm_resolve("$pkg_dir/*/eth-tools-fastfabric", "any");
+	my $rpmfile = pkg_fastfabric();
 	my $version= rpm_query_version_release("$rpmfile");
 	# assume media properly built with matching versions for all rpms
 	return dot_version("$version");

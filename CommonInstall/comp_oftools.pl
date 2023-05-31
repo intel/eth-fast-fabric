@@ -45,14 +45,18 @@ sub get_rpms_dir_eth_tools
 	return "$pkg_dir/*";
 }
 
+sub pkg_eth_tools
+{
+	my $pkg_dir = get_rpms_dir_eth_tools();
+	return (rpm_resolve("$pkg_dir/eth-tools-basic", "any"));
+}
+
 sub available_eth_tools
 {
 # TBD - could we move the algorithms for many of these functions into
 # util_component.pl and simply put a list of rpms in the ComponentInfo
 # as well as perhaps config files
-	my $srcdir=$ComponentInfo{'eth_tools'}{'SrcDir'};
-	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	return (rpm_resolve("$pkg_dir/*/eth-tools-basic", "any") ne "");
+	return (pkg_eth_tools() ne "");
 }
 
 sub installed_eth_tools
@@ -70,9 +74,7 @@ sub installed_version_eth_tools
 # only called if available_eth_tools is true
 sub media_version_eth_tools
 {
-	my $srcdir=$ComponentInfo{'eth_tools'}{'SrcDir'};
-	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	my $rpmfile = rpm_resolve("$pkg_dir/*/eth-tools-basic", "any");
+	my $rpmfile = pkg_eth_tools();
 	my $version= rpm_query_version_release("$rpmfile");
 	# assume media properly built with matching versions for all rpms
 	return dot_version("$version");

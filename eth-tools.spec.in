@@ -1,6 +1,6 @@
 Name: eth-tools
-Version: 11.4.0.0
-Release: 198%{?dist}
+Version: 11.5.0.0
+Release: 53%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -65,6 +65,15 @@ __RPM_FF_FILES
 
 
 %changelog
+* Wed May 31 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.0.0-53
+- Improved to support RHEL 8.7
+- Added Ubuntu support on RV and mpiapps
+- Fixed minor bugs on nodeverify.sh, ethshowallports and ethfindgood
+- Improved below tools to support fabric plane
+-- ethcabletest.sh
+-- ethshowallports.sh
+-- ethhostadmin
+
 * Mon Jan 10 2022 Jijun Wang <jijun.wang@intel.com> - 11.1.0.1-7
 - Fixed false negative issue on ethfindgood
 

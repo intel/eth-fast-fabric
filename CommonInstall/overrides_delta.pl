@@ -155,6 +155,8 @@ sub overrides()
 		@Components = ( @delta_Components_rhel85 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
 		@Components = ( @delta_Components_rhel86 );
+	} elsif ( "$CUR_VENDOR_VER" eq "ES87" ) {
+		@Components = ( @delta_Components_rhel87 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
 		@Components = ( @delta_Components_rhel9 );
 	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {

@@ -65,7 +65,8 @@ sub rpm_to_deb_option_trans($)
 sub rpm_tr_os_version($)
 {
 	my $osver = shift();	# uname -r style output
-	$osver =~ s/-/_/g;
+	$osver =~ s/-generic//;
+	$osver =~ s/-/./g;
 	return "$osver";
 }
 
@@ -559,19 +560,19 @@ sub rpm_resolve($$)
 	$debpath = rpm_to_deb_pkg_trans($debpath);
 	
 	$cpu = rpm_get_cpu_arch($mode);
-	# we expect 0-1 match, ignore all other filenames returned
-	DebugPrint("Checking for User Deb: ${debpath}_*-*_${cpu}.deb\n");
-	$debfile = file_glob("${debpath}_*-*_${cpu}.deb");
-	if ( "$debfile" eq "" || ! -e "$debfile" ) {
-		# we expect 0-1 match, ignore all other filenames returned
-		DebugPrint("Checking for User Deb: ${debpath}_*-*.any.deb\n");
-		$debfile = file_glob("${debpath}_*-*.any.deb");
+
+	if ( "$mode" eq "user" || "$mode" eq "firmware" || "$mode" eq "any" ) {
+		DebugPrint("Checking for User Deb: ${debpath}_*-*_${cpu}.deb\n");
+		$debfile = file_glob("${debpath}_*-*_${cpu}.deb");
+		if ( "$debfile" eq "" || ! -e "$debfile" ) {
+			DebugPrint("Checking for User Deb: ${debpath}_*-*_all.deb\n");
+			$debfile = file_glob("${debpath}_*-*_all.deb");
+		}
+	} else {
+		my $kernel_version = rpm_tr_os_version($mode);
+		$debfile = file_glob("${debpath}_${kernel_version}*_${cpu}.deb");
 	}
-	if ( "$debfile" eq "" || ! -e "$debfile" ) {
-		# we expect 0-1 match, ignore all other filenames returned
-		DebugPrint("Checking for User Deb: ${debpath}_*-*_all.deb\n");
-		$debfile = file_glob("${debpath}_*-*_all.deb");
-	}
+
 	VerbosePrint("Resolved $debpath $mode: $debfile\n");
 	return $debfile;
 }
@@ -809,19 +810,22 @@ sub create_build_command_line($$$$)
 {
 	my ($SRC_PKG, $BUILD_OUTPUT_DIR, $BUILD_ROOT, $K_VER) = @_;
 
+	my $kernel_version = rpm_tr_os_version($K_VER);
+
 	my $cmd = "( ";
 	$cmd .= "set -e; ";
 	$cmd .= "cd $BUILD_OUTPUT_DIR; ";
-	$cmd .=	"tar -xvf $SRC_PKG; ";
+	$cmd .=	"dpkg-source -x $SRC_PKG; ";
 	$cmd .=	"cd *; ";
+	$cmd .= "export DEBEMAIL='root <root\@localhost>'; ";
+	$cmd .= "dch -b --newversion=$kernel_version \"Build for current kernel\"; ";
 	$cmd .= "export KERNEL_MOD_SIGNING_ENABLED=0; ";
-	$cmd .= "export DEFAULT_KERNEL_VERSION=$K_VER; ";
-	$cmd .=	"dpkg-buildpackage; ";
+	$cmd .= "export kver=$K_VER; ";
+	$cmd .=	"dpkg-buildpackage -uc -us; ";
 	$cmd .= ")";
 
 	return $cmd;
 }
-
 sub move_packages($$$)
 {
 	my ($source_dir, $target_dir, $GPU_Install) = @_;
