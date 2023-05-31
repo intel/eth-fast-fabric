@@ -856,9 +856,9 @@ sub uninstall_mpisrc($$)
 	NormalPrint ("Uninstalling $ComponentInfo{'mpisrc'}{'Name'}...\n");
 
 	# try to uninstall meta pkg if it exists
-	if (rpm_is_installed("ethmeta_mpisrc", "any") ||
-	    rpm_is_installed("ethmeta_mpisrc_userspace", "any")) {
-		rpm_uninstall_matches("ethmeta_mpisrc", "ethmeta_mpisrc", "", "");
+	if (rpm_is_installed("meta_mpisrc", "any") ||
+	    rpm_is_installed("meta_mpisrc_userspace", "any")) {
+		rpm_uninstall_matches("meta_mpisrc", "meta_mpisrc", "", "");
 	} else {
 		my $destdir = $ExtraMpisrcInfo{'Dest'};
 		# remove old versions (.src.rpm and built .rpm files too)

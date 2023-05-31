@@ -301,7 +301,10 @@ sub rpm_is_installed($$)
 		# $mode is kernel rev, verify proper kernel version is installed
 		# for kernel packages, RELEASE is kernel rev
 		my $release = rpm_tr_os_version($mode);
-		my $cmd = "dpkg  --get-selections | grep $package.*'[%{VERSION}\\n]' | grep -v 'deinstall' 2>/dev/null|egrep '$release' >/dev/null 2>&1";
+		my $showformat = q('${db:Status-Abbrev} ${binary:Package} ${Version}');
+		my $cmd = "dpkg-query --showformat=$showformat --show $package";
+		$cmd .= " | egrep '^ii' >/dev/null 2>&1";
+		$cmd .= " | egrep '$release' >/dev/null 2>&1";
 		DebugPrint $cmd."\n";
 		$rc = system $cmd;
 		$last_checked = "for kernel $release";
@@ -834,9 +837,9 @@ sub move_packages($$$)
 	my ($source_dir, $target_dir, $GPU_Install) = @_;
 	my $err = 0;
 	my $real_target = $target_dir;
-	if ( $GPU_Install eq "NVGPU" ) {
+	if ( $GPU_Install eq "NV_GPU" ) {
 		$real_target = "$target_dir/CUDA";
-	} elsif ( $GPU_Install eq "IGPU" ) {
+	} elsif ( $GPU_Install eq "INTEL_GPU" ) {
 		$real_target = "$target_dir/ONEAPI-ZE";
 	}
 	system("mkdir -p $real_target");

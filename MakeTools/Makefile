@@ -84,11 +84,6 @@ include $(TL_DIR)/$(PROJ_FILE_DIR)/Makerules.project
 include $(TL_DIR)/Makerules/Maketargets.toplevel
 
 include $(TL_DIR)/Makerules/Maketargets.build
-
-format_releasetag: format_releasetag.sh
-	cp $< $@
-	chmod 755 $@
-
 convert_releasetag: convert_releasetag.pl
 	cp $< $@
 	chmod 755 $@

@@ -747,54 +747,25 @@ sub installed_delta_eth_module()
 		return 1;
 	}
 
-	if ( "$CUR_VENDOR_VER" eq "ES78" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES79" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES8" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES81" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES82" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES83" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES84" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES85" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES86" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES87" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES9" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES91" ) {
-		return rpm_is_installed("kmod-iefs-kernel-updates", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES124" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES125" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES15" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES151" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES152" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES153" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} elsif ( "$CUR_VENDOR_VER" eq "ES154" ) {
-		return rpm_is_installed("iefs-kernel-updates-kmp-default", $CUR_OS_VER);
-	} else {
-		return 0;
+	my %module_pkg_by_vendor = (
+		'SuSE'   => "iefs-kernel-updates-kmp-default",
+		'redhat' => "kmod-iefs-kernel-updates",
+		'ubuntu' => "kmod-iefs-kernel-updates",
+	);
+
+	if (exists $module_pkg_by_vendor{$CUR_DISTRO_VENDOR}) {
+		return rpm_is_installed($module_pkg_by_vendor{$CUR_DISTRO_VENDOR}, $CUR_OS_VER);
 	}
+
+	DebugPrint "Unsupported vendor $CUR_DISTRO_VENDOR\n";
+	return 0;
 }
 
 # only called if installed_eth_module is true
 sub installed_version_eth_module()
 {
-	if (rpm_is_installed("ethmeta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+	if (rpm_is_installed("meta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("meta_eth_module");
 		return dot_version("$version");
 	}
 	if ( -e "$BASE_DIR/version_delta" ) {
@@ -1019,8 +990,8 @@ sub installed_eth_roce()
 
 sub installed_version_eth_roce()
 {
-	if (rpm_is_installed("ethmeta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+	if (rpm_is_installed("meta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("meta_eth_module");
 		return dot_version("$version");
 	}
 	if ( -e "$BASE_DIR/version_delta" ) {
@@ -1148,8 +1119,8 @@ sub installed_delta_debug()
 # only called if installed_delta_debug is true
 sub installed_version_delta_debug()
 {
-	if (rpm_is_installed("ethmeta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("ethmeta_eth_module");
+	if (rpm_is_installed("meta_eth_module", "any")) {
+		my $version = rpm_query_version_release_pkg("meta_eth_module");
 		return dot_version("$version");
 	}
 	if ( -e "$BASE_DIR/version_delta" ) {

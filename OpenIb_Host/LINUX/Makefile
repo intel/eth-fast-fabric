@@ -261,18 +261,20 @@ DIR_ARCH := $(shell echo $(BUILD_TARGET) | tr '[A-Z]' '[a-z]')
 ifeq "$(BUILD_TARGET_OS_VENDOR)" "ubuntu"
 	RPM_ARCH := $(subst ia32,i386,$(subst em64t,amd64,$(subst x86_64,amd64,$(DIR_ARCH))))
 	RPMDIR := $(TL_DIR)/debbuild
-	RPM_BUILD_DIR := build
+	RPM_BUILD_DIR := .
 	SRPMSDIR := $(RPM_BUILD_DIR)
 	RPMSDIR := $(RPM_BUILD_DIR)
 	DEVEL := dev
 	SEPARATOR := _
 	DEBUGINFO := dbgsym
-	SRPM_EXT := {.tar.xz,.dsc,_$(RPM_ARCH).changes}
+	SRPM_EXT := {.tar.gz,.dsc,_$(RPM_ARCH).changes}
 	RPM_EXT := _$(RPM_ARCH).deb
 	DEBUG_EXT := _$(RPM_ARCH).ddeb
 	EXT := deb
 	pkg_arch = _$(DEB_TARGET_ARCH)
 	pkg_ver = _$${MKRPM_VER}
+	BIN_OUTPUT_DIR := DEBS
+	SRC_OUTPUT_DIR := SDEBS
 else
 	RPM_ARCH := $(DIR_ARCH)
 	RPMDIR := $(TL_DIR)/rpmbuild
@@ -288,6 +290,8 @@ else
 	EXT := rpm
 	pkg_arch = .`echo $(BUILD_TARGET) | tr '[A-Z]' '[a-z]'`
 	pkg_ver = -$${MKRPM_VER}
+	BIN_OUTPUT_DIR := RPMS
+	SRC_OUTPUT_DIR := SRPMS
 endif
 
 package:
@@ -311,52 +315,9 @@ package:
 		echo "$(RELEASE_DIR)/opa-snapconfig$${vers}-$${MKRPM_REL}$${arch}.$(EXT)" >> $(TL_DIR)/dist_files; \
 	fi; \
 
+.EXPORT_ALL_VARIABLES:
 final_package:
-	mkdir -p $(RELEASE_DIR)
-	cd $(RPMDIR); \
-	dir=`grep 'IntelEth-Tools-FF\.' $(RPM_BUILD_DIR)/eth-tools-$${MKRPM_VER}/packaged_files | xargs dirname`; \
-	filename=`grep 'IntelEth-Tools-FF\.' $(RPM_BUILD_DIR)/eth-tools-$${MKRPM_VER}/packaged_files | xargs basename`; \
-	subdir=$${filename%.tgz}; \
-	srpmdir=$$dir/$$subdir/SRPMS; \
-	basicdir=`grep 'IntelEth-Tools\.' $(RPM_BUILD_DIR)/eth-tools-$${MKRPM_VER}/packaged_files | xargs dirname`; \
-	basic=`grep 'IntelEth-Tools\.' $(RPM_BUILD_DIR)/eth-tools-$${MKRPM_VER}/packaged_files | xargs basename`; \
-	rpmdir=$$dir/$$subdir/RPMS/$(DIR_ARCH); \
-	basicrpmdir=$$basicdir/$${basic%.tgz}/RPMS/$(DIR_ARCH); \
-	basicsrpmdir=$$basicdir/$${basic%.tgz}/SRPMS; \
-	mkdir -p $$srpmdir || echo "ERR""OR: mkdir $$srpmdir."; \
-	mkdir -p $$rpmdir || echo "ERR""OR: mkdir $$rpmdir."; \
-	rm -rf $${basicdir}/$${basic} $${basicdir}/$${basic%.tgz}; \
-	cp -rp $${dir}/$${subdir} $${basicdir}/$${basic%.tgz} || echo "ERR""OR: cp $${basicdir}/$${basic%.tgz}."; \
-	cp $(SRPMSDIR)/eth-mpi-apps$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(SRPM_EXT) $$srpmdir/ || echo "ERR""OR: cp $$srpmdir."; \
-	cp $(SRPMSDIR)/eth-tools$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(SRPM_EXT) $$srpmdir/ || echo "ERR""OR: cp $$srpmdir."; \
-	cp $(SRPMSDIR)/eth-tools$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(SRPM_EXT) $$basicsrpmdir/ || echo "ERR""OR: cp $$srpmdir."; \
-	cp $(RPMSDIR)/eth-tools-basic$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $$rpmdir/ || echo "ERR""OR: cp $$rpmdir."; \
-	cp $(RPMSDIR)/eth-tools-fastfabric$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $$rpmdir/ || echo "ERR""OR: cp $$rpmdir."; \
-	cp $(RPMSDIR)/eth-tools-basic$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $$basicrpmdir/ || echo "ERR""OR: cp $$basicrpmdir."; \
-	cp $(RPMSDIR)/eth-mpi-apps$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $$rpmdir/ || echo "ERR""OR: cp $$rpmdir."; \
-	if [ "$(OPA_FEATURE_SET)" != "opa10" ]; then \
-		cp $(RPMSDIR)/opa-snapconfig$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $$dir/ || echo "ERR""OR: cp $$dir."; \
-		cp $(RPMSDIR)/opa-snapconfig$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $(RELEASE_DIR)/ || echo "ERR""OR: cp $$dir."; \
-	fi; \
-	if [ "$(BUILD_TARGET_OS_VENDOR)" = "redhat" ]; then \
-		cp $(RPMSDIR)/eth-tools-$(DEBUGINFO)$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(DEBUG_EXT) $$rpmdir/;  \
-	fi; \
-	if [ "$(BUILD_TARGET_OS_VENDOR)" = "SuSE" ]; then \
-		cp $(RPMSDIR)/eth-tools-debugsource$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(RPM_EXT) $$rpmdir/;  \
-	fi; \
-	if [ "$(BUILD_TARGET_OS_VENDOR)" = "SuSE" -o "$(BUILD_TARGET_OS_VENDOR)" = "ubuntu" ]; then \
-		cp $(RPMSDIR)/eth-tools-basic-$(DEBUGINFO)$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(DEBUG_EXT) $$rpmdir/;  \
-		cp $(RPMSDIR)/eth-tools-basic-$(DEBUGINFO)$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(DEBUG_EXT) $$basicrpmdir/;  \
-		cp $(RPMSDIR)/eth-tools-fastfabric-$(DEBUGINFO)$(SEPARATOR)$${MKRPM_VER}-$${MKRPM_REL}$(DEBUG_EXT) $$rpmdir/;  \
-	fi; \
-	cd $$dir; \
-	echo "Packaging $$dir/$$filename ..."; \
-	tar cvfz $$filename $$subdir; \
-	echo "Packaging $$basicdir/$$basic ..."; \
-	tar cvfz $${basic} --exclude mpi --exclude shmem $${basic%.tgz}
-	cp "$(RPMDIR)/$(RPM_BUILD_DIR)/eth-tools-$${MKRPM_VER}/packaged_files" "$(TL_DIR)/$(PROJ_FILE_DIR)/"
-	cp "$(RPMDIR)/$(RPM_BUILD_DIR)/eth-tools-$${MKRPM_VER}/dist_files" "$(TL_DIR)/$(PROJ_FILE_DIR)/"
-
+	./final_package.sh
 # Unit test execution
 #include $(TL_DIR)/Makerules/Maketargets.runtest
 

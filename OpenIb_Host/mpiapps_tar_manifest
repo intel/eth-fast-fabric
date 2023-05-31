@@ -6,4 +6,3 @@ MpiApps/apps/imb
 MpiApps/apps/mpi_multibw
 MpiApps/apps/mpi_stress
 MpiApps/debian
-OpenIb_Host/debian

@@ -41,7 +41,7 @@ FILE_TO_EXCLUDE="$6"
 CUSTOM_TAR_ARGS="$7"
 
 comp_arg="UNKNOWN_COMPONENT"
-if echo $ARCHIVE | grep eth-tools.tgz > /dev/null
+if echo $ARCHIVE | grep 'eth-fast-fabric-' > /dev/null
 then
 	comp_arg="FF"
 fi

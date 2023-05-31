@@ -45,6 +45,7 @@ my $Build_Temp="";	# temp area to use for build
 my $Default_Build = 0;	# -B option used to select build
 my $Build_Force = 0;# rebuild option used to force full rebuild
 my $To_Show_Comps = 0; # indicate whether we need to show components or not
+my $allow_install;
 
 $FirstIPoIBInterface=0; # first device is ib0
 
@@ -59,8 +60,10 @@ my @EthAllComponents = (
 	"mpisrc", "delta_debug"	);
 
 my @EthUbuntuComponents = (
+	"eth_tools",
 	"psm3",
 	"eth_module",
+	"fastfabric",
 	"eth_roce",
 );
 
@@ -182,7 +185,7 @@ $WrapperComponent = "iefsconfig";
 #	the component which contains it.
 %ComponentInfo = (
 		# our special WrapperComponent, limited use
-	"iefsconfig" =>	{ Name => "Intel Ethernet",
+	"iefsconfig" =>	{ Name => "Intel",
 					  DefaultInstall => $State_Install,
 					  SrcDir => ".",
 					  PreReq => "", CoReq => "",
@@ -199,7 +202,7 @@ $WrapperComponent = "iefsconfig";
 					  StartupParams => [ "ARPTABLE_TUNING" ]
 
 					},
-	"eth_tools" =>	{ Name => "Eth Tools",
+	"eth_tools" =>	{ Name => "Basic Tools",
 					  DefaultInstall => $State_Install,
 					  SrcDir => file_glob("./IntelEth-Tools*.*"),
 					  PreReq => "", CoReq => "",
@@ -439,7 +442,7 @@ my %ibacm_comp_info = (
 
 
 my %eth_module_rhel_comp_info = (
-	"eth_module" =>	{ Name => "Eth Module",
+	"eth_module" =>	{ Name => "Kernel Module",
 					  DefaultInstall => $State_Install,
 					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
 					  PreReq => " psm3 ", CoReq => " ",
@@ -458,7 +461,7 @@ my %eth_module_rhel_comp_info = (
 );
 
 my %eth_module_sles_comp_info = (
-	"eth_module" =>	{ Name => "Eth Module",
+	"eth_module" =>	{ Name => "Kernel Module",
 					  DefaultInstall => $State_Install,
 					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
 					  PreReq => " psm3 ", CoReq => " ",
@@ -477,7 +480,7 @@ my %eth_module_sles_comp_info = (
 );
 
 my %eth_module_debian_comp_info = (
-	"eth_module" =>	{ Name => "Eth Module",
+	"eth_module" =>	{ Name => "Kernel Module",
 					  DefaultInstall => $State_Install,
 					  SrcDir => file_glob("./IntelEth-OFA_DELTA.*"),
 					  PreReq => " psm3 ", CoReq => " ",
@@ -547,6 +550,7 @@ sub init_components
 	# The component list has slight variations per distro
 	my $distro = "$CUR_DISTRO_VENDOR*$CUR_VENDOR_VER";
 	if (exists $Components_by_distro{$distro}) {
+		# Common for all packages
 		@Components = @{$Components_by_distro{$distro}};
 		@SubComponents = ( @SubComponents_newer );
 		%ComponentInfo = ( %ComponentInfo,
@@ -659,7 +663,7 @@ sub install_iefsconfig
 	NormalPrint("Installing $ComponentInfo{'iefsconfig'}{'Name'}...\n");
 
 	# all meta pkgs depend on iefsconfig. We may directly upgrade iefsconfig, so we remove them first.
-	rpm_uninstall_matches("ethmeta_", "ethmeta_", "", "");
+	rpm_uninstall_matches("meta_", "meta_", "", "");
 
 	#override the udev permissions.
 	#install_udev_permissions("$srcdir/config");
@@ -678,7 +682,7 @@ sub install_iefsconfig
 	# New Install Code
 	my $pkg_dir = get_binary_pkg_dir($srcdir);
 	my $rpmfile = rpm_resolve("$pkg_dir/*/iefsconfig", "any");
-	rpm_run_install($rpmfile, "any", " -U ");
+	rpm_run_install($rpmfile, "any", " -U --nodeps ");
 	# New Install Code
 
 	# remove the old style version file
@@ -755,7 +759,7 @@ sub uninstall_iefsconfig
 	NormalPrint("Uninstalling $ComponentInfo{'iefsconfig'}{'Name'}...\n");
 
 	# all meta pkgs depend on iefsconfig. Remove them first.
-	rpm_uninstall_matches("ethmeta_", "ethmeta_", "", "");
+	rpm_uninstall_matches("meta_", "meta_", "", "");
 
 	# New Uninstall Code
 	setup_env("ETH_INSTALL_CALLER", 0);
@@ -776,7 +780,6 @@ sub uninstall_iefsconfig
 	$ComponentWasInstalled{'iefsconfig'}=0;
 }
 
-my $allow_install;
 if ( my_basename($0) ne "INSTALL" )
 {
 	$allow_install=0;
@@ -860,7 +863,7 @@ sub Usage
 	printf STDERR "            ";
 	ShowComponents(\*STDERR);
 	printf STDERR "       supported component name aliases:\n";
-	printf STDERR "            eth mpi psm_mpi\n";
+	printf STDERR "            eth mpi psm_mpi tools\n";
 	if (scalar(@SubComponents) > 0) {
 		printf STDERR "       additional component names allowed for -E and -D options:\n";
 		printf STDERR "            ";
@@ -904,6 +907,9 @@ sub translate_comp
 		# no ibaccess argument equivalent for:
 		#	delta_debug
 		#
+	} elsif ("$arg" eq "tools"){
+		my @res = ("eth_tools");
+		return @res;
 	} else {
 		return ();	# invalid name
 	}
@@ -1217,15 +1223,15 @@ sub show_menu
 
 	@INSTALL_CHOICES= ();
 	if ( $Default_Install ) {
-		NormalPrint ("Installing All Intel Ethernet Software\n");
+		NormalPrint ("Installing All Intel Software\n");
 		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 1);
 	}
    	if ( $Default_CompInstall ) {
-		NormalPrint ("Installing Selected Intel Ethernet Software\n");
+		NormalPrint ("Installing Selected Intel Software\n");
 		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 1);
 	}
   	if ( $Default_Upgrade ) {
-		NormalPrint ("Upgrading/Re-Installing Intel Ethernet Software\n");
+		NormalPrint ("Upgrading/Re-Installing Intel Software\n");
 		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 1);
 	}
 #   	if ( $Default_FirmwareUpgrade ) {
@@ -1233,28 +1239,28 @@ sub show_menu
 #		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 4);
 #	}
    	if ($Default_Uninstall ) {
-		NormalPrint ("Uninstalling All Intel Ethernet Software\n");
+		NormalPrint ("Uninstalling All Intel Software\n");
 		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 6);
 	}
    	if ($Default_CompUninstall ) {
-		NormalPrint ("Uninstalling Selected Intel Ethernet Software\n");
+		NormalPrint ("Uninstalling Selected Intel Software\n");
 		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 6);
 	}
    	if ($Default_Autostart) {
-		NormalPrint ("Configuring Autostart for Selected Installed Intel Ethernet Drivers\n");
+		NormalPrint ("Configuring Autostart for Selected Installed Intel Drivers\n");
 		@INSTALL_CHOICES = ( @INSTALL_CHOICES, 3);
 	}
 	if (scalar(@INSTALL_CHOICES) > 0) {
 		return;
 	}
 	system "clear";
-	printf ("$BRAND Ethernet $VERSION Software\n\n");
+	printf ("$BRAND $VERSION Software\n\n");
 	if ($allow_install) {
 		printf ("   1) Install/Uninstall Software\n");
 	} else {
 		printf ("   1) Show Installed Software\n");
 	}
-	printf ("   2) Reconfigure $ComponentInfo{'eth_roce'}{'Name'}\n");
+	printf ("   2) Reconfigure $ComponentInfo{'eth_roce'}{'Name'} (Ethernet only)\n");
 	printf ("   3) Reconfigure Driver Autostart \n");
 	printf ("   4) Generate Supporting Information for Problem Report\n");
 	printf ("   5) FastFabric (Host/Admin)\n");
@@ -1329,9 +1335,9 @@ do{
 			show_install_menu(1);
 			if ($Default_Prompt) {
 				if ($exit_code == 0) {
-					print "Done Installing $BRAND Ethernet Software.\n"
+					print "Done Installing $BRAND Software.\n"
 				} else {
-					print "Failed to install all $BRAND Ethernet software.\n"
+					print "Failed to install all $BRAND software.\n"
 				}
 			}
 		}
@@ -1343,35 +1349,37 @@ do{
 			show_uninstall_menu(1);
 			if ( $Default_Prompt ) {
 				if ($exit_code == 0) {
-					print "Done Uninstalling $BRAND Ethernet Software.\n"
+					print "Done Uninstalling $BRAND Software.\n"
 				} else {
-					print "Failed to uninstall all $BRAND Ethernet Software.\n"
+					print "Failed to uninstall all $BRAND Software.\n"
 				}
 			}
 		}
 		elsif ($INSTALL_CHOICE == 2)
 		{
-			my $selected_comp = 'eth_roce';
-			if ( $Default_SameAutostart ) {
-				NormalPrint "Leaving configuration on $ComponentInfo{$selected_comp}{'Name'} at its previous value.\n";
-			} else {
-				my $prereqs_installed = 1;
-				foreach my $comp ( @Components ) {
-					if (comp_has_prereq_of($selected_comp, $comp) && ! comp_is_installed("$comp")) {
-						$prereqs_installed = 0;
-						last;
+			if (GetYesNo("Eth RoCE is for Ethernet only, are you sure you want to continue?", "y") == 1) {
+				my $selected_comp = 'eth_roce';
+				if ( $Default_SameAutostart ) {
+					NormalPrint "Leaving configuration on $ComponentInfo{$selected_comp}{'Name'} at its previous value.\n";
+				} else {
+					my $prereqs_installed = 1;
+					foreach my $comp ( @Components ) {
+						if (comp_has_prereq_of($selected_comp, $comp) && ! comp_is_installed("$comp")) {
+							$prereqs_installed = 0;
+							last;
+						}
 					}
-				}
-				if ($prereqs_installed == 1) {
-					config_roce("y");
-					config_lmtsel("$DEFAULT_LIMITS_SEL");
-					Config_ifcfg();
-					if (check_need_reboot()) {
+					if ($prereqs_installed == 1) {
+						config_roce("y");
+						config_lmtsel("$DEFAULT_LIMITS_SEL");
+						Config_ifcfg();
+						if (check_need_reboot()) {
+							HitKeyCont;
+						}
+					} else {
+						NormalPrint "Please install pre-required component(s) $ComponentInfo{$selected_comp}{'PreReq'} first.\n";
 						HitKeyCont;
 					}
-				} else {
-					NormalPrint "Please install pre-required component(s) $ComponentInfo{$selected_comp}{'PreReq'} first.\n";
-					HitKeyCont;
 				}
 			}
 		}
@@ -1379,7 +1387,7 @@ do{
 		{
 			reconfig_autostart;
 			if ( $Default_Prompt ) {
-				print "Done Ethernet Driver Autostart Configuration.\n"
+				print "Done Driver Autostart Configuration.\n"
 			}
 		}
 		elsif ($INSTALL_CHOICE == 4)

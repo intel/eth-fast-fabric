@@ -193,6 +193,14 @@ uptime > /$dir/uptime
 echo "Obtaining dmesg logs ..."
 dmesg -T > /$dir/dmesg
 
+echo "Obtaining journald logs ..."
+if type journalctl > /dev/null 2>&1
+then
+	journalctl --since="-7 days" > /$dir/journalctl.log
+else
+	echo "journalctl is not available on the system" > /$dir/journalctl.log
+fi
+
 echo "Obtaining present process and module list ..."
 lsmod > /$dir/lsmod 2>&1
 depmod -a 2>&1

@@ -121,7 +121,7 @@ proc install_expect_drivers { driver_list { skip_done 0 }} {
 ## Additional Information:
 ##	Does not care what order the drivers are loaded in
 
-	expect_progress 600 { "Preparing" "Building" } { "Installing" {Intel Ethernet Software} } {
+	expect_progress 600 { "Preparing" "Building" } { "Installing" {Intel.*Software} } {
 	"Unable"
 	"Error"
 	"Failure"
@@ -145,7 +145,7 @@ proc install_expect_drivers { driver_list { skip_done 0 }} {
 	# "Unable" message could occur if A0 HCA being installed
 	# allow some extra time for depmod and firmware update
 	# firmware update can be slow on MAC or if pciconf1 device is used
-	expect_progress 300 { {[0-9]} "---" "Updating" "Copying" "installing" } { {Done Installing Intel Ethernet} } {
+	expect_progress 300 { {[0-9]} "---" "Updating" "Copying" "installing" } { {Done Installing Intel} } {
 	    "Error"
 	    "Failure"
 	    "invalid"

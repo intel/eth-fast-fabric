@@ -53,8 +53,5 @@
 		"rdma-core",
 		"libibverbs-dev",
 		"librdmacm-dev",
-		"libfabric-dev",
-		"libfabric1",
-		"libfabric-bin",
 	],
 );

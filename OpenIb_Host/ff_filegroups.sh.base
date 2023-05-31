@@ -10,6 +10,15 @@ basic_configs="mgt_config.xml"
 
 basic_samples="dsa_setup dsa.service mgt_config.xml-sample"
 
+ff_configs="ethfastfabric.conf ethmon.conf allhosts hosts switches"
+
+# TODO: pay attention to below two definitions, they introduce non-identical behavior on different systems
+############################################
+ff_configs_as_files="ethmon.si.conf"
+
+ff_configs_non_etc="osid_wrapper"
+############################################
+
 ff_tools_opt=""
 
 ff_tools_exp="basic.exp common_funcs.exp ff_function.exp

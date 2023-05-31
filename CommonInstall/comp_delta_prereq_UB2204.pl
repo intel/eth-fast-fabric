@@ -52,9 +52,6 @@
 	'psm3_prereq' => [
 		"rdma-core",
 		"libibverbs-dev",
-		"librdmacm-dev",
-		"libfabric-dev",
-		"libfabric1",
-		"libfabric-bin",
+		"librdmacm-dev"
 	],
 );

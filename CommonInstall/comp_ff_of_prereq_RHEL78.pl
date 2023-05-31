@@ -72,7 +72,6 @@ my @fastfabric_prereq = (
     "libstdc++",
     "ncurses-libs",
     "net-snmp-libs",
-    "openblas-devel",
     "openssl-libs",
     "perl",
     "tcl",

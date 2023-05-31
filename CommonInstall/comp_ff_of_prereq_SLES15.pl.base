@@ -73,7 +73,6 @@ my @fastfabric_prereq = (
 			"libncurses6",
 			"libsnmp30",
 			"libopenssl1_1",
-			"openblas-devel",
 			"perl",
 			"tcl",
 			"libz1",

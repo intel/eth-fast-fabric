@@ -30,36 +30,42 @@
 
 #[ICS VERSION STRING: unknown]
 
-id=$(./get_id_and_versionid.sh | cut -f1 -d' ')
-versionid=$(./get_id_and_versionid.sh | cut -f2 -d' ')
+substitute_file_contents() {
+    # usage: substitute_file_contents <file_where> <string> <file_from>
+    perl -pe "s/$2/\`cat $3\`/ge" -i $1
+}
 
-if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" -o "$id" = "almalinux" -o "$id" = "circle" ]
-then
-	GE_8_0=$(echo "$versionid >= 8.0" | bc)
-	sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
-	if [ $GE_8_0 = 1 ]
-	then
-		sed -i "s/__RPM_DBG/%global debug_package %{nil}/" mpi-apps.spec
-	else
-		sed -i "/__RPM_DBG/,+1d" mpi-apps.spec
-	fi
-elif [ "$id" = "fedora" ]
-then
-	sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
-	sed -i "s/__RPM_DBG/%global debug_package %{nil}/" mpi-apps.spec
-elif [ "$id" = "sles" ]
-then
-	GE_15_4=$(echo "$versionid >= 15.4" | bc)
-	if [ $GE_15_4 = 1 ]
-	then
-		sed -i "s/__RPM_REQ/Requires: openblas-common-devel/" mpi-apps.spec
-	else
-		sed -i "s/__RPM_REQ/Requires: openblas-devel/" mpi-apps.spec
-	fi
-	sed -i "/__RPM_DBG/,+1d" mpi-apps.spec
-else
-	echo ERROR: Unsupported distribution: $id $versionid
-	exit 1
-fi
+rpmversion=$1
+rpmrelease=$2
+
+rm -f mpi-apps.spec
+cp mpi-apps.spec.in mpi-apps.spec
+
+sed -i "s/__RPM_VERSION/${rpmversion}/g" mpi-apps.spec
+sed -i "s/__RPM_RELEASE/${rpmrelease}%{?dist}/g" mpi-apps.spec
+substitute_file_contents mpi-apps.spec __RPM_CHANGELOG changelog_mpi-apps.in
+
+cp mpi-apps.spec mpi-apps.spec.rh
+cp mpi-apps.spec mpi-apps.spec.rh8+
+cp mpi-apps.spec mpi-apps.spec.fedora
+cp mpi-apps.spec mpi-apps.spec.sles
+cp mpi-apps.spec mpi-apps.spec.sles154+
+cp mpi-apps.spec mpi-apps.spec.ocs
+
+rm -f mpi-apps.spec
+
+sed -i "/__RPM_REQ/,+1d"                              mpi-apps.spec.rh
+sed -i "/__RPM_REQ/,+1d"                              mpi-apps.spec.rh8+
+sed -i "/__RPM_REQ/,+1d"                              mpi-apps.spec.fedora
+sed -i "/__RPM_REQ/,+1d"                              mpi-apps.spec.sles
+sed -i "/__RPM_REQ/,+1d"                              mpi-apps.spec.sles154+
+sed -i "/__RPM_REQ/,+1d"                              mpi-apps.spec.ocs
+
+sed -i "/__RPM_DBG/,+1d"                              mpi-apps.spec.rh
+sed -i "s/__RPM_DBG/%global debug_package %{nil}/"    mpi-apps.spec.rh8+
+sed -i "s/__RPM_DBG/%global debug_package %{nil}/"    mpi-apps.spec.fedora
+sed -i "/__RPM_DBG/,+1d"                              mpi-apps.spec.sles
+sed -i "/__RPM_DBG/,+1d"                              mpi-apps.spec.sles154+
+sed -i "/__RPM_DBG/,+1d"                              mpi-apps.spec.ocs
 
 exit 0

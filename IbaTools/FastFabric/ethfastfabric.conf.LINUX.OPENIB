@@ -140,12 +140,12 @@ export FF_MPI_ENV=${FF_MPI_ENV:-}
 #export FF_DEVIATION_ARGS=${FF_DEVIATION_ARGS:--bwtol 20 -lattol 50 -c -v}
 #export FF_DEVIATION_ARGS=${FF_DEVIATION_ARGS:--bwtol 20 -lattol 50 -c -h hostname}
 export FF_DEVIATION_ARGS=${FF_DEVIATION_ARGS:--bwtol 20 -lattol 50 -c}
-# 1 hop fabric, 100g links, x16 Hosts
-#export FF_DEVIATION_ARGS==${FF_DEVIATION_ARGS:--bwthres 12000 -latthres 1.07 -c}
-# 3 hop fabric, 100g links, x16 Hosts
-#export FF_DEVIATION_ARGS==${FF_DEVIATION_ARGS:--bwthres 12000 -latthres 1.35 -c}
-# 5 hop fabric, 100g links, x16 Hosts
-#export FF_DEVIATION_ARGS==${FF_DEVIATION_ARGS:--bwthres 12000 -latthres 1.63 -c}
+# 1 hop fabric, 100g links, rv w/RDMA=1, PCIe gen3x16 or PCIe gen4x8 Hosts
+#export FF_DEVIATION_ARGS==${FF_DEVIATION_ARGS:--bwthres 12000 -latthres 7.5 -c}
+# 3 hop fabric, 100g links, rv w/RDMA=1, PCIe gen3x16 Hosts or PCIe gen4x8 Hosts
+#export FF_DEVIATION_ARGS==${FF_DEVIATION_ARGS:--bwthres 12000 -latthres 8.5 -c}
+# 5 hop fabric, 100g links, rv w/RDMA=1, PCIe gen3x16 Hosts or PCIe gen4x8 Hosts
+#export FF_DEVIATION_ARGS==${FF_DEVIATION_ARGS:--bwthres 12000 -latthres 9.5 -c}
 
 # location to find fastfabric shmem_apps for use by assorted fastfabric tools
 # As needed they can be copied to a global filesystem and adjust this variable

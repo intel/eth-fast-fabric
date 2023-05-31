@@ -1,0 +1,23 @@
+Source: eth-tools
+Section: unknown
+Priority: optional
+Maintainer: Breyer, Scott J <scott.j.breyer@intel.com>
+Build-Depends: debhelper (>= 12~), libexpat-dev, bash (>= 3),
+ libibverbs-dev, uuid-dev, texinfo, tcl-dev, libsnmp-dev
+Standards-Version: 4.5.1
+Homepage: TBD
+Rules-Requires-Root: no
+
+Package: eth-tools-basic
+Architecture: linux-any
+Depends: ${misc:Depends}, ${shlibs:Depends}, ${perl:Depends}, bc,
+ ibverbs-utils, rdmacm-utils, expect, tcl, snmpd, iproute2
+Description: Management level tools and scripts.
+ Contains basic tools for fabric managment necessary on all compute nodes.
+
+Package: eth-tools-fastfabric
+Architecture: linux-any
+Depends: ${misc:Depends}, ${shlibs:Depends}, ${perl:Depends},
+ eth-tools-basic (= ${binary:Version}), perl
+Description: Management level tools and scripts.
+ Contains tools for managing fabric on a management node.

@@ -8,24 +8,24 @@ then
 	fi
 	versionid=$(grep ^VERSION_ID= /etc/os-release | cut -f2 -d\")
 else
-    if [ `uname -s` == "Darwin" ]
-    then
-        # Apple Mac
-        rval=apple
-    else
-        filelist=`'ls' /etc/*-release | egrep -v lsb | egrep -v os`
-        rval=""
-        for file in $filelist
-        do
-	    if [ -f $file ]
-	    then
-		    rval=`basename $file -release`
-		    if [ $rval = 'SuSE' ]
-		    then
-			    if [ -f /etc/UnitedLinux-release ]
-			    then
-				    rval=UnitedLinux
-			    fi
+	if [ `uname -s` == "Darwin" ]
+	then
+		# Apple Mac
+		rval=apple
+	else
+		filelist=`'ls' /etc/*-release | egrep -v lsb | egrep -v os`
+		rval=""
+		for file in $filelist
+		do
+		if [ -f $file ]
+		then
+			rval=`basename $file -release`
+			if [ $rval = 'SuSE' ]
+			then
+				if [ -f /etc/UnitedLinux-release ]
+				then
+					rval=UnitedLinux
+				fi
 			elif [ $rval = 'centos' ]
 			then
 				rval=redhat
@@ -38,19 +38,32 @@ else
 			elif [ $rval = 'circle' ]
 			then
 				rval=redhat
+			elif [ $rval = 'oracle' ]
+			then
+				rval=ol
+				break
+			elif [ $rval = 'opencloudos' ]
+			then
+				rval=opencloudos
 			elif [ $rval != 'os' ]
 			then
 				break
-		    fi
-	    fi
-        done
-    fi
-    case $rval in
+			fi
+		fi
+		done
+	fi
+	case $rval in
 	redhat)
 		id=rhel
 		;;
 	SuSE)
 		id=sles
+		;;
+	ol)
+		id=ol
+		;;
+	opencloudos)
+		id=ocs
 		;;
 	*)
 		id=""
@@ -100,6 +113,12 @@ else
 		v1=$(grep VERSION /etc/SuSE-release | cut -d' ' -f3)
 		v2=$(grep PATCHLEVEL /etc/SuSE-release | cut -d' ' -f3)
 		rval=${v1}.$v2
+		;;
+	ocs)
+		rval=`cat /etc/opencloudos-stream-release | cut -d' ' -f4`
+		;;
+	ol)
+		rval=`cat /etc/oracle-release | sed -r 's/^.+([[:digit:]])\.([[:digit:]])*+$/\1.\2/'`
 		;;
 	*)
 		rval=""

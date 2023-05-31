@@ -2192,9 +2192,14 @@ HMGT_STATUS_T collect_data(SNMPHost *hosts, SNMPOid *sw_oids, SNMPOid *nic_oids,
 	//Authentication Protocol
 	if ( (secLevel == SNMP_SEC_LEVEL_AUTHNOPRIV) || (secLevel == SNMP_SEC_LEVEL_AUTHPRIV) ) {
 		if (strcmp(fabric->SnmpAuthenticationProtocol, "MD5") == 0) {
+#ifndef NETSNMP_DISABLE_MD5
 			authProtocol = usmHMACMD5AuthProtocol;
 			authProtocolLength = USM_AUTH_PROTO_MD5_LEN;
 			DBGPRINT("Running MD5 authentication \n");
+#else
+			fprintf(stderr, "%s: MD5 authentication selected but disabled in net-snmp\n", __func__);
+			configParseError = 1;
+#endif
 		} else if (strcmp(fabric->SnmpAuthenticationProtocol, "SHA") == 0) {
 			authProtocol = usmHMACSHA1AuthProtocol;
 			authProtocolLength = USM_AUTH_PROTO_SHA_LEN;
