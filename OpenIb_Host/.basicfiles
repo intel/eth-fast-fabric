@@ -28,8 +28,9 @@ Contains basic tools for fabric management necessary on all compute nodes.
 
 %package fastfabric
 Summary: Management level tools and scripts
-Requires: perl
 Requires: eth-tools-basic%{?_isa} >= %{version}-%{release}
+
+__FF_RPM_DEPENDENCIES
 
 %description fastfabric
 Contains tools for managing fabric on a management node.

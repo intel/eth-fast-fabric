@@ -156,4 +156,9 @@ substitute_file_contents eth-tools.spec.sles   __RPM_DEPENDENCIES dependencies.s
 substitute_file_contents eth-tools.spec.fedora __RPM_DEPENDENCIES dependencies.fedora.in
 substitute_file_contents eth-tools.spec.ocs    __RPM_DEPENDENCIES dependencies.ocs.in
 
+substitute_file_contents eth-tools.spec.rh     __FF_RPM_DEPENDENCIES ff_dependencies.rh.in
+substitute_file_contents eth-tools.spec.sles   __FF_RPM_DEPENDENCIES ff_dependencies.sles.in
+substitute_file_contents eth-tools.spec.fedora __FF_RPM_DEPENDENCIES ff_dependencies.fedora.in
+substitute_file_contents eth-tools.spec.ocs    __FF_RPM_DEPENDENCIES ff_dependencies.ocs.in
+
 exit 0

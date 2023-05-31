@@ -80,6 +80,19 @@ export I_MPI_OFI_PROVIDER=psm3
 # to change this.
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_DEVICES self,shm,nic"
 
+# When running an Intel GPU application these are required
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv EnableImplicitScaling=0 -genv NEOReadDebugKeys=1"
+
+# When running a GPU application these settings are recommended to take full
+# advantage of Direct GPU Access and RDMA.  Typically I_MPI_OFFLOAD_RDMA and
+# PSM3_GPUDIRECT offer better performance, but also depend on the rv kernel
+# module for GPU pinning
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv I_MPI_OFFLOAD=1 -genv I_MPI_OFFLOAD_PIPELINE=0 -genv PSM3_GPUDIRECT=1 -genv I_MPI_OFFLOAD_RDMA=1 -genv I_MPI_OFFLOAD_RDMA_THRESHOLD=0"
+
+# for many GPU applications there may be performance advantages to increasing
+# the size of the rv kernel module's MR cache
+#export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_RV_GPU_CACHE_SIZE=4096 -genv PSM3_RV_MR_CACHE_SIZE=4096"
+
 # The PSM RDMA mode controls how data transfers are done.
 #export MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_RDMA 1"
 
