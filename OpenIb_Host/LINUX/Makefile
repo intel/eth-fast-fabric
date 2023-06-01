@@ -321,8 +321,27 @@ package:
 		echo "$(RELEASE_DIR)/opa-snapconfig$${vers}-$${MKRPM_REL}$${arch}.$(EXT)" >> $(TL_DIR)/dist_files; \
 	fi; \
 
-.EXPORT_ALL_VARIABLES:
+# when build in Fedora38, EXPORT_ALL_VARIABLES can hang our build
+# so we change to directly export the vars we need
+#.EXPORT_ALL_VARIABLES:
 final_package:
+	RELEASE_DIR="$(RELEASE_DIR)" \
+	RPMDIR="$(RPMDIR)" \
+	RPM_BUILD_DIR="$(RPM_BUILD_DIR)" \
+	MKRPM_VER="$(MKRPM_VER)" \
+	BIN_OUTPUT_DIR="$(BIN_OUTPUT_DIR)" \
+	DIR_ARCH="$(DIR_ARCH)" \
+	SRC_OUTPUT_DIR="$(SRC_OUTPUT_DIR)" \
+	SRPMSDIR="$(SRPMSDIR)" \
+	SEPARATOR="$(SEPARATOR)" \
+	MKRPM_REL="$(MKRPM_REL)" \
+	SRPM_EXT="$(SRPM_EXT)" \
+	RPMSDIR="$(RPMSDIR)" \
+	RPM_EXT="$(RPM_EXT)" \
+	DEBUGINFO="$(DEBUGINFO)" \
+	DEBUG_EXT="$(DEBUG_EXT)" \
+	BUILD_TARGET_OS_VENDOR="$(BUILD_TARGET_OS_VENDOR)" \
+	GZIP="$(GZIP)" \
 	./final_package.sh
 # Unit test execution
 #include $(TL_DIR)/Makerules/Maketargets.runtest
