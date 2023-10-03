@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethlinkanalysis 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethlinkanalysis 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethlinkanalysis
 
@@ -14,7 +14,7 @@ ethlinkanalysis
 .PP
 Encapsulates the capabilities for link analysis. Additionally, this tool includes cable and fabric topology verification capabilities. This tool is built on top of ethreport (and its analysis capabilities), and accepts the same syntax for input topology and snapshot files.
 .PP
-In addition to being able to run assorted ethreport link analysis reports, and generate human-readable output, this tool additionally analyzes the results and appends a concise summary of issues found to the FF\(ulRESULT\(ulDIR/punchlist.csv file.
+In addition to being able to run assorted ethreport link analysis reports and generate human-readable output, this tool additionally analyzes the results and appends a concise summary of issues found to the FF\(ulRESULT\(ulDIR/punchlist.csv file.
 .SH Syntax
 ethlinkanalysis [-U] [-T  \fItopology\(ulinputs\fR] [-X  \fIsnapshot\(ulinput\fR] [-x  \fIsnapshot\(ulsuffix\fR]
 .br
@@ -47,7 +47,7 @@ Performs analysis using data in  \fIsnapshot\(ulinput\fR.  \fIsnapshot\(ulinput\
 .TP 10
 -x \fIsnapshot\(ulsuffix\fR
 
-Creates a snapshot file. The files are created in FF\(ulRESULT\(ulDIR with names of the form: snapshotSUFFIX.<plane\(ulname>.xml.
+Creates a snapshot file per selected plane. The files are created in FF\(ulRESULT\(ulDIR with names of the form: snapshotSUFFIX.<plane\(ulname>.xml.
 
 .TP 10
 -c \fIfile\fR
@@ -62,12 +62,12 @@ Ethernet Mgt configuration file. The default is /etc/eth-tools/mgt\(ulconfig.xml
 .TP 10
 -p \fIplanes\fR
 
-Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes
+Fabric planes separated by space. The default is the first enabled plane defined in config file. Value \[aq]ALL\[aq] will use all enabled planes.
 
 .TP 10
 -f \fIhost\(ulfiles\fR
 
-Hosts files separated by space. It overrides the HostsFiles defined in Mgt config file for the corresponding planes. Value \[aq]DEFAULT\[aq] will use the HostFile defined in Mgt config file for the corresponding plane
+Hosts files separated by space. It overrides the HostsFiles defined in Mgt config file for the corresponding planes. Value \[aq]DEFAULT\[aq] will use the HostFile defined in Mgt config file for the corresponding plane.
 
 .TP 10
 \fIreports\fR
@@ -114,7 +114,7 @@ Specifies links connected with mismatched speed potential.
 
 .sp
 all
-Includes all reports above. (errors, slowlinks, misconfiglinks, and misconnlinks)
+Includes the reports errors, slowlinks, misconfiglinks, and misconnlinks.
 
 .RE
 

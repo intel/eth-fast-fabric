@@ -1,6 +1,6 @@
 /* BEGIN_ICS_COPYRIGHT7 ****************************************
 
-Copyright (c) 2015-2020, Intel Corporation
+Copyright (c) 2015-2023, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -138,12 +138,12 @@ void Usage(int exitcode)
 	fprintf(stderr, "Usage: ethxmlindent [-t|-k] [-i indent] [input_file]\n");
 	fprintf(stderr, "           or\n");
 	fprintf(stderr, "       ethxmlindent --help\n");
-	fprintf(stderr, "       --help - produce full help text\n");
-	fprintf(stderr, "       -t - trim leading and trailing whitespace in tag contents\n");
-	fprintf(stderr, "       -k - in tags with purely whitespace which contain newlines,\n");
-	fprintf(stderr, "            keep newlines as is (default is to format as an empty list)\n");
-	fprintf(stderr, "       -i indent - set indentation to use per level (default 4)\n");
-	fprintf(stderr, "       input_file - xml file to read.  default is stdin\n");
+	fprintf(stderr, "       --help - Produces full help text.\n");
+	fprintf(stderr, "       -t - Trims leading and trailing whitespace in tag contents.\n");
+	fprintf(stderr, "       -k - keeps newlines as-is in tags with purely whitespace that contain\n");
+	fprintf(stderr, "            newlines. Default is to format as an empty list.\n");
+	fprintf(stderr, "       -i indent - Sets indentation to use per level. Default is 4.\n");
+	fprintf(stderr, "       input_file - Specifies the XML file to read. Default is stdin.\n");
 	exit(exitcode);
 }
 

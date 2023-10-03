@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2022, Intel Corporation
+# Copyright (c) 2022-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,14 +41,14 @@ Usage_full()
 	echo "Usage: $BASENAME" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 	echo >&2
 	echo "Clean up unused PSM3 POSIX shared memory files in /dev/shm:"  >&2
 	echo "    /dev/shm/psm3_shm.*" >&2
 	echo "    /dev/shm/sem.psm3_nic_affinity*" >&2
 	echo "    /dev/shm/psm3_nic_affinity*" >&2
 	echo >&2
-	echo "example:">&2
+	echo "Example:">&2
 	echo "   ${BASENAME}" >&2	
 	exit 0
 }
@@ -58,9 +58,9 @@ Usage()
 	echo "Usage: $BASENAME" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 	echo >&2
-    echo "example:">&2
+    echo "Example:">&2
 	echo "   ${BASENAME}" >&2	
 	exit 2
 }

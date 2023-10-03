@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethfindgood 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethfindgood 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethfindgood
 
@@ -14,7 +14,7 @@ ethfindgood
 .PP
 Checks for hosts that are able to be pinged, accessed via SSH, and active on the Intel(R) Ethernet Fabric. Produces a list of good hosts meeting all criteria. Typically used to identify good hosts to undergo further testing and benchmarking during initial cluster staging and startup.
 .PP
-The resulting good file lists each good host exactly once and can be used as input to create \fImpi\(ulhosts\fR files for running mpi\(ulapps and the NIC-SW cable test. The files alive, running, active, good, and bad are created in the selected directory listing hosts passing each criteria. If a plane name is provided, filename will be xxx\(ul<plane>, e.g. good\(ulplane1
+The resulting good file lists each good host exactly once and can be used as input to create \fImpi\(ulhosts\fR files for running mpi\(ulapps and the NIC-SW cable test. The files alive, running, active, good, and bad are created in the selected directory listing hosts passing each criteria. If a plane name is provided, filename will be xxx\(ul<plane> , e.g., good\(ulplane1
 .PP
 This command automatically generates the file FF\(ulRESULT\(ulDIR/punchlist.csv. This file provides a concise summary of the bad hosts found. This can be imported into Excel directly as a *.csv file. Alternatively, it can be cut/pasted into Excel, and the
 \fBData/Text to Columns\fR
@@ -90,7 +90,7 @@ Specifies the directory in which to create alive, active, running, good, and bad
 .TP 10
 -f \fIhostfile\fR
 
-Specifies the file with hosts in cluster. Default is /etc/eth-tools/hosts directory.
+Specifies the file with hosts in cluster. Default is /etc/eth-tools/hosts file.
 .TP 10
 -h \fIhosts\fR
 

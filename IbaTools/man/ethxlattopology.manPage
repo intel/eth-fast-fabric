@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethxlattopology 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethxlattopology 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethxlattopology
 
@@ -62,7 +62,7 @@ Rack group topology files.
 .TP 10
 -v \fIlevel\fR
 
-Specifies the verbose level. Range is 0 - 8. Default is 2.
+Specifies the verbose level. Range is 0 - 8. Default is 2. Levels are additive.
 
 .RS
 .TP 10
@@ -127,7 +127,7 @@ Prevents temporary files in each topology directory from being removed. Temporar
 Specifies DO NOT generate Port Numbers from Port IDs.
 
 .IP
-This will introduce slightly poorer topology loading performance. Useful when have difficulty to generate Port Numbers, such as complicated Port ID formats, or not enough Port IDs to train the Port Number generator.
+This will introduce slightly poorer topology-loading performance. Useful when it is difficult to generate Port Numbers, such as complicated Port ID formats, or not enough Port IDs to train the Port Number generator.
 .TP 10
 -f \fIlinkfiles\fR
 
@@ -161,7 +161,7 @@ Creates the <LinkSummary> section xml for the csv input.
 .TP 10
 -p plane
 
-Plane name (default \[aq]plane\[aq]).
+Specifies the plane name. Default is plane.
 .TP 10
 source
 
@@ -170,7 +170,7 @@ Specifies the source csv file. Default is topology.csv.
 .TP 10
 dest
 
-Specifies the output xml file. Default is topology.xml
+Specifies the output xml file. Default is topology.xml.
 
 .IP
 The default output file name can be used to specify destination folder.
@@ -216,12 +216,12 @@ The following environment variables allow user-specified MTU.
 .TP 10
 \fBMTU\(ulSW\(ulSW\fR
 
-If set, it overrides default MTU on switch-to-switch links. Default is 10240
+If set, it overrides default MTU on switch-to-switch links. Default is 10240.
 
 .TP 10
 \fBMTU\(ulSW\(ulNIC\fR
 
-If set, it overrides default MTU on switch-to-NIC links. Default is 10240
+If set, it overrides default MTU on switch-to-NIC links. Default is 10240.
 
 .SH Multi-Rail and Multi-Plane Fabrics
 

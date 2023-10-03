@@ -137,7 +137,7 @@ my $UDEV_RULES_DIR ="/etc/udev/rules.d";
 my $UDEV_RULES_FILE = "05-opa.rules";
 my $Default_UserQueries = 0;
 
-my $udev_perm_string = "Allow non-root users to access the UMAD interface?";
+my $udev_perm_string = "Allow non-root users to access the UMAD interface.";
 
 #AddAnswerHelp("UserQueries", "$udev_perm_string");
 
@@ -170,7 +170,7 @@ sub remove_udev_permissions()
 }
 
 my $ARPTBL_TUNING_NAME = "ARPTABLE_TUNING";
-my $ARPTBL_TUNING_DESC = 'Adjust kernel ARP table size for large fabrics';
+my $ARPTBL_TUNING_DESC = 'Adjusts kernel ARP table size for large fabrics.';
 AddAnswerHelp("$ARPTBL_TUNING_NAME", "$ARPTBL_TUNING_DESC");
 
 sub config_arptbl_tunning()
@@ -179,7 +179,7 @@ sub config_arptbl_tunning()
 }
 
 my $ROCE_NAME="ROCE_ON";
-my $ROCE_DESC="RoCE RDMA transport";
+my $ROCE_DESC="RoCE RDMA transport.";
 AddAnswerHelp("$ROCE_NAME", "$ROCE_DESC");
 
 sub config_roce($)
@@ -205,7 +205,7 @@ sub config_roce($)
 }
 
 my $LMTSEL_NAME="LIMITS_SEL";
-my $LMTSEL_DESC="Resource Limits Selector";
+my $LMTSEL_DESC="Resource Limits Selector.";
 AddAnswerHelp("$LMTSEL_NAME", "$LMTSEL_DESC");
 my $LMTSEL_CONF="/etc/modprobe.d/irdma.conf";
 my $LMTSEL_CONF_BAK="/etc/modprobe.d/irdma.conf.iefsbak";

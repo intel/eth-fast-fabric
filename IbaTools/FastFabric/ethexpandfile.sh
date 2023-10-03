@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -51,10 +51,9 @@ Usage()
 	echo "Usage: $BASENAME file" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   file - FastFabric hosts or switches file to expand by following" >&2
-	echo "          includes and removing comments" >&2
-	echo "example:">&2
+	echo "   --help - Produces full help text." >&2
+	echo "   file - Specifies the FastFabric file to be processed." >&2
+	echo "Example:">&2
 	echo "   $BASENAME allhosts" >&2
 	exit 0
 }

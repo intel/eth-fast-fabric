@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -53,27 +53,27 @@ Usage_full()
 	echo "                   [-E file] [-p planes] [-T topology_inputs] [-f host_files]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -b - baseline mode, default is compare/check mode" >&2
-	echo "   -e - evaluate health only, default is compare/check mode" >&2
-	echo "   -s - save history of failures (errors/differences)" >&2
-	echo "   -d dir - top level directory for saving baseline and history of failed checks" >&2
-	echo "            default is /var/usr/lib/eth-tools/analysis" >&2
-	echo "   -c file - error thresholds config file" >&2
-	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/ethmon.conf" >&2
-	echo "   -E file - Ethernet Mgt config file" >&2
-	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
-	echo "   -p planes - Fabric planes separated by space. Default is" >&2
-	echo "            the first enabled plane defined in config file." >&2
-	echo "            Value 'ALL' will use all enabled planes" >&2
-	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
-	echo "            the HostsFiles defined in Mgt config file for the" >&2
-	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
-	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
-	echo "   -T topology_inputs - name of topology input filenames separated by space." >&2
-	echo "            See ethreport for more information on topology_input files" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -b - Specifies the baseline mode. Default is compare/check mode." >&2
+	echo "   -e - Evaluates health only. Default is compare/check mode." >&2
+	echo "   -s - Saves history of failures (errors/differences)." >&2
+	echo "   -d dir - Specifies the top-level directory for saving baseline and history" >&2
+	echo "            of failed checks. Default is /var/usr/lib/eth-tools/analysis." >&2
+	echo "   -c file - Specifies the error thresholds config file. Default is" >&2
+	echo "            $CONFIG_DIR/$FF_PRD_NAME/ethmon.conf." >&2
+	echo "   -E file - Specifies Ethernet Mgt configuration file. The default" >&2
+	echo "            is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
+	echo "   -p planes - Specifies Fabric planes separated by space. The default is" >&2
+	echo "            the first enabled plane defined in config file. Value 'ALL' will" >&2
+	echo "            use all enabled planes." >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides the HostsFiles" >&2
+	echo "            defined in Mgt config file for the corresponding planes. Value" >&2
+	echo "            'DEFAULT' will use the HostFile defined in Mgt config file for" >&2
+	echo "            the corresponding plane." >&2
+	echo "   -T topology_inputs - Specifies the name of topology input filenames separated" >&2
+	echo "            by space. See ethreport for more information on topology_input files." >&2
 	echo " Environment:" >&2
-	echo "   FF_ANALYSIS_DIR - top level directory for baselines and failed health checks" >&2
+	echo "   FF_ANALYSIS_DIR - Top-level directory for baselines and failed health checks." >&2
 	echo "for example:" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -p 'p1 p2' -f 'hosts1 DEFAULT'" >&2
@@ -85,10 +85,10 @@ Usage()
 	echo "Usage: $BASENAME [-b|-e] [-s]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -b - baseline mode, default is compare/check mode" >&2
-	echo "   -e - evaluate health only, default is compare/check mode" >&2
-	echo "   -s - save history of failures (errors/differences)" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -b - Specifies the baseline mode. Default is compare/check mode." >&2
+	echo "   -e - Evaluates health only. Default is compare/check mode." >&2
+	echo "   -s - Saves history of failures (errors/differences)." >&2
 	echo "for example:" >&2
 	echo "   $BASENAME" >&2
 	exit 2

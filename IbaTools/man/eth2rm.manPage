@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH eth2rm 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH eth2rm 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 eth2rm
 
@@ -73,7 +73,7 @@ FastFabric hosts file omitting this host
 .TP 10
 -g/--guid
 
-Specifies the output switch GUIDs instead of names.
+Specifies to output switch GUIDs instead of names.
 
 .TP 10
 -u/--underscore
@@ -107,7 +107,7 @@ Specifies the focus area for output. Limits the scope of output to links that ma
 .TP 10
 -C/--check
 
-Performs more topology file validation. Requires all links to resolve against nodes, all nodes connected to same fabric, and treats any resolution errors as fatal.
+Performs more topology file validation. Requires all links to resolve against nodes and all nodes connected to same fabric. Treats any resolution errors as fatal.
 
 .TP 10
 -S/--strict

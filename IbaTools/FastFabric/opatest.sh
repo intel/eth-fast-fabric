@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -74,59 +74,67 @@ Usage_ethhostadmin_full()
 	echo "              [-T product] [-P packages] [-S] operation ..." >&2
 	echo "              or" >&2
 	echo "       ethhostadmin --help" >&2
-	echo "  --help - produce full help text" >&2
-	echo "  -c - clobber result files from any previous run before starting this run" >&2
-	echo "  -e - exit after 1st operation which fails" >&2
+	echo "  --help - Produces full help text." >&2
+	echo "  -c - Cleans the result files from any previous run before starting this run." >&2
+	echo "  -e - Specifies to exit after the first operation that fails." >&2
+	echo "  -p plane - Specifies the name of the plane to use. Default is the first" >&2
+	echo "         enabled plane defined in Mgt config file." >&2
+	echo "  -f hostfile - Specifies the file with hosts in cluster. It overrides the" >&2
+	echo "         HostsFile for the selected plane that is defined in Mgt config file." >&2
+	echo "  -h hosts Specifies the list of hosts to execute the operation against." >&2
+	echo "  -r release - Specifies the software version to load/upgrade to. Default is" >&2
+	echo "         the version of Intel Ethernet Fabric Suite Software presently being" >&2
+	echo "         run on the server." >&2
 #	echo "  -i ipoib_suffix - suffix to apply to host names to create ipoib host names" >&2
 #	echo "                    default is '$FF_IPOIB_SUFFIX'" >&2
-	echo "  -p plane - fabric plane the operations will apply on. Default is the first" >&2
-	echo "             active plane defined in Mgt config file" >&2
-	echo "  -f hostfile - file with hosts in cluster. It overrides the HostsFile defined" >&2
-	echo "                in Mgt config file for the plane" >&2
-	echo "  -h hosts - list of hosts to execute operation against" >&2
-	echo "  -r release - IntelEth release to load/upgrade to, default is $FF_PRODUCT_VERSION" >&2
-	echo "  -d dir - directory to get product.release.tgz from for load/upgrade" >&2
-	echo "  -I install_options - IntelEth install options" >&2
-	echo "  -U upgrade_options - IntelEth upgrade options" >&2
-	echo "  -T product - IntelEth product type to install" >&2
-	echo "               default is $FF_PRODUCT" >&2
-	echo "               Other options include: IntelEth-Basic.<distro>," >&2
-	echo "                                      IntelEth-FS.<distro>" >&2
-	echo "               Where <distro> is the distro and CPU, such as RHEL7-x86_64" >&2
-	echo "  -P packages - IntelEth packages to install, default is '$FF_PACKAGES'" >&2
-	echo "                See IntelEth INSTALL -C for a complete list of packages" >&2
-	echo "  -S - securely prompt for password for user on remote system" >&2
-	echo "  operation - operation to perform. operation can be one or more of:" >&2
-	echo "              load - initial install of all hosts" >&2
-	echo "              upgrade - upgrade install of all hosts" >&2
+	echo "  -d dir - Specifies the directory to retrieve product.release.tgz for load" >&2
+	echo "         or upgrade." >&2
+	echo "  -I install_options - Specifies the software install options." >&2
+	echo "  -U upgrade_options - Specifies the software upgrade options." >&2
+	echo "  -T product - Specifies the product type to install. Default is FF_PRODUCT." >&2
+	echo "         Options include:" >&2
+	echo "         - IntelEth-Basic.<distro>" >&2
+	echo "         - IntelEth-FS.<distro>" >&2
+	echo "         where <distro> is the distribution and CPU, such as RHEL81-x86_64." >&2
+	echo "  -P packages - Specifies the packages to install. Default is '$FF_PACKAGES.'" >&2
+	echo "         Refer to INSTALL -C for complete list of packages." >&2
+	echo "  -S - Securely prompts for user password on remote system." >&2
+	echo "  operation - Performs the specified operation, which can be one or more of" >&2
+	echo "         the following:" >&2
+	echo "              load - Preforms an initial installation of all hosts." >&2
+	echo "              upgrade - Upgrades installation of all hosts." >&2
 #	echo "              configipoib - create ifcfg-ib1 using host IP addr from /etc/hosts" >&2
-	echo "              reboot - reboot hosts, ensure they go down and come back" >&2
-	echo "              rping - verify this host can ping each host via RDMA" >&2
-	echo "              pfctest - verify PFC works on all hosts" >&2
+	echo "              reboot - Reboots hosts, ensures they go down and come back." >&2
+	echo "              rping - Verifies this host can ping each host through RDMA." >&2
+	echo "              pfctest - Verifies PFC works on all hosts." >&2
 #	echo "              ipoibping - verify this host can ping each host via IPoIB" >&2
-	echo "              mpiperf - verify latency and bandwidth for each host" >&2
-	echo "              mpiperfdeviation - check for latency and bandwidth tolerance" >&2
-	echo "                                 deviation between hosts" >&2
+	echo "              mpiperf - Verifies latency and bandwidth for each host." >&2
+	echo "              mpiperfdeviation - Verifies latency and bandwidth for each" >&2
+	echo "                     host against a defined threshold (or relative to" >&2
+	echo "                     average host performance)." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
-	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
-	echo "   FF_SERIALIZE_OUTPUT - serialize output of parallel operations (yes or no)" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   FABRIC_PLANE - Name of fabric plane used in absence of -p, -f, and -h." >&2
+	echo "   FF_MAX_PARALLEL - Maximum concurrent operations are performed." >&2
+	echo "   FF_SERIALIZE_OUTPUT - Serialize output of parallel operations (yes or no)." >&2
 	echo "   FF_TIMEOUT_MULT - Multiplier for all timeouts associated with this command." >&2
 	echo "                     Used if the systems are slow for some reason." >&2
-	echo "for example:" >&2
+	echo "   FF_PRODUCT - Product to install during load and upgrade operations." >&2
+	echo "Examples:" >&2
 	echo "   ethhostadmin -c reboot" >&2
 	echo "   ethhostadmin upgrade" >&2
 	echo "   ethhostadmin -p plane1 rping" >&2
 	echo "   ethhostadmin -h 'elrond arwen' reboot" >&2
 	echo "   HOSTS='elrond arwen' ethhostadmin reboot" >&2
-	echo "During run the following files are produced:" >&2
-	echo "  test.res - appended with summary results of run" >&2
-	echo "  test.log - appended with detailed results of run" >&2
-	echo "  save_tmp/ - contains a directory per failed operation with detailed logs" >&2
-	echo "  test_tmp*/ - intermediate result files while operation is running" >&2
-	echo "-c option will remove all of the above" >&2
+	echo >&2
+	echo "ethhostadmin provides detailed logging of its results. During each run, the" >&2
+	echo "following files are produced:" >&2
+	echo "  test.res - Appended with summary results of run." >&2
+	echo "  test.log - Appended with detailed results of run." >&2
+	echo "  save_tmp/ - Contains a directory per failed test with detailed logs." >&2
+	echo "  test_tmp*/ -  Intermediate result files while test is running." >&2
+	echo "The -c option removes all log files." >&2
 	exit 0
 }
 #Usage_opachassisadmin_full()
@@ -136,7 +144,7 @@ Usage_ethhostadmin_full()
 #	echo "              [-S] [-d upload_dir] [-s securityfiles] operation ..." >&2
 #	echo "              or" >&2
 #	echo "       opachassisadmin --help" >&2
-#	echo "  --help - produce full help text" >&2
+#	echo "  --help - Produces full help text." >&2
 #	echo "  -c - clobber result files from any previous run before starting this run" >&2
 #	echo "  -e - exit after 1st operation which fails" >&2
 #	echo "  -F switchesfile - file with switches in cluster" >&2
@@ -227,41 +235,50 @@ Usage_ethhostadmin()
 	echo "              [-T product] [-P packages] [-S] operation ..." >&2
 	echo "              or" >&2
 	echo "       ethhostadmin --help" >&2
-	echo "  --help - produce full help text" >&2
-	echo "  -c - clobber result files from any previous run before starting this run" >&2
-	echo "  -e - exit after 1st operation which fails" >&2
-	echo "  -p plane - fabric plane the operations will apply on, default is the first" >&2
-	echo "             active plane defined in Mgt config file" >&2
-	echo "  -f hostfile - file with hosts in cluster" >&2
-	echo "  -r release - IntelEth release to load/upgrade to, default is $FF_PRODUCT_VERSION" >&2
-	echo "  -d dir - directory to get product.release.tgz from for load/upgrade" >&2
-	echo "  -T product - IntelEth product type to install" >&2
-	echo "               default is $FF_PRODUCT" >&2
-	echo "               Other options include: IntelEth-Basic.<distro>, IntelEth-FS.<distro>" >&2
-	echo "               Where <distro> is the distro and CPU, such as RHEL7-x86_64" >&2
-	echo "  -P packages - IntelEth packages to install, default is '$FF_PACKAGES'" >&2
-	echo "                See IntelEth INSTALL -C for a complete list of packages" >&2
-	echo "  -S - securely prompt for password for user on remote system" >&2
-	echo "  operation - operation to perform. operation can be one or more of:" >&2
-	echo "              load - initial install of all hosts" >&2
-	echo "              upgrade - upgrade install of all hosts" >&2
+	echo "  --help - Produces full help text." >&2
+	echo "  -c - Cleans the result files from any previous run before starting this run." >&2
+	echo "  -e - Specifies to exit after the first operation that fails." >&2
+	echo "  -p plane - Specifies the name of the plane to use. Default is the first" >&2
+	echo "         enabled plane defined in Mgt config file." >&2
+	echo "  -f hostfile - Specifies the file with hosts in cluster. It overrides the" >&2
+	echo "         HostsFile for the selected plane that is defined in Mgt config file." >&2
+	echo "  -r release - Specifies the software version to load/upgrade to. Default is" >&2
+	echo "         the version of Intel Ethernet Fabric Suite Software presently being" >&2
+	echo "         run on the server." >&2
+	echo "  -d dir - Specifies the directory to retrieve product.release.tgz for load" >&2
+	echo "         or upgrade." >&2
+	echo "  -T product - Specifies the product type to install. Default is FF_PRODUCT." >&2
+	echo "         Options include:" >&2
+	echo "         - IntelEth-Basic.<distro>" >&2
+	echo "         - IntelEth-FS.<distro>" >&2
+	echo "         where <distro> is the distribution and CPU, such as RHEL81-x86_64." >&2
+	echo "  -P packages - Specifies the packages to install. Default is '$FF_PACKAGES.'" >&2
+	echo "         Refer to INSTALL -C for compete list of packages." >&2
+	echo "  -S - Securely prompts for user password on remote system." >&2
+	echo "  operation - Performs the specified operation, which can be one or more of" >&2
+	echo "         the following:" >&2
+	echo "              load - Preforms an initial installation of all hosts." >&2
+	echo "              upgrade - Upgrades installation of all hosts." >&2
 #	echo "              configipoib - create ifcfg-ib1 using host IP addr from /etc/hosts" >&2
-	echo "              reboot - reboot hosts, ensure they go down and come back" >&2
-	echo "              rping - verify this host can ping each host via RDMA" >&2
-	echo "              pfctest - verify PFC works on all hosts" >&2
+	echo "              reboot - Reboots hosts, ensures they go down and come back." >&2
+	echo "              rping - Verifies this host can ping each host through RDMA." >&2
+	echo "              pfctest - Verifies PFC works on all hosts." >&2
 #	echo "              ipoibping - verify this host can ping each host via IPoIB" >&2
-	echo "              mpiperf - verify latency and bandwidth for each host" >&2
-	echo "              mpiperfdeviation - check for latency and bandwidth tolerance" >&2
-	echo "                        	       deviation between hosts" >&2
-	echo "for example:" >&2
-	echo "   ethhostadmin  -c reboot" >&2
-	echo "   ethhostadmin  upgrade" >&2
-	echo "During run the following files are produced:" >&2
-	echo "  test.res - appended with summary results of run" >&2
-	echo "  test.log - appended with detailed results of run" >&2
-	echo "  save_tmp/ - contains a directory per failed test with detailed logs" >&2
-	echo "  test_tmp*/ - intermediate result files while test is running" >&2
-	echo "-c option will remove all of the above" >&2
+	echo "              mpiperf - Verifies latency and bandwidth for each host." >&2
+	echo "              mpiperfdeviation - Verifies latency and bandwidth for each" >&2
+	echo "                     host against a defined threshold (or relative to" >&2
+	echo "                     average host performance)." >&2
+	echo "Examples:" >&2
+	echo "   ethhostadmin -c reboot" >&2
+	echo "   ethhostadmin upgrade" >&2
+	echo >&2
+	echo "ethhostadmin provides detailed logging of its results. During each run, the" >&2
+	echo "following files are produced:" >&2
+	echo "  test.res - Appended with summary results of run." >&2
+	echo "  test.log - Appended with detailed results of run." >&2
+	echo "  save_tmp/ - Contains a directory per failed test with detailed logs." >&2
+	echo "  test_tmp*/ -  Intermediate result files while test is running." >&2
+	echo "The -c option removes all log files." >&2
 	exit 2
 }
 #Usage_opachassisadmin()
@@ -271,7 +288,7 @@ Usage_ethhostadmin()
 #    echo "              [-S] [-d upload_dir] [-s securityfiles] operation ..." >&2
 #	echo "              or" >&2
 #	echo "       opachassisadmin --help" >&2
-#	echo "  --help - produce full help text" >&2
+#	echo "  --help - Produces full help text." >&2
 #	echo "  -c - clobber result files from any previous run before starting this run" >&2
 #	echo "  -e - exit after 1st operation which fails" >&2
 #	echo "  -F switchesfile - file with switches in cluster" >&2

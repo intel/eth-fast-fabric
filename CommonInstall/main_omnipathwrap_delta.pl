@@ -801,7 +801,9 @@ sub Usage
 		#printf STDERR "               or\n";
 		#printf STDERR "Usage: $0 [-r root] [-v|-vv] [-a|-n|-U|-F|-u|-s|-i comp|-e comp] [-E comp] [-D comp] [-f] [--fwupdate asneeded|always] [-l] [--prefix dir] [--without-depcheck] [--rebuild] [--force] [--answer keyword=value]\n";
 		#printf STDERR "Usage: $0 [-r root] [-v|-vv] [-a|-n|-U|-F|-u|-s|-i comp|-e comp] [-E comp] [-D comp] [-f] [--fwupdate asneeded|always] [--prefix dir] [--without-depcheck] [--rebuild] [--force] [--answer keyword=value]\n";
-		printf STDERR "Usage: $0 [-v|-vv] -R osver [-a|-n|-U|-u|-s|-O|-N|-i comp|-e comp] [-G] [-E comp] [-D comp] [--user-space] [--without-depcheck] [--rebuild] [--force] [--answer keyword=value]\n";
+		printf STDERR "Usage: $0 [-v|-vv] -R osver [-a|-n|-U|-u|-s|-O|-N|-i comp|-e comp] [-G]\n";
+		printf STDERR "       %*s [-E comp] [-D comp] [--user-space] [--without-depcheck]\n", length($0), " ";
+		printf STDERR "       %*s [--rebuild] [--force] [--answer keyword=value]\n", length($0), " ";
 	} else {
 #		printf STDERR "Usage: $0 [-r root] [-v|-vv] [-F|-u|-s|-e comp] [-E comp] [-D comp]\n";
 #		printf STDERR "          [--fwupdate asneeded|always] [--user_queries|--no_user_queries] [--answer keyword=value]\n";
@@ -813,29 +815,28 @@ sub Usage
 	printf STDERR "               or\n";
 	printf STDERR "Usage: $0 -V\n";
 	if ( $allow_install ) {
-		printf STDERR "       -a - install all ULPs and drivers with default options\n";
-		printf STDERR "       -n - install all ULPs and drivers with default options\n";
-		printf STDERR "            but with no change to autostart options\n";
-		printf STDERR "       -U - upgrade/re-install all presently installed ULPs and drivers with\n";
-		printf STDERR "            default options and no change to autostart options\n";
-		printf STDERR "       -i comp - install the given component with default options\n";
-		printf STDERR "            can appear more than once on command line\n";
-#		printf STDERR "       -f - skip HCA firmware upgrade during install\n";
-		printf STDERR "       --user-space - Skip kernel space and firmware packages during installation\n";
-		printf STDERR "            can be useful when installing into a container\n";
-		#printf STDERR "       -l - skip creating/removing symlinks to /usr/local from /usr/lib/eth-tools\n";
-		printf STDERR "       --without-depcheck - disable check of OS dependencies\n";
-		printf STDERR "       --rebuild - force OFA Delta rebuild\n";
-		printf STDERR "       --force - force install even if distro don't match\n";
-		printf STDERR "                 Use of this option can result in undefined behaviors\n";
-		printf STDERR "       -O - Keep current modified rpm config file\n";
-		printf STDERR "       -N - Use new default rpm config file\n";
+		printf STDERR "       -a - Installs all components and drivers with\n";
+		printf STDERR "            the default options.\n";
+		printf STDERR "       -n - Installs all components and drivers with the default options,\n";
+		printf STDERR "            but does not change the autostart options.\n";
+		printf STDERR "       -U - Upgrades/reinstalls all presently installed components and drivers\n";
+		printf STDERR "            with the default options, and does not change the autostart options.\n";
+		printf STDERR "       -i comp - Installs the given component with the default options.\n";
+		printf STDERR "            This option can appear multiple times on a command line.\n";
+		printf STDERR "       --user-space - Skips kernel space components during installation.\n";
+		printf STDERR "       --without-depcheck - Disables the check of OS dependencies.\n";
+		printf STDERR "       --rebuild - Forces a rebuild of kernel module srpms.\n";
+		printf STDERR "       --force - Forces the installation, even if the distributions do not match.\n";
+		printf STDERR "            Use of this option can result in undefined behaviors.\n";
+		printf STDERR "       -O - Keeps the current modified rpm configuration file.\n";
+		printf STDERR "       -N - Uses a new default rpm configuration file.\n";
 
 		# -B, -t and -d options are purposely not documented
 		#printf STDERR "       -B osver - run build for all components targetting kernel osver\n";
 		#printf STDERR "       -t - temp area for use by builds, only valid with -B\n";
 		#printf STDERR "       -d - enable build debugging assists, only valid with -B\n";
-		printf STDERR "       -R osver - force install for kernel osver rather than running kernel.\n";
+		printf STDERR "       -R osver - Forces install for specific OS kernel version, rather\n";
+		printf STDERR "            than running kernel.\n";
 	}
 #	printf STDERR "       -F - upgrade HCA Firmware with default options\n";
 #	printf STDERR "       --fwupdate asneeded|always - select fw update auto update mode\n";
@@ -843,35 +844,36 @@ sub Usage
 #	printf STDERR "            always - rewrite with this releases version even if matches\n";
 #	printf STDERR "            default is to upgrade as needed but not downgrade\n";
 #	printf STDERR "            this option is ignored for interactive install\n";
-	printf STDERR "       -u - uninstall all ULPs and drivers with default options\n";
-	printf STDERR "       -s - enable autostart for all installed drivers\n";
-	printf STDERR "       -e comp - uninstall the given component with default options\n";
-	printf STDERR "            can appear more than once on command line\n";
-	printf STDERR "       -E comp - enable autostart of given component\n";
-	printf STDERR "            can appear with -D or more than once on command line\n";
-	printf STDERR "       -D comp - disable autostart of given component\n";
-	printf STDERR "            can appear with -E or more than once on command line\n";
-	printf STDERR "       -G - install GPU Direct components (must have GPU drivers installed)\n";
-	printf STDERR "            also, either NVIDIA_GPU_DIRECT=<DIR> or INTEL_GPU_DIRECT=<DIR> must be in env\n";
-	printf STDERR "       -v - verbose logging\n";
-	printf STDERR "       -vv - very verbose debug logging\n";
-	printf STDERR "       -C - output list of supported components\n";
+	printf STDERR "       -u - Uninstalls all components and drivers with the default options.\n";
+	printf STDERR "       -s - Enables autostart for all installed software.\n";
+	printf STDERR "       -e comp - Uninstalls the given component with the default options.\n";
+	printf STDERR "            This option can appear multiple times on a command line.\n";
+	printf STDERR "       -E comp - Enables autostart of given component. This option can\n";
+	printf STDERR "            appear with -D or multiple times on a command line.\n";
+	printf STDERR "       -D comp - Disables autostart of the given component. This option can\n";
+	printf STDERR "            appear with -E or multiple times on a command line.\n";
+	printf STDERR "       -G - Installs GPU support components (must have GPU drivers).\n";
+	printf STDERR "            Also, either NVIDIA_GPU_DIRECT=<DIR> or INTEL_GPU_DIRECT=<DIR>\n";
+	printf STDERR "            must be in env.\n";
+	printf STDERR "       -v - Provides verbose logging. Logs to the $LogFileDefault file.\n";
+	printf STDERR "       -vv - Provides very verbose debug logging. Logs to the $LogFileDefault file.\n";
+	printf STDERR "       -C - Shows the list of supported component names.\n";
 #       Hidden feature for internal use
 #       printf STDERR "       -c comp - output component information in JSON format\n";
-	printf STDERR "       -V - output Version\n";
+	printf STDERR "       -V - Outputs the version number of the software.\n";
 
 #	printf STDERR "       --user_queries - permit non-root users to query the fabric. (default)\n";
 #	printf STDERR "       --no_user_queries - non root users cannot query the fabric.\n";
 	showAnswerHelp();
 
-	printf STDERR "       default options retain existing configuration files\n";
-	printf STDERR "       supported component names:\n";
+	printf STDERR "       Default options retain existing configuration files.\n";
+	printf STDERR "       Supported component names:\n";
 	printf STDERR "            ";
 	ShowComponents(\*STDERR);
-	printf STDERR "       supported component name aliases:\n";
+	printf STDERR "       Supported component name aliases:\n";
 	printf STDERR "            eth mpi psm_mpi tools\n";
 	if (scalar(@SubComponents) > 0) {
-		printf STDERR "       additional component names allowed for -E and -D options:\n";
+		printf STDERR "       Additional component names allowed for -E and -D options:\n";
 		printf STDERR "            ";
 		foreach my $comp ( @SubComponents )
 		{

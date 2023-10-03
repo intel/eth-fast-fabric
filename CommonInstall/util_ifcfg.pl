@@ -46,7 +46,7 @@ use strict;
 my $FirstIPoIBInterface=0; # first device is ib0
 my $MAX_HFI_PORTS=20;	# maximum valid ports
 my $PFC_NAME="PFC_MODE";
-my $PFC_DESC="PFC mode (0-Off, 1-Software DCB Willing, 2-Software DCB Unwilling, 3-Firmware DCB Willing)";
+my $PFC_DESC="PFC mode (0-Off, 1-Software DCB Willing, 2-Software DCB Unwilling, 3-Firmware DCB Willing).";
 my $PFC_DEFAULT=1;
 AddAnswerHelp("$PFC_NAME", "$PFC_DESC");
 

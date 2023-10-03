@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethxmlfilter 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethxmlfilter 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethxmlfilter
 
@@ -30,12 +30,12 @@ Trims leading and trailing whitespace in tag contents.
 .TP 10
 -k
 
-In tags with purely whitespace that contain newlines, keeps newlines as-is. Default is to format as an empty list.
+Keeps newlines as-is in tags with purely whitespace that contain newlines. Default is to format as an empty list.
 
 .TP 10
 -l
 
-Adds comments with line numbers after each end tag. This can make comparison of resulting files easier since original line numbers are available.
+Adds comments with line numbers after each end tag. Makes comparison of resulting files easier since original line numbers are available.
 
 .TP 10
 -i \fIindent\fR

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethcapture 1 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethcapture 1 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethcapture
 
@@ -45,7 +45,7 @@ Obtains local information from host. This is the default if no options are enter
 
 .sp
 2 (Fabric)
-In addition to \fILocal\fR, also obtains basic fabric information by queries to the SM and fabric error analysis using \fBethreport\fR.
+In addition to \fILocal\fR, also obtains basic fabric information using \fBethreport\fR.
 
 .RE
 
@@ -65,10 +65,16 @@ In addition to \fIFabric\fR, also obtains ethallanalysis results. If ethallanaly
 .PP
 
 .B NOTE:
-Detail levels 2 - 3 can be used when fabric operational problems occur. If the problem is node-specific, detail level 1 should be sufficient. Detail levels 2 - 3 require an operational Fabric. Typically your support representative requests a given detail level. If a given detail level takes excessively long or fails to be gathered, try a lower detail level.
 
-.PP
+.RS
+
+.IP \(bu
+Detail levels 2 - 3 can be used when fabric operational problems occur. If the problem is node-specific, detail level 1 should be sufficient. Detail levels 2 - 3 require an operational Fabric. Typically your support representative requests a given detail level. If a given detail level takes excessively long or fails to be gathered, try a lower detail level.
+.IP \(bu
 For detail levels 2 - 3, the additional information is only available on a node with Intel(R) Ethernet Fabric Suite FastFabric Toolset installed.
+
+.RE
+
 
 .TP 10
 \fIoutput\(ultgz\(ulfile\fR

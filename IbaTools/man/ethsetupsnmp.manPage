@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethsetupsnmp 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethsetupsnmp 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethsetupsnmp
 
@@ -45,7 +45,7 @@ Specifies the list of hosts in cluster.
 .TP 10
 -L
 
-Include localhost (the current node) in setup.
+Includes localhost (the current node) in setup.
 
 .TP 10
 -a \fIadmin\fR
@@ -93,7 +93,7 @@ When -p option is used, maximum concurrent operations.
 .SH Description
 
 .PP
-ethreport collects fabric data through issuing SNMP queries to hosts and switches. Intel recommends that you set up SNMP using ethsetupsnmp to ensure ethreport has proper permission to query each host; each host can provide desired data; and, all hosts have consistent SNMP configuration. ethsetupsnmp accepts the following parameters to configure SNMP. These parameters can be specified as command line arguments or collected during user interaction. ethsetupsnmp works under user interaction mode when one or more of the required parameters are not specified in command line.
+ethreport collects fabric data through issuing SNMP queries to hosts and switches. Intel recommends that you set up SNMP using ethsetupsnmp to ensure ethreport has proper permission to query each host; each host can provide desired data; and, all hosts have consistent SNMP configuration. ethsetupsnmp accepts the following parameters to configure SNMP. These parameters can be specified as command line arguments or collected during user interaction. ethsetupsnmp works under user-interaction mode when one or more of the required parameters are not specified in command line.
 .IP \(bu
 \fIadmin\fR: Space separated management node names. ethsetupsnmp will configure each host to allow SNMP query from these nodes.
 .IP \(bu

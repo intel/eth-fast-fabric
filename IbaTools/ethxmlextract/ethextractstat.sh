@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -57,8 +57,8 @@ usage()
 {
     echo "Usage:  ${cmd} topology_file [ethreport options]" >&2
     echo "       or  ${cmd} --help" >&2
-    echo "   --help - produce full help text" >&2
-    echo "   [ethreport options] - options will be passed to ethreport." >&2
+    echo "   --help - Produces full help text." >&2
+    echo "   [ethreport options] - Options passed to ethreport." >&2
     exit 2
 }
 
@@ -67,17 +67,25 @@ Usage_full()
 	echo >&2
 	echo "Usage: ${cmd} topology_file [ethreport options]" >&2
 	echo "       or  ${cmd} --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   [ethreport options] - options will be passed to ethreport." >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
-	echo "${cmd} is a front end to the ethreport and ethxmlextract tools that" >&2
-	echo "performs an error analysis of a fabric and provides augmented information" >&2
-	echo "from a topology file. Report provides cable information as well" >&2
-	echo "as symbol error count." >&2
-	echo "The output is in a CSV format suitable for importing into a spreadsheet or" >&2
-	echo "parsed by other scripts." >&2
+	echo "Performs an error analysis of a fabric and provides augmented information from a" >&2
+	echo "topology_file. The report provides cable information as well as symbol error" >&2
+	echo "counts." >&2
 	echo >&2
-	echo "for example:" >&2
+	echo "${cmd} generates a detailed ethreport errors report that also has a" >&2
+	echo "topology file (see ethreport for more information about topology files)." >&2
+	echo "The report is piped to ethxmlextract, which extracts values for Link, Cable and" >&2
+	echo "Port. (The port element names are context-sensitive.) Note that ethxmlextract" >&2
+	echo "generates two extraction records for each link (one for each port on the link);" >&2
+	echo "therefore, ethextractstat merges the two records into a single record and removes" >&2
+	echo "redundant link and cable information." >&2
+	echo >&2
+	echo "${cmd} contains a while read loop that reads the CSV line-by-line, uses" >&2
+	echo "cut to remove redundant information, and outputs the data on a common line." >&2
+	echo >&2
+	echo "Examples:" >&2
 	echo "	${cmd} topology_file"
 	echo >&2
 	echo "	${cmd} topology_file -c my_ethmon.conf"

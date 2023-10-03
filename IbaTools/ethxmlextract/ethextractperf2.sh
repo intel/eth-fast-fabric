@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -42,14 +42,16 @@ Usage_full()
 	echo "Usage: ${cmd} [ethreport options]" >&2
 	echo "              or" >&2
 	echo "       ${cmd} --help" >&2
-	echo "   --help - produce full help text." >&2
-	echo "   ethreport options - options will be passed to ethreport." >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   ethreport options - Options passed to ethreport." >&2
 	echo >&2
-	echo "${cmd} provides a report of all performance counters in a " >&2
-	echo "CSV format suitable for importing into a spreadsheet or parsed by" >&2
-	echo "other scripts." >&2
+	echo "Provides a report of all performance counters in a CSV format suitable for" >&2
+	echo "importing into a spreadsheet or parsed by other scripts for further analysis. It" >&2
+	echo "generates a detailed ethreport component summary report and pipes the result to" >&2
+	echo "ethxmlextract, extracting element values for NodeDesc, IfAddr, PortNum, neighbor" >&2
+	echo "NodeDesc, neighbor IfAddr, neighbor PortNum and all the performance counters." >&2
 	echo >&2
-	echo "for example:" >&2
+	echo "Examples:" >&2
 	echo "   ${cmd}" >&2
 	echo >&2
 	echo "See the man page for \"ethreport\" for the full set of options.">&2
@@ -63,9 +65,9 @@ Usage()
 	echo "Usage: ${cmd} [ethreport options]" >&2
 	echo "              or" >&2
 	echo "       ${cmd} --help" >&2
-	echo "   --help - produce full help text." >&2
-	echo "   ethreport options - options will be passed to ethreport." >&2
-	echo "for example:" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   ethreport options - Options passed to ethreport." >&2
+	echo "Examples:" >&2
 	echo "   ${cmd}" >&2
 	echo >&2
 	exit 2

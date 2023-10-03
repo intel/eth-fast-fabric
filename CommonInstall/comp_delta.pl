@@ -614,7 +614,7 @@ sub preinstall_delta($$$)
 # ==========================================================================
 # OFA DELTA generic routines
 
-# OFA has a single start script but controls which ULPs are loaded via
+# OFA has a single start script but controls which components are loaded via
 # entries in $OFA_CONFIG (rdma.conf)
 # change all StartupParams for given delta component to $newvalue
 sub delta_comp_change_ofa_conf_param($$)

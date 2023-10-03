@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -55,35 +55,34 @@ trap "rm -f $tempfile" EXIT
 
 usage()
 {
-    echo "Usage:  ${cmd} topology_file [ethreport options]" >&2
-    echo "       or  ${cmd} --help" >&2
-    echo "   --help - produce full help text" >&2
-    echo "   [ethreport options] - options will be passed to ethreport." >&2
-    echo >&2
-    exit 2
+	echo "Usage:  ${cmd} topology_file [ethreport options]" >&2
+	echo "       or  ${cmd} --help" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   [ethreport options] - Options passed to ethreport." >&2
+	echo >&2
+	exit 2
 }
 
 Usage_full()
 {
-    echo "Usage: ${cmd} topology_file [ethreport options]" >&2
-    echo "       or  ${cmd} --help" >&2
-    echo "   --help - produce full help text" >&2
-    echo "   [ethreport options] - options will be passed to ethreport." >&2
-    echo >&2
-    echo "${cmd} is a front end to the ethreport and ethxmlextract tools that" >&2
-    echo "performs an error analysis of a fabric and provides augmented information" >&2
-    echo "from a topology file including all error counters." >&2
-    echo "The output is in a CSV format suitable for importing into a spreadsheet or" >&2
-    echo "parsed by other scripts." >&2
-    echo >&2
-    echo "for example" >&2
-    echo "	${cmd} topology_file" >&2
-    echo >&2
-    echo "	${cmd} topology_file -c my_ethmon.conf" >&2
-    echo >&2
-    echo "See the man page for \"ethreport\" for the full set of options." >&2
-    echo "By design, the tool ignores \"-o/--output\" report option." >&2
-    echo >&2
+	echo "Usage: ${cmd} topology_file [ethreport options]" >&2
+	echo "       or  ${cmd} --help" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   [ethreport options] - Options passed to ethreport." >&2
+	echo >&2
+	echo "Performs an error analysis of a fabric and provides augmented information from a" >&2
+	echo "topology_file including all error counters. The output is in a CSV format suitable" >&2
+	echo "for importing into a spreadsheet or parsed by other scripts. ${cmd} is a" >&2
+	echo "front end to the ethreport and ethxmlextract tools." >&2
+	echo >&2
+	echo "Examples:" >&2
+	echo "	${cmd} topology_file" >&2
+	echo >&2
+	echo "	${cmd} topology_file -c my_ethmon.conf" >&2
+	echo >&2
+	echo "See the man page for \"ethreport\" for the full set of options." >&2
+	echo "By design, the tool ignores \"-o/--output\" report option." >&2
+	echo >&2
 
 }
 
@@ -98,7 +97,7 @@ fi
 
 if [[ $# -lt 1 || "$1" == -* ]]
 then
-    usage
+	usage
 fi
 
 

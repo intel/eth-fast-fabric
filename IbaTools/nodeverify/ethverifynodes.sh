@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2017, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -56,43 +56,48 @@ Usage_full()
 	echo "                         [-h 'hosts'] [-T timelimit] [test ...]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -k - at start and end of verification, kill any existing hostverify" >&2
-	echo "        or xhpl jobs on the hosts" >&2
-	echo "   -c - copy hostverify.sh to hosts first, useful if you have edited it" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -h hosts - list of hosts to ping" >&2
-	echo "   -u upload_file - filename to upload hostverify.res to after verification" >&2
-	echo "                    to allow backup and review of the detailed results" >&2
-	echo "                    for each node" >&2
-	echo "                    The default upload destination file is hostverify.res" >&2
-	echo "                    If -u '' is specified, no upload will occur" >&2
-	echo "   -d upload_dir - directory to upload result from each host to" >&2
-	echo "                   default is uploads" >&2
-	echo "   -T timelimit - timelimit in seconds for host to complete tests" >&2
-	echo "                  default of 300 seconds (5 minutes)" >&2
-	echo "   -F filename - filename of hostverify script to use. Default is $FF_HOSTVERIFY_DIR/hostverify.sh" >&2
-	echo "	 test - one or more specific tests to run" >&2
-	echo "	        see /usr/share/$FF_PRD_NAME/samples/hostverify.sh for a list of available tests" >&2
-	echo "This verifies basic node configuration and performance by running" >&2
-	echo "FF_HOSTVERIFY_DIR/hostverify.sh on all specified hosts" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -k - At start and end of verification, kills any existing hostverify or xhpl" >&2
+	echo "        jobs on the hosts." >&2
+	echo "   -c - Copies hostverify.sh to hosts first, useful if you have edited it." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is " >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -h hosts - Specifies the list of hosts to ping." >&2
+	echo "   -u upload_file - Specifies the filename to upload hostverify.res to after" >&2
+	echo "        verification to allow backup and review of the detailed results for each" >&2
+	echo "        node. The default upload destination file is hostverify.res. If -u '' is" >&2
+	echo "        specified, no upload occurs." >&2
+	echo "   -d upload_dir - Specifies the directory to upload result from each host to." >&2
+	echo "        Default is uploads." >&2
+	echo "   -T timelimit - Specifies the time limit in seconds for host to complete tests." >&2
+	echo "        Default is 300 seconds (5 minutes)." >&2
+	echo "   -F filename - Specifies the filename of hostverify script to use. Default is" >&2
+	echo "        $FF_HOSTVERIFY_DIR/hostverify.sh" >&2
+	echo "	 test - Specifies one or more specific tests to run." >&2
+	echo "        See /usr/share/$FF_PRD_NAME/samples/hostverify.sh for a list of available tests." >&2
 	echo >&2
-	echo "Prior to using this, copy /usr/share/$FF_PRD_NAME/samples/hostverify.sh to FF_HOSTVERIFY_DIR" >&2
-	echo "and edit to set proper expectations for node configuration and performance" >&2
-	echo "Then be sure to use the -c option on first run for a given node" >&2
-	echo "so that hostverify.sh gets copied to each node." >&2
-	echo "FF_HOSTVERIFY_DIR is configured in $CONFIG_DIR/$FF_PRD_NAME/ethfastfabric.conf" >&2
+	echo "Verifies basic node configuration and performance by running" >&2
+	echo "FF_HOSTVERIFY_DIR/hostverify.sh on all specified hosts." >&2
 	echo >&2
-	echo "A summary of results is appended to FF_RESULT_DIR/verifyhosts.res." >&2
-	echo "A punchlist of failures is also appended to FF_RESULT_DIR/punchlist.csv" >&2
-	echo "Only failures are shown on stdout" >&2
+	echo "Prior to using $BASENAME, copy the sample file /usr/share/$FF_PRD_NAME/samples/hostverify.sh" >&2
+	echo "to FF_HOSTVERIFY_DIR and edit it to set the appropriate configuration and performance" >&2
+	echo "expectations and select which tests to run by default. On the first run for a given node," >&2
+	echo "use the -c option so that hostverify.sh gets copied to each node." >&2
 	echo >&2
-	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   UPLOADS_DIR - directory to upload to, used in absence of -d" >&2
-	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "FF_HOSTVERIFY_DIR defines both the location of hostverify.sh and the destination of the" >&2
+	echo "hostverify.res output file. FF_HOSTVERIFY_DIR is configured in the" >&2
+	echo "$CONFIG_DIR/$FF_PRD_NAME/ethfastfabric.conf file" >&2
+	echo >&2
+	echo "A summary of results is appended to the FF_RESULT_DIR/verifyhosts.res file. A punchlist" >&2
+	echo "of failures is also appended to the FF_RESULT_DIR/punchlist.csv file. Only failures are" >&2
+	echo "shown on stdout." >&2
+	echo >&2
+	echo "Environment:" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   UPLOADS_DIR - Directory to upload to, used in absence of -d." >&2
+	echo "   FF_MAX_PARALLEL - Maximum concurrent operations." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -c" >&2
 	echo "   $BASENAME -h 'arwen elrond'" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME" >&2
@@ -104,31 +109,18 @@ Usage()
 	echo "Usage: $BASENAME [-kc] [-f hostfile] [-u upload_file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -k - at start and end of verification, kill any existing hostverify" >&2
-	echo "        or xhpl jobs on the hosts" >&2
-	echo "   -c - copy hostverify.sh to hosts first, useful if you have edited it" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -u upload_file - filename to upload hostverify.res to after verification" >&2
-	echo "                    to allow backup and review of the detailed results" >&2
-	echo "                    for each node" >&2
-	echo "                    The default upload destination file is hostverify.res" >&2
-	echo "                    If -u '' is specified, no upload will occur" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -k - At start and end of verification, kills any existing hostverify or xhpl" >&2
+	echo "        jobs on the hosts." >&2
+	echo "   -c - Copies hostverify.sh to hosts first, useful if you have edited it." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is " >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -u upload_file - Specifies the filename to upload hostverify.res to after" >&2
+	echo "        verification to allow backup and review of the detailed results for each" >&2
+	echo "        node. The default upload destination file is hostverify.res. If -u '' is" >&2
+	echo "        specified, no upload occurs." >&2
 	echo >&2
-	echo "This verifies basic node configuration and performance by running" >&2
-	echo "FF_HOSTVERIFY_DIR/hostverify.sh on all specified hosts" >&2
-	echo >&2
-	echo "Prior to using this, copy /usr/share/$FF_PRD_NAME/samples/hostverify.sh to FF_HOSTVERIFY_DIR" >&2
-	echo "and edit to set proper expectations for node configuration and performance" >&2
-	echo "Then be sure to use the -c option on first run for a given node" >&2
-	echo "so that hostverify.sh gets copied to each node." >&2
-	echo "FF_HOSTVERIFY_DIR is configured in $CONFIG_DIR/$FF_PRD_NAME/ethfastfabric.conf" >&2
-	echo >&2
-	echo "A summary of results is appended to FF_RESULT_DIR/verifyhosts.res." >&2
-	echo "A punchlist of failures is also appended to FF_RESULT_DIR/punchlist.csv" >&2
-	echo "Only failures are shown on stdout" >&2
-	echo >&2
-	echo "example:">&2
+	echo "Examples:">&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -c" >&2
 	exit 2

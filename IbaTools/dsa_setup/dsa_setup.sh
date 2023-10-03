@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2022, Intel Corporation
+# Copyright (c) 2022-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -582,28 +582,32 @@ Usage()
 	echo "       $BASENAME --list" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help        - produce full help text" >&2
-	echo "   --list        - show DSA resources and configuration" >&2
-	echo "   -w workload   - configure DSA work queues for workload (default 'ai')" >&2
-	echo "                   When run to configure DSA work queues, must be run as root."  >&2
-	echo "                   Workloads may be added by adding setup_all_WORKLOAD functions" >&2
-	echo "                   Valid workload values: $workloads" >&2
-	echo "   -u user       - owner for DSA work queue devices (default root)" >&2
-	echo "                   Specified as [owner][:[group]] similar to chown command." >&2
-	echo "                   If a : is specified, the queues will have group and owner rw" >&2
-	echo "                   access, otherwise just owner rw access. If a : is specified" >&2
-	echo "                   without an explicit group, the user's group is used." >&2
-	echo "                   If specified as 'all' then DSA queues are created with" >&2
-	echo "                   rw access for anyone to use." >&2
-	echo "   -T timelimit  - seconds to wait for DSA device discovery.  Default 0" >&2
-	echo "                   Sometimes during boot a non-zero timeout is needed to allow" >&2
-	echo "                   time for the idxd kernel driver to discover and enumerate" >&2
-	echo "                   the devices" >&2
+	echo "   --help        - Produces full help text." >&2
+	echo "   --list        - Shows DSA resources and configuration." >&2
+	echo "   -w workload   - Configures DSA work queues for specified workload. Default" >&2
+	echo "                   is ai. When run to configure DSA work queues, must be run as" >&2
+	echo "                   root. Workloads may be added by adding setup_all_WORKLOAD" >&2
+	echo "                   functions. Valid workload values are:" >&2
+	echo "                     $workloads" >&2
+	echo "   -u user       - Specifies the owner for DSA work queue devices Default is" >&2
+	echo "                   root. Specified as [owner][:[group]] similar to chown command." >&2
+	echo "                   NOTES:" >&2
+	echo "                   - If : is not specified, then only the user is granted" >&2
+	echo "                     read/write (rw) access." >&2
+	echo "                   - If : is specified, then the queues are granted group and" >&2
+	echo "                     user rw access for the specified group." >&2
+	echo "                   - If : is specified, but no group is specified, then the" >&2
+	echo "                     user's group is used." >&2
+	echo "                   - If all is specified, then everyone is granted rw access." >&2
+	echo "   -T timelimit  - Specifies the seconds to wait for DSA device discovery." >&2
+	echo "                   Default is 0. Sometimes during boot, a non-zero timeout is" >&2
+	echo "                   needed to allow time for the idxd kernel driver to discover" >&2
+	echo "                   and enumerate the devices." >&2
 	echo >&2
-	echo "Create Data Streaming Accelerator Work Queues in $DSA_DEV_PATH for use by" >&2
+	echo "Create Data Streaming Accelerator (DSA) Work Queues in $DSA_DEV_PATH for use by" >&2
 	echo "PSM3 jobs."  >&2
 	echo >&2
-	echo "examples:">&2
+	echo "Examples:">&2
 	echo "   ${BASENAME} --help" >&2
 	echo "   ${BASENAME} --list" >&2
 	echo "   ${BASENAME}" >&2

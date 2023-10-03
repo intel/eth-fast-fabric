@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -50,32 +50,39 @@ Usage_full()
 	echo "                       source_file ... dest_file" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -r - recursive upload of directories" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -h hosts - list of hosts to upload from" >&2
-	echo "   -u user - user to perform copy to, default is current user code" >&2
-	echo "   -d upload_dir - directory to upload to, default is uploads" >&2
-	echo "   source_file - list of source files to copy" >&2
-	echo "   dest_file - destination for copy" >&2
-	echo "        If more than 1 source file, this must be a directory" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs copy in parallel on all hosts." >&2
+	echo "   -r - Performs recursive upload of directories." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+	echo "   -h hosts - Specifies the list of hosts to upload from." >&2
+	echo "   -u user - Specifies the user to perform copy to. Default is current user." >&2
+	echo "   -d upload_dir - Specifies the directory to upload to. Default is uploads. If" >&2
+	echo "        not specified, the environment variable UPLOADS_DIR is used. If that is" >&2
+	echo "        not exported, the default, uploads, is used." >&2
+	echo "   source_file - Specifies the name of files to copy to this system, relative to" >&2
+	echo "        the current directory. Multiple files may be listed." >&2
+	echo "   dest_file - Specifies the name of the file or directory on this system to" >&2
+	echo "        copy to. It is relative to upload_dir/hostname." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   UPLOADS_DIR - directory to upload to, used in absence of -d" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "   HOSTS - List of hosts; used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts; used in absence of -f and -h." >&2
+	echo "   UPLOADS_DIR - Directory to upload to, used in absence of -d." >&2
+	echo "   FF_MAX_PARALLEL - When the -p option is used, maximum concurrent operations" >&2
+	echo "        are performed." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -h 'arwen elrond' capture.tgz /etc/init.d/ipoib.cfg ." >&2
 	echo "   $BASENAME -p capture.tgz /etc/init.d/ipoib.cfg ." >&2
 	echo "   $BASENAME capture.tgz /etc/init.d/ipoib.cfg pre-install" >&2
-	echo "user@ syntax cannot be used in filenames specified" >&2
-	echo "A local directory within upload_dir/ will be created for each hostname." >&2
-	echo "Destination file will be upload_dir/hostname/dest_file within the local system." >&2
-	echo "If copying multiple files, or dest_file has a trailing /, dest_file" >&2
-	echo "   directory will be created." >&2
-	echo "To copy files from this host to hosts in the cluster use ethscpall or" >&2
-	echo "   ethdownloadall." >&2
+	echo "NOTES:" >&2
+	echo "- To copy files from this host to hosts in the cluster use ethscpall or" >&2
+	echo "  ethdownloadall." >&2
+	echo "- user@ syntax cannot be used in filenames specified." >&2
+	echo "- A local directory within upload_dir/ will be created for each hostname." >&2
+	echo "- Each uploaded file is copied to upload_dir/hostname/dest_file within the" >&2
+	echo "  local system." >&2
+	echo "- If more than one source file is specified or dest_file has a trailing '/', a" >&2
+	echo "  dest_file directory will be created." >&2
 	exit 0
 }
 
@@ -84,23 +91,27 @@ Usage()
 	echo "Usage: $BASENAME [-rp] [-f hostfile] source_file ... dest_file" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -r - recursive upload of directories" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   source_file - list of source files to copy" >&2
-	echo "   dest_file - destination for copy" >&2
-	echo "        If more than 1 source file, this must be a directory" >&2
-	echo "example:">&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs copy in parallel on all hosts." >&2
+	echo "   -r - Performs recursive upload of directories." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+	echo "   source_file - Specifies the name of files to copy to this system, relative to" >&2
+	echo "        the current directory. Multiple files may be listed." >&2
+	echo "   dest_file - Specifies the name of the file or directory on this system to" >&2
+	echo "        copy to. It is relative to upload_dir/hostname." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -p capture.tgz /etc/sysconfig/lldpd ." >&2
 	echo "   $BASENAME capture.tgz /etc/sysconfig/lldpd pre-install" >&2
-	echo "user@ syntax cannot be used in filenames specified" >&2
-	echo "A local directory within uploads/ will be created for each hostname." >&2
-	echo "Destination file will be uploads/hostname/dest_file within the local system." >&2
-	echo "If copying multiple files, or dest_file has a trailing /, dest_file" >&2
-	echo "   directory will be created." >&2
-	echo "To copy files from this host to hosts in the cluster use ethscpall or" >&2
-	echo "   ethdownloadall." >&2
+	echo "NOTES:" >&2
+	echo "- To copy files from this host to hosts in the cluster use ethscpall or" >&2
+	echo "  ethdownloadall." >&2
+	echo "- user@ syntax cannot be used in filenames specified." >&2
+	echo "- A local directory within upload_dir/ will be created for each hostname." >&2
+	echo "- Each uploaded file is copied to upload_dir/hostname/dest_file within the" >&2
+	echo "  local system." >&2
+	echo "- If more than one source file is specified or dest_file has a trailing '/', a" >&2
+	echo "  dest_file directory will be created." >&2
 	exit 2
 }
 

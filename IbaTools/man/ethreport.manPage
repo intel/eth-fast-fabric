@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethreport 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethreport 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethreport
 
@@ -93,7 +93,7 @@ Get performance stats for all ports.
 .TP 10
 -A/--allports
 
-Also get PortInfo for down switch ports.
+Includes PortInfo for down switch ports.
 
 .TP 10
 -c/--config \fIfile\fR
@@ -103,17 +103,17 @@ Specifies the error thresholds configuration file. Default is /etc/eth-tools/eth
 .TP 10
 -E/--ethconfig \fIfile\fR
 
-Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+Specifies the Ethernet Mgt config file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
 
 .TP 10
 -p \fIplane\fR
 
-Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
+Specifies the name of the enabled plane defined in Mgt config file. Default is the first enabled plane.
 
 .TP 10
 -f/--hostfile \fIfile\fR
 
-File with hosts in cluster. It overrides the HostsFile for the selected plane that is defined in Mgt config file. .
+Specifies the file with hosts in cluster. It overrides the HostsFile for the selected plane that is defined in Mgt config file.
 
 .TP 10
 -L/--limit
@@ -288,12 +288,12 @@ Outputs the topology of the fabric for later use as \fItopology\(ulinput\fR. Thi
 .TP 10
 fabricinfo
 
-Fabric information.
+Outputs fabric information.
 
 .TP 10
 none
 
-No report.
+Outputs no report.
 
 
 .SH Point Syntax
@@ -426,7 +426,7 @@ portstate:\fIvalue\fR
 .TP 10
 portphysstate:\fIvalue\fR
 
-\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset)
+\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset).
 
 .TP 10
 mtucap:\fIvalue\fR
@@ -466,7 +466,7 @@ Specifies the ports with a link down reason or neighbor link down reason equal t
 .SH Examples
 
 .PP
-ethreport can generate hundreds of different reports. Commonly generated reports include the following:   ethreport -o comps -d 3
+ethreport can generate hundreds of different reports. Commonly-generated reports include the following:   ethreport -o comps -d 3
 .br
 
   ethreport -o errors -o slowlinks

@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -55,54 +55,54 @@ ETHXMLEXTRACT="/usr/sbin/ethxmlextract"
 
 Usage_full()
 {
-	echo "Usage: $BASENAME [-U] [-T topology_inputs] [-X snapshot_input]" >&2
-	echo "                  [-x snapshot_suffix] [-c file] [-E file] [-p planes] [-f host_files] reports ..." >&2
+	echo "Usage: $BASENAME [-U] [-T topology_inputs] [-X snapshot_input] [-x snapshot_suffix]" >&2
+	echo "       [-c file] [-E file] [-p planes] [-f host_files] reports ..." >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -U - omit unexpected devices and links in punchlist from verify reports" >&2
-	echo "   -T topology_inputs - name of topology input filenames separated by space." >&2
-	echo "             See ethreport for more information on topology_input files" >&2
-	echo "   -X snapshot_input - perform analysis using data in snapshot_input" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -U - Omits unexpected devices and links in punchlist file from verify reports." >&2
+	echo "   -T topology_inputs - Specifies the name of topology input filenames separated by" >&2
+	echo "             space. See ethreport for more information on topology_input files." >&2
+	echo "   -X snapshot_input - Performs analysis using data in snapshot_input." >&2
 	echo "             snapshot_input must have been generated via a previous" >&2
 	echo "             ethreport [-s] -o snapshot run. '-s' is required for 'errors' report." >&2
-	echo "   -x snapshot_suffix - create a snapshot file per selected plane" >&2
-	echo "             The files will be created in FF_RESULT_DIR with names of the form:">&2
-	echo "             snapshotSUFFIX.<plane_name>.xml.">&2
-	echo "   -c file - error thresholds config file" >&2
-	echo "             default is $CONFIG_DIR/$FF_PRD_NAME/ethmon.si.conf" >&2
-	echo "   -E file - Ethernet Mgt config file" >&2
-	echo "             default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
-	echo "   -p planes - Fabric planes separated by space. Default is" >&2
-	echo "             the first enabled plane defined in config file." >&2
-	echo "             Value 'ALL' will use all enabled planes" >&2
-	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
-	echo "            the HostsFiles defined in Mgt config file for the" >&2
-	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
-	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
-	echo "    reports - The following reports are supported" >&2
-	echo "         errors - link error analysis" >&2
-	echo "         slowlinks - links running slower than expected" >&2
-	echo "         misconfiglinks - links configured to run slower than supported" >&2
-	echo "         misconnlinks - links connected with mismatched speed potential" >&2
-	echo "         all - includes all reports above" >&2
-	echo "         verifylinks - verify links against topology input" >&2
-	echo "         verifyextlinks - verify links against topology input" >&2
-	echo "                     limit analysis to links external to systems" >&2
-	echo "         verifyniclinks - verify links against topology input" >&2
-	echo "                     limit analysis to NIC links" >&2
-	echo "         verifyislinks - verify links against topology input" >&2
-	echo "                     limit analysis to inter-switch links" >&2
-	echo "         verifyextislinks - verify links against topology input" >&2
-	echo "                     limit analysis to inter-switch links external to systems" >&2
-	echo "         verifynics - verify NICs against topology input" >&2
-	echo "         verifysws - verify Switches against topology input" >&2
-	echo "         verifynodes - verify NICs, Switches against topology input" >&2
-	echo "         verifyall - verify links, NICs, Switches against topology input" >&2
-  	echo >&2
-	echo "A punchlist of bad links is also appended to FF_RESULT_DIR/punchlist.csv" >&2
-  	echo >&2
-	echo "example:">&2
+	echo "   -x snapshot_suffix - Creates a snapshot file per selected plane. The files are" >&2
+	echo "             created in FF_RESULT_DIR with names of the form:" >&2
+	echo "                 snapshotSUFFIX.<plane_name>.xml." >&2
+	echo "   -c file - Specifies the error thresholds configuration file. The default" >&2
+	echo "             is $CONFIG_DIR/$FF_PRD_NAME/ethmon.si.conf" >&2
+	echo "   -E file - Ethernet Mgt configuration file. The default is" >&2
+	echo "             $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
+	echo "   -p planes - Fabric planes separated by space. The default is the first" >&2
+	echo "             enabled plane defined in config file. Value 'ALL' will use all" >&2
+	echo "             enabled planes." >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides the HostsFiles" >&2
+	echo "             defined in Mgt config file for the corresponding planes. Value" >&2
+	echo "             'DEFAULT' will use the HostFile defined in Mgt config file for" >&2
+	echo "             the corresponding plane." >&2
+	echo "   reports - Supports the following reports:" >&2
+	echo "         errors - Specifies link error analysis." >&2
+	echo "         slowlinks - Specifies links running slower than expected." >&2
+	echo "         misconfiglinks - Specifies links configured to run slower than supported." >&2
+	echo "         misconnlinks - Specifies links connected with mismatched speed potential." >&2
+	echo "         all - Includes the reports errors, slowlinks, misconfiglinks, and misconnlinks." >&2
+	echo "         verifylinks - Verifies links against topology input." >&2
+	echo "         verifyextlinks - Verifies links against topology input. Limits analysis to" >&2
+	echo "                     links external to systems." >&2
+	echo "         verifyniclinks - Verifies links against topology input. Limits analysis to" >&2
+	echo "                     NIC links." >&2
+	echo "         verifyislinks - Verifies links against topology input. Limits analysis to" >&2
+	echo "                     inter-switch links." >&2
+	echo "         verifyextislinks - Verifies links against topology input. Limits analysis" >&2
+	echo "                     to inter-switch links external to systems." >&2
+	echo "         verifynics - Verifies NICs against topology input." >&2
+	echo "         verifysws - Verifies switches against topology input." >&2
+	echo "         verifynodes - Verifies NICs and switches against topology input." >&2
+	echo "         verifyall - Verifies links, NICs, and switches against topology input." >&2
+	echo >&2
+	echo "A punchlist of bad links is also appended to the file: FF_RESULT_DIR/punchlist.csv" >&2
+	echo >&2
+	echo "Examples:">&2
 	echo "   $BASENAME errors" >&2
 	echo "   $BASENAME slowlinks" >&2
 	echo "   $BASENAME -p 'p1 p2' -f 'hosts1 DEFAULT' errors" >&2
@@ -114,25 +114,15 @@ Usage()
 	echo "Usage: $BASENAME [-U] reports ..." >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-  	echo >&2
-	echo "   -U - omit unexpected devices and links in punchlist from verify reports" >&2
-	echo "    reports - The following reports are supported" >&2
-	echo "         errors - link error analysis" >&2
-	echo "         slowlinks - links running slower than expected" >&2
-	echo "         misconfiglinks - links configured to run slower than supported" >&2
-	echo "         misconnlinks - links connected with mismatched speed potential" >&2
-	echo "         all - includes all reports above" >&2
-	echo "         verifylinks - verify links against topology input" >&2
-	echo "         verifyextlinks - verify links against topology input" >&2
-	echo "                     limit analysis to links external to systems" >&2
-	echo "         verifynics - verify NICs against topology input" >&2
-	echo "         verifysws - verify Switches against topology input" >&2
-	echo "         verifynodes - verify NICs, Switches against topology input" >&2
-	echo "         verifyall - verify links, NICs, Switches against topology input" >&2
-  	echo >&2
+	echo "   --help - Produces full help text." >&2
+	echo >&2
+	echo "   -U - Omits unexpected devices and links in punchlist file from verify reports." >&2
+	echo "   reports - Supports the following reports:" >&2
+	echo "        errors, slowlinks, misconfiglinks, misconnlinks, all, verifylinks," >&2
+	echo "        verifyextlinks, verifynics, verifysws, verifynodes, or verifyall" >&2
+	echo >&2
 	echo "A punchlist of bad links is also appended to FF_RESULT_DIR/punchlist.csv" >&2
-  	echo >&2
+	echo >&2
 	echo "example:">&2
 	echo "   $BASENAME errors" >&2
 	echo "   $BASENAME slowlinks" >&2

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethextractstat 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethextractstat 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethextractstat
 
@@ -16,7 +16,7 @@ Performs an error analysis of a fabric and provides augmented information from a
 .PP
 ethextractstat generates a detailed ethreport errors report that also has a topology file (see
 \fIethreport\fR
-for more information about topology files). The report is piped to ethxmlextract which extracts values for Link, Cable and Port. (The port element names are context-sensitive.) Note that ethxmlextract generates two extraction records for each link (one for each port on the link); therefore, ethextractstat merges the two records into a single record and removes redundant link and cable information.
+for more information about topology files). The report is piped to ethxmlextract, which extracts values for Link, Cable and Port. (The port element names are context-sensitive.) Note that ethxmlextract generates two extraction records for each link (one for each port on the link); therefore, ethextractstat merges the two records into a single record and removes redundant link and cable information.
 .PP
 ethextractstat contains a while read loop that reads the CSV line-by-line, uses cut to remove redundant information, and outputs the data on a common line.
 .SH Syntax
@@ -61,7 +61,7 @@ Specifies the error thresholds configuration file. Default is /etc/eth-tools/eth
 
 .sp
 -E/--eth \fIconfig\(ulfile\fR
-Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
+Specifies the Ethernet management configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml file.
 
 .RE
 
@@ -70,7 +70,7 @@ Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(
 
 .sp
 -p \fIplane\fR
-Name of the enabled plane defined in Mgt config file, default is the first enabled plane.
+Specifies the name of the enabled plane defined in Mgt config file, default is the first enabled plane.
 
 .RE
 
@@ -225,7 +225,7 @@ portstate:\fIvalue\fR
 .TP 10
 portphysstate:\fIvalue\fR
 
-\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset)
+\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset).
 
 .TP 10
 mtucap:\fIvalue\fR

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethhostadmin 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethhostadmin 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethhostadmin
 
@@ -14,7 +14,7 @@ ethhostadmin
 .PP
 Performs a number of multi-step host initialization and verification operations, including upgrading software, rebooting hosts, and other operations. In general, operations performed by ethhostadmin involve a login to one or more host systems.
 .SH Syntax
-ethhostadmin [-c] [-e] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
+ethhostadmin [-c] [-e] [-p  \fIplane\fR] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
 .br
 [-r  \fIrelease\fR]
 [-I  \fIinstall\(uloptions\fR] [-U  \fIupgrade\(uloptions\fR] [-d  \fIdir\fR]
@@ -31,12 +31,17 @@ Produces full help text.
 .TP 10
 -c
 
-Overwrites the result files from any previous run before starting this run.
+Cleans the result files from any previous run before starting this run.
 
 .TP 10
 -e
 
-exit after 1st operation which fails.
+Specifies to exit after the first operation that fails.
+
+.TP 10
+-p \fIplane\fR
+
+Specifies the name of the plane to use. Default is the first enabled plane defined in Mgt config file.
 
 .TP 10
 -f \fIhostfile\fR
@@ -71,12 +76,12 @@ Specifies the software upgrade options.
 .TP 10
 -T \fIproduct\fR
 
-Specifies the product type to install. Options include:
+Specifies the product type to install. Default is \fBFF\(ulPRODUCT\fR. Options include:
 
 .RS
 
 .IP \(bu
-IntelEth-Basic. \fI<distro>\fR (default)
+IntelEth-Basic. \fI<distro>\fR
 .IP \(bu
 IntelEth-FS. \fI<distro>\fR
 
@@ -87,7 +92,7 @@ where \fI<distro>\fR is the distribution and CPU, such as RHEL81-x86\(ul64.
 .TP 10
 -P \fIpackages\fR
 
-Specifies the packages to install. Default is eth eth\(ulrdma. Refer to INSTALL -C for compete list of packages.
+Specifies the packages to install. Default is eth eth\(ulrdma. Refer to INSTALL -C for complete list of packages.
 
 .TP 10
 -S
@@ -104,7 +109,7 @@ Performs the specified \fIoperation\fR, which can be one or more of the followin
 
 .sp
 load
-Starts initial installation of all hosts.
+Preforms an initial installation of all hosts.
 
 .RE
 
@@ -169,6 +174,9 @@ ethhostadmin -c reboot
 ethhostadmin upgrade
 .br
 
+ethhostadmin -p plane1 rping
+.br
+
 ethhostadmin -h \[aq]elrond arwen\[aq] reboot
 .br
 
@@ -190,7 +198,7 @@ The -c option removes all log files.
 .PP
 Results from ethhostadmin are grouped into test suites, test cases, and test items. A given run of ethhostadmin represents a single test suite. Within a test suite, multiple test cases occur; typically one test case per host being operated on. Some of the more complex operations may have multiple test items per test case. Each test item represents a major step in the overall test case.
 .PP
-Each ethhostadmin run appends to test.res and test.log, and creates temporary files in test\(ultmp$PID in the current directory. test.res provides an overall summary of operations performed and their results. The same information is also displayed while ethhostadmin is executing. test.log contains detailed information about what was performed, including the specific commands executed and the resulting output. The test\(ultmp directories contain temporary files which reflect tests in progress (or killed). The logs for any failures are logged in the save\(ultemp directory with a directory per failed test case. If the same test case fails more than once, save\(ultemp retains the information from the first failure. Subsequent runs of ethhostadmin are appended to test.log. Intel recommends reviewing failures and using the -c option to remove old logs before subsequent runs of ethhostadmin.
+Each ethhostadmin run appends to test.res and test.log, and creates temporary files in test\(ultmp$PID in the current directory. test.res provides an overall summary of operations performed and their results. The same information is also displayed while ethhostadmin is executing. test.log contains detailed information about what was performed, including the specific commands executed and the resulting output. The test\(ultmp directories contain temporary files that reflect tests in progress (or killed). The logs for any failures are logged in the save\(ultemp directory with a directory per failed test case. If the same test case fails more than once, save\(ultemp retains the information from the first failure. Subsequent runs of ethhostadmin are appended to test.log. Intel recommends reviewing failures and using the -c option to remove old logs before subsequent runs of ethhostadmin.
 .PP
 ethhostadmin implicitly performs its operations in parallel. However, as for the other tools, \fBFF\(ulMAX\(ulPARALLEL\fR can be exported to change the degree of parallelism. 1000 parallel operations is the default.
 .SH Environment Variables
@@ -208,6 +216,11 @@ List of hosts, used if -h option not supplied.
 File containing list of hosts, used in absence of -f and -h.
 
 .TP 10
+\fBFABRIC\(ulPLANE\fR
+
+Name of fabric plane used in absence of -p, -f, and -h.
+
+.TP 10
 \fBFF\(ulMAX\(ulPARALLEL\fR
 
 Maximum concurrent operations are performed.
@@ -221,6 +234,11 @@ Serialize output of parallel operations (yes or no).
 \fBFF\(ulTIMEOUT\(ulMULT\fR
 
 Multiplier for all timeouts associated with this command. Used if the systems are slow for some reason.
+
+.TP 10
+\fBFF\(ulPRODUCT\fR
+
+Product to install during load and upgrade operations.
 
 
 .SH ethhostadmin Operation Details
@@ -260,7 +278,7 @@ Verifies RDMA basic operation by ensuring that the nodes can ping each other thr
 .TP 10
 pfctest
 
-Empirical test which verifies PFC is working right. To run this command, Intel(R) Ethernet Fabric software must be installed, PFC must be configured on both hosts and switches, and the given hosts and switches must be up.
+Specifies an empirical test that verifies PFC is working right. To run this command, Intel(R) Ethernet Fabric software must be installed, PFC must be configured on both hosts and switches, and the given hosts and switches must be up.
 
 .TP 10
 mpiperf
@@ -311,7 +329,7 @@ Note that BIOS settings and differences between server models can account for 10
 .IP
 For more details about BIOS settings, consult the documentation from the server supplier and/or the server PCI chipset manufacturer.
 .IP
-The deviation application supports a number of parameters which allow for more precise control over the mode, benchmark and pass/fail criteria. The parameters to use can be selected using the \fBFF\(ulDEVIATION\(ulARGS\fR configuration parameter in ethfastfabric.conf
+The deviation application supports a number of parameters that allow for more precise control over the mode, benchmark, and pass/fail criteria. The parameters to use can be selected using the \fBFF\(ulDEVIATION\(ulARGS\fR configuration parameter in ethfastfabric.conf
 .IP
 Available parameters for deviation application:
 .IP
@@ -410,7 +428,7 @@ Specifies the percent of latency degradation allowed above average value.
 
 .sp
 -latdelta
-Specifies the imit in &#181;sec of latency degradation allowed above average value.
+Specifies the limit in &#181;sec of latency degradation allowed above average value.
 
 .RE
 

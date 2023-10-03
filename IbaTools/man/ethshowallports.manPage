@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethshowallports 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethshowallports 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethshowallports
 
@@ -19,7 +19,7 @@ Displays basic port state and statistics for all host nodes.
 ethreport is more powerful Intel(R) Ethernet Fabric Suite FastFabric commands. For general fabric analysis, use ethreport with options such as -o errors and -o slowlinks to perform an efficient analysis of link speeds and errors.
 
 .SH Syntax
-ethshowallports [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
+ethshowallports [-p  \fIplane\fR] [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
 .br
 
 .SH Options
@@ -29,9 +29,13 @@ ethshowallports [-f  \fIhostfile\fR] [-h \[aq]\fIhosts\fR\[aq]]
 
 Produces full help text.
 .TP 10
+-p \fIplane\fR
+
+Specifies the name of the plane to use. Default is the first enabled plane defined in Mgt config file.
+.TP 10
 -f \fIhostfile\fR
 
-Specifies the file containing the list of hosts in cluster. Default is /etc/eth-tools/hosts file.
+Specifies the file containing the list of hosts in cluster. It overrides the HostsFile for the selected plane that is defined in Mgt config file.
 .TP 10
 -h \fIhosts\fR
 
@@ -50,8 +54,16 @@ List of hosts, used if -h option not supplied.
 
 File containing list of hosts, used in absence of -f and -h.
 
+.TP 10
+\fBFABRIC\(ulPLANE\fR
+
+Name of fabric plane used in absence of -p, -f, and -h.
+
 .SH Example
 ethshowallports
+.br
+
+ethshowallports -p plane1
 .br
 
 ethshowallports -h \[aq]elrond arwen\[aq]

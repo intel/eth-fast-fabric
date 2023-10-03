@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2017, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -54,20 +54,20 @@ Usage_basic()
 	echo "Usage: $BASENAME [-v] [-q] [-E file] [-p planes] [-f host_files] [-X snapshot_input]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -v - verbose output" >&2
-	echo "   -q - disable progress reports" >&2
-	echo "   -E file - Ethernet Mgt config file" >&2
-	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
-	echo "   -p planes - Fabric planes separated by space. Default is" >&2
-	echo "            the first enabled plane defined in config file." >&2
-	echo "            Value 'ALL' will use all enabled planes" >&2
-	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
-	echo "            the HostsFiles defined in Mgt config file for the" >&2
-	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
-	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
-	echo "   -X snapshot_input - generate report using data in snapshot_input" >&2
-	echo "for example:" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -v - Returns verbose output." >&2
+	echo "   -q - Disables progress reports." >&2
+	echo "   -E file - Specifies the Ethernet Mgt config file. Default is" >&2
+	echo "            $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
+	echo "   -p planes - Fabric planes separated by space. Default is the first" >&2
+	echo "            enabled plane defined in config file. Value 'ALL' will use all" >&2
+	echo "            enabled planes." >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides the HostsFiles" >&2
+	echo "            defined in Mgt config file for the corresponding planes. Value" >&2
+	echo "            'DEFAULT' will use the HostFile defined in Mgt config file for the" >&2
+	echo "            corresponding plane." >&2
+	echo "   -X snapshot_input - Generates a report using data in snapshot_input file." >&2
+	echo "Examples:" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -X snapshot.xml" >&2
 	echo "   $BASENAME -p 'p1 p2' -f 'hosts1 DEFAULT'" >&2

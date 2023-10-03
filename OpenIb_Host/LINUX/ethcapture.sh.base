@@ -40,14 +40,23 @@ Usage_full()
 	echo "Usage: $BASENAME [-d detail] output_tgz_file" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -d detail - level of detail of capture" >&2
-	echo "               1-Local 2-Fabric 3-Analysis (default=1)" >&2
-	echo "This will capture critical system information into a zipped tar file" >&2
-	echo "The program will automatically append .tgz to the <output_tgz_file>" >&2
-	echo "if it does not already have a .tgz suffix" >&2
-	echo "The resulting tar file should be sent to Customer Support along with any" 2>&1
-	echo "product problem report regarding this system" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -d detail - Captures level of detail:" >&2
+	echo "       1 (Local) - Obtains local information from host. This is the default if" >&2
+	echo "             no options are entered." >&2
+	echo "       2 (Fabric) - In addition to Local, also obtains basic fabric information" >&2
+	echo "             using ethreport." >&2
+	echo "       3 (Analysis) - In addition to Fabric, also obtains ethallanalysis" >&2
+	echo "             results. If ethallanalysis has not yet been run, it is run as part" >&2
+	echo "             of the capture." >&2
+	echo "       NOTE: For detail levels 2 – 3, the additional information is only" >&2
+	echo "             available on a node with FastFabric Toolset installed." >&2
+	echo "   output_tgz_file - Specifies the name of a file to be created by ethcapture." >&2
+	echo "       The file name specified is overwritten if it already exists. If the" >&2
+	echo "       filename given does not end with the '.tgz' suffix, the '.tgz' suffix" >&2
+	echo "       is added." >&2
+	echo "The resulting tar file should be sent to Customer Support along with any problem" >&2
+	echo "report regarding this system." >&2
 }
 
 Usage()

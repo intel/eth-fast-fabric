@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -61,29 +61,40 @@ Usage_full()
 	echo "Usage: ${BASENAME} [-RA] [-d dir] [-p plane] [-f hostfile] [-h 'hosts'] [-T timelimit]" >&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -R - skip the running test (ssh), recommended if password-less ssh not setup" >&2
-	echo "   -A - skip the active test, recommended if Intel Ethernet software or fabric is not up" >&2
-	echo "   -d - directory in which to create alive, active, running, good and bad files" >&2
-	echo "        default is ${CONFIG_DIR}/${FF_PRD_NAME}" >&2
-	echo "   -p plane - plane name" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is ${CONFIG_DIR}/${FF_PRD_NAME}/hosts" >&2
-	echo "   -h hosts - list of hosts to ping" >&2
-	echo "   -T timelimit - timelimit in seconds for host to respond to ssh" >&2
-	echo "               default of 20 seconds" >&2
-  	echo >&2
-	echo "The files alive, running, active, good and bad are created in the selected" >&2
-	echo "directory listing hosts passing each criteria. If a plane name is provided," >&2
-	echo "filename will be xxx_<plane>, e.g good_plane1" >&2
-	echo "A punchlist of bad hosts is also appended to FF_RESULT_DIR/punchlist.csv" >&2
-	echo "The good file can be used as input for an mpi_hosts." >&2
-  	echo "It will list each good host exactly once" >&2
-  	echo >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -R - Skips the running test (SSH). Recommended if password-less SSH is" >&2
+	echo "        not set up." >&2
+	echo "   -A - Skips the active test. Recommended if Intel Ethernet Fabric Suite" >&2
+	echo "        software or fabric is not up." >&2
+	echo "   -d - Specifies the directory in which to create alive, active, running," >&2
+	echo "        good, and bad files. Default is ${CONFIG_DIR}/${FF_PRD_NAME} directory." >&2
+	echo "   -p plane - Specifies the name of the plane to use." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        ${CONFIG_DIR}/${FF_PRD_NAME}/hosts file." >&2
+	echo "   -h hosts - Specifies the list of hosts to ping." >&2
+	echo "   -T timelimit - Specifies the time limit in seconds for host to respond to SSH." >&2
+	echo "        Default is 20 seconds." >&2
+	echo >&2
+	echo "Checks for hosts that are able to be pinged, accessed via SSH, and active on the" >&2
+	echo "Intel Ethernet fabric. Produces a list of good hosts meeting all criteria. Typically used" >&2
+	echo "to identify good hosts to undergo further testing and benchmarking during initial" >&2
+	echo "cluster staging and startup.">&2
+	echo >&2
+	echo "The resulting good file lists each good host exactly once and can be used as input to" >&2
+	echo "create mpi_hosts files for running mpi_apps and the NIC-SW cable test. The files" >&2
+	echo "alive, running, active, good, and bad are created in the selected directory listing" >&2
+	echo "hosts passing each criteria. If a plane name is provided, filename will be" >&2
+	echo "xxx_<plane>, e.g., good_plane1." >&2
+	echo  >&2
+	echo "This command automatically generates the file FF_RESULT_DIR/punchlist.csv." >&2
+	echo "This file provides a concise summary of the bad hosts found. This can be imported into" >&2
+	echo "Excel directly as a *.csv file." >&2
+	echo >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   FF_MAX_PARALLEL - Maximum concurrent operations." >&2
+	echo "Examples:">&2
 	echo "   ${BASENAME}" >&2
 	echo "   ${BASENAME} -f allhosts" >&2
 	echo "   ${BASENAME} -h 'arwen elrond'" >&2
@@ -97,23 +108,17 @@ Usage()
 	echo "Usage: ${BASENAME} [-RA] [-d dir] [-p plane] [-f hostfile] [-h 'hosts'] [-T timelimit]" >&2
 	echo "       ${BASENAME} --help" >&2
 	echo "              or" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -R - skip the running test (ssh), recommended if password-less ssh not setup" >&2
-	echo "   -A - skip the active test, recommended if Intel Ethernet Fabric Suite software" >&2
-	echo "        or fabric is not up" >&2
-	echo "   -d - directory in which to create alive, active, running, good and bad files" >&2
-	echo "        default is ${CONFIG_DIR}/${FF_PRD_NAME}" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is ${CONFIG_DIR}/${FF_PRD_NAME}/hosts" >&2
-	echo "" >&2
-	echo "   See full help text for explanation of all options." >&2
-  	echo >&2
-	echo "The files alive, running, active, good and bad are created in the selected" >&2
-	echo "directory listing hosts passing each criteria" >&2
-	echo "A punchlist of bad hosts is also appended to FF_RESULT_DIR/punchlist.csv" >&2
-	echo "The good file can be used as input for an mpi_hosts." >&2
-  	echo "It will list each good host exactly once" >&2
-  	echo >&2
-	echo "example:">&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -R - Skips the running test (SSH). Recommended if password-less SSH is" >&2
+	echo "        not set up." >&2
+	echo "   -A - Skips the active test. Recommended if Intel Ethernet Fabric Suite" >&2
+	echo "        software or fabric is not up." >&2
+	echo "   -d - Specifies the directory in which to create alive, active, running," >&2
+	echo "        good, and bad files. Default is ${CONFIG_DIR}/${FF_PRD_NAME} directory." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        ${CONFIG_DIR}/${FF_PRD_NAME}/hosts file." >&2
+	echo >&2
+	echo "Examples:">&2
 	echo "   ${BASENAME}" >&2
 	echo "   ${BASENAME} -f allhosts" >&2
 	exit 2

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethextractmissinglinks 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethextractmissinglinks 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethextractmissinglinks
 
@@ -32,7 +32,7 @@ Specifies the topology file to verify against. Default is /etc/eth-tools/topolog
 .TP 10
 -o/--output \fIreport\fR
 
-Specifies the report type for output. Refer to
+Specifies the report type for output. Default is verifylinks report. Refer to
 \fIReport Types\fR
 for details.
 
@@ -106,11 +106,6 @@ Compares fabric (or snapshot) links to supplied topology and identify difference
 verifyextislinks
 
 Compares fabric (or snapshot) links to supplied topology and identify differences and omissions. Limits analysis to inter-switch links external to systems.
-
-.TP 10
-verifyall
-
-Returns verifynics, verifysws, and verifylinks reports.
 
 
 .SH Point Syntax
@@ -243,7 +238,7 @@ portstate:\fIvalue\fR
 .TP 10
 portphysstate:\fIvalue\fR
 
-\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset)
+\fIvalue\fR is a string for PHYs state (other, unknown, operational, standby, shutdown, reset).
 
 .TP 10
 mtucap:\fIvalue\fR

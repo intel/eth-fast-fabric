@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2020, Intel Corporation
+# Copyright (c) 2020-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -50,22 +50,22 @@ Usage_full()
 	echo "                     [-H 'switches']" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -C - perform ping against switches, default is hosts" >&2
-	echo "        Merely selects applicable list, can ping both hosts and switches" >&2
-	echo "   -p - ping all hosts/switches in parallel" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -F switchesfile - file with switches in cluster" >&2
-	echo "        default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -h hosts - list of hosts to ping" >&2
-	echo "   -H switches - list of switches to ping" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -C - Performs a ping against switches. Default is hosts." >&2
+	echo "   -p - Pings all hosts/switches in parallel." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is " >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -F switchesfile - Specifies the file with switches in cluster. Default is " >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/switches." >&2
+	echo "   -h hosts - Specifies the list of hosts to ping." >&2
+	echo "   -H switches - Specifies the list of switches to ping." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   SWITCHES - list of switches, used if -H option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   SWITCHES - List of switches, used if -H option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   SWITCHES_FILE - File containing list of switches, used in absence of -F and -H." >&2
+	echo "   FF_MAX_PARALLEL - When -p option is used, maximum concurrent operations are performed." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -h 'arwen elrond'" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME" >&2
@@ -80,14 +80,14 @@ Usage()
 	echo "Usage: $BASENAME [-Cp] [-f hostfile] [-F switchesfile]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -C - perform ping against switches, default is hosts" >&2
-	echo "        Merely selects applicable list, can ping both hosts and switches" >&2
-	echo "   -p - ping all hosts/switches in parallel" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -F switchesfile - file with switches in cluster" >&2
-	echo "        default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "example:">&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -C - Performs a ping against switches. Default is hosts." >&2
+	echo "   -p - Pings all hosts/switches in parallel." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is " >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -F switchesfile - Specifies the file with switches in cluster. Default is " >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/switches." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -C" >&2
 	exit 2

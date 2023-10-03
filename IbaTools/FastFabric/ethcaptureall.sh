@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -54,32 +54,44 @@ Usage_full()
 	echo "                  [-D detail_level] [file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform capture against switches, default is hosts" >&2
 #	echo "   -p - perform capture upload in parallel on all hosts/switches" >&2
-	echo "   -p - perform capture upload in parallel on all hosts" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p - Performs capture upload in parallel on all hosts." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -h hosts - list of hosts to perform capture of" >&2
+	echo "   -h hosts - Specifies the list of hosts to capture." >&2
 #	echo "   -H switches - list of switches to perform capture of" >&2
 #	echo "   -t portsfile - file with list of local HFI ports used to access" >&2
 #	echo "           fabric(s) for switch access, default is /etc/$FF_PRD_NAME/ports" >&2
-	echo "   -d upload_dir - directory to upload to, default is uploads" >&2
+	echo "   -d upload_dir - Specifies the directory to upload to. Default is uploads." >&2
+	echo "        If not specified, the environment variable UPLOADS_DIR is used." >&2
 #	echo "   -S - securely prompt for password for admin on switches" >&2
-	echo "   -D detail_level - level of detail passed to host ethcapture" >&2
-	echo "           1-Local 2-Fabric 3-Analysis" >&2
-	echo "   file - name for capture file [.tgz will be appended]" >&2
+	echo "   -D detail_level - Specifies the level of detail of the capture passed to host" >&2
+	echo "        ethcapture." >&2
+	echo "            1 (Local) - Obtains local information from each host." >&2
+	echo "            2 (Fabric) - In addition to Local, also obtains basic fabric" >&2
+	echo "                  information using ethreport." >&2
+	echo "            3 (Analysis) - In addition to Fabric, also obtains ethallanalysis" >&2
+	echo "                  results. If ethallanalysis has not yet been run, it is run as" >&2
+	echo "                  part of the capture." >&2
+	echo "            NOTE: For detail levels 2-3, the additional information is only" >&2
+	echo "                  gathered on the node running the ethcaptureall command." >&2
+	echo "   file - Specifies the name for capture file. If the specified name does not" >&2
+	echo "        end in .tgz, the suffix .tgz is appended." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
 #	echo "   SWITCHES - list of switches, used if -C used and -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
+	echo "   HOSTS_FILE - File containing a list of hosts, used in the absence of -f and -h." >&2
 #	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
-	echo "   UPLOADS_DIR - directory to upload to, used in absence of -d" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
+	echo "   UPLOADS_DIR - Directory to upload to, used in the absence of -d." >&2
+	echo "   FF_MAX_PARALLEL - When -p option is used, maximum concurrent operations are" >&2
+	echo "        performed." >&2
 #	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switches: telnet or ssh" >&2
 #	echo "   FF_SWITCH_ADMIN_PASSWORD - admin password for switches, used in absence of -S" >&2
-	echo "example:">&2
+	echo "Examples:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME mycapture" >&2
@@ -89,17 +101,17 @@ Usage_full()
 #	echo "   $BASENAME -C mycapture" >&2
 #	echo "   $BASENAME -C -H 'switch1 switch2' 030127capture" >&2
 	echo "For hosts:" >&2
-	echo "   ethcapture will be run to create the specified capture file within ~root" >&2
-	echo "   on each host (with the .tgz suffix added). The files will be" >&2
-	echo "   uploaded and unpacked into a matching directory name within" >&2
-	echo "   upload_dir/hostname/ on the local system" >&2
-	echo "   default file name is hostcapture" >&2
+	echo "   When a host ethcaptureall is performed, ethcapture is run to create the" >&2
+	echo "   specified capture file within ~root on each host (with the .tgz suffix added" >&2
+	echo "   as needed). The files are uploaded and unpacked into a matching directory name" >&2
+	echo "   within upload_dir/hostname/ on the local system." >&2
+	echo "   The default file name is hostcapture." >&2
 #	echo "For Switches:" >&2
 #	echo "   The capture CLI command will be run on each switch and its output will be" >&2
 #	echo "   saved to upload_dir/switchname/file on the local system" >&2
 #	echo "   default file name is switchcapture" >&2
-	echo "The uploaded captures will be combined into a tgz file with the file name" >&2
-	echo "specified and the suffix .all.tgz added" >&2
+	echo "The uploaded captures are combined into a .tgz file with the file name" >&2
+	echo "specified and the suffix .all.tgz added." >&2
 	exit 0
 }
 
@@ -110,17 +122,22 @@ Usage()
 	echo "Usage: $BASENAME [-p] [-f hostfile] [-D detail_level] [file]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform capture against switches, default is hosts" >&2
 #	echo "   -p - perform capture upload in parallel on all hosts/switches" >&2
-	echo "   -p - perform capture upload in parallel on all hosts" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p - Performs capture upload in parallel on all hosts." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "   -S - securely prompt for password for admin on switch" >&2
-	echo "   -D detail_level - level of detail passed to host ethcapture" >&2
-	echo "   file - name for capture file [.tgz will be appended]" >&2
-	echo "example:">&2
+	echo "   -D detail_level - Specifies the level of detail of the capture passed to host" >&2
+	echo "        ethcapture." >&2
+	echo "            NOTE: For detail levels 2-3, the additional information is only" >&2
+	echo "                  gathered on the node running the ethcaptureall command." >&2
+	echo "   file - Specifies the name for capture file. If the specified name does not" >&2
+	echo "        end in .tgz, the suffix .tgz is appended." >&2
+	echo "Examples:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME mycapture" >&2
@@ -128,17 +145,17 @@ Usage()
 #	echo "   $BASENAME -C" >&2
 #	echo "   $BASENAME -C mycapture" >&2
 	echo "For hosts:" >&2
-	echo "   ethcapture will be run to create the specified capture file within ~root" >&2
-	echo "   on each host (with the .tgz suffix added). The files will be" >&2
-	echo "   uploaded and unpacked into a matching directory name within" >&2
-	echo "   uploads/hostname/ on the local system" >&2
-	echo "   default file name is hostcapture" >&2
+	echo "   When a host ethcaptureall is performed, ethcapture is run to create the" >&2
+	echo "   specified capture file within ~root on each host (with the .tgz suffix added" >&2
+	echo "   as needed). The files are uploaded and unpacked into a matching directory name" >&2
+	echo "   within upload_dir/hostname/ on the local system." >&2
+	echo "   The default file name is hostcapture." >&2
 #	echo "For Switches:" >&2
 #	echo "   The capture CLI command will be run on each switch and its output will be" >&2
-#	echo "   saved to uploads/switchname/file on the local system" >&2
+#	echo "   saved to upload_dir/switchname/file on the local system" >&2
 #	echo "   default file name is switchcapture" >&2
-	echo "The uploaded captures will be combined into a tgz file with the file name" >&2
-	echo "specified and the suffix .all.tgz added" >&2
+	echo "The uploaded captures are combined into a .tgz file with the file name" >&2
+	echo "specified and the suffix .all.tgz added." >&2
 	exit 2
 }
 

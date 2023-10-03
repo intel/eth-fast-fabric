@@ -1,6 +1,6 @@
 /* BEGIN_ICS_COPYRIGHT7 ****************************************
 
-Copyright (c) 2015-2020, Intel Corporation
+Copyright (c) 2015-2023, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -256,19 +256,25 @@ void errUsage(void)
 	fprintf(stderr, "Usage: " NAME_PROG " [-v][-d delimiter][-i number][-g element][-h element]\n");
 	fprintf(stderr, "                         [-e element][-X input_file][-P param_file]\n");
 	fprintf(stderr, "  At least 1 element must be specified\n");
-	fprintf(stderr, "  -g/--generate element     - name of XML element to generate\n");
-	fprintf(stderr, "                              can be used multiple times\n");
-	fprintf(stderr, "                              values assigned to elements in order xxx ... \n");
-	fprintf(stderr, "  -h/--header element       - name of XML element in which to enclose generated\n");
-	fprintf(stderr, "                              XML elements\n");
-	fprintf(stderr, "  -e/--end element          - name of header XML element to end (close)\n");
-	fprintf(stderr, "  -d/--delimit delimiter    - delimiter char input between element values\n");
-	fprintf(stderr, "                              default is semicolon\n");
-	fprintf(stderr, "  -i/--indent number        - number of spaces to indent each level of XML\n");
-	fprintf(stderr, "                              output; default is zero\n");
-	fprintf(stderr, "  -X/--infile input_file    - generate XML from CSV in input_file\n");
-	fprintf(stderr, "  -P/--pfile param_file     - read command parameters from param_file\n");
-	fprintf(stderr, "  -v/--verbose              - verbose output: progress reports during generation\n");
+	fprintf(stderr, "  -g/--generate element     - Generates an XML element with given name, using value\n");
+	fprintf(stderr, "                              in next field from the input file. Can be used\n");
+	fprintf(stderr, "                              multiple times on the command line. Values are\n");
+	fprintf(stderr, "                              assigned to elements in order.\n");
+	fprintf(stderr, "  -h/--header element       - Specifies the name of the XML element that is the\n");
+	fprintf(stderr, "                              enclosing header start tag.\n");
+	fprintf(stderr, "  -e/--end element          - Specifies the name of the XML element that is the\n");
+	fprintf(stderr, "                              enclosing header end tag.\n");
+	fprintf(stderr, "  -d/--delimit delimiter    - Specifies the delimiter character that separates\n");
+	fprintf(stderr, "                              values in the input file. Default is semicolon.\n");
+	fprintf(stderr, "  -i/--indent number        - Specifies the number of spaces to indent each\n");
+	fprintf(stderr, "                              level of XML output. Default is 0.\n");
+	fprintf(stderr, "  -X/--infile input_file    - Generates XML from CSV in input_file. One record\n");
+	fprintf(stderr, "                              per line with fields in each record separated by\n");
+	fprintf(stderr, "                              the specified delimiter.\n");
+	fprintf(stderr, "  -P/--pfile param_file     - Uses input command line options (parameters) from\n");
+	fprintf(stderr, "                              param_file.\n");
+	fprintf(stderr, "  -v/--verbose              - Produces verbose output. Includes output progress\n");
+	fprintf(stderr, "                              reports during extraction.\n");
 
 	if (hFileInput && (hFileInput != stdin))
 		fclose(hFileInput);

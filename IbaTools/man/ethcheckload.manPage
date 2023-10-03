@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethcheckload 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethcheckload 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethcheckload
 
@@ -41,7 +41,7 @@ Reverses output to show the least busy hosts. Default is busiest hosts.
 .TP 10
 -n \fInumprocs\fR
 
-Shows the specified number of top \fInumprocs\fR hosts. Default is 10.
+Specifies the number of top hosts to show. Default is 10.
 .TP 10
 -a
 

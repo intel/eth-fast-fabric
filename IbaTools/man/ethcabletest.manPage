@@ -1,20 +1,20 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethcabletest 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethcabletest 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethcabletest
 
 
 .PP
-Initiates or stops Cable Bit Error Rate stress tests for Network Interface Card (NIC)-to-switch links.
+Initiates or stops Cable Bit Error Rate stress tests for Network Interface Card to switch (NIC-SW) links.
 .SH Syntax
-ethcabletest [-f  \fIhostfile\fR] [-h  \fI\[aq]hosts\[aq]\fR] [-n  \fInumprocs\fR] [start|stop] ...
+ethcabletest [-p  \fIplane\fR] [-f  \fIhostfile\fR] [-h  \fI\[aq]hosts\[aq]\fR] [-n  \fInumprocs\fR] [start|stop] ...
 .SH Options
 
 .TP 10
@@ -23,9 +23,14 @@ ethcabletest [-f  \fIhostfile\fR] [-h  \fI\[aq]hosts\[aq]\fR] [-n  \fInumprocs\f
 Produces full help text.
 
 .TP 10
+-p \fIplane\fR
+
+Specifies the fabric plane the test will run on. The specified plane needs to be defined and enabled in the Mgt config file. Default is the first enabled plane.
+
+.TP 10
 -f \fIhostfile\fR
 
-Specifies the file with hosts to include in NIC-to-SW test. Default is /etc/eth-tools/hosts file.
+Specifies the file with hosts to include in NIC-SW test. It overrides the HostsFiles defined in Mgt config file for the corresponding plane.
 
 .TP 10
 -h \fIhosts\fR
@@ -35,23 +40,30 @@ Specifies the list of hosts to include in NIC-SW test.
 .TP 10
 -n \fInumprocs\fR
 
-Number of processes per host for NIC-SW test.
+Number of processes per host for NIC-SW test. Default is 3.
 
 .TP 10
 start
 
-Starts the NIC-SW.
+Starts the NIC-SW tests.
 
 .TP 10
 stop
 
-Stops the NIC-SW.
+Stops the NIC-SW tests.
 
 .PP
 The NIC-SW cable test requires that the \fBFF\(ulMPI\(ulAPPS\(ulDIR\fR is set, and it contains a pre-built copy of the Intel(R)   mpi\(ulapps for an appropriate message passing interface (MPI).
 .SH Examples
-ethcabletest -f good
+ethcabletest -p plane1 start
+.br
+
+ethcabletest -f good stop
+.br
+
 ethcabletest -h \[aq]arwen elrond\[aq] start
+.br
+
 HOSTS=\[aq]arwen elrond\[aq] ethcabletest stop
 .br
 
@@ -68,6 +80,11 @@ List of hosts, used if -h option not supplied.
 \fBHOSTS\(ulFILE\fR
 
 File containing list of hosts, used in absence of -f and -h.
+
+.TP 10
+\fBFABRIC\(ulPLANE\fR
+
+Name of fabric plane used in absence of -p, -f, and -h.
 
 .TP 10
 \fBFF\(ulMAX\(ulPARALLEL\fR

@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,15 +41,14 @@ Usage_full()
 {
 	echo >&2
 	echo "Usage: ${cmd} [--help]|[ethreport options]" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   [ethreport options] - options will be passed to ethreport." >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
-	echo "${cmd} is a front end to the ethreport tool that generates" >&2
-	echo "a report listing all or some of the ifids in the fabric." >&2
-	echo "The output is in a CSV format suitable for importing into a spreadsheet" >&2
-	echo "or parsed by other scripts." >&2
+	echo "Produces a CSV file listing all or some of the ifids in the fabric." >&2
+	echo "${cmd} is a front end to the ethreport tool. The output from this tool can be" >&2
+	echo "imported into a spreadsheet or parsed by other scripts." >&2
 	echo >&2
-	echo "for example:" >&2
+	echo "Examples:" >&2
 	echo "   List all the ifids in the fabric:" >&2
 	echo "      ${cmd}" >&2
 	echo >&2
@@ -66,8 +65,8 @@ Usage()
 {
 	echo >&2
 	echo "Usage: ${cmd} [--help]|[ethreport options]" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   [ethreport options] - options will be passed to ethreport." >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
 }
 

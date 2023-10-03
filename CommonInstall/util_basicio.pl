@@ -40,12 +40,13 @@ use strict;
 
 my $LogLevel = 0;	# 0 = normal/quiet, 1=verbose, 2=very verbose
 my $LogFile = "/dev/null";	# set when open_log
+my $LogFileDefault = "/var/log/iefs.log";
 
 sub open_log(;$)
 {
 	my($logfile) = shift();
 	if ( "$logfile" eq "" ) {
-		$logfile="/var/log/iefs.log";
+		$logfile = $LogFileDefault;
 	}
 	$LogFile = $logfile;
 	open(LOG_FD, ">>$logfile");
@@ -258,10 +259,10 @@ sub AddAnswerHelp($$)
 sub showAnswerHelp()
 {
 	if (scalar(@AnswerHelp) != 0) {
-	 	printf STDERR "       --answer keyword=value - provide an answer to a question which might\n";
-	 	printf STDERR "            occur during the operation.  answers to questions which are not\n";
-	 	printf STDERR "            asked are ignored.  Invalid answers will result in prompting\n";
-	 	printf STDERR "            for interactive installs or use of the default for non-interactive.\n";
+		printf STDERR "       --answer keyword=value - Provides an answer to a question which that might\n";
+		printf STDERR "            occur during the operation. Answers to questions that are not asked\n";
+		printf STDERR "            are ignored. Invalid answers result in prompting for interactive\n";
+		printf STDERR "            installations or use of the default for noninteractive installations.\n";
 		printf STDERR "            Possible Questions:\n";
 		foreach my $help (@AnswerHelp) {
 			printf STDERR "              $help\n";

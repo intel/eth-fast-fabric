@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -57,38 +57,40 @@ Usage_full()
 	echo "                    [-T timelimit] 'cmd'" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform command against switches, default is hosts" >&2
 #	echo "   -p - run command in parallel on all hosts/switches" >&2
-	echo "   -p - run command in parallel on all hosts" >&2
-	echo "   -q - quiet mode, don't show command to execute" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p - Runs command in parallel on all hosts." >&2
+	echo "   -q - Specifies quiet mode and does not show the command to execute." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -h hosts - list of hosts to execute command on" >&2
+	echo "   -h hosts - Specifies the list of hosts to execute command on." >&2
 #	echo "   -H switches - list of switches to execute command on" >&2
-	echo "   -u user - user to perform cmd as" >&2
-	echo "           for hosts default is current user code" >&2
+	echo "   -u user - Specifies the user to perform the command as:" >&2
+	echo "        For hosts, the default is current user." >&2
 #	echo "           for switches default is admin" >&2
 #	echo "   -S - securely prompt for password for user on switches" >&2
 #	echo "   -m 'marker' - marker for end of switch command output" >&2
 #	echo "           if omitted defaults to switch command prompt" >&2
 #	echo "           this may be a regular expression" >&2
-	echo "   -T timelimit - timelimit in seconds when running host commands" >&2
-	echo "           default is -1 (infinite)" >&2
+	echo "   -T timelimit - Specifies the time limit in seconds when running host commands." >&2
+	echo "        Default is -1 (infinite)." >&2
 #	echo "   -P      output hostname/switch name as prefix to each output line" >&2
-	echo "   -P      output hostname as prefix to each output line" >&2
-	echo "           this can make script processing of output easier" >&2
+	echo "   -P - Outputs the hostname as a prefix to each output line. This can make" >&2
+	echo "        script processing of the output easier." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
 #	echo "   SWITCHES - list of switches, used if -C used and -H and -F options not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
 #	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "   FF_SERIALIZE_OUTPUT - serialize output of parallel operations (yes or no)" >&2
+	echo "   FF_MAX_PARALLEL - When -p option is used, maximum concurrent operations are" >&2
+	echo "        performed." >&2
+	echo "   FF_SERIALIZE_OUTPUT - Serialize output of parallel operations (yes or no)." >&2
 #	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switch: telnet or ssh" >&2
 #	echo "   FF_SWITCH_ADMIN_PASSWORD - password for switch, used in absence of -S" >&2
-	echo "for example:" >&2
+	echo "Examples:" >&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME date" >&2
 	echo "   $BASENAME 'uname -a'" >&2
@@ -108,24 +110,26 @@ Usage()
 	echo "Usage: $BASENAME [-pq] [-f hostfile] [-u user] [-T timelimit] [-P] 'cmd'" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform command against switches, default is hosts" >&2
 #	echo "   -p - run command in parallel on all hosts/switches" >&2
-	echo "   -p - run command in parallel on all hosts" >&2
-	echo "   -q - quiet mode, don't show command to execute" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p - Runs command in parallel on all hosts." >&2
+	echo "   -q - Specifies quite mode and does not show the command to execute." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -u user - user to perform cmd as" >&2
-	echo "           for hosts default is current user code" >&2
-#	echo "           for switches default is admin, this is ignored" >&2
+	echo "   -u user - Specifies the user to perform the command as:" >&2
+	echo "        For hosts, the default is current user." >&2
+#	echo "           for switches default is admin" >&2
 #	echo "   -S - securely prompt for password for user on switches" >&2
-	echo "   -T timelimit - timelimit in seconds when running host commands" >&2
-	echo "           default is -1 (infinite)" >&2
-#	echo "   -P - output hostname/switch name as prefix to each output line" >&2
-	echo "   -P - output hostname as prefix to each output line" >&2
-	echo "           this can make script processing of output easier" >&2
-	echo "for example:" >&2
+	echo "   -T timelimit - Specifies the time limit in seconds when running host commands." >&2
+	echo "        Default is -1 (infinite)." >&2
+#	echo "   -P      output hostname/switch name as prefix to each output line" >&2
+	echo "   -P - Outputs the hostname as a prefix to each output line. This can make" >&2
+	echo "        script processing of the output easier." >&2
+#	echo "   -S - securely prompt for password for user on switches" >&2
+	echo "Examples:" >&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME date" >&2
 	echo "   $BASENAME 'uname -a'" >&2

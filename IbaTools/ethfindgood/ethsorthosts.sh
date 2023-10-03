@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -36,9 +36,9 @@ Usage()
 	echo "Usage: $BASENAME < hostlist > mpi_hosts" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "Sort the hostlist alphabetically (case insensitively) then numerically" >&2
-	echo "hostnames may end in a numeric field which may optionally have leading zeros" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "Sorts the hostlist alphabetically (case insensitively) then numerically." >&2
+	echo "Hostnames may end in a numeric field which may optionally have leading zeros." >&2
 	echo "example input:">&2
 	echo "	osd04" >&2
 	echo "	osd1" >&2

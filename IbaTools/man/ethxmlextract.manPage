@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethxmlextract 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethxmlextract 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethxmlextract
 
@@ -45,7 +45,7 @@ Uses single character or string as the delimiter between element names and eleme
 .TP 10
 -e/--extract \fIextract\(ulelement\fR
 
-Specifies the name of the XML element to extract. Elements can be nested in any order, but are output in the order specified. Elements can be specified multiple times, with a different attribute name or attribute value. An optional attribute (or attribute and value) can also be specified with elements:
+Specifies the name of an XML element to extract. Elements can be nested in any order, but are output in the order specified. Elements can be specified multiple times, with a different attribute name or attribute value. An optional attribute (or attribute and value) can also be specified with elements:
 
 .RS
 
@@ -70,9 +70,9 @@ Specifies the name of the XML element to extract. Elements can be nested in any 
 .IP \(bu
 Elements can be compound values separated by a dot. For example, Switches.Node is a Node element contained within a Switches element.
 .IP \(bu
-To output the attribute value as opposed to the element value, a specification such as -e NICs.Node:id can be used. This will return the value of the id attribute of any Node elements within NICs element.
+To output the attribute value as opposed to the element value, a specification such as -e NICs.Node:id can be used. This will output the value of the id attribute of any Node elements within NICs element.
 .IP \(bu
-If desired, a specific element can be selected by its attribute value, such as -e NICs.Node.PortInfo:LinkSpeedActive:100Gb which will return the value of the PortInfo element within Node element where the PortInfo element has an attribute of LinkSpeedActive with a value of 100Gb.
+If desired, a specific element can be selected by its attribute value, such as -e NICs.Node.PortInfo:LinkSpeedActive:100Gb, which will output the value of the PortInfo element within Node element where the PortInfo element has an attribute of LinkSpeedActive with a value of 100Gb.
 .IP \(bu
 A given element can be specified multiple times each with a different AttrName or attrValue.
 
@@ -82,7 +82,7 @@ A given element can be specified multiple times each with a different AttrName o
 .TP 10
 -s/--suppress \fIsuppress\(ulelement\fR
 
-Specifies the name of the XML element to suppress extraction. Can be used multiple times (in any order). Supports the same syntax as -e.
+Specifies the name of an XML element to suppress extraction. Can be used multiple times (in any order). Supports the same syntax as -e.
 
 .TP 10
 -X/--infile \fIinput\(ulfile\fR
@@ -158,9 +158,15 @@ Allows extraction to be suppressed during the scope of specified elements.
 .PP
 ethxmlextract takes the XML input stream from either stdin or a specified input file. ethxmlextract does not use or require a connection to a fabric.
 .PP
-ethxmlextract works from two lists of elements supplied as command line or input parameters. The first is a list of elements whose values are to be extracted, called extraction elements. The second is a list of elements for which extraction is to be suppressed, called suppression elements. When an extraction element is encountered and extraction is not suppressed, the value of the element is extracted for later output in an extraction record. An extraction record contains a value for all extraction elements, including those which have a null value.
+ethxmlextract works from two lists of elements supplied as command line or input parameters. The first is a list of elements whose values are to be extracted, called
+\fIextraction elements\fR
+
+. The second is a list of elements for which extraction is to be suppressed, called
+\fIsuppression elements\fR
+
+. When an extraction element is encountered and extraction is not suppressed, the value of the element is extracted for later output in an extraction record. An extraction record contains a value for all extraction elements, including those that have a null value.
 .PP
-When a suppression element is encountered, then no extraction is performed during the extent of that element, from start through end. Suppression is maintained for elements specified inside the suppression element, including elements which may happen to match extraction elements. Suppression can be used to prevent extraction in sections of XML that are present, but not of current interest. For example, NodeDesc or IfAddr inside a Neighbor specification of ethreport.
+When a suppression element is encountered, then no extraction is performed during the extent of that element, from start through end. Suppression is maintained for elements specified inside the suppression element, including elements that may happen to match extraction elements. Suppression can be used to prevent extraction in sections of XML that are present, but not of current interest. For example, NodeDesc or IfAddr inside a Neighbor specification of ethreport can be suppressed.
 .PP
 ethxmlextract attempts to generate extraction records with data values that are valid at the same time. Specifying extraction elements that are valid in the same scope produces a single record for each group of extraction elements. However, mixing extraction elements from different scopes (including different XML levels) may cause ethxmlextract to produce multiple records.
 .PP

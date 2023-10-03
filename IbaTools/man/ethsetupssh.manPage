@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethsetupssh 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethsetupssh 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethsetupssh
 
@@ -111,4 +111,4 @@ When run without the -U option, ethsetupssh performs the initial key exchange an
 .SH Refreshing Local Systems Known Hosts
 
 .PP
-If aspects of the host have changed, such as IP addresses, MAC addresses, software installation, or server OS reinstallation, you can refresh the local host\[aq]s SSH known\(ulhosts file by running ethsetupssh with the -U option. This option does not transfer the keys, but instead connects to each host to refresh the SSH keys. Existing entries for the specified hosts are replaced within the local known\(ulhosts file. When run in this mode, the -S option is ignored. This mode assumes SSH has previously been set up for the hosts, as such no files are transferred to the specified hosts and no passwords should be required.
+If aspects of the host have changed, such as IP addresses, MAC addresses, software installation, or server OS reinstallation, you can refresh the local host\[aq]s SSH known\(ulhosts file by running ethsetupssh with the -U option. This option does not transfer the keys, but instead connects to each host to refresh the SSH keys. Existing entries for the specified hosts are replaced within the local known\(ulhosts file. When run in this mode, the -S option is ignored. This mode assumes SSH has previously been set up for the hosts; therefore, no files are transferred to the specified hosts and no passwords should be required.

@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -85,52 +85,60 @@ Usage_full()
 	echo "                    [-B interface] [source_dir [dest_dir]]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -q - don't list files being transferred" >&2
-	echo "   -r - recursive copy of directories using scp" >&2
-	echo "   -R - recursive copy of directories using rsync (only copy changed files)" >&2
-	echo "   -t - optimized recursive copy of directories using tar" >&2
-	echo "        if dest_dir omitted, defaults to current directory name" >&2
-	echo "        if source_dir and dest_dir omitted, both default to current directory" >&2
-	echo "   -h hosts - list of hosts to copy to" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -u user - user to perform copy to, default is current user code" >&2
-	echo "   -B interface - local network interface to use for scp or rsync" >&2
-	echo "        Note the destination hosts specified must be accessible via the given" >&2
-	echo "        interface's IP subnet.  This may imply the use of alternate" >&2
-	echo "        hostnames or IP addresses for the destination hosts" >&2 
-	echo "   -Z tarcomp - a simple tar compression option to use.  Such as --xz or --lzip" >&2
-	echo "        When host list is large better compression may be preferred." >&2
-	echo "        When host list is small faster compression may be preferred." >&2
- 	echo "        -Z '' will not use compression. Default is -z" >&2
-	echo "   source_file - list of source files to copy" >&2
-	echo "   source_dir - source directory to copy, if omitted . is used" >&2
-	echo "   dest_file - destination for copy." >&2
-	echo "        If more than 1 source file, this must be a directory" >&2
-	echo "   dest_dir - destination for copy.  If omitted current directory name is used" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs copy in parallel on all hosts." >&2
+	echo "   -q - Does not list files being transferred." >&2
+	echo "   -r - Performs recursive copy of directories using scp." >&2
+	echo "   -R - Performs recursive copy of directories using rsync (only copy changed" >&2
+	echo "        files)." >&2
+	echo "   -t - Performs optimized recursive copy of directories using tar. dest_dir is" >&2
+	echo "        optional. If dest_dir is not specified, it defaults to the current" >&2
+	echo "        directory name. If both source_dir and dest_dir are omitted, they both" >&2
+	echo "        default to the current directory name." >&2
+	echo "   -h hosts - Specifies the list of hosts to copy to." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+	echo "   -u user - Specifies the user to perform copy to. Default is current user." >&2
+	echo "   -B interface - Specifies local network interface to use for scp or rsync." >&2
+	echo "        NOTE: The destination hosts specified must be accessible via the given" >&2
+	echo "              interface's IP subnet. This may imply the use of alternate" >&2
+	echo "              hostnames or IP addresses for the destination hosts." >&2
+	echo "   -Z tarcomp - Specifies a simple tar compression option to use, such as --xz" >&2
+	echo "        or --lzip. When the host list is large, better compression may be" >&2
+	echo "        preferred. When host list is small, faster compression may be preferred." >&2
+	echo "        -Z ' ' will not use compression. Default is -z." >&2
+	echo "   source_file - Specifies the file or list of source files to copy." >&2
+	echo "   source_dir - Specifies the name of the source directory to copy. If omitted," >&2
+	echo "        current working directory is used." >&2
+	echo "   dest_file or dest_dir - Specifies the name of the destination file or" >&2
+	echo "        directory. If copying multiple files, use a directory name instead as" >&2
+	echo "        the destination. If the file or directory name is omitted, the source" >&2
+	echo "        file or current directory name is used, respectively." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "example:">&2
-	echo "   $BASENAME MPI-PMB /root/MPI-PMB" >&2
+	echo "   HOSTS - List of hosts; used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts; used in absence of -f and -h." >&2
+	echo "   FF_MAX_PARALLEL - When the -p option is used, maximum concurrent operations" >&2
+	echo "        are performed." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -t -p /usr/src/eth/mpi_apps /usr/src/eth/mpi_apps" >&2
 	echo "   $BASENAME a b c /root/tools/" >&2
 	echo "   $BASENAME -h 'arwen elrond' a b c /root/tools" >&2
 	echo "   $BASENAME -h 'arwen elrond' -B eth2 a b c /root/tools" >&2
 	echo "   HOSTS='arwen elrond' $BASENAME a b c /root/tools" >&2
-	echo "user@ syntax cannot be used in filenames specified" >&2
-	echo "To copy from hosts in the cluster to this host, use ethuploadall" >&2
-	echo "Beware: For the -r option, when copying a single source directory, if the" >&2
-	echo "destination directory does not exist it will be created and the source files" >&2
-	echo "placed directly in it." >&2
-	echo "In other situations, the -r option will copy the source directory as a" >&2
-	echo "directory under the destination directory." >&2
-	echo "The -R option will always copy the source directory as a directory under the" >&2
-	echo "destination directory." >&2
-	echo "The -t option will always place the files found in source_dir directly in the" >&2
-	echo "destination directory." >&2
+	echo >&2
+	echo "NOTES:" >&2
+	echo "- This tool can only copy from this system to a group of systems in the cluster." >&2
+	echo "  To copy from hosts in the cluster to this host, use ethuploadall." >&2
+	echo "- user@ syntax cannot be used when specifying filenames." >&2
+	echo "- Be aware that for the -r option, when copying a single source directory, if" >&2
+	echo "  the destination directory does not exist it will be created and the source" >&2
+	echo "  files placed directly in it." >&2
+	echo "- In other situations, the -r option will copy the source directory as a" >&2
+	echo "  directory under the destination directory." >&2
+	echo "- The -R option will always copy the source directory as a directory under the" >&2
+	echo "  destination directory." >&2
+	echo "- The -t option will always place the files found in source_dir directly in the" >&2
+	echo "  destination directory." >&2
 	exit 0
 }
 
@@ -140,35 +148,42 @@ Usage()
 	echo "       $BASENAME -t [-pq] [-f hostfile] [source_dir [dest_dir]]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -q - don't list files being transferred" >&2
-	echo "   -r - recursive copy of directories using scp" >&2
-	echo "   -R - recursive copy of directories using rsync (only copy changed files)" >&2
-	echo "   -t - optimized recursive copy of directories using tar" >&2
-	echo "        if dest_dir omitted, defaults to current directory name" >&2
-	echo "        if source_dir and dest_dir omitted, both default to current directory" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   source_file - list of source files to copy" >&2
-	echo "   source_dir - source directory to copy, if omitted . is used" >&2
-	echo "   dest_file - destination for copy." >&2
-	echo "        If more than 1 source file, this must be a directory" >&2
-	echo "   dest_dir - destination for copy.  If omitted current directory name is used" >&2
-	echo "example:">&2
-	echo "   $BASENAME MPI-PMB /root/MPI-PMB" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs copy in parallel on all hosts." >&2
+	echo "   -q - Does not list files being transferred." >&2
+	echo "   -r - Performs recursive copy of directories using scp." >&2
+	echo "   -R - Performs recursive copy of directories using rsync (only copy changed" >&2
+	echo "        files)." >&2
+	echo "   -t - Performs optimized recursive copy of directories using tar. dest_dir is" >&2
+	echo "        optional. If dest_dir is not specified, it defaults to the current" >&2
+	echo "        directory name. If both source_dir and dest_dir are omitted, they both" >&2
+	echo "        default to the current directory name." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+	echo "   source_file - Specifies the file or list of source files to copy." >&2
+	echo "   source_dir - Specifies the name of the source directory to copy. If omitted," >&2
+	echo "        current working directory is used." >&2
+	echo "   dest_file or dest_dir - Specifies the name of the destination file or" >&2
+	echo "        directory. If copying multiple files, use a directory name instead as" >&2
+	echo "        the destination. If the file or directory name is omitted, the source" >&2
+	echo "        file or current directory name is used, respectively." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -t -p /usr/src/eth/mpi_apps /usr/src/eth/mpi_apps" >&2
 	echo "   $BASENAME a b c /root/tools/" >&2
-	echo "user@ syntax cannot be used in filenames specified" >&2
-	echo "To copy from hosts in the cluster to this host, use ethuploadall" >&2
-	echo "Beware: For the -r option, when copying a single source directory, if the" >&2
-	echo "destination directory does not exist it will be created and the source files" >&2
-	echo "placed directly in it." >&2
-	echo "In other situations, the -r option will copy the source directory as a" >&2
-	echo "directory under the destination directory." >&2
-	echo "The -R option will always copy the source directory as a directory under the" >&2
-	echo "destination directory." >&2
-	echo "The -t option will always place the files found in source_dir directly in the" >&2
-	echo "destination directory." >&2
+	echo >&2
+	echo "NOTES:" >&2
+	echo "- This tool can only copy from this system to a group of systems in the cluster." >&2
+	echo "  To copy from hosts in the cluster to this host, use ethuploadall." >&2
+	echo "- user@ syntax cannot be used when specifying filenames." >&2
+	echo "- Be aware that for the -r option, when copying a single source directory, if" >&2
+	echo "  the destination directory does not exist it will be created and the source" >&2
+	echo "  files placed directly in it." >&2
+	echo "- In other situations, the -r option will copy the source directory as a" >&2
+	echo "  directory under the destination directory." >&2
+	echo "- The -R option will always copy the source directory as a directory under the" >&2
+	echo "  destination directory." >&2
+	echo "- The -t option will always place the files found in source_dir directly in the" >&2
+	echo "  destination directory." >&2
 	exit 2
 }
 

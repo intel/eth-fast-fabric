@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -54,35 +54,35 @@ Usage_full()
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
 	echo >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform operation against switches, default is hosts" >&2
-	echo "   -p - perform operation against all hosts in parallel" >&2
-	echo "   -U - only perform connect (to enter in local hosts knownhosts)" >&2
-	echo "        (when run in this mode the -S option is ignored)" >&2
-    echo >&2
-	echo "   -f hostfile     - file with hosts in cluster, default is " >&2
-	echo "                     $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
+	echo "   -p - Performs operation against all hosts in parallel." >&2
+	echo "   -U - Performs connect only (to enter in local hosts, known hosts). When" >&2
+	echo "        run in this mode, the -S option is ignored." >&2
+	echo >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
 #	echo "   -F switchesfile  - file with switches in cluster, default is" >&2
 #	echo "                     $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -h hosts        - list of hosts to setup" >&2
+	echo "   -h hosts - Specifies the list of hosts to set up." >&2
 #	echo "   -H switches      - list of switches to setup" >&2
 	echo >&2
-	echo "   -u user         - user on remote system to allow this user to ssh to," >&2
-	echo "                     default is current user code for host(s)" >&2
-	echo "   -S - securely prompt for password for user on remote system" >&2
-	echo "   -R - skip setup of ssh to localhost" >&2
-	echo "   -P - skip ping of host (for ssh to devices on internet with ping firewalled)" >&2
+	echo "   -u user - Specifies the user on remote system to allow this user to SSH to." >&2
+	echo "        Default is current user code for host(s)." >&2
+	echo "   -S - Securely prompts for password for user on remote system." >&2
+	echo "   -R - Skips setup of SSH to local host." >&2
+	echo "   -P - Skips ping of host (for SSH to devices on Internet with ping firewalled)." >&2
 	echo >&2
 	echo " Environment:" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
 #	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
 #	echo "   SWITCHES - list of switches, used if -C used and -H and -F options not supplied" >&2
-	echo "   FF_MAX__PARALLEL - when -p option is used, maximum concurrent operations" >&2
+	echo "   FF_MAX_PARALLEL - When -p option is used, maximum concurrent operations." >&2
 #	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switch: telnet or ssh" >&2
 #	echo "   FF_SWITCH_ADMIN_PASSWORD - password for switch, used in absence of -S" >&2
 	echo >&2
-	echo "example:">&2
+	echo "Examples:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME -S" >&2
 	echo "   $BASENAME -U" >&2
@@ -102,17 +102,20 @@ Usage()
 	echo "Usage: $BASENAME [-pU] [-f hostfile] [-S]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform operation against switches, default is hosts" >&2
-	echo "   -p - perform operation against all hosts in parallel" >&2
-	echo "   -U - only perform connect (to enter in local hosts knownhosts)" >&2
-	echo "         (when run in this mode, the -S options is ignored)" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-#	echo "   -F switchesfile - file with switches in cluster, default is" >&2
-#	echo "         $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -S - securely prompt for password for user on remote system" >&2
+	echo "   -p - Performs operation against all hosts in parallel." >&2
+	echo "   -U - Performs connect only (to enter in local hosts, known hosts). When" >&2
+	echo "        run in this mode, the -S option is ignored." >&2
 	echo >&2
-	echo "example:">&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+#	echo "   -F switchesfile  - file with switches in cluster, default is" >&2
+#	echo "                     $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
+	echo >&2
+	echo "   -S - Securely prompts for password for user on remote system." >&2
+	echo >&2
+	echo "Examples:">&2
 	echo "  Operations on hosts" >&2
 	echo "   $BASENAME -S" >&2
 	echo "   $BASENAME -U" >&2

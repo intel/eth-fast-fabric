@@ -1,6 +1,6 @@
 /* BEGIN_ICS_COPYRIGHT7 ****************************************
 
-Copyright (c) 2015-2020, Intel Corporation
+Copyright (c) 2015-2023, Intel Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -471,47 +471,50 @@ void errUsage(void)
 {
 	fprintf(stderr, "Usage: " NAME_PROG " [-v][-H][-d delimiter][-e element][-s element]\n");
 	fprintf(stderr, "                        [-X input_file] [-P param_file]\n");
-	fprintf(stderr, "  -e/--extract element      - name of an XML element to extract\n");
-	fprintf(stderr, "                              can be used multiple times\n");
-	fprintf(stderr, "                              elements can be nested in any order, but will\n");
-	fprintf(stderr, "                              be output in the order specified\n");
-	fprintf(stderr, "                              optionally an attribute or\n");
-	fprintf(stderr, "                              attribute and value can be specified\n");
+	fprintf(stderr, "  -e/--extract element      - Specifies the name of an XML element to extract.\n");
+	fprintf(stderr, "                              Elements can be nested in any order, but are output\n");
+	fprintf(stderr, "                              in the order specified. Elements can be specified\n");
+	fprintf(stderr, "                              multiple times, with a different attribute name or\n");
+	fprintf(stderr, "                              attribute value. An optional attribute (or attribute\n");
+	fprintf(stderr, "                              and value) can also be specified with elements:\n");
 	fprintf(stderr, "                              -e element\n");
 	fprintf(stderr, "                              -e element:attrName\n");
 	fprintf(stderr, "                              -e element:attrName:attrValue\n\n");
-	fprintf(stderr, "                              Note that elements can be compound values\n");
-	fprintf(stderr, "                              separated by a dot. For example,\n");
-	fprintf(stderr, "                              'Switches.Node' is a Node element contained\n"); 
-	fprintf(stderr, "                              within a Switches element.\n\n"); 
-	fprintf(stderr, "                              If its desired to output the attribute value as\n");
-	fprintf(stderr, "                              opposed to the element value, a specification such\n");
-	fprintf(stderr, "                              as '-e NICs.Node:id' can be used, which will return\n");
-	fprintf(stderr, "                              the value of the id attribute of any Node elements\n");
-	fprintf(stderr, "                              within NICs element. If desired a specific element\n");
-	fprintf(stderr, "                              can be selected by its attribute value, such as\n");
-	fprintf(stderr, "                              '-e MulticastFDB.Value:LID:0xc000', which will\n");
-	fprintf(stderr, "                              return the value of the Value element within\n");
-	fprintf(stderr, "                              Multicast FDB element where the Value element has\n");
-	fprintf(stderr, "                              an attribute of LID with a value of 0xc000.\n\n");
-
+	fprintf(stderr, "                              NOTES:\n");
+	fprintf(stderr, "                              - Elements can be compound values separated by a dot.\n");
+	fprintf(stderr, "                                For example, Switches.Node is a Node element\n");
+	fprintf(stderr, "                                contained within a Switches element.\n");
+	fprintf(stderr, "                              - To output the attribute value as opposed to the\n");
+	fprintf(stderr, "                                element value, a specification such as\n");
+	fprintf(stderr, "                                '-e NICs.Node:id' can be used. This will output\n");
+	fprintf(stderr, "                                the value of the id attribute of any Node elements\n");
+	fprintf(stderr, "                                within NICs element.\n");
+	fprintf(stderr, "                              - If desired, a specific element can be selected by\n");
+	fprintf(stderr, "                                its attribute value, such as\n");
+	fprintf(stderr, "                                '-e NICs.Node.PortInfo:LinkSpeedActive:100Gb',\n");
+	fprintf(stderr, "                                which will output the value of the PortInfo element\n");
+	fprintf(stderr, "                                within Node element where the PortInfo element has\n");
+	fprintf(stderr, "                                an attribute of LinkSpeedActive with a value of 100Gb.\n");
 #if ALLOW_MULTI_MATCH
-	fprintf(stderr, "                              A given element can be specified multiple\n");
-	fprintf(stderr, "                              times each with a different AttrName or attrValue\n");
+	fprintf(stderr, "                              - A given element can be specified multiple times each\n");
+	fprintf(stderr, "                                with a different AttrName or attrValue.\n");
 #else
-	fprintf(stderr, "                              a given element can be specified only once\n");
+	fprintf(stderr, "                              - A given element can be specified only once.\n");
 #endif
-	fprintf(stderr, "  -s/--suppress element     - name of XML element to suppress extraction\n");
-	fprintf(stderr, "                              can be used multiple times, order does not matter\n");
-	fprintf(stderr, "                              supports same syntaxes as -e\n");
-	fprintf(stderr, "  -d/--delimit delimiter    - delimiter output between element names and values\n");
-	fprintf(stderr, "                              default is semicolon\n");
-	fprintf(stderr, "  -X/--infile input_file    - parse XML in input_file\n");
-	fprintf(stderr, "  -P/--pfile param_file     - read command parameters from param_file\n");
-	fprintf(stderr, "  -H/--noheader             - do not output element name header record\n");
-	fprintf(stderr, "  -v/--verbose              - verbose output: progress reports during extraction\n");
-	fprintf(stderr, "                              and element name prepended wildcard characters\n");
-	fprintf(stderr, "  --help                    - print this usage text.\n");
+	fprintf(stderr, "  -s/--suppress element     - Specifies the name of an XML element to suppress\n");
+	fprintf(stderr, "                              extraction. Can be used multiple times (in any order).\n");
+	fprintf(stderr, "                              Supports the same syntax as -e.\n");
+	fprintf(stderr, "  -d/--delimit delimiter    - Uses single character or string as the delimiter\n");
+	fprintf(stderr, "                              between element names and element values. Default is\n");
+	fprintf(stderr, "                              semicolon.\n");
+	fprintf(stderr, "  -X/--infile input_file    - Parses XML from input_file.\n");
+	fprintf(stderr, "  -P/--pfile param_file     - Reads command parameters from param_file.\n");
+	fprintf(stderr, "  -H/--noheader             - Does not output element name header record.\n");
+	fprintf(stderr, "  -v/--verbose              - Produces verbose output. Includes output progress\n");
+	fprintf(stderr, "                              reports during extraction and output prepended\n");
+	fprintf(stderr, "                              wildcard characters on element names in output\n");
+	fprintf(stderr, "                              header record.\n");
+	fprintf(stderr, "  --help                    - Produces full help text.\n");
 
 	if (hFileInput && (hFileInput != stdin))
 		fclose(hFileInput);

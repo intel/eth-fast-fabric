@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH iefsconfig 1 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH iefsconfig 1 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 iefsconfig
 
@@ -89,7 +89,7 @@ Outputs list of supported components.
 Supported components may vary according to OS. Refer to
 \fIIntel(R) Ethernet Fabric Suite Software Release Notes\fR
 
-, OS RPMs Installation Prerequisites for the list of components by supported OS.
+, OS Installation Prerequisites for the list of components by supported OS.
 .IP
 Supported components include: eth\(ultools psm3 eth\(ulmodule fastfabric eth\(ulroce openmpi\(ulgcc\(ulofi mpisrc delta\(uldebug
 .IP

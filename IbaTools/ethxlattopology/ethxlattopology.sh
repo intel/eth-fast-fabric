@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -316,43 +316,56 @@ usage_full()
   echo "                      [-o report] [-p plane] [source [dest]]" >&2
   echo "           or" >&2
   echo "       ${BASENAME} --help" >&2
-  echo "       --help        -  produce full help text" >&2
-  echo "       -d level      -  output detail level (default 0)" >&2
-  echo "                        values are additive" >&2
-  echo "                         1 - edge switch topology files" >&2
-  echo "                         2 - rack topology files" >&2
-  echo "                         4 - rack group topology files" >&2
+  echo "       --help        - Produces full help text." >&2
+  echo "       -d level      - Specifies the output detail level. Default is 0. Levels are" >&2
+  echo "                       additive." >&2
+  echo "                       By default, the top level is always produced. Switch, rack, and rack" >&2
+  echo "                       group topology files can be added to the output by choosing the" >&2
+  echo "                       appropriate level. If the output at the group or rack level is" >&2
+  echo "                       specified, then group or rack names must be provided in the" >&2
+  echo "                       spreadsheet. Detailed output can be specified in any combination." >&2
+  echo "                       A directory for each topology XML file is created hierarchically, with" >&2
+  echo "                       group directories (if specified) at the highest level, followed by rack" >&2
+  echo "                       and switch directories (if specified)." >&2
+  echo "                         1 - Core switch topology files." >&2
+  echo "                         2 - Rack topology files." >&2
+  echo "                         4 - Rack group topology files." >&2
 # TBD - these options are disabled for now
 #  echo "                     8 - DO NOT output edge-to-leaf links" >&2
 #  echo "                    16 - DO NOT output spine-to-leaf links" >&2
-  echo "       -v level      -  verbose level (0-8, default 2)" >&2
-  echo "                         0 - no output" >&2
-  echo "                         1 - progress output" >&2
-  echo "                         2 - reserved" >&2
-  echo "                         4 - time stamps" >&2
-  echo "                         8 - reserved" >&2
-  echo "       -i level      -  output indent level (default 4)" >&2
-  echo "       -K            -  DO NOT clean temporary files" >&2
-  echo "       -N            -  DO NOT generate Port Numbers from Port IDs. Will introduce slightly" >&2
-  echo "                        poorer topology loading performance. Useful when have difficulty" >&2
-  echo "                        to generate Port Numbers, such as complicated Port ID formats," >&2
-  echo "                        or not enough Port IDs to train the Port Number generator." >&2
-  echo "       -f linkfiles  -  space separated core switch linksum files" >&2
-  echo "       -o report     -  report type for output; by default, all the sections" >&2
-  echo "                        are generated" >&2
-  echo "                        Report Types:" >&2
-  echo "                        brnodes  - Creates <Node> section xml for the csv input" >&2
-  echo "                        links    - Creates <LinkSummary> section xml for the csv input" >&2
-  echo "       -p plane      -  plane name (default 'plane')" >&2
-  echo "       source        -  source csv file; default is topology.csv" >&2
-  echo "       dest          -  output xml file; default is topology.xml" >&2
-  echo "                        It can also be used to specify destination folder" >&2
+  echo "       -v level      - Specifies the verbose level. Range is 0 – 8. Default is 2. Levels are" >&2
+  echo "                       additive." >&2
+  echo "                         0 - No output." >&2
+  echo "                         1 - Progress output." >&2
+  echo "                         2 - Reserved." >&2
+  echo "                         4 - Time stamps." >&2
+  echo "                         8 - Reserved." >&2
+  echo "       -i level      - Specifies the output indent level. Default is 4." >&2
+  echo "       -K            - Specifies DO NOT clean temporary files." >&2
+  echo "                       Prevents temporary files in each topology directory from being" >&2
+  echo "                       removed. Temporary files contain CSV formatted lists of links, NICs," >&2
+  echo "                       and switches used to create a topology XML file. Temporary files are" >&2
+  echo "                       not typically needed after a topology file is created, or can be" >&2
+  echo "                       retained for subsequent inspection or processing." >&2
+  echo "       -N            - Specifies DO NOT generate Port Numbers from Port IDs." >&2
+  echo "                       This will introduce slightly poorer topology-loading performance." >&2
+  echo "                       Useful when it is difficult to generate Port Numbers, such as" >&2
+  echo "                       complicated Port ID formats, or not enough Port IDs to train the Port" >&2
+  echo "                       Number generator.">&2
+  echo "       -f linkfiles  - Specifies the space separated core switch linksum files." >&2
+  echo "       -o report     - Specifies the report type for output. By default, all the sections" >&2
+  echo "                       are generated." >&2
+  echo "                     Report Types:" >&2
+  echo "                        brnodes  - Creates the <Node> section xml for the csv input." >&2
+  echo "                        links    - Creates the <LinkSummary> section xml for the csv input." >&2
+  echo "       -p plane      - Specifies the plane name. Default is 'plane'." >&2
+  echo "       source        - Specifies the source csv file. Default is topology.csv." >&2
+  echo "       dest          - Specifies the output xml file. Default is topology.xml." >&2
+  echo "                       The default output file name can be used to specify destination folder." >&2
   echo "" >&2
-  echo "   The following environment variables allow user-specified MTU" >&2
-  echo "      MTU_SW_SW  -  If set will override default MTU on switch<->switch links" >&2
-  echo "                       (default is 10240)" >&2
-  echo "      MTU_SW_NIC -  If set will override default MTU on switch<->NIC links" >&2
-  echo "                       (default is 10240)" >&2
+  echo "   The following environment variables allow user-specified MTU." >&2
+  echo "      MTU_SW_SW  -  If set, it overrides default MTU on switch<->switch links. Default is 10240." >&2
+  echo "      MTU_SW_NIC -  If set, it overrides default MTU on switch<->NIC links. Defaultis 10240." >&2
   exit $1
 }  # End of usage_full()
 

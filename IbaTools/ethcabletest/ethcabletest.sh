@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2017, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -47,29 +47,35 @@ trap "rm -f $tempfile; exit 1" SIGHUP SIGTERM SIGINT
 trap "rm -f $tempfile" EXIT
 readonly BASENAME="$(basename $0)"
 
+# Default Values
+numprocs=3
+
 Usage_full()
 {
 	echo "Usage: $BASENAME [-p plane] [-f hostfile] [-h 'hosts'] [-n numprocs] start|stop" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p plane - fabric plane the operations will apply on. Default is the first" >&2
-	echo "              active plane defined in Mgt config file" >&2
-	echo "   -f hostfile - file with hosts to include in NIC-SW test. It overrides the" >&2
-	echo "                 HostsFile defined in Mgt config file for the plane" >&2
-	echo "   -h hosts - list of hosts to include in NIC-SW test" >&2
-	echo "   -n numprocs - number of processes per host for NIC-SW test (default 3)" >&2
-	echo "   start - start the NIC-SW tests" >&2
-	echo "   stop - stop the NIC-SW tests" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p plane - Specifies the fabric plane the test will run on. The specified" >&2
+	echo "              plane needs to be defined and enabled in the Mgt config file." >&2
+	echo "              Default is the first enabled plane." >&2
+	echo "   -f hostfile - Specifies the file with hosts to include in NIC-SW test." >&2
+	echo "              It overrides the HostsFiles defined in Mgt config file for the" >&2
+	echo "              corresponding plane." >&2
+	echo "   -h hosts - Specifies the list of hosts to include in NIC-SW test." >&2
+	echo "   -n numprocs - Number of processes per host for NIC-SW test. Default is ${numprocs}." >&2
 	echo >&2
-	echo "The NIC-SW cabletest requires that FF_MPI_APPS_DIR be set and contains" >&2
-	echo "a prebuilt copy of Intel mpi_apps for an appropriate MPI" >&2
+	echo "   start - Starts the NIC-SW tests." >&2
+	echo "   stop - Stops the NIC-SW tests." >&2
+	echo >&2
+	echo "The NIC-SW cable test requires that the FF_MPI_APPS_DIR is set, and it contains a" >&2
+	echo "pre-built copy of the Intel mpi_apps for an appropriate message passing interface (MPI)." >&2 
 	echo >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
-	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   FABRIC_PLANE - Name of fabric plane used in absence of -p, -f, and -h." >&2
+	echo "   FF_MAX_PARALLEL - Maximum concurrent operations." >&2
 	echo "example:">&2
 	echo "   $BASENAME -p plane1 start" >&2
 	echo "   $BASENAME -f good stop" >&2
@@ -84,17 +90,18 @@ Usage()
 	echo "Usage: $BASENAME [-n numprocs] [-p plane] [-f hostfile] start|stop" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p plane - fabric plane the operations will apply on, default is the first" >&2
-	echo "              active plane defined in Mgt config file" >&2
-	echo "   -f hostfile - file with hosts to include in NIC-SW test" >&2
-	echo "   -n numprocs - number of processes per host for NIC-SW test" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p plane - Specifies the fabric plane the test will run on. The specified" >&2
+	echo "              plane needs to be defined and enabled in the Mgt config file." >&2
+	echo "              Default is the first enabled plane." >&2
+	echo "   -f hostfile - Specifies the file with hosts to include in NIC-SW test." >&2
+	echo "   -n numprocs - Number of processes per host for NIC-SW test." >&2
 	echo >&2
-	echo "   start - start the NIC-SW tests" >&2
-	echo "   stop - stop the NIC-SW tests" >&2
+	echo "   start - Starts the NIC-SW tests." >&2
+	echo "   stop - Stops the NIC-SW tests." >&2
 	echo >&2
-	echo "The NIC-SW cabletest requires that FF_MPI_APPS_DIR be set and contains" >&2
-	echo "a prebuilt copy of Intel mpi_apps for an appropriate MPI" >&2
+	echo "The NIC-SW cable test requires that the FF_MPI_APPS_DIR is set, and it contains a" >&2
+	echo "pre-built copy of the Intel mpi_apps for an appropriate message passing interface (MPI)." >&2 
 	echo >&2
 	echo " Environment:" >&2
 	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
@@ -111,7 +118,6 @@ then
 	Usage_full
 fi
 
-numprocs=3
 while getopts p:f:h:n: param
 do
 	case $param in

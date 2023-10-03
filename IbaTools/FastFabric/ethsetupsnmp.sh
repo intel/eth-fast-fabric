@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2020, Intel Corporation
+# Copyright (c) 2020-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -69,21 +69,23 @@ Usage_full() {
 	echo "                    [-c 'community'] [-m 'mibs']" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - run command in parallel on all hosts" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -h hosts - list of hosts in cluster" >&2
-	echo "   -L - include localhost (the current node) in setup" >&2
-	echo "   -a admins - list of admin hosts that can issue SNMP query" >&2
-	echo "               Default is the current host" >&2
-	echo "   -c community - community string used for SNMP query, default is 'public'" >&2
-	echo "   -m mibs - list of MIBs that are readable in SNMP queries" >&2
-	echo "             Default is all MIBs required by FastFabric" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs operation against all hosts in parallel." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -h hosts - Specifies the list of hosts in cluster." >&2
+	echo "   -L - Includes localhost (the current node) in setup." >&2
+	echo "   -a admins - Specifies the list of admin hosts that can issue SNMP query." >&2
+	echo "        Default is the current host." >&2
+	echo "   -c community - Specifies the community string used for SNMP query. Default" >&2
+	echo "        is public." >&2
+	echo "   -m mibs - Specifies the list of MIBs that are readable in SNMP queries." >&2
+	echo "        Default is all MIBs required by FastFabric." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "for example:" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   FF_MAX_PARALLEL - When -p option is used, maximum concurrent operations." >&2
+	echo "Examples:" >&2
 	echo "   $BASENAME -h 'elrond arwen' -a 'elrond'" >&2
 	echo "   HOSTS='elrond arwen' $BASENAME -a 'elrond'" >&2
 	echo "   $BASENAME -a 'elrond' -c 'public' -m '1.3.6.1.2.1.1 1.3.6.1.2.1.2'" >&2
@@ -94,17 +96,18 @@ Usage() {
 	echo "Usage: $BASENAME [-p] [-f hostfile] [-h 'hosts'] [-a 'admin']" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - run command in parallel on all hosts" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -h hosts - list of hosts in cluster" >&2
-	echo "   -a admins - list of admin hosts that can issue SNMP query" >&2
-	echo "               Default is the current host" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs operation against all hosts in parallel." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -h hosts - Specifies the list of hosts in cluster." >&2
+	echo "   -a admins - Specifies the list of admin hosts that can issue SNMP query." >&2
+	echo "        Default is the current host." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "for example:" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   FF_MAX_PARALLEL - When -p option is used, maximum concurrent operations." >&2
+	echo "Examples:" >&2
 	echo "   $BASENAME -h 'elrond arwen' -a 'elrond'" >&2
 	echo "   HOSTS='elrond arwen' $BASENAME -a 'elrond'" >&2
 	exit 2

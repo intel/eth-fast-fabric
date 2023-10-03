@@ -1,22 +1,32 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethuploadall 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethuploadall 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethuploadall
 
 
 .PP
-Copies one or more files from a group of hosts to this system. Since the file name is the same on each host, a separate directory on this system is created for each host and the file is copied to it. This is a convenient way to upload log files or configuration files for review. This tool can also be used in conjunction with ethdownloadall to upload a host specific configuration file, edit it for each host, and download the new version to all the hosts.
+Copies one or more files from a group of hosts to this system. Since the file name is the same on each host, a separate directory on this system is created for each host and the file is copied to it. This is a convenient way to upload log files or configuration files for review. This tool can also be used in conjunction with ethdownloadall to upload a host-specific configuration file, edit it for each host, and download the new version to all the hosts.
 .PP
 
 .B NOTE:
-To copy files from this host to hosts in the cluster, use ethscpall or ethdownloadall. user@ style syntax cannot be used when specifying filenames.
+
+.IP \(bu
+To copy files from this host to hosts in the cluster, use ethscpall or ethdownloadall.
+.IP \(bu
+user@ syntax cannot be used in filenames specified.
+.IP \(bu
+A local directory within  \fIupload\(uldir\fR/ is created for each hostname.
+.IP \(bu
+Each uploaded file is copied to upload\(uldir/\fIhostname\fR/\fIdest\(ulfile\fR within the local system.
+.IP \(bu
+If more than one source file is specified or dest\(ulfile has a trailing / , a dest\(ulfile directory will be created.
 
 .SH Syntax
 ethuploadall [-rp] [-f  \fIhostfile\fR] [-d  \fIupload\(uldir\fR] [-h \[aq]\fIhosts\fR\[aq]] [-u  \fIuser\fR]
@@ -48,11 +58,11 @@ Specifies the list of hosts to upload from.
 .TP 10
 -u \fIuser\fR
 
-Specifies the user to perform copy to. Default is current user code.
+Specifies the user to perform copy to. Default is current user.
 .TP 10
 -d \fIupload\(uldir\fR
 
-Specifies the directory to upload to. Default is uploads. If not specified, the environment variable \fBUPLOADS\(ulDIR\fR is used. If that is not exported, the default, /uploads, is used.
+Specifies the directory to upload to. Default is uploads. If not specified, the environment variable \fBUPLOADS\(ulDIR\fR is used. If that is not exported, the default, uploads, is used.
 .TP 10
 \fIsource\(ulfile\fR
 
@@ -60,12 +70,7 @@ Specifies the name of files to copy to this system, relative to the current dire
 .TP 10
 \fIdest\(ulfile\fR
 
-Specifies the name of the file or directory on this system to copy to. It is relative to  \fIupload\(uldir\fR/\fIHOSTNAME\fR .A local directory within  \fIupload\(uldir\fR/ is created for each hostname.
-
-.IP
-Each uploaded file is copied to upload\(uldir/\fIHOSTNAME\fR/\fIdest\(ulfile\fR within the local system.
-.IP
-If more than one source file is specified or dest\(ulfile has a trailing / , a dest\(ulfile directory will be created.
+Specifies the name of the file or directory on this system to copy to. It is relative to  \fIupload\(uldir\fR/\fIhostname\fR.
 .SH Example
 # upload two files from 2 hosts
 .br

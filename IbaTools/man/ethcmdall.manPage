@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethcmdall 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethcmdall 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethcmdall
 
@@ -18,7 +18,7 @@ Executes a command on all hosts. This powerful command can be used for configuri
 .PP
 
 .B NOTE:
-ethcmdall depends on the Linux* convention that utilities return 0 for success and >0 for failure. If ethcmdall is used to execute a non-standard utility like diff or a program that uses custom exit codes, then ethcmdall may erroneously report "Command execution FAILED" when it encounters a non-zero exit code. However, command output is still returned normally and the error may be safely ignored.
+ethcmdall depends on the Linux convention that utilities return 0 for success and > 0 for failure. If ethcmdall is used to execute a non-standard utility like diff or a program that uses custom exit codes, then ethcmdall may erroneously report "Command execution FAILED" when it encounters a non-zero exit code. However, the command output is returned normally and the error may be safely ignored.
 
 .SH Syntax
 ethcmdall [-pqP] [-f  \fIhostfile\fR] [-h  \fIhosts\fR] [-u  \fIuser\fR]
@@ -40,12 +40,12 @@ Runs command in parallel on all hosts.
 .TP 10
 -q
 
-Quiet mode, do not show command to execute.
+Specifies quiet mode and does not show the command to execute.
 
 .TP 10
 -P
 
-Outputs the hostname as prefix to each output line. This can make script processing of output easier.
+Outputs the hostname as a prefix to each output line. This can make script processing of the output easier.
 
 .TP 10
 -f \fIhostfile\fR
@@ -64,7 +64,7 @@ Specifies the user to perform the command as:
 .RS
 
 .IP \(bu
-For hosts, the default is current user code.
+For hosts, the default is current user.
 
 .RE
 
@@ -115,6 +115,6 @@ Serialize output of parallel operations (yes or no).
 .SH Notes
 
 .PP
-All commands performed with ethcmdall must be non-interactive in nature. ethcmdall waits for the command to complete before proceeding. For example, when running host commands such as rm, the -i option (interactively prompt before removal) should not be used. (Note that this option is sometimes part of a standard bash alias list.) For further information about Linux* operating system commands, consult the man pages.
+All commands performed with ethcmdall must be non-interactive in nature. ethcmdall waits for the command to complete before proceeding. For example, when running host commands such as rm, the -i option (interactively prompt before removal) should not be used. (Note that this option is sometimes part of a standard bash alias list.) For further information about Linux operating system commands, consult the man pages.
 .PP
-When performing ethcmdall against hosts, internally SSH is used. The command ethcmdall requires that password-less SSH be set up between the host running the Intel(R) Ethernet Fabric Suite FastFabric Toolset and the hosts ethcmdall is operating against. The ethsetupssh FastFabric tool can aid in setting up password-less SSH.
+When performing ethcmdall against hosts, SSH is used internally. The command ethcmdall requires that password-less SSH be set up between the host running the Intel(R) Ethernet Fabric Suite FastFabric Toolset and the hosts ethcmdall is operating against. The ethsetupssh FastFabric tool can aid in setting up password-less SSH.

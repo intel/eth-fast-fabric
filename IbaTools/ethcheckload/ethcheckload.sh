@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -53,22 +53,23 @@ Usage_full()
 	echo "                      [-d uploaddir] [-H]" >&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -f hostfile - file with hosts to check," >&2
-	echo "                 default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -h hosts - list of hosts to check" >&2
-	echo "   -r - reverse output, show least busy hosts, default is busiest hosts" >&2
-	echo "   -n numprocs - show top numprocs hosts, default 10" >&2
-	echo "   -a - show all hosts, default 10" >&2
-	echo "   -d upload_dir - directory to upload loadavg to, default is uploads" >&2
-	echo "   -H - suppress headers for script parsing" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -f hostfile - Specifies the file with hosts to check. Default is" >&2
+	echo "                 $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -h hosts - Specifies the list of hosts to check." >&2
+	echo "   -r - Reverses output to show the least busy hosts. Default is busiest hosts." >&2
+	echo "   -n numprocs - Specifies the number of top hosts to show. Default is 10." >&2
+	echo "   -a - Shows all hosts. Default is 10." >&2
+	echo "   -d upload_dir - Specifies the target directory to upload loadavg." >&2
+	echo "                   Default is uploads." >&2
+	echo "   -H - Suppresses headers for script parsing." >&2
 	echo >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   UPLOADS_DIR - directory to upload loadavg to, used in absence of -d" >&2
-	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   UPLOADS_DIR - Directory to upload loadavg, used in absence of -d." >&2
+	echo "   FF_MAX_PARALLEL - Maximum concurrent operations." >&2
+	echo "Examples:">&2
 	echo "   ${BASENAME}" >&2
 	echo "   ${BASENAME} -h 'arwen elrond'" >&2
 	echo "   HOSTS='arwen elrond' ${BASENAME}" >&2
@@ -80,17 +81,17 @@ Usage()
 	echo "Usage: ${BASENAME} [-f hostfile] [-r] [-a|-n numprocs] [-H]" >&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -f hostfile - file with hosts to check," >&2
-	echo "                 default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -r - reverse output, show least busy hosts, default is busiest hosts" >&2
-	echo "   -n numprocs - show top numprocs hosts, default 10" >&2
-	echo "   -a - show all hosts, default 10" >&2
-	echo "   -H - suppress headers for script parsing" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -f hostfile - Specifies the file with hosts to check. Default is" >&2
+	echo "                 $CONFIG_DIR/$FF_PRD_NAME/hosts." >&2
+	echo "   -r - Reverses output to show the least busy hosts. Default is busiest hosts." >&2
+	echo "   -n numprocs - Specifies the number of top hosts to show. Default is 10." >&2
+	echo "   -a - Shows all hosts. Default is 10." >&2
+	echo "   -H - Suppresses headers for script parsing." >&2
 	echo >&2
 	echo " Environment:" >&2
-	echo "   FF_MAX_PARALLEL - maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "   FF_MAX_PARALLEL - Maximum concurrent operations." >&2
+	echo "Examples::">&2
 	echo "   ${BASENAME}" >&2
 	echo "   ${BASENAME} -f good" >&2
 	exit 2

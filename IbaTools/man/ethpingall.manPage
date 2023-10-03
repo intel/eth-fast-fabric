@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethpingall 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethpingall 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethpingall
 
@@ -32,7 +32,7 @@ Performs a ping against switches. Default is hosts.
 .TP 10
 -p
 
-Pings all hosts /switches in parallel.
+Pings all hosts/switches in parallel.
 
 .TP 10
 -f \fIhostfile\fR
@@ -72,7 +72,7 @@ ethpingall -C
 .PP
 
 .B NOTE:
-This command pings all hosts /switches found in the specified host /switches file. The use of -C option merely selects the default file and/or environment variable to use. For this command, it is valid to use a file that lists both hosts and switches.
+This command pings all hosts/switches found in the specified host/switches file. The use of -C option selects the default file and/or environment variable to use. For this command, it is valid to use a file that lists both hosts and switches.
 
 .br
 ethpingall -C -H \[aq]switch1 switch2\[aq]

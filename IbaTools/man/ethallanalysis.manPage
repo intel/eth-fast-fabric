@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethallanalysis 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethallanalysis 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethallanalysis
 
@@ -33,7 +33,7 @@ Evaluates health only. Default is compare/check mode.
 .TP 10
 -s
 
-Saves history of failures (errors/differences).
+Saves the history of failures (errors/differences).
 .TP 10
 -d \fIdir\fR
 
@@ -82,6 +82,6 @@ Top-level directory for baselines and failed health checks.
 .PP
 The ethallanalysis command performs the set of analysis specified in \fBFF\(ulALL\(ulANALYSIS\fR, which must be a space-separated list. This can be provided by the environment or using /etc/eth-tools/ethfastfabric.conf. The analysis set includes the options: fabric.
 .PP
-Note that the ethallanalysis command has options which are a super-set of the options for all other analysis commands. The options are passed along to the respective tools as needed. For example, the -c file option is passed on to ethfabricanalysis if it is specified in \fBFF\(ulALL\(ulANALYSIS\fR.
+Note that the ethallanalysis command has options that are a superset of the options for all other analysis commands. The options are passed along to the respective tools as needed. For example, the -c file option is passed on to ethfabricanalysis if it is specified in \fBFF\(ulALL\(ulANALYSIS\fR.
 .PP
 The output files are all the output files for the \fBFF\(ulALL\(ulANALYSIS\fR selected set of analysis. See the previous sections for the specific output files.

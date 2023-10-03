@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2017, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -51,26 +51,26 @@ Usage_full()
 #	echo "                    [-h 'hosts'] [-H 'switches'] [-S]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform operation against switches, default is hosts" >&2
-	echo "   -p plane - fabric plane the operations will apply on. Default is the first" >&2
-	echo "              active plane defined in Mgt config file" >&2
-	echo "   -f hostfile - file with hosts in cluster. It overrides the HostsFile defined" >&2
-	echo "                 in Mgt config file for the plane" >&2
+	echo "   -p plane - Specifies the name of the plane to use. Default is the first" >&2
+	echo "         enabled plane defined in Mgt config file." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. It overrides the" >&2
+	echo "         HostsFile for the selected plane that is defined in Mgt config file." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
-	echo "   -h hosts - list of hosts to show ports for" >&2
+	echo "   -h hosts - Specifies the list of hosts for which to show ports." >&2
 #	echo "   -H switches - list of switches to show ports for" >&2
 #	echo "   -S - securely prompt for password for admin on switches" >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
+	echo "   HOSTS - List of hosts, used if -h option not supplied." >&2
 #	echo "   SWITCHES - list of switches, used if -H option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   FABRIC_PLANE - fabric plane, used in absence of -p and -f and -h" >&2
+	echo "   HOSTS_FILE - File containing list of hosts, used in absence of -f and -h." >&2
+	echo "   FABRIC_PLANE - Name of fabric plane used in absence of -p, -f, and -h." >&2
 #	echo "   SWITCHES_FILE - file containing list of switches, used in absence of -F and -H" >&2
 #	echo "   FF_SWITCH_LOGIN_METHOD - how to login to switch: telnet or ssh" >&2
 #	echo "   FF_SWITCH_ADMIN_PASSWORD - admin password for switch, used in absence of -S" >&2
-	echo "example:">&2
+	echo "Examples:">&2
 	echo "   $BASENAME" >&2
 	echo "   $BASENAME -p plane1" >&2
 	echo "   $BASENAME -h 'elrond arwen'" >&2
@@ -88,15 +88,16 @@ Usage()
 #	echo "Usage: $BASENAME [-C] [-f hostfile] [-F switchesfile] [-S]" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
+	echo "   --help - Produces full help text." >&2
 #	echo "   -C - perform operation against switches, default is hosts" >&2
-	echo "   -p plane - fabric plane the operations will apply on, default is the first" >&2
-	echo "              active plane defined in Mgt config file" >&2
-	echo "   -f hostfile - file with hosts in cluster" >&2
+	echo "   -p plane - Specifies the name of the plane to use. Default is the first" >&2
+	echo "         enabled plane defined in Mgt config file." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. It overrides the" >&2
+	echo "         HostsFile for the selected plane that is defined in Mgt config file." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "   -S - securely prompt for password for admin on switches" >&2
-	echo "example:">&2
+	echo "Examples:">&2
 	echo "   $BASENAME" >&2
 #	echo "   $BASENAME -C" >&2
 	exit 2

@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2022, Intel Corporation                *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethfabricinfo 8 "Intel Corporation" "Copyright(C) 2020\-2022" "EFSFFCLIRG (Man Page)"
+.TH ethfabricinfo 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethfabricinfo
 
@@ -14,7 +14,7 @@ ethfabricinfo
 .PP
 Provides a brief summary of the components in the fabric.
 .PP
-ethfabricinfo can be very useful as a quick assessment of the fabric state. It can be run against a known good fabric to identify its components and then later run to see if anything has changed about the fabric configuration or state.
+ethfabricinfo can be useful as a quick assessment of the fabric state. It can be run against a known-good fabric to identify its components, and then later run to see if anything has changed about the fabric configuration or state.
 .PP
 For more extensive fabric analysis, use ethreport. These tools can be found in the
 \fIIntel(R) Ethernet Fabric Suite FastFabric User Guide\fR
@@ -31,15 +31,15 @@ Produces full help text.
 .TP 10
 -v
 
-verbose output
+Returns verbose output.
 .TP 10
 -q
 
-disable progress reports
+Disables progress reports.
 .TP 10
 -E \fIfile\fR
 
-Specifies the Intel Ethernet configuration file. Default is /etc/eth-tools/mgt\(ulconfig.xml.
+Specifies the Ethernet Mgt config file. Default is /etc/eth-tools/mgt\(ulconfig.xml.
 .TP 10
 -p \fIplanes\fR
 

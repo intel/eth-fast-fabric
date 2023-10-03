@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2017, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -51,24 +51,25 @@ Usage_full()
 #	echo "                    [-F switchesfile] [-H 'switches']">&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -b - baseline mode, default is compare/check mode" >&2
-	echo "   -e - evaluate health only, default is compare/check mode" >&2
-	echo "   -s - save history of failures (errors/differences)" >&2
-	echo "   -d dir - top level directory for saving baseline and history of failed checks" >&2
-	echo "            default is /var/usr/lib/eth-tools/analysis" >&2
-	echo "   -c file - error thresholds config file" >&2
-	echo "             default is $CONFIG_DIR/$FF_PRD_NAME/ethmon.conf" >&2
-	echo "   -E file - Ethernet Mgt config file" >&2
-	echo "            default is $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
-	echo "   -p planes - Fabric planes separated by space. Default is" >&2
-	echo "            the first enabled plane defined in config file" >&2
-	echo "   -f host_files - Hosts files separated by space. It overrides" >&2
-	echo "            the HostsFiles defined in Mgt config file for the" >&2
-	echo "            corresponding planes. Value 'DEFAULT' will use the" >&2
-	echo "            HostFile defined in Mgt config file for the corresponding plane" >&2
-	echo "   -T topology_inputs - name of topology input filenames separated by space." >&2
-	echo "            See ethreport for more information on topology_input files" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -b - Sets the baseline mode. Default is compare/check mode." >&2
+	echo "   -e - Evaluates health only. Default is compare/check mode." >&2
+	echo "   -s - Saves the history of failures (errors/differences)." >&2
+	echo "   -d dir - Identifies the top-level directory for saving baseline and" >&2
+	echo "            history of failed checks. Default is /var/usr/lib/eth-tools/analysis" >&2
+	echo "   -c file - Specifies the error thresholds configuration file. Default is" >&2
+	echo "            $CONFIG_DIR/$FF_PRD_NAME/ethmon.conf." >&2
+	echo "   -E file - Ethernet Mgt configuration file. The default is" >&2
+	echo "            $CONFIG_DIR/$FF_PRD_NAME/mgt_config.xml" >&2
+	echo "   -p planes - Fabric planes separated by space. The default is the first" >&2
+	echo "            enabled plane defined in config file. Value 'ALL' will use all" >&2
+	echo "            enabled planes." >&2
+	echo "   -f host_files - Hosts files separated by space. It overrides the HostsFiles" >&2
+	echo "            defined in Mgt config file for the corresponding planes. Value" >&2
+	echo "            'DEFAULT' will use the HostFile defined in Mgt config file for" >&2
+	echo "            the corresponding plane." >&2
+	echo "   -T topology_inputs - Specifies the name of topology input filenames separated by" >&2
+	echo "            space. See ethreport for more information on topology_input files." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 #	echo "   -H switches - list of switches to analyze" >&2
@@ -76,7 +77,7 @@ Usage_full()
 #	echo "   SWITCHES - list of switches, used if -F and -H options not supplied" >&2
 #	echo "   SWITCHES_FILE - file containing list of switches, used if -F and -H options not" >&2
 #	echo "                  supplied" >&2
-	echo "   FF_ANALYSIS_DIR - top level directory for baselines and failed health checks" >&2
+	echo "   FF_ANALYSIS_DIR - Top-level directory for baselines and failed health checks." >&2
 #	echo "   FF_SWITCH_CMDS - list of commands to issue during analysis," >&2
 #	echo "                     unused if -e option supplied" >&2
 #	echo "   FF_SWITCH_HEALTH - single command to issue to check overall health during analysis," >&2
@@ -93,10 +94,10 @@ Usage()
 	echo "Usage: ${BASENAME} [-b|-e] [-s]" >&2
 	echo "              or" >&2
 	echo "       ${BASENAME} --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -b - baseline mode, default is compare/check mode" >&2
-	echo "   -e - evaluate health only, default is compare/check mode" >&2
-	echo "   -s - save history of failures (errors/differences)" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -b - Sets the baseline mode. Default is compare/check mode." >&2
+	echo "   -e - Evaluates health only. Default is compare/check mode." >&2
+	echo "   -s - Saves the history of failures (errors/differences)." >&2
 #	echo "   -F switchesfile - file with switches in cluster" >&2
 #	echo "           default is $CONFIG_DIR/$FF_PRD_NAME/switches" >&2
 	echo "for example:" >&2

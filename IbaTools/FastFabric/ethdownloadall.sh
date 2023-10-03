@@ -46,55 +46,71 @@ readonly BASENAME="$(basename $0)"
 
 Usage_full()
 {
-	echo "Usage: $BASENAME [-rp] [-f hostfile] [-d download_dir] [-h 'hosts']" >&2
-	echo "                         [-u user] source_file ... dest_file" >&2
+	echo "Usage: $BASENAME [-pr] [-f hostfile] [-h 'hosts'] [-u user] [-d download_dir]" >&2
+	echo "                       source_file ... dest_file" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -r - recursive download of directories" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -h hosts - list of hosts to download to" >&2
-	echo "   -u user - user to perform copy to, default is current user code" >&2
-	echo "   -d download_dir - directory to download from, default is downloads" >&2
-	echo "   source_file - list of source files to copy" >&2
-	echo "   dest_file - destination for copy" >&2
-	echo "        If more than 1 source file, this must be a directory" >&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs copy in parallel on all hosts." >&2
+	echo "   -r - Performs recursive download of directories." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+	echo "   -h hosts - Specifies the list of hosts to download files to." >&2
+	echo "   -u user - Specifies the user to perform the copy. Default is the current user." >&2
+	echo "   -d download_dir - Specifies the directory to download files from. Default is" >&2
+	echo "        downloads. If not specified, the environment variable DOWNLOADS_DIR is" >&2
+	echo "        used. If that is not exported, the default is used." >&2
+	echo "   source_file - Specifies the list of source files to copy from the system." >&2
+	echo "        NOTE: The option source_file is relative to download_dir/hostname. A" >&2
+	echo "              local directory within download_dir/ must exist for each host" >&2
+	echo "              being downloaded to. Each downloaded file is copied from" >&2
+	echo "              download_dir/hostname/source_file." >&2
+	echo "   dest_file - Specifies the name of the file or directory on the destination" >&2
+	echo "        hosts to copy to." >&2
+	echo "        NOTE: If more than one source file is specified, dest_file is treated as" >&2
+	echo "              a directory name. The given directory must already exist on the" >&2
+	echo "              destination host. The copy fails for hosts where the directory" >&2
+	echo "              does not exist." >&2
 	echo " Environment:" >&2
-	echo "   HOSTS - list of hosts, used if -h option not supplied" >&2
-	echo "   HOSTS_FILE - file containing list of hosts, used in absence of -f and -h" >&2
-	echo "   DOWNLOADS_DIR - directory to download from, used in absence of -d" >&2
-	echo "   FF_MAX_PARALLEL - when -p option is used, maximum concurrent operations" >&2
-	echo "example:">&2
+	echo "   HOSTS - List of hosts; used if -h option not supplied." >&2
+	echo "   HOSTS_FILE - File containing list of hosts; used in absence of -f and -h." >&2
+	echo "   DOWNLOADS_DIR - Directory to download from, used in absence of -d." >&2
+	echo "   FF_MAX_PARALLEL - When the -p option is used, the maximum concurrent" >&2
+	echo "        operations are performed." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -h 'arwen elrond' irqbalance vncservers $CONFIG_DIR" >&2
 	echo "   $BASENAME -p irqbalance vncservers $CONFIG_DIR" >&2
-	echo "user@ syntax cannot be used in filenames specified" >&2
-	echo "A local directory within download_dir/ must exist for each hostname." >&2
-	echo "Source file will be download_dir/hostname/source_file within the local system." >&2
-	echo "To copy files from hosts in the cluster to this host use ethuploadall." >&2
+	echo  >&2
+	echo "The tool ethdownloadall can only copy from this system to a group of hosts" >&2
+	echo "in the cluster. To copy files from hosts in the cluster to this host, use" >&2
+	echo "ethuploadall." >&2
+	echo "NOTE: user@ syntax cannot be used in filenames specified." >&2
 	exit 0
 }
 
 Usage()
 {
-	echo "Usage: $BASENAME [-rp] [-f hostfile] [-d download_dir]" >&2
-	echo "                         source_file ... dest_file" >&2
+	echo "Usage: $BASENAME [-pr] [-f hostfile] [-d download_dir]" >&2
+	echo "                       source_file ... dest_file" >&2
 	echo "              or" >&2
 	echo "       $BASENAME --help" >&2
-	echo "   --help - produce full help text" >&2
-	echo "   -p - perform copy in parallel on all hosts" >&2
-	echo "   -r - recursive download of directories" >&2
-	echo "   -f hostfile - file with hosts in cluster, default is $CONFIG_DIR/$FF_PRD_NAME/hosts" >&2
-	echo "   -d download_dir - directory to download from, default is downloads" >&2
-	echo "   source_file - list of source files to copy" >&2
-	echo "   dest_file - destination for copy" >&2
-	echo "        If more than 1 source file, this must be a directory" >&2
-	echo "example:">&2
+	echo "   --help - Produces full help text." >&2
+	echo "   -p - Performs copy in parallel on all hosts." >&2
+	echo "   -r - Performs recursive download of directories." >&2
+	echo "   -f hostfile - Specifies the file with hosts in cluster. Default is" >&2
+	echo "        $CONFIG_DIR/$FF_PRD_NAME/hosts file." >&2
+	echo "   -d download_dir - Specifies the directory to download files from. Default is" >&2
+	echo "        downloads. If not specified, the environment variable DOWNLOADS_DIR is" >&2
+	echo "        used. If that is not exported, the default is used." >&2
+	echo "   source_file - Specifies the list of source files to copy from the system." >&2
+	echo "   dest_file - Specifies the name of the file or directory on the destination" >&2
+	echo "        hosts to copy to." >&2
+	echo "Examples:">&2
 	echo "   $BASENAME -p irqbalance vncservers $CONFIG_DIR" >&2
-	echo "user@ syntax cannot be used in filenames specified" >&2
-	echo "A local directory within downloads/ must exist for each hostname." >&2
-	echo "Source file will be downloads/hostname/source_file within the local system." >&2
-	echo "To copy files from hosts in the cluster to this host use ethuploadall." >&2
+	echo "The tool ethdownloadall can only copy from this system to a group of hosts" >&2
+	echo "in the cluster. To copy files from hosts in the cluster to this host, use" >&2
+	echo "ethuploadall." >&2
+	echo "NOTE: user@ syntax cannot be used in filenames specified." >&2
 	exit 2
 }
 
