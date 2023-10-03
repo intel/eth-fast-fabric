@@ -226,9 +226,9 @@ fi
 timestamp=$(date +"%Y/%m/%d %T")
 echo "Running $FF_HOSTVERIFY_DIR/hostverify.sh -d $FF_HOSTVERIFY_DIR $verifyhosts_arg $* ..."
 resultlineno=$(cat $FF_RESULT_DIR/verifyhosts.res|wc -l)	# for punchlist
-ethcmdall -p -T $timelimit "bash $FF_HOSTVERIFY_DIR/hostverify.sh -d $FF_HOSTVERIFY_DIR $verifyhosts_arg $*" 2>&1|tee -a $FF_RESULT_DIR/verifyhosts.res|egrep 'FAIL'
+ethcmdall -p -T $timelimit "bash $FF_HOSTVERIFY_DIR/hostverify.sh -d $FF_HOSTVERIFY_DIR $verifyhosts_arg $*" 2>&1|tee -a $FF_RESULT_DIR/verifyhosts.res|grep -E 'FAIL'
 # update punchlist using new failures
-tail -n +$resultlineno $FF_RESULT_DIR/verifyhosts.res| egrep 'FAIL'|append_punchlist
+tail -n +$resultlineno $FF_RESULT_DIR/verifyhosts.res| grep -E 'FAIL'|append_punchlist
 date >> $FF_RESULT_DIR/verifyhosts.res
 
 job_cleanup

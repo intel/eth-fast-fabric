@@ -136,7 +136,7 @@ proc collect_counters {counters host port delta} {
 		unix_cmd 10 0 "echo 'Lost:0' > $app_count_file"
 	}
 
-	send_unix_cmd "ethtool -S $port | egrep --color=never '?x_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/ports/1/hw_counters && grep --color=never . *Discards; cat $app_count_file"
+	send_unix_cmd "ethtool -S $port | grep -E --color=never '?x_priority|drop' | tr -d ' '; cd /sys/class/net/$port/device/infiniband/*/ports/1/hw_counters && grep --color=never . *Discards; cat $app_count_file"
 	expect_unix_prompt 5 out
 	foreach line $out {
 		if { [string match {[tr]x_*} $line] || [string match {ip*} $line] || [string match {Lost*} $line]} {
@@ -369,7 +369,7 @@ File: /usr/lib/eth-tools/pfctest.exp" suite_setup suite_cleanup {
 					set desired_mtu $msg_size
 					set port_ips ""
 					foreach port $ports {
-						send_unix_cmd "ip addr show dev $port | egrep --color=never 'mtu |inet '; echo DONE"
+						send_unix_cmd "ip addr show dev $port | grep -E --color=never 'mtu |inet '; echo DONE"
 						expect_list 20 {"(?n)^DONE"} {} out
 						set out [split $out "\n"]
 						# if a command already ran, the output may starts with a new line

@@ -195,14 +195,14 @@ sub rpms_installed_pkg($$)
 		DebugPrint($cmd."|");
 		open(debs, $cmd."|");
 	} elsif ("$mode" eq "user" || "$mode" eq "firmware") {
-		DebugPrint($cmd."|egrep '\.$cpu\$' 2>/dev/null\n");
-		open(debs, $cmd."|egrep '\.$cpu\$' 2>/dev/null|");
+		DebugPrint($cmd."|grep -E '\.$cpu\$' 2>/dev/null\n");
+		open(debs, $cmd."|grep -E '\.$cpu\$' 2>/dev/null|");
 	} else {
 		# $mode is kernel rev, verify proper kernel version is installed
 		# for kernel packages, RELEASE is kernel rev
 		my $release = rpm_tr_os_version($mode);
-		DebugPrint($cmd."|egrep '-$release\.$cpu\$' 2>/dev/null\n");
-		open(debs, $cmd."|egrep '-$release\.$cpu\$' 2>/dev/null|");
+		DebugPrint($cmd."|grep -E '-$release\.$cpu\$' 2>/dev/null\n");
+		open(debs, $cmd."|grep -E '-$release\.$cpu\$' 2>/dev/null|");
 	}
 	@lines=<debs>;
 	close(debs);
@@ -255,11 +255,27 @@ sub rpm_query_version_release($)
 	return rpm_query_attr($debfile, "VERSION");
 }
 
+sub rpm_query_release_only_file($)
+{
+	my $debfile = shift();
+	my $ver_and_rel = rpm_query_version_release($debfile);
+	my ($ver, $rel) = split /-/, $ver_and_rel;
+	return $rel;
+}
+
 # get VERSION-RELEASE of installed RPM package
 sub rpm_query_version_release_pkg($)
 {
 	my $package = shift();	# installed package
 	return rpm_query_attr_pkg($package, "VERSION");
+}
+
+sub rpm_query_release_only_pkg($)
+{
+	my $package = shift();
+	my $ver_and_rel = rpm_query_version_release_pkg($package);
+	my ($ver, $rel) = split /-/, $ver_and_rel;
+	return $rel;
 }
 
 sub rpm_get_cpu_arch($)
@@ -293,7 +309,7 @@ sub rpm_is_installed($$)
 		$last_checked = "any variation";
 	} elsif ("$mode" eq "user" || "$mode" eq "firmware") {
 		# verify $cpu version or any is installed
-		my $cmd = "dpkg -l '$package' 2>/dev/null | egrep '^ii' 2>/dev/null|egrep '^$cpu\$|' >/dev/null 2>&1";
+		my $cmd = "dpkg -l '$package' 2>/dev/null | grep -E '^ii' 2>/dev/null|grep -E '^$cpu\$|' >/dev/null 2>&1";
 		DebugPrint $cmd."\n";
 		$rc = system $cmd;
 		$last_checked = "for $mode $cpu or noarch";
@@ -303,8 +319,8 @@ sub rpm_is_installed($$)
 		my $release = rpm_tr_os_version($mode);
 		my $showformat = q('${db:Status-Abbrev} ${binary:Package} ${Version}');
 		my $cmd = "dpkg-query --showformat=$showformat --show $package";
-		$cmd .= " | egrep '^ii' >/dev/null 2>&1";
-		$cmd .= " | egrep '$release' >/dev/null 2>&1";
+		$cmd .= " | grep -E '^ii' >/dev/null 2>&1";
+		$cmd .= " | grep -E '$release' >/dev/null 2>&1";
 		DebugPrint $cmd."\n";
 		$rc = system $cmd;
 		$last_checked = "for kernel $release";

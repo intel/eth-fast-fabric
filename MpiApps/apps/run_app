@@ -232,7 +232,7 @@ do
 		wait
 	fi
 	# check for both exit status and typical app failure messages
-	if [ ! $res ] || cat $LOGFILE $MONITOR_FILE| egrep 'ERROR|disconnect|truncated|IRECV|STOP|FAIL'
+	if [ ! $res ] || cat $LOGFILE $MONITOR_FILE| grep -E 'ERROR|disconnect|truncated|IRECV|STOP|FAIL'
 	then 
 		echo " $APP FAILED!! See log file"
 		break

@@ -75,6 +75,7 @@ my %Components_by_distro = (
 	'SuSE*ES152'    => \@EthAllComponents,
 	'SuSE*ES153'    => \@EthAllComponents,
 	'SuSE*ES154'    => \@EthAllComponents,
+	'SuSE*ES155'    => \@EthAllComponents,
 	'redhat*ES78'   => \@EthAllComponents,
 	'redhat*ES79'   => \@EthAllComponents,
 	'redhat*ES8'    => \@EthAllComponents,
@@ -508,6 +509,7 @@ my %Comp_info_by_distro = (
 	'SuSE*ES152'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES153'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES154'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES155'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 
 	'redhat*ES78'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES79'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },

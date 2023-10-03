@@ -167,7 +167,13 @@ fi
 
 if [ -z "$planes" ]
 then
-	planes="$(echo "$available_fids" | head -n 1)"
+	first_enabled_plane="$($ETHXMLEXTRACT -H -e Plane.Name -e Plane.Enable -X "$mgt_file" | grep ';1\$' | cut -d ';' -f1 | sed 1q )"
+	if [ -z "$first_enabled_plane" ]
+	then
+		planes="$(echo "$available_fids" | head -n 1)"
+	else
+		planes="$first_enabled_plane"
+	fi
 elif [[ "$planes" = "ALL" ]]
 then
 	planes="$available_fids"

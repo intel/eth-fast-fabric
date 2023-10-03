@@ -77,6 +77,7 @@ my %sles_srpm = (
 	],
 	"PartOf" => ["eth_module"],
 	"DKMSpackage" => "iefs-kernel-updates-dkms",
+	"MainPackage" => "iefs-kernel-updates-kmp-default",
 );
 
 my %redhat_srpm = (
@@ -90,6 +91,7 @@ my %redhat_srpm = (
 	],
 	"PartOf" => ["eth_module"],
 	"DKMSpackage" => "iefs-kernel-updates-dkms",
+	"MainPackage" => "kmod-iefs-kernel-updates",
 );
 
 my %debian_tarball = (
@@ -103,6 +105,7 @@ my %debian_tarball = (
 	],
 	"PartOf" => ["eth_module"],
 	"DKMSpackage" => "iefs-kernel-updates-dkms",
+	"MainPackage" => "kmod-iefs-kernel-updates",
 );
 
 # all kernel srpms
@@ -115,6 +118,7 @@ my %source_pkgs_by_distro = (
 	'SuSE*ES152'    => [ \%sles_srpm ],
 	'SuSE*ES153'    => [ \%sles_srpm ],
 	'SuSE*ES154'    => [ \%sles_srpm ],
+	'SuSE*ES155'    => [ \%sles_srpm ],
 	'redhat*ES78'   => [ \%redhat_srpm ],
 	'redhat*ES79'   => [ \%redhat_srpm ],
 	'redhat*ES8'    => [ \%redhat_srpm ],
@@ -269,6 +273,7 @@ sub get_rpms_dir_delta($$)
 			}
 		}
 	}
+	DebugPrint("get_rpms_dir_delta($package, GPU-aware=$gpu_aware)->$rpmsdir\n");
 	return $rpmsdir;
 }
 
@@ -459,9 +464,6 @@ sub build_delta($$$$$$)
 	return 0;	# success
 }
 
-# forward declarations
-sub installed_delta_eth_module();
-
 # TBD - might not need any more
 # return 0 on success, != 0 otherwise
 sub uninstall_old_delta_rpms($$$)
@@ -518,6 +520,8 @@ sub uninstall_old_delta_rpms($$$)
 	return $ret;
 }
 
+# forward declarations
+sub installed_eth_module();
 
 # TBD - might not need anymore
 # remove any old stacks or old versions of the stack
@@ -525,7 +529,7 @@ sub uninstall_old_delta_rpms($$$)
 # rpms
 sub uninstall_prev_versions()
 {
-	if (! installed_delta_eth_module) {
+	if (! installed_eth_module()) {
 		return 0;
 	} elsif (! comp_is_uptodate('eth_module')) { # all delta_comp same version
 		if (0 != uninstall_old_delta_rpms("any", "silent", "previous OFA DELTA")) {
@@ -740,47 +744,41 @@ sub available_eth_module()
 
 sub installed_eth_module()
 {
-	return (installed_delta_eth_module);
-}
-
-sub installed_delta_eth_module()
-{
-	if (rpm_is_installed("iefs-kernel-updates-dkms", "any")) {
+	my $dkms_name = $delta_kernel_srpms[0]{'DKMSpackage'};
+	if (rpm_is_installed($dkms_name, "any")) {
+		DebugPrint("installed_eth_module: $dkms_name installed\n");
 		return 1;
 	}
-
-	my %module_pkg_by_vendor = (
-		'SuSE'   => "iefs-kernel-updates-kmp-default",
-		'redhat' => "kmod-iefs-kernel-updates",
-		'ubuntu' => "kmod-iefs-kernel-updates",
-	);
-
-	if (exists $module_pkg_by_vendor{$CUR_DISTRO_VENDOR}) {
-		return rpm_is_installed($module_pkg_by_vendor{$CUR_DISTRO_VENDOR}, $CUR_OS_VER);
-	}
-
-	DebugPrint "Unsupported vendor $CUR_DISTRO_VENDOR\n";
-	return 0;
+	my $name = $delta_kernel_srpms[0]{'MainPackage'};
+	my $result = rpm_is_installed($name, $CUR_OS_VER);
+	DebugPrint("installed_eth_module: $name for $CUR_OS_VER installed=$result\n");
+	return $result;
 }
 
 # only called if installed_eth_module is true
 sub installed_version_eth_module()
 {
-	if (rpm_is_installed("meta_eth_module", "any")) {
-		my $version = rpm_query_version_release_pkg("meta_eth_module");
-		return dot_version("$version");
-	}
-	if ( -e "$BASE_DIR/version_delta" ) {
-		return `cat $BASE_DIR/version_delta`;
+	my $version;
+	my $dkms_name = $delta_kernel_srpms[0]{'DKMSpackage'};
+	if (rpm_is_installed($dkms_name, "any")) {
+		$version = rpm_query_release_only_pkg($dkms_name);
+		DebugPrint("installed_version_eth_module: $dkms_name -> $version\n");
 	} else {
-		return "";
+		my $name = $delta_kernel_srpms[0]{'MainPackage'};
+		$version = rpm_query_release_only_pkg($name);
+		DebugPrint("installed_version_eth_module: $name -> $version\n");
 	}
+	return $version;
 }
 
 # only called if available_eth_module is true
 sub media_version_eth_module()
 {
-	return media_version_delta();
+	my $name = $delta_kernel_srpms[0]{'MainPackage'};
+	my $pkg_dir = get_rpms_dir_delta($name, "yes");
+	my $rpmfile = rpm_resolve("$pkg_dir/$name", $CUR_OS_VER);
+	my $version= rpm_query_release_only_file("$rpmfile");
+	return $version;
 }
 
 sub build_eth_module($$$$)
@@ -905,9 +903,8 @@ sub installed_version_psm3()
 # only called if available_psm3 is true
 sub media_version_psm3()
 {
-	my $srcdir=$ComponentInfo{'psm3'}{'SrcDir'};
-	my $pkg_dir = get_binary_pkg_dir($srcdir);
-	my $rpmfile = rpm_resolve("$pkg_dir/*/libpsm3-fi", "any");
+	my $pkg_dir = get_rpms_dir_delta("libpsm3-fi", "yes");
+	my $rpmfile = rpm_resolve("$pkg_dir/libpsm3-fi", "any");
 	my $version= rpm_query_version_release("$rpmfile");
 	return dot_version("$version");
 }

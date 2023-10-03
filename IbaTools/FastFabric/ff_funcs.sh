@@ -67,7 +67,7 @@ resolve_file()
 # filter out blank and comment lines
 ff_filter_comments()
 {
-	egrep -v '^[[:space:]]*#'|egrep -v '^[[:space:]]*$'
+	grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$'
 }
 
 expand_file()

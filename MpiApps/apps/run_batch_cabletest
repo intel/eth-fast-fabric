@@ -109,7 +109,7 @@ then
 fi
 
 # ignore blank and comment lines in mpi_hosts
-cat $MPI_HOSTS|egrep -v '^[[:space:]]*#'|egrep -v '^[[:space:]]*$' > $temp1
+cat $MPI_HOSTS|grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$' > $temp1
 echo "Starting NIC-SW cabletests using $MPI_HOSTS: $(cat $temp1|wc -l) hosts"
 echo "  Max batch size $BATCH_SIZE"
 

@@ -129,7 +129,7 @@ then
 fi
 
 # skip comments and blank lines. We assume each node is listed only once.
-NUM_NODES=$(cat $MPI_GROUP_HOSTS|egrep -v '^[[:space:]]*#'|egrep -v '^[[:space:]]*$'|wc -l)
+NUM_NODES=$(cat $MPI_GROUP_HOSTS|grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$'|wc -l)
 MIN_PROCESSES=2
 MULT_PROCESSES=2
 HEADER=`head -1 $MPI_GROUP_HOSTS | sed -e 's/# DO NOT DELETE THIS LINE: //'`

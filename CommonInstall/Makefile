@@ -107,7 +107,7 @@ CLOBBER_TARGETS_MISC= comp_ff_of_prereq_RHEL78.pl comp_ff_of_prereq_RHEL79.pl \
                       comp_ff_of_prereq_SLES124.pl comp_ff_of_prereq_SLES125.pl \
                       comp_ff_of_prereq_SLES15.pl comp_ff_of_prereq_SLES151.pl \
                       comp_ff_of_prereq_SLES152.pl comp_ff_of_prereq_SLES153.pl \
-                      comp_ff_of_prereq_SLES154.pl
+                      comp_ff_of_prereq_SLES154.pl comp_ff_of_prereq_SLES155.pl
 # sub-directory to install to within bin
 BIN_SUBDIR		= 
 # sub-directory to install to within include
@@ -144,7 +144,7 @@ FF_FILES = comp_ff_of_prereq_RHEL78.pl comp_ff_of_prereq_RHEL79.pl \
 	comp_ff_of_prereq_SLES124.pl comp_ff_of_prereq_SLES125.pl \
 	comp_ff_of_prereq_SLES15.pl comp_ff_of_prereq_SLES151.pl \
 	comp_ff_of_prereq_SLES152.pl comp_ff_of_prereq_SLES153.pl \
-	comp_ff_of_prereq_SLES154.pl
+	comp_ff_of_prereq_SLES154.pl comp_ff_of_prereq_SLES155.pl
 
 # Include Make Rules definitions and rules
 include $(TL_DIR)/$(PROJ_FILE_DIR)/Makerules.project

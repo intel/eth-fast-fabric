@@ -127,6 +127,13 @@ sub rpm_query_version_release($)
 	return "${ver}-${rel}";
 }
 
+sub rpm_query_release_only_file($)
+{
+	my $rpmfile = shift();
+	my $rel = rpm_query_attr($rpmfile, "RELEASE");
+	return $rel;
+}
+
 # get VERSION-RELEASE of installed RPM package
 sub rpm_query_version_release_pkg($)
 {
@@ -135,6 +142,14 @@ sub rpm_query_version_release_pkg($)
 	my $ver = rpm_query_attr_pkg($package, "VERSION");
 	my $rel = rpm_query_attr_pkg($package, "RELEASE");
 	return "${ver}-${rel}";
+}
+
+sub rpm_query_release_only_pkg($)
+{
+	my $package = shift();	# installed package
+
+	my $rel = rpm_query_attr_pkg($package, "RELEASE");
+	return $rel;
 }
 
 # return NAME-VERSION-RELEASE.ARCH
@@ -188,15 +203,15 @@ sub rpm_is_installed($$)
 		$last_checked = "any variation";
 	} elsif ("$mode" eq "user" || "$mode" eq "firmware") {
 		# verify $cpu version or noarch is installed
-		DebugPrint "$RPM --queryformat '[%{ARCH}\\n]' -q $package 2>/dev/null|egrep '^$cpu\$|^noarch\$' >/dev/null 2>&1\n";
-		$rc = system "$RPM --queryformat '[%{ARCH}\\n]' -q $package 2>/dev/null|egrep '^$cpu\$|^noarch\$' >/dev/null 2>&1";
+		DebugPrint "$RPM --queryformat '[%{ARCH}\\n]' -q $package 2>/dev/null|grep -E '^$cpu\$|^noarch\$' >/dev/null 2>&1\n";
+		$rc = system "$RPM --queryformat '[%{ARCH}\\n]' -q $package 2>/dev/null|grep -E '^$cpu\$|^noarch\$' >/dev/null 2>&1";
 		$last_checked = "for $mode $cpu or noarch";
 	} else {
 		# $mode is kernel rev, verify proper kernel version is installed
 		# for kernel packages, RELEASE is kernel rev
 		my $release = rpm_tr_os_version($mode);
-		DebugPrint "$RPM --queryformat '[%{VERSION}\\n]' -q $package 2>/dev/null|egrep '$release' >/dev/null 2>&1\n";
-		$rc = system " $RPM --queryformat '[%{VERSION}\\n]' -q $package 2>/dev/null|egrep '$release' >/dev/null 2>&1";
+		DebugPrint "$RPM --queryformat '[%{VERSION}\\n]' -q $package 2>/dev/null|grep -E '$release' >/dev/null 2>&1\n";
+		$rc = system " $RPM --queryformat '[%{VERSION}\\n]' -q $package 2>/dev/null|grep -E '$release' >/dev/null 2>&1";
 		$last_checked = "for kernel $release";
 	}
 	DebugPrint("Checked if $package $mode is installed: ".(($rc==0)?"yes":"no")."\n");
@@ -452,14 +467,14 @@ sub rpms_installed_pkg($$)
 		DebugPrint("$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null\n");
 		open(rpms, "$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|");
 	} elsif ("$mode" eq "user" || "$mode" eq "firmware") {
-		DebugPrint("$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|egrep '\.$cpu\$|\.noarch\$' 2>/dev/null\n");
-		open(rpms, "$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|egrep '\.$cpu\$|\.noarch\$' 2>/dev/null|");
+		DebugPrint("$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|grep -E '\.$cpu\$|\.noarch\$' 2>/dev/null\n");
+		open(rpms, "$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|grep -E '\.$cpu\$|\.noarch\$' 2>/dev/null|");
 	} else {
 		# $mode is kernel rev, verify proper kernel version is installed
 		# for kernel packages, RELEASE is kernel rev
 		my $release = rpm_tr_os_version($mode);
-		DebugPrint("$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|egrep '-$release\.$cpu\$' 2>/dev/null\n");
-		open(rpms, "$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|egrep '-$release\.$cpu\$' 2>/dev/null|");
+		DebugPrint("$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|grep -E '-$release\.$cpu\$' 2>/dev/null\n");
+		open(rpms, "$RPM --queryformat '[%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n]' -q $package 2>/dev/null|grep -E '-$release\.$cpu\$' 2>/dev/null|");
 	}
 	@lines=<rpms>;
 	close(rpms);

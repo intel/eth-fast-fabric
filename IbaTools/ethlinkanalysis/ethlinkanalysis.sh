@@ -553,8 +553,14 @@ then
 	fi
 elif [[ -z $planes ]]
 then
-	# if no planes defined, use the first plane in conf file
-	planes="$(echo "$available_planes" | head -n 1)"
+	first_enabled_plane="$($ETHXMLEXTRACT -H -e Plane.Name -e Plane.Enable -X "$mgt_file" | grep ';1\$' | cut -d ';' -f1 | sed 1q )"
+	if [ -z "$first_enabled_plane" ]
+	then
+		# if no plane defined & enabled, use the first plane in conf file
+		planes="$(echo "$available_planes" | head -n 1)"
+	else
+		planes="$first_enabled_plane"
+	fi
 elif [[ "$planes" = "ALL" ]]
 then
 	planes="$available_planes"

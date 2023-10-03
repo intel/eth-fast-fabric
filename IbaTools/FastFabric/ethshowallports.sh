@@ -207,6 +207,6 @@ else
 		switch=`strip_chassis_slots "$switch"`
 		echo "--------------------------------------------------------------------"
 		echo "$switch:"
-		$TL_DIR/tcl_proc chassises_run_cmd "$switch" "admin" 'ismPortStats -noprompt' 1 2>&1|egrep 'FAIL|Port State|Link Qual|Link Width|Link Speed|^[[:space:]]|^Name' | egrep -v 'Tx|Rx'
+		$TL_DIR/tcl_proc chassises_run_cmd "$switch" "admin" 'ismPortStats -noprompt' 1 2>&1|grep -E 'FAIL|Port State|Link Qual|Link Width|Link Speed|^[[:space:]]|^Name' | grep -E -v 'Tx|Rx'
 	done
 fi

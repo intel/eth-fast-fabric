@@ -152,7 +152,7 @@ File: /usr/lib/eth-tools/configipoib.exp" case_setup case_cleanup {
 				unix_cmd 60 "" "tmp=`host $ipoib_name 2>/dev/null|sed -e 's/^.*has address //'|grep '^\[0-9\]'`
 if \[ \"\$tmp\" = '' \]
 then
-	tmp=`egrep '\[\[:space:\]\]$ipoib_name\[\[:space:\]\]|\[\[:space:\]\]$ipoib_name\$' /etc/hosts|grep -v localhost|tr ' ' '\\t'|cut -f1`
+	tmp=`grep -E '\[\[:space:\]\]$ipoib_name\[\[:space:\]\]|\[\[:space:\]\]$ipoib_name\$' /etc/hosts|grep -v localhost|tr ' ' '\\t'|cut -f1`
 fi"					
 				if { [ string equal "$mode" "auto"] } {
 					unix_cmd 60 "" {[ "$tmp" = '' ]}

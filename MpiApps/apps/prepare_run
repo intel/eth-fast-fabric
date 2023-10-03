@@ -80,7 +80,7 @@ show_mpi_hosts()
 			# there may be comments before the last host.  So we number the
 			# lines, filter out the lines with comments and blank lines
 			# and then get the "NUM_PROCESSES"th line's number
-			avail_lines=$(nl -s';' -nln -w1 -ba $MPI_HOSTS|egrep -v '^[0-9]*;[[:space:]]*#'|egrep -v '^[0-9]*;[[:space:]]*$'|head -$NUM_PROCESSES|tail -1|cut -f1 -d';' )
+			avail_lines=$(nl -s';' -nln -w1 -ba $MPI_HOSTS|grep -E -v '^[0-9]*;[[:space:]]*#'|grep -E -v '^[0-9]*;[[:space:]]*$'|head -$NUM_PROCESSES|tail -1|cut -f1 -d';' )
 		else
 			# no NUM_PROCESSES, so use whole file
 			avail_lines=$(cat $MPI_HOSTS|wc -l)
@@ -111,7 +111,7 @@ PROCS_PER_NODE=${PROCS_PER_NODE:-1}
 if [ z"$NUM_PROCESSES" = zall ]
 then
 	# skip comment and blank lines
-	NUM_PROCESSES=$(cat $MPI_HOSTS|egrep -v '^[[:space:]]*#'|egrep -v '^[[:space:]]*$'|wc -l)
+	NUM_PROCESSES=$(cat $MPI_HOSTS|grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$'|wc -l)
 fi
 if [ z"$NUM_PROCESSES" != z ]
 then
@@ -156,7 +156,7 @@ MPI_CMD_ARGS=
 disable_affinity=
 USING_MPD=n #I think we can delete this variable
 # Determine which MPI is being used:
-if [ -e "$MPICH_PREFIX/bin/tune" ] #IntelMPI
+if [ -e "$MPICH_PREFIX/bin/tune" ] || [ -e $MPICH_PREFIX/bin/impi_info ] #IntelMPI
 then
 	echo "IntelMPI Detected, running with mpirun." | tee -i -a $LOGFILE
 

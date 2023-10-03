@@ -162,7 +162,7 @@ Usage()
 	echo >&2
 	echo "Detailed output is written to stdout and appended to" >&2
 	echo "  OUTPUTDIR/hostverify.res" >&2
-	echo "egrep 'PASS|FAIL' OUTPUTDIR/hostverify.res for a brief summary" >&2
+	echo "grep -E 'PASS|FAIL' OUTPUTDIR/hostverify.res for a brief summary" >&2
 	echo >&2
 	echo "An Intel Ethernet NIC is required for pcicfg and pcispeed tests" >&2
 	exit 0
@@ -176,7 +176,7 @@ fi
 myfilter()
 {
 	# filter out the residual report from HPL
-	egrep 'PASS|FAIL|SKIP'|fgrep -v '||Ax-b||_oo/(eps'
+	grep -E 'PASS|FAIL|SKIP'|grep -F -v '||Ax-b||_oo/(eps'
 }
 
 filter=myfilter
@@ -263,7 +263,7 @@ outdir="$(mktemp --tmpdir -d hostverify.XXXXXXXXXX)" || fail "Cannot mktemp --tm
 
 if [[ -z $NIC_IFS && -n "$hosts_file" && -e "$hosts_file" ]]; then
 	shname="$(hostname -s)"
-	ports="$(egrep "^$shname(\..*:|:)" "$hosts_file" | head -n 1 | cut -d ':' -f2 | sed -e 's/,/ /g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+	ports="$(grep -E "^$shname(\..*:|:)" "$hosts_file" | head -n 1 | cut -d ':' -f2 | sed -e 's/,/ /g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
 	if [[ -n "$ports" ]]; then
 		NIC_IFS="$ports"
 	fi
@@ -311,7 +311,7 @@ check_pcicfg()
 	nic_count="$(cat pcicfg.stdout|grep 'MaxPayload .* bytes, MaxReadReq .* bytes' | wc -l)"
 	[ $nic_count -ne 1 ] && fail "Unable to get PCI config for $dev"
 
-	cat pcicfg.stdout|egrep 'MaxPayload .* bytes, MaxReadReq .* bytes|^[0-9]' |
+	cat pcicfg.stdout|grep -E 'MaxPayload .* bytes, MaxReadReq .* bytes|^[0-9]' |
 		{
 		failure=0
 		device="Unknown"
@@ -371,10 +371,10 @@ check_pcispeed()
 	"${lspci}" -vvv -s $slot_id 2>pcispeed.stderr | tee -a pcispeed.stdout || fail "Error running lspci against $dev"
 	set +x
 
-	nic_count="$(cat pcispeed.stdout|grep 'Speed .*, Width .*' pcispeed.stdout|egrep -v 'LnkCap|LnkCtl|Supported'| wc -l)"
+	nic_count="$(cat pcispeed.stdout|grep 'Speed .*, Width .*' pcispeed.stdout|grep -E -v 'LnkCap|LnkCtl|Supported'| wc -l)"
 	[ $nic_count -ne 1 ] && fail "Unable to get PCI speed for $dev"
 
-	cat pcispeed.stdout|egrep 'Speed .*, Width .*|^[0-9]' pcispeed.stdout|egrep -v 'LnkCap|LnkCtl|Supported'|
+	cat pcispeed.stdout|grep -E 'Speed .*, Width .*|^[0-9]' pcispeed.stdout|grep -E -v 'LnkCap|LnkCtl|Supported'|
 		{
 		failure=0
 		device="Unknown"
@@ -680,7 +680,7 @@ test_pmodules_off()
 	mod_dir=/lib/modules/$(uname -r)/kernel/drivers/cpufreq/ 
 	if [ -e "${mod_dir}" ]
 	then 
-		modules="$(ls ${mod_dir} | egrep *.ko | while read line; do basename ${line} .ko; done)"
+		modules="$(ls ${mod_dir} | grep -E *.ko | while read line; do basename ${line} .ko; done)"
 	fi
 	
 	ldmodules=
@@ -1069,7 +1069,7 @@ check_nic_settings()
 	fi
 
 	#confirm IPv4 GID
-	cat /sys/class/infiniband/$irdma_dev/ports/1/gids/* | egrep -e "^0000:0000:0000:0000:0000:ffff:[a-fA-F0-9]+:[a-fA-F0-9]+$" || \
+	cat /sys/class/infiniband/$irdma_dev/ports/1/gids/* | grep -E -e "^0000:0000:0000:0000:0000:ffff:[a-fA-F0-9]+:[a-fA-F0-9]+$" || \
 		{ fail_msg "IPv4 GID not found on $dev"; failure=1; }
 
 	set +x

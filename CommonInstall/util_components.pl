@@ -384,6 +384,9 @@ sub ShowCompInfo(;$)
 				print $print_param "  \"Available\": \"no\",\n";
 			}
 			my $full_ver = comp_media_version($comp);
+			if ( $comp eq "eth_module" ) {
+				$full_ver = comp_media_version("delta");
+			}
 			my ($version, $release) = GetVerRel($full_ver);
 			print $print_param "  \"Version\": \"$version\",\n";
 			print $print_param "  \"Release\": \"$release\",\n";
