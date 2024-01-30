@@ -145,7 +145,7 @@ rpm -qa > /$dir/rpms
 
 echo "Capturing Ethernet NIC devices"
 # Finding the PCI devices
-for fw in `lspci | egrep -i "network|ethernet"`
+for fw in `lspci | grep -E -i "network|ethernet"`
 do
 	# Just get the PCI info for now...
 	echo "$fw" >> /$dir/fw_info

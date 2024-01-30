@@ -220,8 +220,6 @@ clobber::
 	if [ -d $(HPL_VER) ]; then find $(HPL_VER) -name ICS.`uname -s`.* | xargs rm -rf; rm -rf $(HPL_VER)/bin $(HPL_VER)/lib; fi
 	if [ -d $(HPL_VER) ]; then find $(HPL_VER) -name xerbla.o | xargs rm -rf; fi
 	if [ -d pgfile_test ]; then make -C pgfile_test clean; fi
-	if [ -d tachyon ]; then rm -rf tachyon/compile/*; fi
-	if [ -d mandel ]; then make -C mandel clean; rm -f mandel/*.d; fi
 	make -C mpicheck clean;
 	make -C deviation clean;
 	make -C groupstress clean;

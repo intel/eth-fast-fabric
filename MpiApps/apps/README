@@ -41,13 +41,18 @@ COMPILING HPL
 -------------
 
 A version of the High Performance Computing Linpack Benchmark (HPL) is
-provided, but requires that the build environment have either OpenBLAS or
-the Intel Math Kernel Library (MKL) available. When compiling the MPI test
-programs, the Makefile will look first for OpenBlas and then for MKL. If
-neither is found, compilation will fail with an error. If you wish to use
-a different BLAS library, please see the documentation in the HPL source
-for information on manually configuring and building HPL.
+provided, but requires that the build environment have either the Intel Math
+Kernel Library (MKL) or OpenBLAS available. When compiling the MPI test
+programs, if the environment variable MKLROOT has been set the Makefile
+will select the MKL library, otherwise it will choose OPENBLAS.
 
+OpenBLAS can be found at https://openblas.net. MKL is part of the oneAPI
+package and can be found at
+https://www.intel.com/content/www/us/en/developer/tools/oneapi/overview.html
+
+If neither BLAS library is found, compilation will fail with an error. If
+you wish to use a different BLAS library, please see the documentation in the
+HPL source for information on manually configuring and building HPL.
 
 RUNNING THE TEST PROGRAMS:
 --------------------------

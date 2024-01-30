@@ -99,7 +99,7 @@ then
 	exit 2
 fi
 # determine gcc version, 2.96 level of tools can have some problems
-gcc_major=`gcc -v 2>&1|fgrep 'gcc version'|cut -f3 -d' '|cut -f1 -d'.'`
+gcc_major=`gcc -v 2>&1|grep -F 'gcc version'|cut -f3 -d' '|cut -f1 -d'.'`
 
 echo "$0: $RELEASE_TAG [$DATE]"
 

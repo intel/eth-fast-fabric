@@ -325,7 +325,7 @@ proc install_check_logs { { log_list { /var/log/iefs.log } } { retcode "1" } } {
 ##	install_check_logs [log_list] [retcode]
 ## Arguments:
 ##	log_list - list of log filenames to get, default is iefs.log
-##	retcode - expected return code from egrep, 0=errors/warnings in log
+##	retcode - expected return code from grep -E, 0=errors/warnings in log
 ##		1=no errors/warnings in log, defaults to 1
 ## Returns:
 ##	0 - success
@@ -338,9 +338,9 @@ proc install_check_logs { { log_list { /var/log/iefs.log } } { retcode "1" } } {
 			send_unix_cmd "\[ -s $log_len \];"
 			if { [ get_exit_status 60 ] == 0 } {
 				# allow Unable due to message for A0 HCA
-				unix_cmd 60 $retcode "tail -n +`cat $log_len` $log|egrep 'Abort|corrupted|Can not'"
+				unix_cmd 60 $retcode "tail -n +`cat $log_len` $log|grep -E 'Abort|corrupted|Can not'"
 			} else {
-				unix_cmd 60 $retcode "egrep 'Abort|corrupted|Can not' $log"
+				unix_cmd 60 $retcode "grep -E 'Abort|corrupted|Can not' $log"
 			}
 		}
 	}

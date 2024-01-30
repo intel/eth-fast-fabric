@@ -130,9 +130,11 @@ my %source_pkgs_by_distro = (
 	'redhat*ES86'   => [ \%redhat_srpm ],
 	'redhat*ES87'   => [ \%redhat_srpm ],
 	'redhat*ES88'   => [ \%redhat_srpm ],
+	'redhat*ES89'   => [ \%redhat_srpm ],
 	'redhat*ES9'    => [ \%redhat_srpm ],
 	'redhat*ES91'   => [ \%redhat_srpm ],
 	'redhat*ES92'   => [ \%redhat_srpm ],
+	'redhat*ES93'   => [ \%redhat_srpm ],
 	'ubuntu*UB2004' => [ \%debian_tarball ],
 	'ubuntu*UB2204' => [ \%debian_tarball ],
 );

@@ -251,7 +251,7 @@ formatFileList()
 					then
 						foundSource=y
 						base=`basename $i`
-						if egrep 'DO NOT BUILD|INTERNAL USE ONLY' $i > /dev/null
+						if grep -E 'DO NOT BUILD|INTERNAL USE ONLY' $i > /dev/null
 						then
 							> /dev/null
 						elif [ "$base" != "$extra" ]

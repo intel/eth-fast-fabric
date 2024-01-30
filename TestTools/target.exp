@@ -1088,12 +1088,12 @@ proc target_get_stack_type { { checkrun "y"} { host "" } } {
 
 	if { "$checkrun" == "y" } {
 		# ib_umad is a required module for OPEN IB stack
-		send_unix_cmd {lsmod|egrep '^ib_umad[[:space:]]'}
+		send_unix_cmd {lsmod|grep -E '^ib_umad[[:space:]]'}
 		if { 0 == [ get_exit_status 60 ] } {
 			return "OPENIB"
 		}
 		# ibt is a required module for IbAccess stack
-		send_unix_cmd {lsmod|egrep '^ibt[[:space:]]'}
+		send_unix_cmd {lsmod|grep -E '^ibt[[:space:]]'}
 		if { 0 == [ get_exit_status 60 ] } {
 			return "IBACCESS"
 		}

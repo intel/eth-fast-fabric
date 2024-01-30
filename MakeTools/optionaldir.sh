@@ -86,11 +86,11 @@ disabled=0
 while [ "$#" -gt 0 ]
 do
 	ulp="$1"
-	if echo "$BUILD_ULPS"|egrep "$ulp|all" > /dev/null 2>/dev/null
+	if echo "$BUILD_ULPS"|grep -E "$ulp|all" > /dev/null 2>/dev/null
 	then
 		enabled=1
 	fi
-	if echo "$BUILD_SKIP_ULPS"|egrep "$ulp|all" > /dev/null 2>/dev/null
+	if echo "$BUILD_SKIP_ULPS"|grep -E "$ulp|all" > /dev/null 2>/dev/null
 	then
 		disabled=1
 	fi

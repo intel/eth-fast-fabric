@@ -22,7 +22,7 @@ DirList="Esm/ FabricSim/ IbAccess/ IbaTools/ IbPrint/ Log/ Makerules/ opamgt/ Op
 inclRegex='\.([ch]|cpp|hpp)|Esm/ib/src/(eeph|eepha|eeph_mux|em)/|IbaTools/ethxlattopology/ethxlattopology.sh'
 exclRegex="build_label"
 function getFilesToCheckout() {
-	git ls-tree -r --name-only $FromBranch -- $DirList | egrep $inclRegex | egrep -v $exclRegex
+	git ls-tree -r --name-only $FromBranch -- $DirList | grep -E $inclRegex | grep -E -v $exclRegex
 }
 
 # When testing for sliced files (files that were in a commit that 
@@ -36,13 +36,13 @@ done
 
 function getExclFilesForCmt() {
 	local cmt=$1 ; shift
-	git diff-tree --no-commit-id --name-only -r $cmt | egrep $inclRegex | egrep -v $slicedExclRegex
+	git diff-tree --no-commit-id --name-only -r $cmt | grep -E $inclRegex | grep -E -v $slicedExclRegex
 }
 
 cmd=$1; shift
 
 if [[ $cmd = "checkout" ]] ; then
-	getFilesToCheckout | egrep $inclRegex | egrep -v $exclRegex | while read f ; do
+	getFilesToCheckout | grep -E $inclRegex | grep -E -v $exclRegex | while read f ; do
 		git checkout $FromBranch -- $f
 	done
 elif [[ $cmd = "diff" ]] ; then
@@ -72,8 +72,8 @@ elif [[ $cmd = "showSliced" ]] ; then
 
 		if [[ $showFiles -ne 0 ]] ; then
 			# This will include duplicates; pipe into sort | uniq to get unique file list
-			git diff-tree --no-commit-id --name-only -r $cmt | egrep $inclRegex | \
-				egrep -v $slicedExclRegex | while read file ; do
+			git diff-tree --no-commit-id --name-only -r $cmt | grep -E $inclRegex | \
+				grep -E -v $slicedExclRegex | while read file ; do
 
 				# Only show files from this commit if they actually
 				# differ between $FromBranch and $ToBranch

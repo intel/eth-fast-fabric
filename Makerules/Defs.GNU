@@ -66,5 +66,5 @@ __GNUC_MINOR__		= $(shell touch tmp_dME.c;gcc -dM -E tmp_dME.c|grep -w __GNUC_MI
 __GNUC_PATCHLEVEL__	= $(shell touch tmp_dME.c;gcc -dM -E tmp_dME.c|grep -w __GNUC_PATCHLEVEL__|cut -d" " -f3;rm -f tmp_dME.c)
 
 # for now keep these distinct
-GCC_MAJOR_VERSION ?= $(shell $(CC) -v 2>&1 | fgrep 'gcc version' | cut -f3 -d' ' | cut -f1 -d'.')
-GCC_MINOR_VERSION ?= $(shell $(CC) -v 2>&1 | fgrep 'gcc version' | cut -f3 -d' ' | cut -f2 -d'.')
+GCC_MAJOR_VERSION ?= $(shell $(CC) -v 2>&1 | grep -F 'gcc version' | cut -f3 -d' ' | cut -f1 -d'.')
+GCC_MINOR_VERSION ?= $(shell $(CC) -v 2>&1 | grep -F 'gcc version' | cut -f3 -d' ' | cut -f2 -d'.')

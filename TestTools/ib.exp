@@ -69,8 +69,8 @@ File: TestTools/ib.exp" case_setup case_cleanup {
 				#send_unix_cmd "opasaquery -h 0 -p 0 -t fi -o desc 2>&1 |tr 'A-Z' 'a-z' | sed -e 's/^/Node: /'"
 				send_unix_cmd {opasaquery -h 0 -p 0 -t fi -o desc 2>&1 |tr 'A-Z' 'a-z' | sed -e 's/^/Node: /'}
 			} else {
-				#send_unix_cmd {saquery |egrep '^[[:space:]]*NodeDescription\.*'|tr 'A-Z' 'a-z' | sed -e 's/^[[:space:]]*nodedescription\.*/Node: /'}
-				send_unix_cmd {opasaquery |egrep '^[[:space:]]*NodeDescription\.*'|tr 'A-Z' 'a-z' | sed -e 's/^[[:space:]]*nodedescription\.*/Node: /'}
+				#send_unix_cmd {saquery |grep -E '^[[:space:]]*NodeDescription\.*'|tr 'A-Z' 'a-z' | sed -e 's/^[[:space:]]*nodedescription\.*/Node: /'}
+				send_unix_cmd {opasaquery |grep -E '^[[:space:]]*NodeDescription\.*'|tr 'A-Z' 'a-z' | sed -e 's/^[[:space:]]*nodedescription\.*/Node: /'}
 			}
 			# wait for echo of command so we don't mistake command for any
 			# similarly named hosts

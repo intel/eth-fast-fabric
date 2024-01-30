@@ -81,7 +81,7 @@ while [[ "${1}" != "" ]] ; do
             tool_path=${1}
             sed=${tool_path}/sed
             grep=${tool_path}/grep
-            egrep=${tool_path}/egrep
+            egrep="${tool_path}/grep -E"
             sort=${tool_path}/sort
             uniq=${tool_path}/uniq
             shift

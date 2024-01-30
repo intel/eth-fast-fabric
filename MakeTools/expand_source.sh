@@ -155,9 +155,9 @@ querysrpm()
 	fi
 	specfile=$(rpm -q --queryformat '[%{FILENAMES}\n]' -p $1|grep '.spec$')
 	[ x"$specfile" != x ] || exit 1
-	tarfile=$(rpm -q --queryformat '[%{FILENAMES}\n]' -p $1|egrep '.tgz$|.tar.gz$|.tar.bz2$')
+	tarfile=$(rpm -q --queryformat '[%{FILENAMES}\n]' -p $1|grep -E '.tgz$|.tar.gz$|.tar.bz2$')
 	[ x"$tarfile" != x ] || exit 1
-	otherfiles=$(rpm -q --queryformat '[%{FILENAMES}\n]' -p $1|egrep -v '.spec$|.tgz$|.tar.gz$|.tar.bz2$'|tr '\n' ' ')
+	otherfiles=$(rpm -q --queryformat '[%{FILENAMES}\n]' -p $1|grep -E -v '.spec$|.tgz$|.tar.gz$|.tar.bz2$'|tr '\n' ' ')
 
 	gettaropt $tarfile
 }

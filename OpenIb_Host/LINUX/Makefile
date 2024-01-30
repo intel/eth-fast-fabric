@@ -125,6 +125,9 @@ endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES88"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL88.pl
 endif
+ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES89"
+        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL89.pl
+endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES9"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL9.pl
 endif
@@ -133,6 +136,9 @@ ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES91"
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES92"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL92.pl
+endif
+ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES93"
+        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL93.pl
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES124"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES124.pl

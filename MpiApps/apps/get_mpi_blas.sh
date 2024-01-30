@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,21 +41,32 @@
 #
 # export MYVAR=`get_mpi_blas.sh`
 
-if [[ -z ${BLAS_TYPE} ]]; then
-	scratch=$(mktemp)
-	rpm -qa >${scratch}
+if [[ -z "${BLAS_TYPE}" ]]; then
 
-	if [[ ! -z $MKLROOT && "$I_MPI_CC" == "icc" ]]; then 
-		# we only support MKL when compiling with Intel C.
-		export BLAS_TYPE="MKL"
-	elif grep -q openblas ${scratch}; then
+	openblasrpm="$(rpm -qa | grep -i openblas)"
+
+	if [[ "$(which mpicc)" == *"oneapi"* ]]; then
+		# If we are using Intel MPI, prefer the Intel MKL but
+		# fallback to OpenBLAS if MKL is not found or if IMPI
+		# is using an unsupported C compiler.
+		#
+		# By default, IMPI uses gcc, make that explicit.
+		cc=${I_MPI_CC:-${MPICH_CC:-gcc}}
+		
+		if [[ -n "${MKLROOT}" && "${cc}" == "icc" ]]; then 
+			export BLAS_TYPE="MKL-icc"
+		elif [[ -n "${MKLROOT}" && "${cc}" == "gcc" ]]; then 
+			export BLAS_TYPE="MKL-gcc"
+		elif [[ -n "${openblasrpm}" ]]; then
+			export BLAS_TYPE="OPENBLAS"
+		else
+			export BLAS_TYPE="UNKNOWN_MPI_CC"
+		fi
+	elif [[ -n "${openblasrpm}" ]]; then
 		export BLAS_TYPE="OPENBLAS"
 	else
 		export BLAS_TYPE="UNKNOWN_MPI_CC"
 	fi
-
-	rm -f ${scratch}
 fi
-
 
 echo $BLAS_TYPE
