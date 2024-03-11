@@ -214,7 +214,7 @@ void print_perf(char* name, perf the_perf) {
 }
 
 connection* create_conns(int num_conns, struct rdma_event_channel *channel) {
-	connection* res = calloc(sizeof(connection), num_conns);
+	connection* res = calloc(num_conns, sizeof(connection));
 	if (!res) {
 		PFERROR("couldn't allocate memory for connections.\n");
 		return NULL;

@@ -582,8 +582,7 @@ static FSTATUS InitNodePatPairs(NodePairList_t *nodePatPairs)
 	ListInitState(&nodePatPairs->nodePairList2);
 	if (! ListInit(&nodePatPairs->nodePairList2, MIN_LIST_ITEMS)) {
 		fprintf(stderr, "%s: unable to allocate memory\n", g_Top_cmdname);
-		if(&nodePatPairs->nodePairList1)
-			ListDestroy(&nodePatPairs->nodePairList1);
+		ListDestroy(&nodePatPairs->nodePairList1);
 		return FINSUFFICIENT_MEMORY;
 	}
 	return FSUCCESS;

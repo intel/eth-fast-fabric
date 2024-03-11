@@ -44,26 +44,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VERBOSE_PRINT(...)
 #endif
 
-void a(int *f)
-{
-#ifdef USE__STACK
-	int z[16384];
-
-	f[0] = 1;
-	f[16383] = 2;
-#else
-	int *z = sbrk(16384);
-	if(z == (int *)-1) {
-		perror("couldn't allocate more memory while recursing");
-		exit(1);
-	}
-
-#endif
-
-	printf("a(%p)\n", f);
-	sched_yield();
-	a(z);
-}
+//void a(int *f)
+//{
+//#ifdef USE__STACK
+//	int z[16384];
+//
+//	f[0] = 1;
+//	f[16383] = 2;
+//#else
+//	int *z = sbrk(16384);
+//	if(z == (int *)-1) {
+//		perror("couldn't allocate more memory while recursing");
+//		exit(1);
+//	}
+//
+//#endif
+//
+//	printf("a(%p)\n", f);
+//	sched_yield();
+//	a(z);
+//}
 
 
 int
