@@ -33,6 +33,12 @@
 # select an HPL.dat file and copy to all hosts
 #   MPI_HOSTS  - mpi_hosts file to use (default is $PWD/mpi_hosts)
 
+# BASE PATH TO MPI EXECUTABLES: To use an alternate location,
+# either edit this line or set MPICH_PREFIX in your environment.
+# see select_mpi for the set of default MPI selections
+# default to MPI used for build
+export MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
+
 MPI_HOSTS=${MPI_HOSTS:-$PWD/mpi_hosts}
 
 if [ $(echo $MPI_HOSTS|cut -c1) != '/' ]
@@ -46,17 +52,29 @@ TEMP_FILE="$(mktemp)"
 trap "rm -rf $TEMP_FILE; exit 1" SIGINT SIGHUP SIGTERM
 trap "rm -rf $TEMP_FILE" EXIT
 
+# helper function to filter out comments and blank lines in hosts file
+filter_hosts()
+{
+        grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$'
+}
+
 Usage()
 {
-	echo " Usage: ./config_hpl2 [-l] config_name [problem_size]"
-	echo "     -l - only configure local file, default is to configure on all mpi_hosts"
-	echo " For example: ./config_hpl2 32t"
-	echo " either create hpl-config/HPL.dat-'config_name'"
-	echo " or select one of:"
+	echo "Usage: ./config_hpl2 [-l] config_name [problem_size]"
+	echo "              or"
+	echo "  ./config_hpl2 --help"
+	echo "    -l - only configure local file, default is to configure on all MPI_HOSTS"
+	echo "For example: ./config_hpl2 32t"
+	echo "either create hpl-config/HPL.dat-'config_name'"
+	echo "or select one of:"
 	cd hpl-config; ls HPL.dat-*[!~]
 	exit 2
 }
 
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
+then
+	Usage
+fi
 lopt=n
 while getopts l param
 do
@@ -104,7 +122,7 @@ then
 	sed -e "6s/^[0-9]*/$2/" < $file > $TEMP_FILE
 	if [ $lopt = n ]
 	then
-		ethscpall -p -h "`sort -u $MPI_HOSTS`" $TEMP_FILE $PWD/hpl-2.3/bin/$arch/HPL.dat
+		ethscpall -p -h "`cat $MPI_HOSTS|filter_hosts|sort -u`" $TEMP_FILE $PWD/hpl-2.3/bin/$arch/HPL.dat
 	else
 		# avoid any cp alias
 		/bin/cp -f $TEMP_FILE $PWD/hpl-2.3/bin/$arch/HPL.dat
@@ -112,7 +130,7 @@ then
 else
 	if [ $lopt = n ]
 	then
-		ethscpall -p -h "`sort -u $MPI_HOSTS`" $file $PWD/hpl-2.3/bin/$arch/HPL.dat
+		ethscpall -p -h "`cat $MPI_HOSTS|filter_hosts|sort -u`" $file $PWD/hpl-2.3/bin/$arch/HPL.dat
 	else
 		# avoid any cp alias
 		/bin/cp -f $file $PWD/hpl-2.3/bin/$arch/HPL.dat

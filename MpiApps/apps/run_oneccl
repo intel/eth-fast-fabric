@@ -1,11 +1,11 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
-# 
+#
 # Copyright (c) 2015-2023, Intel Corporation
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #     * Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
@@ -14,7 +14,7 @@
 #     * Neither the name of Intel Corporation nor the names of its contributors
 #       may be used to endorse or promote products derived from this software
 #       without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,7 +25,7 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # END_ICS_COPYRIGHT8   ****************************************
 
 # [ICS VERSION STRING: unknown]
@@ -33,12 +33,12 @@
 # SLURM directives.  Must precede all non-comment lines and can't use variables
 # slurm command line overrides any SBATCH settings here
 # to disable a given setting below, use ## to comment out
-##SBATCH --job-name=run_bibw5
-#SBATCH --output=logs/osu_bibw.%j.out
+##SBATCH --job-name=run_oneccl
+#SBATCH --output=logs/benchmark.%j.out
 # timelimit in days-hours:minutes:seconds
 ##SBATCH --time=0-00:30:00
 
-# BASE PATH TO MPI EXECUTABLES: To use an alternate location, 
+# BASE PATH TO MPI EXECUTABLES: To use an alternate location,
 # either edit this line or set MPICH_PREFIX in your environment.
 # see select_mpi for the set of default MPI selections
 # default to MPI used for build
@@ -46,40 +46,57 @@ MPICH_PREFIX=${MPICH_PREFIX:-`cat .prefix 2>/dev/null`}
 
 trap "exit 1" SIGHUP SIGTERM SIGINT
 
-CMD="osu-micro-benchmarks-5.9/mpi/pt2pt/osu_bibw"
-APP=osu_bibw
-
-if [ x"$1" == x"-h" -o x"$1" == x"--help" ]
+if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
-	echo "Usage: $0 [options]"
+	echo "Usage: $0 number_of_processes [options]"
 	echo "          or"
 	echo "       $0 --help"
-	echo "    [options] are passed to ${APP}"
-	echo "Always runs on exactly two hosts."
+	echo "    number_of_processes may be 'all' in which case PROCS_PER_NODE ranks will"
+	echo "                     be started for every entry in the MPI_HOSTS file"
+	echo "    [options] are passed to the benchmark"
 	echo
-	echo "To get more details about [options] available: $0 -hh"
+	echo "For example: $0 2"
+	echo "For example: $0 16 -l allreduce"
+	echo
+	echo "To get more details about [options] available: $0 1 --help"
 	exit 1
 fi
 
-if [ x"$1" == x"-hh" -o x"$1" == x"--hh" ]
+NUM_PROCESSES=$1
+shift
+if [ x"$1" = x"-h" -o x"$1" = x"--help" -o x"$1" = x"-help" ]
 then
-	set -- '-h'
+	set -- "-h"
 	MIN_PROCESSES=1
-	NUM_PROCESSES=1
-else
-	NUM_PROCESSES=2
 fi
 
+APP=benchmark
 LOGFILE=
+is_oneccl=y
 . ./prepare_run
 
+if [ ! -x $ONECCL_EXAMPLES_DIR/benchmark/benchmark ]
+then
+	echo "$0: $ONECCL_EXAMPLES_DIR/benchmark/benchmark: Not Found" >&2
+	echo "$0: Make sure oneCCL benchmark is installed or built" >&2
+	exit 1
+fi
+
+CCL_CMD="$ONECCL_EXAMPLES_DIR/benchmark/benchmark"
+# to run one of these sample sets of options, uncomment a different one of
+# these lines or specify options on the command line
+CMD="$CCL_CMD"
+#CMD="$CCL_CMD -i 100 -w 100 -j off -t 16777216 -l allreduce"
+#CMD="$CCL_CMD -i 100 -w 100 -j off -t 16777216 -l allgatherv"
+#CMD="$CCL_CMD -i 100 -w 100 -j off -t 16777216 -l alltoall"
+
 (
-	echo " Running BiDir Bandwidth 5.9 ..."
+	echo " Running oneCCL Benchmark suite ..."
 	show_mpi_hosts
+	show_ccl_env
 	show_mpi_env
 	set -x
 	$MPI_RUN_CMD $CMD "$@"
 	set +x
 ) 2>&1 | tee -i -a $LOGFILE
-
 echo "########################################### " >> $LOGFILE

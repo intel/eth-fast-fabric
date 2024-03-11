@@ -33,7 +33,9 @@
 usage()
 {
 	echo "Usage: ./gen_mpi_hosts [-s] host_list rank_per_host [num_hosts] > somefile" >&2
-   	echo  >&2
+	echo  "           or" >&2
+	echo  "      ./gen_mpi_hosts --help" >&2
+	echo  >&2
 	echo "generate a hosts file using the 1st num_hosts from host_list input file" >&2
 	echo "and putting rank_per_host ranks per host.  Ranks are listed as:" >&2
 	echo "   host1 host2 host3 host1 host2 host3 ..." >&2
@@ -41,15 +43,20 @@ usage()
 	echo "when the -s option is used, the ranks are listed as:" >&2
 	echo "   host1 host1 host1 host2 host2 host2 ..." >&2
 	echo "with the hosts in the exact order given as input" >&2
-   	echo  >&2
+	echo  >&2
 	echo "as needed, output can be piped into an appropriate sort routine" >&2
 	echo "to convert ordering into:" >&2
-   	echo "   host1 host1 ...  host2 host2 ... " >&2
-   	echo  >&2
+	echo "   host1 host1 ...  host2 host2 ... " >&2
+	echo  >&2
 	echo "This tool can be helpful when generating mpi_hosts files to run" >&2
 	echo "a specific number of ranks per host" >&2
 	exit 2
 }
+
+if [ x"$1" == x"-h" -o x"$1" == x"--help" ]
+then
+	usage
+fi
 
 sopt=n
 while getopts s param

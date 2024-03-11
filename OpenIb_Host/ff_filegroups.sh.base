@@ -68,7 +68,7 @@ mpi_apps_files="Makefile mpi_hosts.sample README prepare_run select_mpi run_bw
 	run_app runmyapp mpicheck run_mpicheck run_deviation
 	run_multibw run_mpi_stress run_osu5 run_cabletest run_allniclatency
 	run_alltoall5 run_bcast5 run_bibw5 run_bw5 run_lat5 run_mbw_mr5 run_multi_lat5
-	run_batch_script run_batch_cabletest hpl-count.diff
+	run_batch_script run_batch_cabletest run_oneccl hpl-count.diff
 	groupstress deviation
 	hpl-config/HPL.dat-* hpl-config/README mpicc mpif77 mpicxx"
 

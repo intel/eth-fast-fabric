@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2022, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -36,6 +36,10 @@
 # Input:
 #   MPICH_PREFIX  - path to MPICH tools
 #   MPI_HOSTS  - mpi_hosts file to use (default is $PWD/mpi_hosts)
+#                    if set to "slurm" or the 1st non-comment line in file is
+#					 slurm will get host list from SLURM env and put in
+#					 $PWD/mpi_hosts.slurm
+#                    example use: MPI_HOSTS=slurm sbatch -N2 ./run_imb 4
 #   MPI_TASKSET - arguments to /bin/taskset to control CPU selection
 #                    default is to not use /bin/taskset
 #                    may be set in environment or param file
@@ -45,13 +49,19 @@
 #   SHOW_MPI_HOSTS_LINES - maximum lines in MPI_HOSTS to show.  Default is 128
 #                    Only lines applicable to job will be shown.
 #                    Note the file might include some comment lines
+#   SHOW_ENV - set to "y" if middleware and provider env variables should be
+#                    output prior starting job.  Set to "n" to disable
+#                    defaults to "y"
+#   SHOW_SLURM_ENV - set to "y" if slurm env variables should be output prior
+#                    to starting job.  Set to "n" to disable
+#                    defaults to "y"
 #   NUM_PROCESSES - number of processes in job, if "" no count is specified
-#                    if "all" use wc -l $MPI_HOSTS as the process count
+#                    if "all" use number of MPI_HOSTS entries times
+#                    PROCS_PER_NODE as the process count
 #   MIN_PROCESSES - minimum number of processes in job (default of 2)
 #   MULT_PROCESSES - NUM_PROCESSES must be a multiple of this (default of 1)
 #   PROCS_PER_NODE - How many processes should be launched on a host before
 #                    going to the next host. (default of 1)
-#   PARAM_FILE - Native IB param file to use, if "" no param file is specified
 #   APP - application name for use a prefix to LOGFILE name
 #   LOGFILE - logfile to append results of run to, if "" this script will define
 #   LOGSUFFIX - suffix to append to logfile name defined by this script
@@ -60,6 +70,59 @@
 #   LOGFILE - logfile to append results of run to
 
 . ./select_mpi	# default MPICH_PREFIX if necessary
+
+# internal helper function to filter out comments and blank lines in hosts file
+filter_hosts()
+{
+	grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$'
+}
+
+# generate mpi_hosts.slurm based on hosts slurm allocated to this job
+generate_hosts_from_slurm()
+{
+	if [ $have_slurm != y ]
+	then
+		echo "$0: Slurm not available" >&2
+		exit 1
+	fi
+
+	MPI_HOSTS=$PWD/mpi_hosts.slurm
+	scontrol show hostname > $MPI_HOSTS
+	if [ $? != 0 -o ! -s $MPI_HOSTS ]
+	then
+		echo "$0: Unable to get host names from slurm" >&2
+		exit 1
+	fi
+}
+
+check_num_processes()
+{
+	if [ z"$1" != z ]
+	then
+		if ! [ $1 -ge $MIN_PROCESSES ] 2>/dev/null
+		then
+			echo " Invalid process count: $1"
+			echo " This application requires a minimum of $MIN_PROCESSES processes"
+			exit 2
+		fi
+		if [ $(($1 % $MULT_PROCESSES)) -ne 0 ]
+		then
+			echo " Invalid process count: $1"
+			echo " This application requires a multiple of $MULT_PROCESSES processes"
+			exit 2
+		fi
+	fi
+}
+
+compute_num_processes()
+{
+	num_processes="$NUM_PROCESSES"
+	if [ $all_processes = y ]
+	then
+		num_processes=$(($NUM_PROCESSES * $PROCS_PER_NODE))
+	fi
+	check_num_processes $num_processes
+}
 
 # helper function which can be called by each run_* script to output the
 # list of hosts the job is run for.  By default the output is enabled.
@@ -77,8 +140,10 @@ show_mpi_hosts()
 		show_lines=${SHOW_MPI_HOSTS_LINES:-128}
 		if [ "z$NUM_PROCESSES" != "z" ]
 		then
-			# there may be comments before the last host.  So we number the
-			# lines, filter out the lines with comments and blank lines
+			# there may be comments before the last host.
+			# and those comments may be interesting to the user.
+			# So we number the lines,
+			# filter out the lines with comments and blank lines
 			# and then get the "NUM_PROCESSES"th line's number
 			avail_lines=$(nl -s';' -nln -w1 -ba $MPI_HOSTS|grep -E -v '^[0-9]*;[[:space:]]*#'|grep -E -v '^[0-9]*;[[:space:]]*$'|head -$NUM_PROCESSES|tail -1|cut -f1 -d';' )
 		else
@@ -97,38 +162,62 @@ show_mpi_hosts()
 	fi
 }
 
+# helper function which can be called by each run_* script to output the
+# oneCCL environment
+show_ccl_env()
+{
+	if [ "${SHOW_ENV:-y}" = "y" -a "${composed_args}" = "n" ]
+	then
+		echo "Using CCL env:"
+		env|grep -E '^CCL_|^ONECCL_'|sort
+		echo
+	fi
+}
+
+# helper function which can be called by each run_* script to output the
+# MPI, OFI provider and slurm environment
+show_mpi_env()
+{
+	if [ "${SHOW_ENV:-y}" = "y" -a "${composed_args}" = "n" ]
+	then
+		echo "Using MPI and OFI provider env:"
+		env|grep -E '^I_MPI_|^OMPI_'|sort
+		env|grep -E '^FI_|^PSM3_|^UCX_'|sort
+		echo
+	fi
+	if [ "${SHOW_ENV:-y}" = "y" -a "$(env|grep -E '^LD_'|wc -l)" -ne 0 ]
+	then
+		echo "Using Dynamic Linker env:"
+		env|grep -E '^LD_'|sort
+		echo
+	fi
+	if [ "${SHOW_SLURM_ENV:-y}" = "y" ]
+	then
+		if [ "$(env|grep -E '^SLURM_'|wc -l)" -ne 0 ]
+		then
+			echo "Using SLURM env:"
+			env|grep -E '^SLURM_'|sort
+			echo
+		fi
+	fi
+}
+
+have_slurm=n
+if type scontrol >/dev/null 2>&1
+then
+	have_slurm=y
+fi
+
 MPI_HOSTS=${MPI_HOSTS:-$PWD/mpi_hosts}
+if [ x"$MPI_HOSTS" = x"slurm" ]
+then
+	generate_hosts_from_slurm
+fi
 
 if [ $(echo $MPI_HOSTS|cut -c1) != '/' ]
 then
 	MPI_HOSTS="$PWD/$MPI_HOSTS"
 fi
-
-MIN_PROCESSES=${MIN_PROCESSES:-2}
-MULT_PROCESSES=${MULT_PROCESSES:-1}
-PROCS_PER_NODE=${PROCS_PER_NODE:-1}
-
-if [ z"$NUM_PROCESSES" = zall ]
-then
-	# skip comment and blank lines
-	NUM_PROCESSES=$(cat $MPI_HOSTS|grep -E -v '^[[:space:]]*#'|grep -E -v '^[[:space:]]*$'|wc -l)
-fi
-if [ z"$NUM_PROCESSES" != z ]
-then
-	if ! [ $NUM_PROCESSES -ge $MIN_PROCESSES ] 2>/dev/null
-	then
-		echo " Invalid process count: $NUM_PROCESSES"
-		echo " This application requires a minimum of $MIN_PROCESSES processes"
-		exit 2
-	fi
-	if [ $(($NUM_PROCESSES % $MULT_PROCESSES)) -ne 0 ]
-	then
-		echo " Invalid process count: $NUM_PROCESSES"
-		echo " This application requires a multiple of $MULT_PROCESSES processes"
-		exit 2
-	fi
-fi
-
 
 if [ ! -f $MPI_HOSTS ]
 then
@@ -136,6 +225,25 @@ then
 	echo " processors in this cluster. One hostname per line."
 	echo " See mpi_hosts.sample file"
 	exit 1
+fi
+
+if [ "$(cat $MPI_HOSTS|filter_hosts|head -1)" = "slurm" ]
+then
+	generate_hosts_from_slurm
+fi
+
+MIN_PROCESSES=${MIN_PROCESSES:-2}
+MULT_PROCESSES=${MULT_PROCESSES:-1}
+PROCS_PER_NODE=${PROCS_PER_NODE:-1}
+
+all_processes=n
+if [ z"$NUM_PROCESSES" = zall ]
+then
+	# skip comment and blank lines
+	NUM_PROCESSES=$(cat $MPI_HOSTS|filter_hosts|wc -l)
+	all_processes=y
+else
+	check_num_processes $NUM_PROCESSES
 fi
 
 if [ -z "$LOGFILE" ]
@@ -146,10 +254,47 @@ then
 		mkdir -p logs
 	fi
 	LOGFILE=$PWD/logs/$APP.$CURTIME$LOGSUFFIX
-	echo " Running MPI tests with $NUM_PROCESSES processes"
+	if [ $all_processes = y ]
+	then
+		echo " Running MPI tests with $NUM_PROCESSES times PROCS_PER_NODE processes"
+	else
+		echo " Running MPI tests with $NUM_PROCESSES processes"
+	fi
 	echo " logfile $LOGFILE"
 	> $LOGFILE
 fi
+# export so will appear in PSM3_PRINT_STATS output when enabled.
+# This helps cross reference stats files with appropriate job's logfile.
+export LOGFILE
+
+composed_args=n
+# compose_args "option" "env_pattern"
+# where option is the mpirun command line option to specify a variable
+# such as "-x" or "-genv" and env_pattern is a pattern to select
+# which env variables to include such as "^FI_|^PSM3_"
+compose_args()
+{
+	for var in $(env|grep -E "$2"|sort -r)
+	do
+		MPI_CMD_ARGS="$1 $var $MPI_CMD_ARGS"
+	done
+	composed_args=y
+}
+
+# source a file, we do this in a function so any parameters to
+# the main script do not get passed to the sourced file.
+source_mpich_vars()
+{
+	source $MPICH_PREFIX/env/vars.sh
+}
+source_mpich_mpivars()
+{
+	source $MPICH_PREFIX/bin/mpivars.sh
+}
+source_oneccl_vars()
+{
+	source $ONECCL_DIR/env/vars.sh
+}
 
 # additional arguments can be specified on mpirun command line
 MPI_CMD_ARGS=
@@ -162,48 +307,89 @@ then
 
 	if [ -e $MPICH_PREFIX/env/vars.sh ]
 	then
-		source $MPICH_PREFIX/env/vars.sh
+		#source $MPICH_PREFIX/env/vars.sh
+		source_mpich_vars
 	elif [ -e $MPICH_PREFIX/bin/mpivars.sh ]
 	then
-		source $MPICH_PREFIX/bin/mpivars.sh
+		#source $MPICH_PREFIX/bin/mpivars.sh
+		source_mpich_mpivars
 	fi
 
+	if [ -e ./psm3.params ]
+	then
+		. ./psm3.params
+	fi
 	if [ -e ./intelmpi.params ]
 	then
 		. ./intelmpi.params
 	fi
+	if [ x"$is_oneccl" = xy ]
+	then
+		if [ -e ./oneccl.params ]
+		then
+			. ./oneccl.params
+		fi
+		if [ ! -e "$ONECCL_DIR/env/vars.sh" ]
+		then
+			echo "$0: Invalid directory for oneccl: $ONECCL_DIR" >&2
+			exit 1
+		fi
+		if [ x"$ccl_configuraton" != x ]
+		then
+			source $ONECCL_DIR/env/vars.sh --ccl-configuration=$ccl_configuration
+		else
+			#source $ONECCL_DIR/env/vars.sh
+			source_oneccl_vars
+		fi
+	fi
+
+	# for Intel MPI we can simply put in env
+	#compose_args "-genv" '^I_MPI_|^FI_|^PSM3_|^UCX_'
+	compute_num_processes
+
+	# Purposely override the env and params since these are used in ethcabletest
 	if [ x"$CFG_MPI_DEV" != x ]
 	then
-		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_NIC $CFG_MPI_DEV"
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_NIC=$CFG_MPI_DEV"
 	fi
 	if [ x"$CFG_MPI_MULTIRAIL" != x ]
 	then
-		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_MULTIRAIL $CFG_MPI_MULTIRAIL"
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -genv PSM3_MULTIRAIL=$CFG_MPI_MULTIRAIL"
 	fi
-	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun  ${NUM_PROCESSES:+-np $NUM_PROCESSES} -hostfile $MPI_HOSTS $MPI_CMD_ARGS -ppn $PROCS_PER_NODE"
+	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun  ${num_processes:+-np $num_processes} -hostfile $MPI_HOSTS $MPI_CMD_ARGS -ppn $PROCS_PER_NODE"
 elif [ -e "$MPICH_PREFIX/bin/ompi_info" ] #OpenMPI
 then
 	echo "OpenMPI Detected, running with mpirun." | tee -i -a $LOGFILE
 
 	if [ -e $MPICH_PREFIX/bin/mpivars.sh ]
 	then
-		source $MPICH_PREFIX/bin/mpivars.sh
+		#source $MPICH_PREFIX/bin/mpivars.sh
+		source_mpich_mpivars
 	fi
 
 	MPI_CMD_ARGS="-mca plm_rsh_no_tree_spawn 1"
+	if [ -e ./psm3.params ]
+	then
+		. ./psm3.params
+	fi
 	if [ -e ./openmpi.params ]
 	then
 		. ./openmpi.params
 	fi
+	# for openmpi must put on command line
+	compose_args "-x" '^OMPI_|^FI_|^PSM3_|^UCX_'
+	compute_num_processes
+
+	# Purposely override the env and params since these are used in ethcabletest
 	if [ x"$CFG_MPI_DEV" != x ]
 	then
-		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_NIC $CFG_MPI_DEV"
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_NIC=$CFG_MPI_DEV"
 	fi
 	if [ x"$CFG_MPI_MULTIRAIL" != x ]
 	then
-		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_MULTIRAIL $CFG_MPI_MULTIRAIL"
+		MPI_CMD_ARGS="$MPI_CMD_ARGS -x PSM3_MULTIRAIL=$CFG_MPI_MULTIRAIL"
 	fi
-	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun ${NUM_PROCESSES:+-np $NUM_PROCESSES} -map-by ppr:${PROCS_PER_NODE}:node --allow-run-as-root -machinefile $MPI_HOSTS $MPI_CMD_ARGS "
+	MPI_RUN_CMD="$MPICH_PREFIX/bin/mpirun ${num_processes:+-np $num_processes} -map-by ppr:${PROCS_PER_NODE}:node --allow-run-as-root -machinefile $MPI_HOSTS $MPI_CMD_ARGS "
 else
 	echo "MPI Not Recognized!i exiting" | tee -i -a $LOGFILE
 	exit 1

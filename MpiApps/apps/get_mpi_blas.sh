@@ -45,14 +45,15 @@ if [[ -z "${BLAS_TYPE}" ]]; then
 
 	openblasrpm="$(rpm -qa | grep -i openblas)"
 
-	if [[ "$(which mpicc)" == *"oneapi"* ]]; then
+	if [ -e "$MPICH_PREFIX/bin/tune" ] || [ -e $MPICH_PREFIX/bin/impi_info ] #IntelMPI
+	then
 		# If we are using Intel MPI, prefer the Intel MKL but
 		# fallback to OpenBLAS if MKL is not found or if IMPI
 		# is using an unsupported C compiler.
 		#
 		# By default, IMPI uses gcc, make that explicit.
 		cc=${I_MPI_CC:-${MPICH_CC:-gcc}}
-		
+
 		if [[ -n "${MKLROOT}" && "${cc}" == "icc" ]]; then 
 			export BLAS_TYPE="MKL-icc"
 		elif [[ -n "${MKLROOT}" && "${cc}" == "gcc" ]]; then 

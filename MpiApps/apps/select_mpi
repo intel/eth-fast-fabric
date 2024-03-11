@@ -72,6 +72,16 @@ find_mpi()
 if [ -z "$MPICH_PREFIX" ]
 then
 	prefix=${prefix:-/usr}	
+	if ! valid_mpich_prefix && [ -n "$I_MPI_ROOT" ]
+	then
+		find_mpi $I_MPI_ROOT
+	fi
+	# to build for Intel MPI, setvars.sh or vars.sh must be run, so
+	# checking I_MPI_ROOT is sufficient when defaulting MPICH_PREFIX
+	#if ! valid_mpich_prefix
+	#then
+	#	find_mpi /opt/intel/oneapi/mpi/latest
+	#fi
 	if ! valid_mpich_prefix
 	then
 		find_mpi $(ls -d $prefix/mpi/gcc/openmpi*ofi | grep -v cuda)

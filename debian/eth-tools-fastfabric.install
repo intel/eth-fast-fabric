@@ -122,6 +122,7 @@
 /usr/src/eth/mpi_apps/run_multi_lat5
 /usr/src/eth/mpi_apps/run_batch_script
 /usr/src/eth/mpi_apps/run_batch_cabletest
+/usr/src/eth/mpi_apps/run_oneccl
 /usr/src/eth/mpi_apps/hpl-count.diff
 /usr/src/eth/mpi_apps/groupstress
 /usr/src/eth/mpi_apps/deviation

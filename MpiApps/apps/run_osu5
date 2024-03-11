@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,14 @@
 
 # [ICS VERSION STRING: unknown]
 
+# SLURM directives.  Must precede all non-comment lines and can't use variables
+# slurm command line overrides any SBATCH settings here
+# to disable a given setting below, use ## to comment out
+##SBATCH --job-name=run_osu5
+#SBATCH --output=logs/osu.%j.out
+# timelimit in days-hours:minutes:seconds
+##SBATCH --time=0-00:30:00
+
 # BASE PATH TO MPI EXECUTABLES: To use an alternate location,
 # either edit this line or set MPICH_PREFIX in your environment.
 # see select_mpi for the set of default MPI selections
@@ -43,22 +51,32 @@ BASE_DIR="osu-micro-benchmarks-5.9/mpi/"
 if [ -z "$1" -o x"$1" == x"-h" -o x"$1" == x"--help" ]
 then 
 	echo "Usage: $0 <number_of_processes> <command> [options]"
-	echo "    number_processes may be 'all' in which case one rank will be started for"
-	echo "                     every process in the mpi_hosts file."
+	echo "          or"
+	echo "       $0 --help"
+	echo "    number_of_processes may be 'all' in which case PROCS_PER_NODE ranks will"
+	echo "                     be started for every entry in the MPI_HOSTS file."
 	echo "    <command> osu benchmark to run"
 	echo "    [options] are passed to <command>"
+	echo
 	echo "For example: $0 2 osu_allgatherv -f"
 	echo
-	echo -n "Possible commands are: "
+	echo "Possible commands are: "
 	sep=""
+	n=0
 	for f in $(find ${BASE_DIR} -executable -type f); do
 		echo -n $sep$(basename $f)
 		sep=", "
+		n=$(($n + 1))
+		if [ $((n % 4)) -eq 0 ]
+		then
+			echo "$sep"
+			sep=""
+		fi
 	done
 	echo
 	echo
-	echo "To get more details about [options] available: $0 2 <command> -h"
-	echo "For example: $0 2 osu_fop_latency -h"
+	echo "To get more details about [options] available: $0 1 <command> --help"
+	echo "For example: $0 1 osu_fop_latency --help"
 	exit 1
 fi
 
@@ -78,13 +96,19 @@ fi
 
 APP="$1"
 shift
+if [ x"$1" = x"-h" -o x"$1" = x"--help" -o x"$1" = x"-help" ]
+then
+	set -- "-h"
+	MIN_PROCESSES=1
+fi
+
 LOGFILE=
 . ./prepare_run
-
 
 (
 	echo " Running $CMD ..."
 	show_mpi_hosts
+	show_mpi_env
 	set -x
 	$MPI_RUN_CMD $CMD "$@"
 	set +x

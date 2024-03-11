@@ -179,13 +179,6 @@ main(int argc, char **argv)
 
 	/* how many hosts are there? */
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
-	if (ranks < 2)
-	{
-		fprintf(stderr, "Must have at least 2 hosts to run deviation test\n");
-		MPI_Finalize();
-		return 0;
-	}
-
 	/* set globals */
 	newPairs = 0;
 
@@ -195,6 +188,13 @@ main(int argc, char **argv)
 		MPI_Finalize();
 		exit(2);
 	} 
+
+	if (ranks < 2)
+	{
+		fprintf(stderr, "Must have at least 2 hosts to run deviation test\n");
+		MPI_Finalize();
+		return 0;
+	}
 
 	/* what is my rank */
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);

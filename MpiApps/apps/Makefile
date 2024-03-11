@@ -181,9 +181,10 @@ endif
 .PHONY: IMB
 
 HPL_VER=hpl-2.3
-BLAS_TYPE=$(shell bash -c ./get_mpi_blas.sh)
 XHPL2: SHOWMPI
-	if [[ $(BLAS_TYPE) == UNKNOWN_MPI_CC ]]; then \
+	export BLAS_TYPE=`MPICH_PREFIX=$(MPICH_PREFIX) ./get_mpi_blas.sh`; \
+	echo "Using BLAS_TYPE=$$BLAS_TYPE"; \
+	if [[ $$BLAS_TYPE == UNKNOWN_MPI_CC ]]; then \
 		echo ; \
 		echo "WARNING: No BLAS library found. Skipping HPL."; \
 	else \
@@ -194,17 +195,17 @@ XHPL2: SHOWMPI
 			# Intel MPI \
 			if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" ]]; then \
 				# IntelMPI & icc \
-				make HPL_OPTS="-lirc" arch=ICS.`uname -s`.$(BLAS_TYPE); \
+				make HPL_OPTS="-lirc" arch=ICS.`uname -s`.$$BLAS_TYPE; \
 			else \
 				# IntelMPI & gcc \
-				make arch=ICS.`uname -s`.$(BLAS_TYPE); \
+				make arch=ICS.`uname -s`.$$BLAS_TYPE; \
 			fi \
 		elif [[ "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
 			# intel compiler with OpenMPI \
-			make HPL_OPTS="-lirc" LINKFLAGS=-nofor_main arch=ICS.`uname -s`.$(BLAS_TYPE); \
+			make HPL_OPTS="-lirc" LINKFLAGS=-nofor_main arch=ICS.`uname -s`.$$BLAS_TYPE; \
 		else \
 			# OpenMPI with gcc compiler \
-			make arch=ICS.`uname -s`.$(BLAS_TYPE); \
+			make arch=ICS.`uname -s`.$$BLAS_TYPE; \
 		fi \
 	fi
 	@echo
@@ -213,19 +214,23 @@ XHPL2: SHOWMPI
 cleandepend clean:: clobber
 .PHONY: cleandepend clean
 
-clobber::
-	rm -f latency/*.o latency/*.d latency/latency
-	rm -f bandwidth/*.o bandwidth/*.d bandwidth/bw
-	if [ -d "imb" ]; then cd imb; make clean; fi
+clean_hpl:
 	if [ -d $(HPL_VER) ]; then find $(HPL_VER) -name ICS.`uname -s`.* | xargs rm -rf; rm -rf $(HPL_VER)/bin $(HPL_VER)/lib; fi
 	if [ -d $(HPL_VER) ]; then find $(HPL_VER) -name xerbla.o | xargs rm -rf; fi
 	if [ -d pgfile_test ]; then make -C pgfile_test clean; fi
+
+clean_osu:
+	if [ -f osu-micro-benchmarks-$(OSU_VER)/Makefile ]; then make -C osu-micro-benchmarks-$(OSU_VER) clean; rm -f osu-micro-benchmarks-$(OSU_VER)/Makefile; fi
+
+clobber:: clean_hpl clean_osu
+	rm -f latency/*.o latency/*.d latency/latency
+	rm -f bandwidth/*.o bandwidth/*.d bandwidth/bw
+	if [ -d "imb" ]; then cd imb; make clean; fi
 	make -C mpicheck clean;
 	make -C deviation clean;
 	make -C groupstress clean;
 	rm -f mpi_multibw/mpi_multibw mpi_multibw/*.o
 	rm -f mpi_stress/mpi_stress mpi_stress/*.o
-	if [ -f osu-micro-benchmarks-$(OSU_VER)/Makefile ]; then make -C osu-micro-benchmarks-$(OSU_VER) clean; rm -f osu-micro-benchmarks-$(OSU_VER)/Makefile; fi
 	rm -f .prefix
 .PHONY: clobber
 

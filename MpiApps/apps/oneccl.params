@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2023, Intel Corporation
+# Copyright (c) 2023, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,15 +32,15 @@
 
 # PURPOSE:
 #
-# This file sets environment variables for an IntelMPI job.
-# Note that there are many, many such variables.
+# This file sets environment variables for a oneCCL job.
+# Note that there are many such variables.
 #
 # SYNTAX:
 #
 # This file must be a valid BASH script. In general, anything that's valid
 # in BASH is valid here.
 
-# To pass variables to IntelMPI, they should be specified as:
+# To pass variables to oneCCL, they should be specified as:
 #	export VARIABLE_NAME=$(VARIABLE_NAME:-variablevalue}
 #
 # any other settings must be specified as:
@@ -49,23 +49,33 @@
 # The precedence if a setting is specified in multiple ways is as follows:
 # 1. settings added to MPI_CMD_ARGS in this file
 #    these will be placed at the end of the mpirun command line.
-# 2. variables added to MPI_CMD_ARGS in this file with an
+# 2. settings added to MPI_CMD_ARGS in intelmpi.params
+#    these will be placed at the end of the mpirun command line before any
+#    from this file
+# 3. variables added to MPI_CMD_ARGS in this file with an
 #    explicit value such as -genv variable=value
 #    without using the ${variable:-value} syntax
-# 3. explicit settings of variables in this file
+# 4. variables added to MPI_CMD_ARGS in intelmpi.params with an
+#    explicit value such as -genv variable=value
+#    without using the ${variable:-value} syntax
+# 5. explicit settings of variables in this file
 #    such as variable=value
 #    without using the ${variable:-value} syntax
-# 4. variables set in the psm3.params file with an
+# 6. variables set in the intelmpi.params file with an
 #    explicit value such as variable=value
 #    without using the ${variable:-value} syntax
-# 5. env variables passed into the job such as an export immediately
+# 7. variables set in the psm3.params file with an
+#    explicit value such as variable=value
+#    without using the ${variable:-value} syntax
+# 8. env variables passed into the job such as an export immediately
 #    before starting the job or on the job command line.
-#    Such as: variable=value ./run_bw5
-# 6. env variables set by the system or user.  Such as via .bashrc or
+#    Such as: variable=value ./run_oneccl
+# 9. env variables set by the system or user.  Such as via .bashrc or
 #    explicitly loaded "modules files"
-# 7. variables set in the psm3.params file with the ${variable:-value} syntax
-# 8. variables set in this file with the ${variable:-value} syntax
-# 9. settings in /etc/psm3.conf
+# 10. variables set in the psm3.params file with the ${variable:-value} syntax
+# 11. variables set in intelmpi.params with the ${variable:-value} syntax
+# 12. variables set in this file with the ${variable:-value} syntax
+# 13. settings in /etc/psm3.conf
 # If a variable is specified multiple ways, lowest number above wins.
 #
 # The logfile created by the job will show relevant env variables as well
@@ -80,23 +90,42 @@
 # Uncomment the following lines to enable them.
 #
 
-# It is recommended to use the OFI interface over PSM3 within IntelMPI
-# These variables are passed to the Intel mpirun command.
-export I_MPI_FABRICS=${I_MPI_FABRICS:-'shm:ofi'}
+# Path to oneCCL library
+export ONECCL_DIR=${ONECCL_DIR:-$MPICH_PREFIX/../../ccl/latest/}
 
-# For Intel MPI v2021.6.0 it's recommended to use FI_PROVIDER
-# for other releases I_MPI_OFI_PROVIDER is recommended
-export I_MPI_OFI_PROVIDER=${I_MPI_OFI_PROVIDER:-psm3}
-#export FI_PROVIDER=${FI_PROVIDER:-psm3}
+# Path to oneCCL example programs, such as "benchmark"
+export ONECCL_EXAMPLES_DIR=${ONECCL_EXAMPLES_DIR:-$ONECCL_DIR/examples}
 
-# This defines where external providers are loaded from
-#export FI_PROVIDER_PATH=${FI_PROVIDER_PATH:-/usr/lib64/libfabric:/usr/lib/x86_64-linux-gnu/libfabric}
+# Should a CPU or GPU enabled version of oneCCL be used
+#export ccl_configuraton=${ccl_configuration:-cpu}
+#export ccl_configuraton=${ccl_configuration:-cpu_gpu_dpcpp}
 
-# When running an Intel GPU application these are required
-#export EnableImplicitScaling=${EnableImplictScaling:-0} NEOReadDebugKeys=${NEOReadDebugKeys:-1}
+# Select whether oneCCL should use mpi interface or directly use OFI
+export CCL_ATL_TRANSPORT=${CCL_ATL_TRANSPORT:-mpi}
+#export CCL_ATL_TRANSPORT=${CCL_ATL_TRANSPORT:-ofi}
 
-# When running a GPU application these settings are recommended to take full
-# advantage of Direct GPU Access and RDMA.  Typically I_MPI_OFFLOAD_RDMA and
-# PSM3_GPUDIRECT offer better performance, but also depend on the rv kernel
-# module for GPU pinning
-#export I_MPI_OFFLOAD=${I_MPI_OFFLOAD:-1} I_MPI_OFFLOAD_PIPELINE=${ I_MPI_OFFLOAD_PIPELINE:-0} PSM3_GPUDIRECT=${PSM3_GPUDIRECT:-1} I_MPI_OFFLOAD_RDMA=${I_MPI_OFFLOAD_RDMA:-1} I_MPI_OFFLOAD_RDMA_THRESHOLD=${I_MPI_OFFLOAD_RDMA_THRESHOLD:-0}"
+# Will oneCCL consider only NUMA "local" NICs or any NIC ("global")
+export CCL_MNIC=${CCL_MNIC:-local}
+#export CCL_MNIC=${CCL_MNIC:-global}
+
+# can select NICs explicitly when using OFI directly
+#export CCL_MNIC_NAME=${CCL_MNIC_NAME:-irdma0,irdma1,irdma2,irdma3}
+#export CCL_MNIC_COUNT=${CCL_MNIC_COUNT:-4}
+
+# Now many oneCCL worker threads per process
+#export CCL_WORKER_COUNT=${CCL_WORKER_COUNT:-8}
+
+# Which CPU cores should be used for workers
+# must specify CCL_WORK_COUNT * processes per node
+#export CCL_WORKER_AFFINITY=${CCL_WORKER_AFFINITY:-38,39,40,41,42,43,44,45,88,89,90,91,92,93,94,95}
+
+# may want to tell Intel MPI launcher where to pin processes
+#export I_MPI_PIN_PROCESSOR_LIST=${I_MPI_PIN_PROCESSOR_LIST:-1,57}
+
+# AllReduce algorithm to use
+#export CCL_ALLREDUCE=${CCL_ALLREDUCE:-ring}
+#export CCL_ALLREDUCE=${CCL_ALLREDUCE:-rabenseifner}
+
+# Enable debug output
+#export CCL_LOG_LEVEL=${CCL_LOG_LEVEL:-info}
+#export CCL_LOG_LEVEL=${CCL_LOG_LEVEL:-debug}

@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,14 @@
 
 # [ICS VERSION STRING: unknown]
 
+# SLURM directives.  Must precede all non-comment lines and can't use variables
+# slurm command line overrides any SBATCH settings here
+# to disable a given setting below, use ## to comment out
+##SBATCH --job-name=run_deviation
+#SBATCH --output=logs/deviation.%j.out
+# timelimit in days-hours:minutes:seconds
+##SBATCH --time=0-00:30:00
+
 # BASE PATH TO MPI EXECUTABLES: To use an alternate location, 
 # either edit this line or set MPICH_PREFIX in your environment.
 # see select_mpi for the set of default MPI selections
@@ -46,9 +54,11 @@ APP=deviation
 
 Usage()
 {
-	echo "Usage: $0 number_processes ['ff' | bwtol lattol] [other options]" >&2
-	echo "    number_processes may be 'all' in which case one rank will be started for"
-	echo "                     every process in the mpi_hosts file"
+	echo "Usage: $0 number_of_processes ['ff' | bwtol lattol] [other options]" >&2
+	echo "          or"
+	echo "       $0 --help"
+	echo "    number_of_processes may be 'all' in which case PROCS_PER_NODE ranks will"
+	echo "                     be started for every entry in the MPI_HOSTS file"
 	echo "    'ff'      When specified, the configured FF_DEVIATION_ARGS will be used" >&2
 	echo "    bwtol     Percent of bandwidth degradation allowed below Avg value" >&2
 	echo "              passed via -bwtol to $APP" >&2
@@ -63,7 +73,7 @@ Usage()
 	echo "   $0 20 20 50 -c -h compute0001" >&2
 	echo "   $0 20 0 0 -bwdelta 200 -latdelta 0.5" >&2
 	echo  >&2
-	echo "To get more details about [other options] available: $0 2 -help"
+	echo "To get more details about [other options] available: $0 1 --help"
 	exit 2
 }
 
@@ -74,9 +84,12 @@ else
 	NUM_PROCESSES=$1
 	shift
 fi
-
 other_args=
-if [ x"$1" = x"ff" ]
+if [ x"$1" = x"--help" -o x"$1" = x"-help" ]
+then
+	set -- "-help"
+	MIN_PROCESSES=1
+elif [ x"$1" = x"ff" ]
 then 
 	if [ ! -f /usr/lib/eth-tools/ff_funcs ]
 	then
@@ -122,6 +135,7 @@ LOGFILE=
 (
 	echo " Running Deviation ..."
 	show_mpi_hosts
+	show_mpi_env
 	set -x
 	$MPI_RUN_CMD $CMD $other_args "$@"
 	set +x

@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015, Intel Corporation
+# Copyright (c) 2015-2023, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,14 @@
 
 # [ICS VERSION STRING: unknown]
 
+# SLURM directives.  Must precede all non-comment lines and can't use variables
+# slurm command line overrides any SBATCH settings here
+# to disable a given setting below, use ## to comment out
+##SBATCH --job-name=run_mbw_mr5
+#SBATCH --output=logs/osu_mbw_mr.%j.out
+# timelimit in days-hours:minutes:seconds
+##SBATCH --time=0-00:30:00
+
 # BASE PATH TO MPI EXECUTABLES: To use an alternate location, 
 # either edit this line or set MPICH_PREFIX in your environment.
 # see select_mpi for the set of default MPI selections
@@ -43,20 +51,27 @@ APP=osu_mbw_mr
 
 if [ -z "$1" -o x"$1" = x"-h" -o x"$1" = x"--help" ]
 then
-	echo "Usage: $0 number_processes [options]]" >&2
-	echo "    number_processes may be 'all' in which case one rank will be started for" >&2
-	echo "                     every process in the mpi_hosts file" >&2
+	echo "Usage: $0 number_of_processes [options]]" >&2
+	echo "          or"
+	echo "       $0 --help"
+	echo "    number_of_processes may be 'all' in which case PROCS_PER_NODE ranks will" >&2
+	echo "                     be started for every entry in the MPI_HOSTS file" >&2
 	echo "    [options] are passed to ${APP}"
 	echo "This application requires an even number of processes" >&2
 	echo  >&2
-	echo "To get more details about [options] available: $0 2 -h" >&2
+	echo "To get more details about [options] available: $0 1 --help" >&2
 	exit 2
 else
 	NUM_PROCESSES=$1
 	shift
 fi
-
-MULT_PROCESSES=2
+if [ x"$1" = x"-h" -o x"$1" = x"--help" -o x"$1" = x"-help" ]
+then
+	set -- "-h"
+	MIN_PROCESSES=1
+else
+	MULT_PROCESSES=2
+fi
 
 LOGFILE=
 . ./prepare_run
@@ -64,6 +79,7 @@ LOGFILE=
 (
 	echo " Running Multi-Bandwidth 5.9 ..."
 	show_mpi_hosts
+	show_mpi_env
 	set -x
 	$MPI_RUN_CMD $CMD "$@"
 	set +x
