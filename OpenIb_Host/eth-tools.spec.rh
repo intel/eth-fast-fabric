@@ -1,11 +1,11 @@
 Name: eth-tools
 Version: 11.6.0.0
-Release: 190%{?dist}
+Release: 189%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
 Url: https://github.com/intel/eth-fast-fabric
-Source: %url/releases/download/v%{version_no_tilde}/eth-fast-fabric-%{version_no_tilde}.tar.gz
+Source: %url/releases/download/v11.6.0.0/eth-fast-fabric-11.6.0.0.tar.gz
 ExclusiveArch: x86_64
 # The Intel(R) Ethernet Fabric Suite product line is only available on x86_64 platforms at this time.
 
@@ -36,7 +36,7 @@ BuildRequires: perl-generators
 Contains tools for managing fabric on a management node.
 
 %prep
-%autosetup -cn eth-fast-fabric-%{version_no_tilde}
+%autosetup -cn eth-fast-fabric-11.6.0.0
 
 %build
 cd OpenIb_Host

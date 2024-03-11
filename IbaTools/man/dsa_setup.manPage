@@ -1,0 +1,101 @@
+.\" .\" *********************************************************************
+.\" .\" *                                                                   *
+.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *                                                                   *
+.\" .\" *                       All Rights Reserved.                        *
+.\" .\" *                                                                   *
+.\" .\" *********************************************************************
+
+.TH dsa\(ulsetup X "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.SH NAME
+dsa\(ulsetup
+
+
+.PP
+The Data Streaming Accelerator (DSA) is a high-performance data copy and transformation accelerator integrated into Intel(R) Xeon(R) Processor s starting with the 4th GenerationIntel(R) Xeon(R) Scalable Processors. PSM3 may be enabled to take advantage of DSA to optimize intra-node communications that use PSM3 \[aq]s shm device.
+.PP
+/usr/share/eth-tools/samples/dsa\(ulsetup is provided as a sample script to create DSA work queues in /dev/dsa for use by PSM3 jobs. This sample script should be copied to /usr/local/bin/ and then edited as appropriate for the system. The resulting script must be run as root to configure DSA work queues each time the system reboots or immediately prior to and after each job, which will use PSM3 with DSA enabled. To configure dsa\(ulsetup to be run at boot time, copy /usr/share/eth-tools/samples/dsa.service to /etc/systemd/system/ and then edit /etc/systemd/system/dsa.service and follow the instructions in the file.
+.PP
+When configuring DSA work queues, dsa\(ulsetup will remove all existing DSA work queues, so if run per job, it should only be used when no other applications are using DSA. If the DSA configuration is to be selected per job, dsa\(ulsetup may be used in post job processing with the -w none or -w restart options to remove DSA resources after the job finishes. Then at the start of the next job, the appropriate -w workload option can be provided.
+.PP
+The use of restart is only required on some older distros, such as RHEL 8.6 and RHEL 9.0, to fully clear out DSA resources. Be aware that the use of restart may affect other applications that are using any of the CPU accelerators managed by the idxd kernel driver.
+.SH Syntax
+dsa\(ulsetup [-u user] [-w workload] [-T timelimit]
+.PP
+or
+.br
+dsa\(ulsetup --list
+.PP
+or
+.br
+dsa\(ulsetup --help
+.SH Options
+
+.TP 10
+--help
+
+Produces full help text.
+.TP 10
+--list
+
+Shows DSA resources and configuration.
+.TP 10
+-w workload
+
+Configures DSA work queues for specified workload. Default is ai. When run to configure DSA work queues, must be run as root. Workloads may be added by adding setup\(ulall\(ulWORKLOAD functions. Valid workload values are ai, hpc, shared, none, and restart.
+.TP 10
+-u user
+
+Specifies the owner for DSA work queue devices. Default is root. Specified as [owner][:[group]] similar to chown command.
+.TP 10
+.BR
+
+.PP
+
+.B NOTE:
+
+.RS
+
+.IP \(bu
+If : is not specified, then only the user is granted read/write (rw) access.
+.IP \(bu
+If : is specified, then the queues are granted group and user rw access for the specified group.
+.IP \(bu
+If : is specified, but no group is specified, then the user\[aq]s group is used.
+.IP \(bu
+If all is specified, then everyone is granted rw access.
+
+.RE
+
+
+.TP 10
+-T timelimit
+
+Specifies the seconds to wait for DSA device discovery. Default is 0. Sometimes during boot, a non-zero timeout is needed to allow time for the idxd kernel driver to discover and enumerate the devices.
+
+.SH Examples
+dsa\(ulsetup --help
+.br
+
+dsa\(ulsetup --list
+.br
+
+dsa\(ulsetup
+.br
+
+dsa\(ulsetup -u myname -w ai
+.br
+
+dsa\(ulsetup -u myname: -w ai
+.br
+
+dsa\(ulsetup -u myname:mygroup -w hpc
+.br
+
+dsa\(ulsetup -u :mygroup -w hpc
+.br
+
+dsa\(ulsetup -w none
+.br
+
+dsa\(ulsetup -w restart
