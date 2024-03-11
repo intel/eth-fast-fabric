@@ -40,12 +40,15 @@ extern "C" {
 #endif
 
 static __inline void
+#if CPU_LE
 BSWAP_STL_PA_IMAGE_ID(STL_PA_IMAGE_ID_DATA *pRecord)
 {
-#if CPU_LE
 	pRecord->imageNumber						= ntoh64(pRecord->imageNumber);
 	pRecord->imageOffset						= ntoh32(pRecord->imageOffset);
 	pRecord->imageTime.absoluteTime				= ntoh32(pRecord->imageTime.absoluteTime);
+#else
+BSWAP_STL_PA_IMAGE_ID(STL_PA_IMAGE_ID_DATA *pRecord _UNUSED_)
+{
 #endif /* CPU_LE */
 }
 
@@ -146,7 +149,7 @@ BSWAP_STL_PA_PM_GROUP_INFO(STL_PA_PM_GROUP_INFO_DATA *pRecord, boolean isRequest
 }
 
 static __inline void
-BSWAP_STL_PA_GROUP_LIST(STL_PA_GROUP_LIST *pRecord)
+BSWAP_STL_PA_GROUP_LIST(STL_PA_GROUP_LIST *pRecord _UNUSED_)
 {
 #if CPU_LE
 #endif /* CPU_LE */
@@ -381,16 +384,19 @@ BSWAP_STL_PA_IMAGE_INFO(STL_PA_IMAGE_INFO_DATA *pRecord)
 }
 
 static __inline void
+#if CPU_LE
 BSWAP_STL_PA_MOVE_FREEZE(STL_MOVE_FREEZE_DATA *pRecord)
 {
-#if CPU_LE
 	BSWAP_STL_PA_IMAGE_ID(&pRecord->oldFreezeImage);
 	BSWAP_STL_PA_IMAGE_ID(&pRecord->newFreezeImage);
+#else
+BSWAP_STL_PA_MOVE_FREEZE(STL_MOVE_FREEZE_DATA *pRecord _UNUSED_)
+{
 #endif /* CPU_LE */
 }
 
 static __inline void
-BSWAP_STL_PA_VF_LIST(STL_PA_VF_LIST *pRecord)
+BSWAP_STL_PA_VF_LIST(STL_PA_VF_LIST *pRecord _UNUSED_)
 {
 #if CPU_LE
 #endif /* CPU_LE */

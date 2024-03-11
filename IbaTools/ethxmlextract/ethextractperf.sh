@@ -43,13 +43,15 @@ Usage_full()
 	echo "   --help - Produces full help text." >&2
 	echo "   ethreport options - Options passed to ethreport." >&2
 	echo >&2
-	echo "Provides a report of all performance counters in a CSV format suitable for" >&2
-	echo "importing into a spreadsheet or parsed by other scripts for further analysis. It" >&2
-	echo "generates a detailed ethreport component summary report and pipes the result to" >&2
-	echo "ethxmlextract, extracting element values for NodeDesc, Chassis ID, PortNum, and" >&2
-	echo "all the performance counters. Extraction is performed only from the Systems" >&2
-	echo "portion of the report, which does not contain Neighbor information (the Neighbor" >&2
-	echo "portions are suppressed)." >&2
+	echo "Provides a report of all the per port performance counters in a CSV format" >&2
+	echo "suitable for importing into a spreadsheet or parsed by other scripts for" >&2
+	echo "further analysis." >&2
+	echo "It does this by generating a detailed ethreport component summary report and" >&2
+	echo "piping the result to ethxmlextract, extracting element values for NodeDesc," >&2
+	echo "Chassis ID, PortNum, and all the performance counters. Extraction is performed" >&2
+	echo "only from the Systems portion of the report, which does not contain Neighbor" >&2
+	echo "information (the Neighbor portions are suppressed)." >&2
+	echo "This script can be used as a sample for creating custom per port reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "   ${cmd}" >&2

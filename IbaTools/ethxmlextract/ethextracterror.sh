@@ -41,9 +41,11 @@ Usage_full()
 	echo "   --help - Produces full help text." >&2
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
-	echo "Produces a CSV file listing all or some of the errors in the current fabric." >&2
-	echo "${cmd} is a front end to the ethreport tool. The output from this tool" >&2
-	echo "can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "Produces a CSV file listing all or some of the per port errors in the current" >&2
+	echo "fabric." >&2
+	echo "${cmd} is a front end to the ethreport tool. The output" >&2
+	echo "from this tool can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "This script can be used as a sample for creating custom per port reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "   List all the link errors in the fabric:" >&2

@@ -55,14 +55,21 @@ static void CableDataXmlOutput(IXmlOutputState_t *state, const char *tag, void *
 	IXmlOutputStruct(state, tag, (CableData*)data, NULL, CableDataFields);
 }
 
-static void *CableDataXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *CableDataXmlParserStart(IXmlParserState_t *state _UNUSED_, void *parent, const char **attr _UNUSED_)
 {
 	ExpectedLink *elinkp = (ExpectedLink*)parent;
 
 	return &(elinkp->CableData);
 }
 
-static void CableDataXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void CableDataXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	CableData *cablep = (CableData*)object;
 	FabricData_t *fabricp = IXmlParserGetContext(state);
@@ -145,17 +152,20 @@ static void PortSelectorXmlOutputPortNum(IXmlOutputState_t *state, const char *t
 		IXmlOutputUint(state, tag, portselp->PortNum);
 }
 
-static void PortSelectorXmlParserEndPortNum(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortSelectorXmlParserEndPortNum(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint16 value;
 	
 	if (IXmlParseUint16(state, content, len, &value)) {
-		if (value > 65535) {
-			IXmlParserPrintError(state, "PortNum must be in range [0,65535]");
-		} else {
-			((PortSelector *)object)->PortNum = value;
-			((PortSelector *)object)->gotPortNum = 1;
-		}
+		((PortSelector *)object)->PortNum = value;
+		((PortSelector *)object)->gotPortNum = 1;
 	}
 }
 
@@ -315,7 +325,14 @@ static void PortSelectorXmlOutput(IXmlOutputState_t *state, const char *tag, voi
 }
 
 
-static void PortSelectorXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortSelectorXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	PortSelector *portselp = (PortSelector*)object;
 	ExpectedLink *elinkp = (ExpectedLink*)parent;
@@ -370,7 +387,7 @@ static void LinkXmlOutput(IXmlOutputState_t *state, const char *tag, void *data)
 	IXmlOutputStruct(state, tag,  (ExpectedLink*)data, NULL /*ExpectedLinkXmlFormatAttr*/ , LinkFields);
 }
 
-static void *LinkXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *LinkXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	ExpectedLink *elinkp = (ExpectedLink*)MemoryAllocate2AndClear(sizeof(ExpectedLink), IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 
@@ -476,7 +493,14 @@ static void ResolvePorts(FabricData_t *fabricp, ExpectedLink *elinkp)
 	}
 }
 
-static void LinkXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void LinkXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	ExpectedLink *elinkp = (ExpectedLink*)object;
 	FabricData_t *fabricp = IXmlParserGetContext(state);
@@ -501,7 +525,7 @@ static IXML_FIELD LinksFields[] = {
 /****************************************************************************/
 /* Overall Links lists Input/Output functions */
 
-static void Xml2PrintAllLinks(IXmlOutputState_t *state, const char *tag, void *data)
+static void Xml2PrintAllLinks(IXmlOutputState_t *state, const char *tag, void *data _UNUSED_)
 {
 	LIST_ITEM *p;
 	FabricData_t *fabricp = (FabricData_t *)IXmlOutputGetContext(state);
@@ -518,7 +542,7 @@ static void Xml2PrintAllLinks(IXmlOutputState_t *state, const char *tag, void *d
 	IXmlOutputEndTag(state, tag);
 }
 
-static void *LinkSummaryXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *LinkSummaryXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr _UNUSED_)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -529,7 +553,14 @@ static void *LinkSummaryXmlParserStart(IXmlParserState_t *state, void *parent, c
 	return parent;
 }
 
-static void LinkSummaryXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void LinkSummaryXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -542,7 +573,7 @@ invalid:
 	return;
 }
 
-static void *ExternalLinkSummaryXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *ExternalLinkSummaryXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -553,7 +584,14 @@ static void *ExternalLinkSummaryXmlParserStart(IXmlParserState_t *state, void *p
 	return NULL;
 }
 
-static void ExternalLinkSummaryXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void ExternalLinkSummaryXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -566,16 +604,19 @@ invalid:
 	return;
 }
 
-static void ExpectedPortXmlParserEndPortNum(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void ExpectedPortXmlParserEndPortNum(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint16 value;
 
 	if (IXmlParseUint16(state, content, len, &value)) {
-		if (value > 65535) {
-			IXmlParserPrintError(state, "PortNum must be in range [0,65535]");
-		} else {
-			((ExpectedPort *)object)->PortNum = value;
-		}
+		((ExpectedPort *)object)->PortNum = value;
 	}
 }
 
@@ -649,7 +690,7 @@ static const char *FormatExpectedNode(ExpectedNode *enodep)
 
 /* <Node> fields */
 
-static void *ExpectedPortXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *ExpectedPortXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	ExpectedPort *eportp = MemoryAllocate2AndClear(sizeof(ExpectedPort),
 		IBA_MEM_FLAG_PREMPTABLE, MYTAG);
@@ -704,7 +745,14 @@ static ExpectedPort *ExpectedNodeGetPort(ExpectedNode *enodep, uint16 portNum)
 		return enodep->ports[portNum];
 }
 
-static void ExpectedPortXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void ExpectedPortXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	ExpectedNode *enodep = (ExpectedNode*)parent;
 	ExpectedPort *eportp = (ExpectedPort*)object;
@@ -753,7 +801,7 @@ static void ExpectedNodeXmlOutput(IXmlOutputState_t *state, const char *tag, voi
 	IXmlOutputStruct(state, tag,  (ExpectedNode*)data, NULL /*ExpectedNodeXmlFormatAttr*/ , ExpectedNodeFields);
 }
 
-static void *ExpectedNodeXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *ExpectedNodeXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	ExpectedNode *enodep = (ExpectedNode*)MemoryAllocate2AndClear(sizeof(ExpectedNode), IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 
@@ -807,7 +855,14 @@ static void ResolveNode(FabricData_t *fabricp, ExpectedNode *enodep)
 	}
 }
 	
-static void ExpectedFIXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void ExpectedFIXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	ExpectedNode *enodep = (ExpectedNode*)object;
 	FabricData_t *fabricp = IXmlParserGetContext(state);
@@ -833,7 +888,14 @@ invalid:
 	return;
 }
 
-static void ExpectedSWXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void ExpectedSWXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	ExpectedNode *enodep = (ExpectedNode*)object;
 	FabricData_t *fabricp = IXmlParserGetContext(state);
@@ -885,7 +947,7 @@ static void Xml2PrintAllType(IXmlOutputState_t *state, const char *listtag, cons
 	IXmlOutputEndTag(state, listtag);
 }
 
-static void Xml2PrintAllNodes(IXmlOutputState_t *state, const char *tag, void *data)
+static void Xml2PrintAllNodes(IXmlOutputState_t *state, const char *tag, void *data _UNUSED_)
 {
 	FabricData_t *fabricp = (FabricData_t *)IXmlOutputGetContext(state);
 
@@ -903,7 +965,7 @@ static IXML_FIELD NodesFields[] = {
 	{ NULL }
 };
 
-static void *NodesXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *NodesXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -912,7 +974,14 @@ static void *NodesXmlParserStart(IXmlParserState_t *state, void *parent, const c
 	return NULL;
 }
 
-static void NodesXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void NodesXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -938,7 +1007,7 @@ static IXML_FIELD TopologyFields[] = {
 	{ NULL }
 };
 
-static void *TopologyXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *TopologyXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr)
 {
 	int i;
 	boolean gotplane = FALSE;
@@ -961,7 +1030,14 @@ static void *TopologyXmlParserStart(IXmlParserState_t *state, void *parent, cons
 	return NULL;
 }
 
-static void TopologyXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void TopologyXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -1003,7 +1079,7 @@ static void TopologyInfoXmlFormatAttr(IXmlOutputState_t *state, void *data)
 }
 #endif
 
-static void Xml2PrintAll(IXmlOutputState_t *state, const char *tag, void *data)
+static void Xml2PrintAll(IXmlOutputState_t *state, const char *tag, void *data _UNUSED_)
 {
 #if 0
 	TopologyOutputInfo_t *info = (TopologyOutputInfo_t *)IXmlOutputGetContext(state);
@@ -1347,13 +1423,13 @@ FSTATUS Xml2ParseTopology(const char *input_file, int quiet, FabricData_t *fabri
 		return FSUCCESS;
 }
 
-static void *DummyParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *DummyParserStart(IXmlParserState_t *state _UNUSED_, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	return NULL;
 }
 
-static void DummyParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent,
-                           XML_Char *content, unsigned len, boolean valid)
+static void DummyParserEnd(IXmlParserState_t *state _UNUSED_, const IXML_FIELD *field _UNUSED_, void *object _UNUSED_, void *parent _UNUSED_,
+                           XML_Char *content _UNUSED_, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	return;
 }
@@ -1366,7 +1442,7 @@ static IXML_FIELD  DummyFields[] =
 	{NULL}
 };
 
-static void *TopologyPlaneXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *TopologyPlaneXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr)
 {
 	int i;
 	boolean got_plane = FALSE;

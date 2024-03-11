@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.6.0.0
-Release: 211%{?dist}
+Release: 231%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -87,6 +87,31 @@ BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_
 %config(noreplace) /usr/lib/eth-tools/osid_wrapper
 
 %changelog
+* Tue Mar 05 2024 Jijun Wang <jijun.wang@intel.com> - 11.6.0.0-223
+- Updated host verification to check UD QPs, and skip VT-d disabled
+  check by default
+- Updated compiler options to enhance security of FastFabric
+- Improved MpiApps README file
+- Improved help for tools ethbw and ethextract*
+- Changed MpiApps to use IMPI when available
+- Fixed HPL build for newer version oneAPI
+
+* Tue Mar 05 2024 Jijun Wang <jijun.wang@intel.com> - 11.6.0.0-211
+- Enhanced MpiApps scripts for easier use with SLURM
+- Introduced PSM3_PRINT_STATS_PREFIX to specify PSM3 stats files location
+- Improved MpiApps to support oneCCL benchmark
+- Easy of use improvement on MpiApps
+-- Improved parameter files and scripts description
+-- Reorganized PSM3 parameter files
+-- Improved script printout to include system env
+-- Moved MpiApps parameter settings mostly into env vs on MPI cmd line
+
+* Tue Mar 05 2024 Jijun Wang <jijun.wang@intel.com> - 11.6.0.0-190
+- Improved to support RHEL 8.9 and RHEL 9.3
+- Improved HPL build to support newer version oneAPI
+- Removed unused APPs from MpiApps
+- More replacing fgrep and egrep with grep -F and grep -E
+
 * Tue Oct 03 2023 Jijun Wang <jijun.wang@intel.com> - 11.5.1.0-3
 - Improved help text and man page for all tools
 

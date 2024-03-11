@@ -322,9 +322,9 @@ sub make_dir
 sub check_dir
 {
 	my($dir) = "$_[0]";
-	if (! -d "$ROOT$dir" ) 
+	if (! -d "$ROOT$dir" )
 	{
-		#Creating directory 
+		#Creating directory
 
 		make_dir("$dir", "$OWNER", "$GROUP", "ugo=rx,u=rwx");
 	}
@@ -341,7 +341,7 @@ sub copy_file
 	# install for development.
 
 	if ( -e $src)
-	{               
+	{
 		system "cp -rf $src $dest";
 		system "chown $owner $dest";
 		system "chgrp $group $dest";
@@ -382,7 +382,7 @@ sub GetChoice($$@)
 			$_=$default;
 		}
 		$c = lc($_);
-			
+
 		if (exists $choices{$c})
 		{
 			print LOG_FD "$Question -> $c\n";
@@ -400,7 +400,7 @@ sub GetNumericValue
 	my($minvalue) = $_[2];
 	my($maxvalue) = $_[3];
 
-        if ( $Default_Prompt ) {
+	if ( $Default_Prompt ) {
 		print "$Question -> $default\n";
 		print LOG_FD "$Question -> $default\n";
 		if (($default ge $minvalue) && ($default le $maxvalue)) {
@@ -425,7 +425,7 @@ sub GetNumericValue
 		else {
 			print "Value Out-of-Range ($minvalue to $maxvalue)\n";
 		}
-	}        
+	}
 }
 
 sub GetYesNo
@@ -456,7 +456,7 @@ sub GetYesNo
 		if ("$_" eq "") {
 			$_=$default;
 		}
-		if (/^[Nn]/) 
+		if (/^[Nn]/)
 		{
 			print LOG_FD "$Question -> n\n";
 			$retval = 0;
@@ -466,7 +466,7 @@ sub GetYesNo
 			$retval = 1;
 			$answer = 1;
 		}
-	}        
+	}
 	return $retval;
 }
 
@@ -586,7 +586,7 @@ DO_MENU:
 	}
 	printf (  "X) Return to Previous Menu (or ESC or Q)\n");
 	$inp = getch();
-	
+
 	if ($inp =~ /[qQ]/ || $inp =~ /[xX]/ || ord($inp) == $KEY_ESC) {
 		return "";
 	}
@@ -967,7 +967,7 @@ sub fabricsetup_config
 			chomp($inp = <STDIN>);
 			$inp=remove_whitespace($inp);
 
-			if ( length($inp) == 0 ) 
+			if ( length($inp) == 0 )
 			{
 				$inp = $PrevFabricSetupHostsFile;
 			}
@@ -1006,7 +1006,7 @@ sub fabricsetup_findgood
 	if  ( -e "$PrevFabricSetupHostsFile"
 		   && "$PrevFabricSetupHostsFile" ne "$FabricSetupHostsFile" ) {
 		if (GetYesNo("Would you like to go back to using $PrevFabricSetupHostsFile?", "y") ) {
-	    	$FabricSetupHostsFile = $PrevFabricSetupHostsFile;
+			$FabricSetupHostsFile = $PrevFabricSetupHostsFile;
 		}
 	}
 	if (! valid_config_file("Host File", $FabricSetupHostsFile) ) {
@@ -1062,7 +1062,7 @@ sub fabricsetup_install
 	my $version = read_ffconfig_param("FF_PRODUCT_VERSION");
 	my $packages = "";
 	my $options;
- 
+
 	$install_file="$product.$version.tgz";
 
 	if (! valid_config_file("Host File", $FabricSetupHostsFile) ) {
@@ -1094,7 +1094,7 @@ sub fabricsetup_install
 			print "An upgrade/reinstall requires an existing installation of Intel Eth software\non the selected nodes and will upgrade or reinstall the existing packages.\n\n";
 			print "An initial installation will first uninstall any existing Intel Eth software.\n";
 
-			my $choice = GetChoice("Would you like to do a fresh [i]nstall, an [u]pgrade or [s]kip this step?", 
+			my $choice = GetChoice("Would you like to do a fresh [i]nstall, an [u]pgrade or [s]kip this step?",
 				"u", ("i", "u", "s"));
 
 			if ("$choice" eq "u") {
@@ -1207,7 +1207,7 @@ sub fabricsetup_buildmpi
 	# for now do not build NASA, etc, just basic stuff
 	my $mode;
 	my $mpich_prefix;
-	my $cuda_opts = "";
+	my $build_opts = "";
 	do {
 		# get default MPI to use
 		$mpich_prefix= `cd $mpi_apps_dir 2>/dev/null; . ./select_mpi 2>/dev/null; echo \$MPICH_PREFIX`;
@@ -1266,53 +1266,67 @@ sub fabricsetup_buildmpi
 		} else {
 			print "You have selected to use MPI: $mpich_prefix\n";
 			$mode="build";
-			# check whether MPI support cuda or not.
-			my $support_cuda = ! system "find $mpich_prefix -name 'libmca_common_cuda.*' | grep libmca_common_cuda > /dev/null";
-			# find valid cuda dir
-			my $cuda_dir = read_ffconfig_param("FF_CUDA_DIR");
-			if ( "$cuda_dir" eq "" ) {
-				$cuda_dir = "/usr/local"
+			$build_opts = "";
+
+			# check if mpi supports oneapize (libze_loader.so) or cuda (libcuda.so)
+			my $mpi_libs =  `find $mpich_prefix -name '*.so' 2>/dev/null`;
+			my @mpi_libs = split /[[:space:]]+/, $mpi_libs;
+			my $support_oneapize = 0;
+			my $support_cuda = 0;
+			for my $lib (@mpi_libs) {
+				$support_oneapize += ! system "strings $lib | grep -q libze_loader.so";
+				$support_cuda += ! system "strings $lib | grep -q libcuda.so";
 			}
-			my $nvcc_pathes = `find -L $cuda_dir -name nvcc 2>/dev/null`;
-			my @nvcc_pathes = split /[[:space:]]+/, $nvcc_pathes;
-			my @cuda_dirs = ();
-			foreach my $p (@nvcc_pathes) {
-				$p =~ s/\/bin\/nvcc//;
-				@cuda_dirs = (@cuda_dirs, $p);
-			}
-			if (scalar(@cuda_dirs) > 1) {
-				print "Multiple CUDA Directories Found\n";
-				HitKeyCont;
-				$title2 = "CUDA Directories Selection";
-				$cuda_dir = selection_menu(
-					"$title1", "$title2", "CUDA Directory",
-					@cuda_dirs);
-				if ("$cuda_dir" eq "" ) {
-					print "You have selected to skip the building of the MPI Apps step\n";
-					$mode = "skip";
-				} else {
-					print "\nUse CUDA at $cuda_dir\n";
-				}
-			} elsif (scalar(@cuda_dirs) == 1) {
-				$cuda_dir = @cuda_dirs[0];
-				print "\nFound CUDA at $cuda_dir\n";
-			} else {
-				$cuda_dir = "";
-				if ($support_cuda) {
-					print "\nCUDA not found\n";
+
+			if ($support_oneapize) {
+				print "Detected MPI with oneAPI Level-Zero support.\n";
+				if (GetYesNo("Build apps with oneAPI Level-Zero support?", "y")) {
+					$build_opts = "MPI_APPS_ONEAPI=y"
 				}
 			}
-			if ("$cuda_dir" ne "") {
-				if ($support_cuda) {
-					if (GetYesNo("Build with CUDA support?", "y")) {
-						$cuda_opts = "MPI_APPS_CUDA=y CUDA_DIR=$cuda_dir"
+			if ($support_cuda and "$build_opts" eq "") {
+				print "Detected MPI with CUDA support.\n";
+				my $cuda_dir = read_ffconfig_param("FF_CUDA_DIR");
+				if ( "$cuda_dir" eq "" ) {
+					$cuda_dir = "/usr/local"
+				}
+				my $nvcc_pathes = `find -L $cuda_dir -name nvcc 2>/dev/null`;
+				my @nvcc_pathes = split /[[:space:]]+/, $nvcc_pathes;
+				my @cuda_dirs = ();
+				foreach my $p (@nvcc_pathes) {
+					$p =~ s/\/bin\/nvcc//;
+					@cuda_dirs = (@cuda_dirs, $p);
+				}
+				if (scalar(@cuda_dirs) > 1) {
+					print "Multiple CUDA Directories Found\n";
+					HitKeyCont;
+					$title2 = "CUDA Directories Selection";
+					$cuda_dir = selection_menu(
+						"$title1", "$title2", "CUDA Directory",
+						@cuda_dirs);
+					if ("$cuda_dir" eq "" ) {
+						print "You have selected to skip the building of the MPI Apps step\n";
+						$mode = "skip";
+					} else {
+						print "\nUse CUDA at $cuda_dir\n";
 					}
+				} elsif (scalar(@cuda_dirs) == 1) {
+					$cuda_dir = @cuda_dirs[0];
+					print "\nFound CUDA at $cuda_dir\n";
 				} else {
-					print "Selected MPI doesn't support CUDA. Will build without CUDA support\n";
+					$cuda_dir = "";
+					if ($support_cuda) {
+						print "\nCUDA not found. If you need to build with CUDA support ensure FF_CUDA_DIR is set correctly.\n";
+					}
+				}
+				if ("$cuda_dir" ne "") {
+					if (GetYesNo("Build apps with CUDA support?", "y")) {
+						$build_opts = "MPI_APPS_CUDA=y CUDA_DIR=$cuda_dir"
+					}
 				}
 			}
 		}
-	} until (GetYesNo("Are you sure you want to proceed?", "n") );
+	} until (GetYesNo("Are you sure you want to $mode?", "n") );
 
 	if ( "$mode" ne "build" ) {
 		return 0;
@@ -1336,11 +1350,11 @@ sub fabricsetup_buildmpi
 	if (!installed_mpiapps()){
 		print "Package $ComponentName{mpiapps} not installed. Only building subset of MPI Apps\n";
 		HitKeyCont;
-		if (run_fabric_cmd("$src_vars_cmd cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber eth-base 2>&1|tee make.res")) {
+		if (run_fabric_cmd("$src_vars_cmd cd $build_dir; MPICH_PREFIX=$mpich_prefix $build_opts make clobber eth-base 2>&1|tee make.res")) {
 			return 1;
 		}
 	} else {
-		if (run_fabric_cmd("$src_vars_cmd cd $build_dir; MPICH_PREFIX=$mpich_prefix $cuda_opts make clobber quick 2>&1|tee make.res")) {
+		if (run_fabric_cmd("$src_vars_cmd cd $build_dir; MPICH_PREFIX=$mpich_prefix $build_opts make clobber quick 2>&1|tee make.res")) {
 			return 1;
 		}
 	}
@@ -1349,7 +1363,7 @@ sub fabricsetup_buildmpi
 	}
 	my $fabric_cmd="$BIN_DIR/ethscpall -t -p -f $FabricSetupHostsFile $build_dir $build_dir";
 	if (GetYesNo("About to run: $fabric_cmd\nAre you sure you want to proceed?","n") ) {
-        return run_fabric_cmd("$fabric_cmd");
+	return run_fabric_cmd("$fabric_cmd");
 	}
 	return 0;
 }
@@ -1470,11 +1484,11 @@ DO_SETUP:
 
 	printf ("\nP) Perform the Selected Actions              N) Select None\n");
 	printf (  "X) Return to Previous Menu (or ESC or Q)\n");
-			
+
 	%statusMessage = ();
 
 	$inp = getch();
-	
+
 	if ($inp =~ /[qQ]/ || $inp =~ /[xX]/ || ord($inp) == $KEY_ESC)
 	{
 		return;
@@ -1607,7 +1621,7 @@ sub fabricadmin_findgood
 	if  ( -e "$PrevFabricAdminHostsFile"
 		   && "$PrevFabricAdminHostsFile" ne "$FabricAdminHostsFile" ) {
 		if (GetYesNo("Would you like to go back to using $PrevFabricAdminHostsFile?", "y") ) {
-	    	$FabricAdminHostsFile = $PrevFabricAdminHostsFile;
+			$FabricAdminHostsFile = $PrevFabricAdminHostsFile;
 		}
 	}
 	if (! valid_config_file("Host File", $FabricAdminHostsFile) ) {
@@ -1693,13 +1707,13 @@ sub fabricadmin_singlehost
 	print "\nChoose n below only if $hostverify on hosts has not changed \n";
 	if (GetYesNo("Would you like to copy $hostverify to hosts?", "y") ) {
 		$verifyhosts_opts="-c"; # copy the hostverify.sh file
-        }
+	}
 
 	if (GetYesNo("Would you like to specify tests to run?", "n") ) {
 		print "Enter space separated list of hostverify tests [default hpl]: ";
 		chomp($inp = <STDIN>);
 		$inp=remove_whitespace($inp);
-		if ( length($inp) != 0 ) 
+		if ( length($inp) != 0 )
 		{
 			$verifyhosts_tests="$inp";
 		} else {
@@ -1711,7 +1725,7 @@ sub fabricadmin_singlehost
 	if (index($verifyhosts_tests,"hpl") != -1) {
 		if (!installed_mpiapps()) {
 			print "Package $ComponentName{mpiapps} not installed. Cannot run HPL test.\n";
-        	HitKeyCont;
+			HitKeyCont;
 			return 1;
 		}
 	}
@@ -1726,12 +1740,12 @@ sub fabricadmin_singlehost
 	chomp($inp = <STDIN>);
 	$inp=remove_whitespace($inp);
 
-	if ( length($inp) != 0 ) 
+	if ( length($inp) != 0 )
 	{
 		$hostverify_res = $inp;
 	}
 
-	#Get timelimit, and suggest a higher default if HPL test is being run. 
+	#Get timelimit, and suggest a higher default if HPL test is being run.
 	if (index($verifyhosts_tests,"hpl") != -1) {
 		$timelimit=GetNumericValue("Timelimit in minutes:", 5, 1, 100) * 60;
 	} else {
@@ -1904,7 +1918,7 @@ sub fabricadmin_mpiperf
 		}
 		return run_fabric_cmd("$BIN_DIR/ethhostadmin -f $FabricAdminHostsFile mpiperfdeviation");
 	} else {
-	
+
 		if (!installed_mpiapps()) {
 			print "Package $ComponentName{mpiapps} not installed.\n";
 			print "Cannot run the mpiperf tests. Deviation tests can still be used. Please try again. \n";
@@ -2029,11 +2043,11 @@ DO_SETUP:
 
 	printf ("\nP) Perform the Selected Actions              N) Select None\n");
 	printf (  "X) Return to Previous Menu (or ESC or Q)\n");
-			
+
 	%statusMessage = ();
 
 	$inp = getch();
-	
+
 	if ($inp =~ /[qQ]/ || $inp =~ /[xX]/ || ord($inp) == $KEY_ESC)
 	{
 		return;
@@ -2106,11 +2120,11 @@ sub fabricmonitor_opatop
 #
 #	printf ("\nP) Perform the Selected Actions              N) Select None\n");
 #	printf (  "X) Return to Previous Menu (or ESC or Q)\n");
-#			
+#
 #	%statusMessage = ();
 #
 #	$inp = getch();
-#	
+#
 #	if ($inp =~ /[qQ]/ || $inp =~ /[xX]/ || ord($inp) == $KEY_ESC)
 #	{
 #		return;
@@ -2163,7 +2177,7 @@ sub fabricmonitor_opatop
 #		if (setup_ffports() ) {
 #			return 1;
 #		}
-#		do 
+#		do
 #		{
 #			print "The FastFabric operations which follow will require a file\n";
 #			print "listing the switches to operate on\n";
@@ -2171,7 +2185,7 @@ sub fabricmonitor_opatop
 #			chomp($inp = <STDIN>);
 #			$inp=remove_whitespace($inp);
 #
-#			if ( length($inp) == 0 ) 
+#			if ( length($inp) == 0 )
 #			{
 #				$file = $FabricSwitchesFile;
 #			} else {
@@ -2308,7 +2322,7 @@ sub show_menu
 	my $inp;
 	my $max_inp = 2;
 
-START:	
+START:
 	system "clear";
 	print color("bold");
 	printf ("$BRAND Ethernet FastFabric Tools\n");
@@ -2319,12 +2333,12 @@ START:
 	#printf ("   3) Fabric Monitoring\n");
 	printf ("\n   X) Exit (or Q)\n");
 
-	$inp = getch();      
+	$inp = getch();
 
 	if ($inp =~ /[qQ]/ || $inp =~ /[Xx]/ ) {
 		die "Exiting\n";
 	}
-	if (ord($inp) == $KEY_ENTER) {           
+	if (ord($inp) == $KEY_ENTER) {
 		goto START;
 	}
 
@@ -2333,7 +2347,7 @@ START:
 		$inp = hex($inp);
 	}
 
-	if ($inp < 1 || $inp > $max_inp) 
+	if ($inp < 1 || $inp > $max_inp)
 	{
 #		printf ("Invalid choice...Try again\n");
 		goto START;
@@ -2358,19 +2372,19 @@ set_libdir;
 RESTART:
 show_menu;
 
-if ($MENU_CHOICE == 1) 
+if ($MENU_CHOICE == 1)
 {
 	# Host Setup
 	fabric_setup;
 	goto RESTART;
 }
-elsif ($MENU_CHOICE == 2) 
+elsif ($MENU_CHOICE == 2)
 {
 	# Host Verification/Admin
 	fabric_admin;
 	goto RESTART;
 }
-#elsif ($MENU_CHOICE == 3) 
+#elsif ($MENU_CHOICE == 3)
 #{
 #	# Fabric Monitoring
 #	fabric_monitor;

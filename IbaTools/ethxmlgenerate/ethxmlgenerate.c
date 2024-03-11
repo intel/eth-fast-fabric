@@ -536,7 +536,7 @@ void getRecu_opt( int argc, char ** argv, const char *pOptShort,
 					}
 
 					if ( (argv_recu[ix] - bfParam + strlen(argv_recu[ix]) + 1) ==
-							ctCharParam )
+							(long unsigned int)ctCharParam )
 						break;
 
 				}

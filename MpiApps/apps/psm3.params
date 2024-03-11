@@ -115,11 +115,26 @@
 #export PSM3_NIC=${PSM3_NIC:-2}
 #export PSM3_NIC=${PSM3_NIC:-irdma*}
 
+# This controls the NIC selection algorithm when not using PSM Multi-Rail.
+# For GPU platforms with PCIe switches GpuRoundRobin will select
+# among the NICs closest to the GPU being used by each process.
+# RoundRobin is the default and selects NICs based on NUMA locality of the
+# CPU being used by each process.
+#export PSM3_NIC_SELECTION_ALG=${PSM3_NIC_SELECTION_ALG:-RoundRobin}
+#export PSM3_NIC_SELECTION_ALG=${PSM3_NIC_SELECTION_ALG:-GpuRoundRobin}
+
 # These values can enable and control PSM Multi-Rail
-# In most cases the default automatic selections will be sufficient
-# The sample shown is for Dual NIC server with one port per NIC connected
-# and all PSM processes using both NICs
+# In most cases the default automatic selections will be sufficient.
+# Sample for a multi-NIC server with all PSM processes using all NICs
+#export PSM3_MULTIRAIL=${PSM3_MULTIRAIL:-1}
+# Sample for a multi-NIC server with two NICs explicitly specified for use
+# by all processes
 #export PSM3_MULTIRAIL=${PSM3_MULTIRAIL:-1} PSM3_MULTIRAIL_MAP=${PSM3_MULTIRAIL_MAP:-irdma0,irdma1}
+# Sample for a multi-NIC server with each PSM process using all NUMA local NICs
+#export PSM3_MULTIRAIL=${PSM3_MULTIRAIL:-2}
+# Sample for a GPU platform with PCIe switches, and for each process using all
+# NICs local to its GPU.
+#export PSM3_MULTIRAIL=${PSM3_MULTIRAIL:-4}
 
 # If the network is routed so that NICs with different IP subnets can still
 # talk to eachother, this causes PSM to treat all IP addresses as part of the
@@ -142,6 +157,13 @@
 # This sets the prefix for the performance statistics files to match the
 # output log in the logs/ directory.
 export PSM3_PRINT_STATS_PREFIX=${PSM3_PRINT_STATS_PREFIX:-$LOGFILE}
+
+# additional debug output can help when diagnosing NIC or provider
+# selection issues.  Use PSM3_TRACEMASK=0x3: to just see 1st rank.
+# Use PSM3_TRACEMASK=0x3 to see all ranks.
+#export FI_LOG_LEVEL=${FI_LOG_LEVEL:-info}
+#export PSM3_TRACEMASK=${PSM3_TRACEMASK:-0x3:}
+#export PSM3_TRACEMASK=${PSM3_TRACEMASK:-0x3}
 
 # PSM has the capability to dump its own backtrace on a crash, independent of
 # the existing coredump facility. Enabling this feature should cause a

@@ -45,9 +45,11 @@ Usage_full()
 	echo "   --help - Produces full help text." >&2
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
-	echo "Produces a CSV file listing all or some of the links that exceed ethreport -o error" >&2
-	echo "thresholds. ${cmd} is a front end to the ethreport tool. The output" >&2
+	echo "Produces a CSV file listing all or some of the links that exceed" >&2
+	echo "ethreport -o error thresholds." >&2
+	echo "${cmd} is a front end to the ethreport tool. The output" >&2
 	echo "from this tool can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "This script can be used as a sample for creating custom per link reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "   List all the bad links in the fabric:" >&2
@@ -86,6 +88,7 @@ if [ -s $tempfile ]
 then
 	cat $tempfile| /usr/sbin/ethxmlextract -H -d \; -e LinkErrors.Link.Port.IfAddr -e LinkErrors.Link.Port.PortNum -e LinkErrors.Link.Port.PortId -e LinkErrors.Link.Port.NodeType -e LinkErrors.Link.Port.NodeDesc|while read line
 	do
+		# A link consists of 2 ports, so must consolidate 2 lines
 		if [ x"$line1" = x ]
 		then
 			line1="$line"

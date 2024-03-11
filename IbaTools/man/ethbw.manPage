@@ -1,20 +1,18 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethbw X "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH ethbw X "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethbw
 
 
 .PP
-ethbw gathers RDMA data movement statistics via counters in /sys/class/infiniband. The delta in counter values over the interval (default of 1 second), results in the average bandwidth for the given interval. Both transmit (xmt) and receive (rcv) bandwidth is monitored. ethbw also monitors Intel NICs for any RDMA retransmit or input packet discards, in which case, the xmt or rcv respectively, is shown as red.
-.PP
-
+ethbw reports the total data moved per RDMA NIC over each interval (default of 1 second). The bandwidth reported for each interval is in units of MB (1,000,000 bytes) over the interval. Both transmit (xmt) and receive (rcv) bandwidth counters are monitored. ethbw also monitors Intel NICs for any RDMA retransmit or input packet discards, in which case, the xmt or rcv, respectively, is shown as red. The data is gathered via data movement counters in /sys/class/infiniband.
 .PP
 The following cases may present the need to improve PFC tuning:
 
@@ -22,7 +20,7 @@ The following cases may present the need to improve PFC tuning:
 Retransmits can represent packet loss or corruption in the network and may indicate opportunities to improve PFC tuning or high bit error rates (BER) on some cables or devices.
 
 .IP 2) 4n
-Input packet discards indicate packets the NIC itself dropped upon receipt. This can represent opportunities to improve PFC tuning but can also be normal for some environments. Retransmits at the remote NICs which are communicating with this NIC are a stronger indicator of PFC or BER causes for packet loss.
+Input packet discards indicate packets the NIC itself dropped upon receipt. This can represent opportunities to improve PFC tuning but can also be normal for some environments. Retransmits at the remote NICs that are communicating with this NIC are a more powerful indicator of PFC or BER causes for packet loss.
 
 .SH Syntax
 ethbw [-i  \fIseconds\fR] [-d  \fIseconds\fR] [ \fInic\fR ... ]
@@ -36,17 +34,17 @@ Produces full help text.
 .TP 10
 -i/--interval \fIseconds\fR
 
-Interval at which bandwidth will be shown. Values of 1-60 allowed. Defaults to 1.
+Specifies the interval at which bandwidth will be shown. Values of 1-60 allowed. Defaults to 1.
 
 .TP 10
 -d/--duration \fIseconds\fR
 
-Duration to monitor for. Default is \[aq]infinite\[aq].
+Specifies the duration to monitor. Default is infinite.
 
 .TP 10
 \fInic\fR
 
-Where each \fInic\fR specified is an RDMA NIC name. If no NICs are specified, all RDMA NICs will be monitored.
+Specifies an RDMA NIC name. If no NICs are specified, all RDMA NICs will be monitored.
 
 .SH Examples
 ethbw

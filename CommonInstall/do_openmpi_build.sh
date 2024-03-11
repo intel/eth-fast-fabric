@@ -254,9 +254,13 @@ else
 	then
 		choices="$choices pgi"
 	fi
-	if have_comp icc
+	if have_comp icx
 	then
 		choices="$choices intel"
+	fi
+	if have_comp icc
+	then
+		choices="$choices intellegacy"
 	fi
 	if [ x"$choices" = x ]
 	then
@@ -344,6 +348,7 @@ unset CPPFLAGS
 unset CXXFLAGS
 unset FFLAGS
 unset F90FLAGS
+unset FCFLAGS
 unset LDLIBS
 
 if [ -z "$interface" ]
@@ -427,88 +432,50 @@ fi
 
 	case "$compiler" in
 	gcc)
-		if [[ ( "$ID" == "rhel"  &&  $(echo "$VERSION_ID >= 8.0" | bc -l) == 1 ) ]]; then
-			openmpi_comp_env="$openmpi_comp_env CC=gcc CFLAGS=\"-O3 -fPIC\""
-		else
-			openmpi_comp_env="$openmpi_comp_env CC=gcc CFLAGS=-O3"
-		fi
+		openmpi_comp_env="$openmpi_comp_env CC=gcc CFLAGS=\"-O3 -fPIC\""
 		if have_comp g++
 		then
-			openmpi_comp_env="$openmpi_comp_env CXX=g++"
+			openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=g++"
 		else
 			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
 		fi
 		if have_comp gfortran
 		then
-			openmpi_comp_env="$openmpi_comp_env F77=gfortran FC=gfortran"
-		elif have_comp g77
-		then
-			openmpi_comp_env="$openmpi_comp_env F77=g77 --disable-mpi-f90"
+			openmpi_comp_env="$openmpi_comp_env --enable-mpi-fortran FC=gfortran"
 		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-f77 --disable-mpi-f90"
-		fi;;
-
-	pathscale)
-		openmpi_comp_env="$openmpi_comp_env CC=pathcc"
-		disable_auto_requires="--define 'disable_auto_requires 1'"
-		if have_comp pathCC
-		then
-			openmpi_comp_env="$openmpi_comp_env CXX=pathCC"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
-		fi
-		if have_comp pathf90
-		then
-			openmpi_comp_env="$openmpi_comp_env F77=pathf90 FC=pathf90"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-f77 --disable-mpi-f90"
-		fi
-		# test for fedora core 6 or redhat EL5
-		if { [ -f /etc/fedora-release ] && { uname -r|grep fc6; }; } \
-			|| { [ -f /etc/redhat-release ] && { uname -r|grep el5; }; }
-		then
-			use_default_rpm_opt_flags=0
-		fi;;
-
-	pgi)
-		disable_auto_requires="--define 'disable_auto_requires 1'"
-		openmpi_comp_env="$openmpi_comp_env CC=pgcc"
-		use_default_rpm_opt_flags=0
-		if have_comp pgCC
-		then
-			openmpi_comp_env="$openmpi_comp_env CXX=pgCC"
-			# See http://www.pgroup.com/userforum/viewtopic.php?p=2371
-			openmpi_wrapper_cxx_flags="-fpic"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
-		fi
-		if have_comp pgf77
-		then
-			openmpi_comp_env="$openmpi_comp_env F77=pgf77"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-f77"
-		fi
-		if have_comp pgf90
-		then
-			openmpi_comp_env="$openmpi_comp_env FC=pgf90 FCFLAGS=-O2"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-f90"
+			openmpi_comp_env="$openmpi_comp_env --disable-mpi-fortran"
 		fi;;
 
 	intel)
 		disable_auto_requires="--define 'disable_auto_requires 1'"
+		openmpi_comp_env="$openmpi_comp_env CC=icx CFLAGS=\"-O3 -fPIC\""
+		if have_comp icpx
+		then
+			openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=icpx CXXFLAGS="
+		else
+			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+		fi
+		if have_comp ifx
+		then
+			openmpi_comp_env="$openmpi_comp_env --enable-mpi-fortran FC=ifx FCFLAGS="
+		else
+			openmpi_comp_env="$openmpi_comp_env --disable-mpi-fortran"
+		fi;;
+
+	intellegacy)
+		disable_auto_requires="--define 'disable_auto_requires 1'"
 		openmpi_comp_env="$openmpi_comp_env CC=icc"
 		if have_comp icpc
 		then
-			openmpi_comp_env="$openmpi_comp_env CXX=icpc"
+			openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=icpc"
 		else
 			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
 		fi
 		if have_comp ifort
 		then
-			openmpi_comp_env="$openmpi_comp_env F77=ifort FC=ifort"
+			openmpi_comp_env="$openmpi_comp_env --enable-mpi-fortran FC=ifort"
 		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-f77 --disable-mpi-f90"
+			openmpi_comp_env="$openmpi_comp_env --disable-mpi-fortran"
 		fi;;
 
 	*)

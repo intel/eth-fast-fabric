@@ -367,7 +367,6 @@ then
 		source_mpich_mpivars
 	fi
 
-	MPI_CMD_ARGS="-mca plm_rsh_no_tree_spawn 1"
 	if [ -e ./psm3.params ]
 	then
 		. ./psm3.params

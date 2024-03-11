@@ -43,12 +43,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static FILE *g_verbose_file = NULL;	// file for verbose output
 
-static FSTATUS ParseRoutePoint(struct hmgt_port *port,
-							   EUI64 portGuid, 
-							   FabricData_t *fabricp, 
-							   char* arg, 
-							   Point* pPoint, 
-							   char **pp)
+static FSTATUS ParseRoutePoint(struct hmgt_port *port _UNUSED_,
+							   EUI64 portGuid _UNUSED_, 
+							   FabricData_t *fabricp _UNUSED_, 
+							   char* arg _UNUSED_, 
+							   Point* pPoint _UNUSED_, 
+							   char **pp _UNUSED_)
 {
 #if 1 // HPN_PORT_OPA_FAST_FABRIC
 	// TODO: Implement route focus point 
@@ -140,9 +140,9 @@ FSTATUS ParseFocusPoint(EUI64 portGuid,
  * and put results into fabricp->AllNodes
  */
 static FSTATUS SweepInternal(struct hmgt_port *port, 
-						   EUI64 portGuid, 
+						   EUI64 portGuid _UNUSED_, 
 						   FabricData_t *fabricp, 
-						   SweepFlags_t flags, 
+						   SweepFlags_t flags _UNUSED_, 
 						   int quiet)
 {
 	HMGT_QUERY query;

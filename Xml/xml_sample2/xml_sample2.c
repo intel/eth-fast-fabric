@@ -97,7 +97,7 @@ void SmFree(MyConfig_t *configp, MySmInstance_t *smp)
 // This function will be called each time we encounter an SM start tag
 // we can allocate an Sm Instance and process/validate any attributes
 // in the start tag
-static void *SmXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *SmXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr)
 {
 	int i;
 	//boolean gotattr = FALSE;
@@ -145,7 +145,7 @@ static void *SmXmlParserStart(IXmlParserState_t *state, void *parent, const char
 // the parent's list.  Note that we do not add it to the list
 // until the end tag, this way incomplete or inaccurate SmInstances
 // are never placed in the parent's list
-static void SmXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SmXmlParserEnd(IXmlParserState_t *state _UNUSED_, const IXML_FIELD *field _UNUSED_, void *object, void *parent, XML_Char *content _UNUSED_, unsigned len _UNUSED_, boolean valid)
 {
 	MySmInstance_t *smp = (MySmInstance_t*)object;
 	MyConfig_t *configp = (MyConfig_t*)parent;
@@ -164,7 +164,7 @@ fail:
 }
 
 // for output, this outputs all the SMs in the MyConfig
-static void ConfigXmlOutputSms(IXmlOutputState_t *state, const char *tag, void *data)
+static void ConfigXmlOutputSms(IXmlOutputState_t *state, const char *tag _UNUSED_, void *data)
 {
 	MyConfig_t *configp = (MyConfig_t*)data;
 	LIST_ITEM *p;
@@ -202,7 +202,7 @@ void SMFreeAll(MyConfig_t *configp)
 }
 
 // Config start tag
-static void *ConfigXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *ConfigXmlParserStart(IXmlParserState_t *state _UNUSED_, void *parent _UNUSED_, const char **attr)
 {
 	int i;
 	//boolean gotattr = FALSE;
@@ -229,7 +229,14 @@ static void *ConfigXmlParserStart(IXmlParserState_t *state, void *parent, const 
 }
 
 // Config end tag
-static void ConfigXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void ConfigXmlParserEnd(
+	IXmlParserState_t *state _UNUSED_,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	MyConfig_t *configp = (MyConfig_t*)object;
 

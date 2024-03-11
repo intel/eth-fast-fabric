@@ -77,8 +77,8 @@ SHLIB_SONAME=$(notdir $(CMD_TARGETS_SHLIB))
 # ----------------------------
 # -fcheck-new does the opposite of what the manual implies.
 # -fcheck-new DISABLES the run-time test of return value from new
-CMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -Wall -Werror=format-security -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector-all -fstack-clash-protection -flto
-CCMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -Wall -Werror=format-security -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector-all -fstack-clash-protection -flto -fcheck-new -Wno-ctor-dtor-privacy
+CMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector-all -fstack-clash-protection -flto
+CCMACH		= -pipe -DTARGET_CPU_FAMILY_X86 -D__X86_64__ -DCPU_LE -m64 -fno-strict-aliasing -fstack-protector-all -fstack-clash-protection -flto -fcheck-new -Wno-ctor-dtor-privacy
 ifeq ($(shell expr $(GCC_MAJOR_VERSION) \>= 7), 1)
 ifeq ($(shell expr $(GCC_MINOR_VERSION) \>= 0), 1)
 CMACH+= -std=gnu90 -Wno-misleading-indentation -Wno-format-truncation
@@ -90,6 +90,96 @@ CMACH+= -fcf-protection=full
 CCMACH+= -fcf-protection=full
 endif
 endif
+
+# Additions for SDLe Sep-2023
+
+## Compiler warnings and detection
+CMACH+= -Wall -Wextra
+CCMACH+= -Wall -Wextra
+ifeq "$(BUILD_CONFIG)" "release"
+CMACH+= -Werror
+CCMACH+= -Werror
+endif
+
+## Control Flow Integrity
+#CMACH+= -fsanitize=cfi						# gcc: error: unrecognized argument to '-fsanitize=' option: 'cfi'
+#CCMACH+= -fsanitize=cfi					# gcc: error: unrecognized argument to '-fsanitize=' option: 'cfi'
+ifeq "$(BUILD_CONFIG)" "release"
+CMACH+= -flto
+CCMACH+= -flto
+#CMACH+= -fvisibility=hidden				# causes issues with backtrace called inside a library or tool
+#CCMACH+= -fvisibility=hidden				# causes issues with backtrace called inside a library or tool
+endif
+
+## Format String Defense
+CMACH+= -Wformat -Wformat-security
+CCMACH+= -Wformat -Wformat-security
+ifeq "$(BUILD_CONFIG)" "release"
+CMACH+= -Werror=format-security
+CCMACH+= -Werror=format-security
+endif
+
+## Inexecutable Stack
+ifeq "$(BUILD_CONFIG)" "release"
+CMACH+= -z noexecstack
+CCMACH+= -z noexecstack
+endif
+
+## Position Independent Execution
+CMACH+= -fPIE -pie
+CCMACH+= -fPIE -pie
+
+## Pre-processor Macros
+CMACH+= -D_FORTIFY_SOURCE=2
+CCMACH+= -D_FORTIFY_SOURCE=2
+
+## Spectre Variant 1 - Mitigating Bounds Check Bypass (gcc version 18.0.3 and later)
+ifeq ($(shell expr $(GCC_MAJOR_VERSION) \>= 18),1)
+ifeq ($(shell expr $(GCC_MINOR_VERSION) \>= 0),1)
+ifeq ($(shell expr $(GCC_MACRO_VERSION) \>= 3),1)
+CMACH+= -mconditional-branch=keep -mconditional-branch=pattern-report -mconditonal-branch=pattern-fix
+CCMACH+= -mconditional-branch=keep -mconditional-branch=pattern-report -mconditonal-branch=pattern-fix
+endif
+endif
+endif
+
+## Spectre Variant 2 - Mitigating Branch Target Injection (gcc version 18.0.3 and later)
+ifeq ($(shell expr $(GCC_MAJOR_VERSION) \>= 18),1)
+ifeq ($(shell expr $(GCC_MINOR_VERSION) \>= 0),1)
+ifeq ($(shell expr $(GCC_MACRO_VERSION) \>= 3),1)
+CMACH+= -mfunction-return=thunk -mindirect-branch=thunk -mindirect-branch-register
+CCMACH+= -mfunction-return=thunk -mindirect-branch=thunk -mindirect-branch-register
+endif
+endif
+endif
+
+## Stack and Heap Overlap Protection
+ifeq "$(BUILD_CONFIG)" "release"
+CMACH+= -Wl,-z,relro,-z,now
+CCMACH+= -Wl,-z,relro,-z,now
+endif
+
+## Stack Protection
+ifeq "$(BUILD_CONFIG)" "debug"
+CMACH+= -fstack-protector
+CCMACH+= -fstack-protector
+endif
+ifeq "$(BUILD_CONFIG)" "release"
+CMACH+= -fstack-protector-strong
+CCMACH+= -fstack-protector-strong
+endif
+
+# Macro to aid marking parameters and variables as unused (to suppress warning)
+CMACH+= -D_UNUSED_="__attribute__((unused))"
+CCMACH+= -D_UNUSED_="__attribute__((unused))"
+
+# Macro to suppress fallthrough warning
+CMACH+= -D_FALLTHRU_="__attribute__((fallthrough))"
+CCMACH+= -D_FALLTHRU_="__attribute__((fallthrough))"
+
+
+# End: Additions for SDLe Sep-2023
+
 CSYS		= -DLINUX -Dlinux -D__LINUX__
 CCSYS		= $(CSYS)
 CCLIBS		= 

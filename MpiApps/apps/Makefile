@@ -1,6 +1,6 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2022, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -159,8 +159,10 @@ OSU: SHOWMPI
 		find . -name configure |xargs -r touch
 	cd osu-micro-benchmarks-$(OSU_VER); \
 	export PATH=$(OSU_PATH); \
-	if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" || "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
-		# intel compiler \
+	if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" \
+	|| "$(REAL_MPICC)" == *"mpiicx"* || "$(I_MPI_CC)" == "icx" || "$(MPICH_CC)" == "icx" \
+	|| "$(MPICH_PREFIX)" == *"intel/openmpi"* ]]; then \
+		# intel compiler (icc/icx) \
 		./configure $(OSU_CONFIG) CC=$(REAL_MPICC) CXX=$(REAL_MPICXX) LIBS="-lirc -lsvml"; make; \
 	else \
 		# gcc compiler \
@@ -172,9 +174,9 @@ OSU: SHOWMPI
 IMB: SHOWMPI
 	@echo "Building Intel Micro Benchmarks..."
 ifeq "$(MPI_APPS_ONEAPI)" "y"
-	cd imb; make CC=$(MPICC) CXX=$(MPICXX) all IMB-MPI1-GPU
+	cd imb; make CC=$(MPICC) CXX=$(MPICXX) CXXFLAGS=-Wno-register all IMB-MPI1-GPU
 else
-	cd imb; make CC=$(MPICC) CXX=$(MPICXX) all
+	cd imb; make CC=$(MPICC) CXX=$(MPICXX) CXXFLAGS=-Wno-register all
 endif
 	@echo
 
@@ -193,8 +195,9 @@ XHPL2: SHOWMPI
 		cd $(HPL_VER); \
 		if [[ "$(MPICH_PREFIX)" == *"oneapi"* ]]; then \
 			# Intel MPI \
-			if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" ]]; then \
-				# IntelMPI & icc \
+			if [[ "$(REAL_MPICC)" == *"mpiicc"* || "$(I_MPI_CC)" == "icc" || "$(MPICH_CC)" == "icc" \
+			|| "$(REAL_MPICC)" == *"mpiicx"* || "$(I_MPI_CC)" == "icx" || "$(MPICH_CC)" == "icx" ]]; then \
+				# IntelMPI & icc/icx \
 				make HPL_OPTS="-lirc" arch=ICS.`uname -s`.$$BLAS_TYPE; \
 			else \
 				# IntelMPI & gcc \

@@ -1,18 +1,18 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethextractstat2 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH ethextractstat2 8 "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethextractstat2
 
 
 .PP
-Performs an error analysis of a fabric and provides augmented information from a topology\(ulfile including all error counters. The output is in a CSV format suitable for importing into a spreadsheet or parsed by other scripts. ethextractstat2 is a front end to the ethreport and ethxmlextract tools.
+Performs a per link error analysis of a fabric and provides augmented information from a topology\(ulfile including all error counters. The output is in a CSV format suitable for importing into a spreadsheet or parsed by other scripts. ethextractstat2 is a front end to the ethreport and ethxmlextract tools. This script can be used as a sample for creating custom reports.
 .SH Syntax
 ethextractstat2 topology\(ulfile [ethreport  \fIoptions\fR]
 .SH Options

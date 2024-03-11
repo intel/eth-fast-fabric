@@ -68,3 +68,7 @@ __GNUC_PATCHLEVEL__	= $(shell touch tmp_dME.c;gcc -dM -E tmp_dME.c|grep -w __GNU
 # for now keep these distinct
 GCC_MAJOR_VERSION ?= $(shell $(CC) -v 2>&1 | grep -F 'gcc version' | cut -f3 -d' ' | cut -f1 -d'.')
 GCC_MINOR_VERSION ?= $(shell $(CC) -v 2>&1 | grep -F 'gcc version' | cut -f3 -d' ' | cut -f2 -d'.')
+GCC_MICRO_VERSION ?= $(shell $(CC) -v 2>&1 | grep -F 'gcc version' | cut -f3 -d' ' | cut -f3 -d'.')
+ifeq "$(GCC_MICRO_VERSION)" ""
+GCC_MICRO_VERSION ?= 0
+endif

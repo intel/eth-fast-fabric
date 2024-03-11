@@ -46,8 +46,9 @@ Usage_full()
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
 	echo "Produces a CSV file listing all or some of the links in the fabric." >&2
-	echo "${cmd} is a front end to the ethreport tool. The output from this" >&2
-	echo "tool can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "${cmd} is a front end to the ethreport tool. The output" >&2
+	echo "from this tool can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "This script can be used as a sample for creating custom per link reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "   List all the links in the fabric:" >&2
@@ -86,6 +87,7 @@ if [ -s $tempfile ]
 then
 	cat $tempfile| /usr/sbin/ethxmlextract -H -d \; -e LinkSummary.Link.Port.IfAddr -e LinkSummary.Link.Port.PortNum -e LinkSummary.Link.Port.PortId -e LinkSummary.Link.Port.NodeType -e LinkSummary.Link.Port.NodeDesc|while read line
 	do
+		# A link consists of 2 ports, so must consolidate 2 lines
 		if [ x"$line1" = x ]
 		then
 			# 1st port in given link

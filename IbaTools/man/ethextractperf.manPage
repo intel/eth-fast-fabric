@@ -1,18 +1,18 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethextractperf 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH ethextractperf 8 "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethextractperf
 
 
 .PP
-Provides a report of all performance counters in a CSV format suitable for importing into a spreadsheet or parsed by other scripts for further analysis. It generates a detailed ethreport component summary report and pipes the result to ethxmlextract, extracting element values for NodeDesc, Chassis ID, PortNum, and all the performance counters. Extraction is performed only from the Systems portion of the report, which does not contain Neighbor information (the Neighbor portions are suppressed).
+Provides a report of all the per port performance counters in a CSV format suitable for importing into a spreadsheet or parsed by other scripts for further analysis. It does this by generating a detailed ethreport component summary report and piping the result to ethxmlextract, extracting element values for NodeDesc, Chassis ID, PortNum, and all the performance counters. Extraction is performed only from the Systems portion of the report, which does not contain Neighbor information (the Neighbor portions are suppressed). This script can be used as a sample for creating custom per port reports.
 .SH Syntax
 ethextractperf [ethreport  \fIoptions\fR]
 .SH Options

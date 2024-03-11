@@ -74,3 +74,69 @@ sub check_depmod()
 	}
 	return 0;
 }
+
+sub get_kernel_module_for_intel_gpu
+{
+	# 1 - kernel ver
+	# 2 - Gpu_Install to be returned - "INTEL_GPU", "NV_VPU", or "NONE"
+	# 3 - Gpu_Dir to be returned - real directory of Module.symver or "CURRENT_KERNEL" or ""
+
+	my ($Kver) = shift();
+	my $gpu_install;
+	my $gpu_dir = "";
+	my $retval = 1;
+
+	if (-e "/usr/lib64/libze_loader.so.1" && -e "/usr/lib64/libze_intel_gpu.so.1") {
+		# use Module.symvers if present, else CURRENT_KERNEL
+		if (GetYesNo("Support for Intel GPU discovered - install for Intel GPU?", "y") == 1) {
+			if (0 == system("find /usr/src/ -name Module.symvers | grep -iq dmabuf")) {
+				chomp($gpu_dir = `find /usr/src/ -name Module.symvers | grep dmabuf | sort -V | tail -1 | xargs dirname`);
+			} else {
+				$gpu_dir = "CURRENT_KERNEL";
+			}
+			$gpu_install = "INTEL_GPU";
+		} else {
+			$gpu_install = "NONE";
+			$retval = 0;
+		}
+	} else {
+		$gpu_install = "NONE";
+		$retval = 0;
+	}
+
+	$_[0] = $gpu_install;
+	$_[1] = $gpu_dir;
+
+	return $retval;
+}
+
+sub get_kernel_module_for_nv_gpu
+{
+	# 1 - kernel ver
+	# 2 - Gpu_Install to be returned - "INTEL_GPU", "NV_VPU", or "NONE"
+	# 3 - Gpu_Dir to be returned - real directory of Module.symver or "CURRENT_KERNEL" or ""
+
+	my ($Kver) = shift();
+	my $gpu_install;
+	my $gpu_dir = "";
+	my $retval = 1;
+
+	# use Module.symvers if present
+	if (0 == system("find /usr/src/ -name Module.symvers | grep -iq nvidia")) {
+		if (GetYesNo("Support for NVIDIA GPU discovered - install for NVIDIA GPU?", "y") == 1) {
+			chomp($gpu_dir = `find /usr/src/ -name Module.symvers | grep nvidia | sort -V | tail -1 | xargs dirname`);
+			$gpu_install = "NV_GPU";
+		} else {
+			$gpu_install = "NONE";
+			$retval = 0;
+		}
+	} else {
+		$gpu_install = "NONE";
+		$retval = 0;
+	}
+
+	$_[0] = $gpu_install;
+	$_[1] = $gpu_dir;
+
+	return $retval;
+}

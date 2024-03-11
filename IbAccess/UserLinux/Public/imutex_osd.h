@@ -59,7 +59,7 @@ typedef pthread_mutex_t		MUTEX;
  ****************************************************************************/
 static _inline void
 MutexInitState( 
-	IN MUTEX* const pMutex )
+	IN MUTEX* const pMutex _UNUSED_ )
 {
 	/* **************************************************** */
 	/* ************ DO NOTHING FOR NOW !!! *************** */

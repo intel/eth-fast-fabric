@@ -59,88 +59,88 @@ typedef enum {
 	P_UNKNOWN_ENTRY, P_SUCCESS, P_ERROR
 } ProcessState;
 
-SNMPOid lldpLocChassisId = { ".1.0.8802.1.1.2.1.3.2.0", SNMP_MSG_GET };
-SNMPOid lldpLocSysName = { ".1.0.8802.1.1.2.1.3.3.0", SNMP_MSG_GET };
-SNMPOid lldpLocSysCapSupported = { ".1.0.8802.1.1.2.1.3.5.0", SNMP_MSG_GET };
-SNMPOid lldpLocSysCapEnabled = { ".1.0.8802.1.1.2.1.3.6.0", SNMP_MSG_GET };
+SNMPOid lldpLocChassisId = { ".1.0.8802.1.1.2.1.3.2.0", SNMP_MSG_GET, {0}, 0 };
+SNMPOid lldpLocSysName = { ".1.0.8802.1.1.2.1.3.3.0", SNMP_MSG_GET, {0}, 0 };
+SNMPOid lldpLocSysCapSupported = { ".1.0.8802.1.1.2.1.3.5.0", SNMP_MSG_GET, {0}, 0 };
+SNMPOid lldpLocSysCapEnabled = { ".1.0.8802.1.1.2.1.3.6.0", SNMP_MSG_GET, {0}, 0 };
 
-SNMPOid lldpLocPortEntry = { ".1.0.8802.1.1.2.1.3.7.1", SNMP_MSG_GETNEXT };
-SNMPOid lldpLocPortIdSubtype = {".1.0.8802.1.1.2.1.3.7.1.2", SNMP_MSG_GETNEXT};
-SNMPOid lldpLocPortId = { ".1.0.8802.1.1.2.1.3.7.1.3", SNMP_MSG_GETNEXT };
-SNMPOid lldpLocPortDesc = { ".1.0.8802.1.1.2.1.3.7.1.4", SNMP_MSG_GETNEXT };
+SNMPOid lldpLocPortEntry = { ".1.0.8802.1.1.2.1.3.7.1", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpLocPortIdSubtype = {".1.0.8802.1.1.2.1.3.7.1.2", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid lldpLocPortId = { ".1.0.8802.1.1.2.1.3.7.1.3", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpLocPortDesc = { ".1.0.8802.1.1.2.1.3.7.1.4", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid lldpLocManAddrIfId = { ".1.0.8802.1.1.2.1.3.8.1.5", SNMP_MSG_GETNEXT };
+SNMPOid lldpLocManAddrIfId = { ".1.0.8802.1.1.2.1.3.8.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid lldpRemEntry = { ".1.0.8802.1.1.2.1.4.1.1", SNMP_MSG_GETNEXT };
-SNMPOid lldpRemChassisId = { ".1.0.8802.1.1.2.1.4.1.1.5", SNMP_MSG_GETNEXT };
-SNMPOid lldpRemPortIdSubtype = { ".1.0.8802.1.1.2.1.4.1.1.6", SNMP_MSG_GETNEXT };
-SNMPOid lldpRemPortId = { ".1.0.8802.1.1.2.1.4.1.1.7", SNMP_MSG_GETNEXT };
-SNMPOid lldpRemSysName = { ".1.0.8802.1.1.2.1.4.1.1.9", SNMP_MSG_GETNEXT };
-SNMPOid lldpRemSysCapEnabled = { ".1.0.8802.1.1.2.1.4.1.1.12", SNMP_MSG_GETNEXT };
+SNMPOid lldpRemEntry = { ".1.0.8802.1.1.2.1.4.1.1", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpRemChassisId = { ".1.0.8802.1.1.2.1.4.1.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpRemPortIdSubtype = { ".1.0.8802.1.1.2.1.4.1.1.6", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpRemPortId = { ".1.0.8802.1.1.2.1.4.1.1.7", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpRemSysName = { ".1.0.8802.1.1.2.1.4.1.1.9", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid lldpRemSysCapEnabled = { ".1.0.8802.1.1.2.1.4.1.1.12", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid sysObjectID = { ".1.3.6.1.2.1.1.2.0", SNMP_MSG_GET };
-SNMPOid sysName = { ".1.3.6.1.2.1.1.5.0", SNMP_MSG_GET };
-SNMPOid ifNumber = { ".1.3.6.1.2.1.2.1.0", SNMP_MSG_GET };
-SNMPOid ifIndex = { ".1.3.6.1.2.1.2.2.1.1", SNMP_MSG_GETNEXT };
-SNMPOid ifDescr = { ".1.3.6.1.2.1.2.2.1.2", SNMP_MSG_GETNEXT };
-SNMPOid ifType = { ".1.3.6.1.2.1.2.2.1.3", SNMP_MSG_GETNEXT };
-SNMPOid ifMTU = { ".1.3.6.1.2.1.2.2.1.4", SNMP_MSG_GETNEXT };
-SNMPOid ifSpeed = { ".1.3.6.1.2.1.2.2.1.5", SNMP_MSG_GETNEXT };
-SNMPOid ifPhysAddress = { ".1.3.6.1.2.1.2.2.1.6", SNMP_MSG_GETNEXT };
-SNMPOid ifOperStatus = { ".1.3.6.1.2.1.2.2.1.8", SNMP_MSG_GETNEXT };
-SNMPOid ifInDiscards = {".1.3.6.1.2.1.2.2.1.13", SNMP_MSG_GETNEXT};
-SNMPOid ifInErrors = {".1.3.6.1.2.1.2.2.1.14", SNMP_MSG_GETNEXT};
-SNMPOid ifInUnknownProtos = {".1.3.6.1.2.1.2.2.1.15", SNMP_MSG_GETNEXT};
-SNMPOid ifOutDiscards = {".1.3.6.1.2.1.2.2.1.19", SNMP_MSG_GETNEXT};
-SNMPOid ifOutErrors = {".1.3.6.1.2.1.2.2.1.20", SNMP_MSG_GETNEXT};
+SNMPOid sysObjectID = { ".1.3.6.1.2.1.1.2.0", SNMP_MSG_GET, {0}, 0 };
+SNMPOid sysName = { ".1.3.6.1.2.1.1.5.0", SNMP_MSG_GET, {0}, 0 };
+SNMPOid ifNumber = { ".1.3.6.1.2.1.2.1.0", SNMP_MSG_GET, {0}, 0 };
+SNMPOid ifIndex = { ".1.3.6.1.2.1.2.2.1.1", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifDescr = { ".1.3.6.1.2.1.2.2.1.2", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifType = { ".1.3.6.1.2.1.2.2.1.3", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifMTU = { ".1.3.6.1.2.1.2.2.1.4", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifSpeed = { ".1.3.6.1.2.1.2.2.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifPhysAddress = { ".1.3.6.1.2.1.2.2.1.6", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifOperStatus = { ".1.3.6.1.2.1.2.2.1.8", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifInDiscards = {".1.3.6.1.2.1.2.2.1.13", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifInErrors = {".1.3.6.1.2.1.2.2.1.14", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifInUnknownProtos = {".1.3.6.1.2.1.2.2.1.15", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifOutDiscards = {".1.3.6.1.2.1.2.2.1.19", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifOutErrors = {".1.3.6.1.2.1.2.2.1.20", SNMP_MSG_GETNEXT, {0}, 0};
 
-SNMPOid ipAdEntIfIndex = { ".1.3.6.1.2.1.4.20.1.2", SNMP_MSG_GETNEXT };
+SNMPOid ipAdEntIfIndex = { ".1.3.6.1.2.1.4.20.1.2", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid dot3StatsSingleCollisionFrames = { ".1.3.6.1.2.1.10.7.2.1.4", SNMP_MSG_GETNEXT };
-SNMPOid dot3StatsMultipleCollisionFrames = { ".1.3.6.1.2.1.10.7.2.1.5", SNMP_MSG_GETNEXT };
-SNMPOid dot3StatsSQETestErrors = { ".1.3.6.1.2.1.10.7.2.1.6", SNMP_MSG_GETNEXT };
-SNMPOid dot3StatsDeferredTransmissions = { ".1.3.6.1.2.1.10.7.2.1.7", SNMP_MSG_GETNEXT };
-SNMPOid dot3StatsLateCollisions = { ".1.3.6.1.2.1.10.7.2.1.8", SNMP_MSG_GETNEXT };
-SNMPOid dot3StatsExcessiveCollisions = { ".1.3.6.1.2.1.10.7.2.1.9", SNMP_MSG_GETNEXT };
-SNMPOid dot3StatsCarrierSenseErrors = { ".1.3.6.1.2.1.10.7.2.1.11", SNMP_MSG_GETNEXT };
+SNMPOid dot3StatsSingleCollisionFrames = { ".1.3.6.1.2.1.10.7.2.1.4", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3StatsMultipleCollisionFrames = { ".1.3.6.1.2.1.10.7.2.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3StatsSQETestErrors = { ".1.3.6.1.2.1.10.7.2.1.6", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3StatsDeferredTransmissions = { ".1.3.6.1.2.1.10.7.2.1.7", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3StatsLateCollisions = { ".1.3.6.1.2.1.10.7.2.1.8", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3StatsExcessiveCollisions = { ".1.3.6.1.2.1.10.7.2.1.9", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3StatsCarrierSenseErrors = { ".1.3.6.1.2.1.10.7.2.1.11", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid dot3HCStatsAlignmentErrors = { ".1.3.6.1.2.1.10.7.11.1.1", SNMP_MSG_GETNEXT };
-SNMPOid dot3HCStatsFCSErrors = { ".1.3.6.1.2.1.10.7.11.1.2", SNMP_MSG_GETNEXT };
-SNMPOid dot3HCStatsInternalMacTransmitErrors = { ".1.3.6.1.2.1.10.7.11.1.3", SNMP_MSG_GETNEXT };
-SNMPOid dot3HCStatsFrameTooLongs = { ".1.3.6.1.2.1.10.7.11.1.4", SNMP_MSG_GETNEXT };
-SNMPOid dot3HCStatsInternalMacReceiveErrors = { ".1.3.6.1.2.1.10.7.11.1.5", SNMP_MSG_GETNEXT };
-SNMPOid dot3HCStatsSymbolErrors = { ".1.3.6.1.2.1.10.7.11.1.6", SNMP_MSG_GETNEXT };
+SNMPOid dot3HCStatsAlignmentErrors = { ".1.3.6.1.2.1.10.7.11.1.1", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3HCStatsFCSErrors = { ".1.3.6.1.2.1.10.7.11.1.2", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3HCStatsInternalMacTransmitErrors = { ".1.3.6.1.2.1.10.7.11.1.3", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3HCStatsFrameTooLongs = { ".1.3.6.1.2.1.10.7.11.1.4", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3HCStatsInternalMacReceiveErrors = { ".1.3.6.1.2.1.10.7.11.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid dot3HCStatsSymbolErrors = { ".1.3.6.1.2.1.10.7.11.1.6", SNMP_MSG_GETNEXT, {0}, 0 };
 
-//SNMPOid dot1dBasePortIfIndex = { ".1.3.6.1.2.1.17.1.4.1.2", SNMP_MSG_GETNEXT };
+//SNMPOid dot1dBasePortIfIndex = { ".1.3.6.1.2.1.17.1.4.1.2", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid ifMauStatus = { ".1.3.6.1.2.1.26.2.1.1.4", SNMP_MSG_GETNEXT };
-SNMPOid ifMauMediaAvailable = { ".1.3.6.1.2.1.26.2.1.1.5", SNMP_MSG_GETNEXT };
-SNMPOid ifMauTypeListBits = { ".1.3.6.1.2.1.26.2.1.1.13", SNMP_MSG_GETNEXT };
-SNMPOid ifMauAutoNegAdminStatus = { ".1.3.6.1.2.1.26.5.1.1.1", SNMP_MSG_GETNEXT };
+SNMPOid ifMauStatus = { ".1.3.6.1.2.1.26.2.1.1.4", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifMauMediaAvailable = { ".1.3.6.1.2.1.26.2.1.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifMauTypeListBits = { ".1.3.6.1.2.1.26.2.1.1.13", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid ifMauAutoNegAdminStatus = { ".1.3.6.1.2.1.26.5.1.1.1", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid ifName = {".1.3.6.1.2.1.31.1.1.1.1", SNMP_MSG_GETNEXT};
-SNMPOid ifHCInOctets = {".1.3.6.1.2.1.31.1.1.1.6", SNMP_MSG_GETNEXT};
-SNMPOid ifHCInUcastPkts = {".1.3.6.1.2.1.31.1.1.1.7", SNMP_MSG_GETNEXT};
-SNMPOid ifHCInMulticastPkts = {".1.3.6.1.2.1.31.1.1.1.8", SNMP_MSG_GETNEXT};
-SNMPOid ifHCOutOctets = {".1.3.6.1.2.1.31.1.1.1.10", SNMP_MSG_GETNEXT};
-SNMPOid ifHCOutUcastPkts = {".1.3.6.1.2.1.31.1.1.1.11", SNMP_MSG_GETNEXT};
-SNMPOid ifHCOutMulticastPkts = {".1.3.6.1.2.1.31.1.1.1.12", SNMP_MSG_GETNEXT};
-SNMPOid ifHighSpeed = { ".1.3.6.1.2.1.31.1.1.1.15", SNMP_MSG_GETNEXT };
+SNMPOid ifName = {".1.3.6.1.2.1.31.1.1.1.1", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHCInOctets = {".1.3.6.1.2.1.31.1.1.1.6", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHCInUcastPkts = {".1.3.6.1.2.1.31.1.1.1.7", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHCInMulticastPkts = {".1.3.6.1.2.1.31.1.1.1.8", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHCOutOctets = {".1.3.6.1.2.1.31.1.1.1.10", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHCOutUcastPkts = {".1.3.6.1.2.1.31.1.1.1.11", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHCOutMulticastPkts = {".1.3.6.1.2.1.31.1.1.1.12", SNMP_MSG_GETNEXT, {0}, 0};
+SNMPOid ifHighSpeed = { ".1.3.6.1.2.1.31.1.1.1.15", SNMP_MSG_GETNEXT, {0}, 0 };
 
-SNMPOid entPhysical = { ".1.3.6.1.2.1.47.1.1", SNMP_MSG_GETNEXT };
-SNMPOid entPhysicalDescr = { ".1.3.6.1.2.1.47.1.1.1.1.2", SNMP_MSG_GETNEXT };
+SNMPOid entPhysical = { ".1.3.6.1.2.1.47.1.1", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid entPhysicalDescr = { ".1.3.6.1.2.1.47.1.1.1.1.2", SNMP_MSG_GETNEXT, {0}, 0 };
 //SNMPOid entPhysicalVendorType =
-//		{ ".1.3.6.1.2.1.47.1.1.1.1.3", SNMP_MSG_GETNEXT };
-SNMPOid entPhysicalClass = { ".1.3.6.1.2.1.47.1.1.1.1.5", SNMP_MSG_GETNEXT };
+//		{ ".1.3.6.1.2.1.47.1.1.1.1.3", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid entPhysicalClass = { ".1.3.6.1.2.1.47.1.1.1.1.5", SNMP_MSG_GETNEXT, {0}, 0 };
 SNMPOid entPhysicalHardwareRev =
-		{ ".1.3.6.1.2.1.47.1.1.1.1.8", SNMP_MSG_GETNEXT };
+		{ ".1.3.6.1.2.1.47.1.1.1.1.8", SNMP_MSG_GETNEXT, {0}, 0 };
 SNMPOid entPhysicalFirmwareRev =
-		{ ".1.3.6.1.2.1.47.1.1.1.1.9", SNMP_MSG_GETNEXT };
+		{ ".1.3.6.1.2.1.47.1.1.1.1.9", SNMP_MSG_GETNEXT, {0}, 0 };
 SNMPOid entPhysicalSerialNum =
-		{ ".1.3.6.1.2.1.47.1.1.1.1.11", SNMP_MSG_GETNEXT };
-SNMPOid entPhysicalMfgName = { ".1.3.6.1.2.1.47.1.1.1.1.12", SNMP_MSG_GETNEXT };
+		{ ".1.3.6.1.2.1.47.1.1.1.1.11", SNMP_MSG_GETNEXT, {0}, 0 };
+SNMPOid entPhysicalMfgName = { ".1.3.6.1.2.1.47.1.1.1.1.12", SNMP_MSG_GETNEXT, {0}, 0 };
 SNMPOid entPhysicalModelName =
-		{ ".1.3.6.1.2.1.47.1.1.1.1.13", SNMP_MSG_GETNEXT };
+		{ ".1.3.6.1.2.1.47.1.1.1.1.13", SNMP_MSG_GETNEXT, {0}, 0 };
 
 SNMPOid *LLDPOids[] = { &lldpLocChassisId, &lldpLocSysName,
 	&lldpLocSysCapSupported, &lldpLocSysCapEnabled,

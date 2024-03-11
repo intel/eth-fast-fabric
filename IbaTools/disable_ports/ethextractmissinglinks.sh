@@ -52,28 +52,28 @@ Usage_full()
 	echo "   --help - Produces full help text." >&2
 	echo "   -T     - Specifies the topology file to verify against." >&2
 	echo "            Default is /etc/eth-tools/topology.xml" >&2
-	echo "   -o     - Specifies the report type for output. Default is \"${otype}\" report." >&2
+	echo "   -o     - Specifies the report type for output. Default is \"${otype}\"." >&2
 	echo "      verifylinks - Compares fabric (or snapshot) links to supplied topology" >&2
 	echo "            and identifies differences and omissions." >&2
-	echo "      verifyextlinks - Compares fabric (or snapshot) links to supplied topology" >&2
-	echo "            and identifies differences and omissions. Limits analysis to links" >&2
-	echo "            external to systems." >&2
+	echo "      verifyextlinks - Compares fabric (or snapshot) links to supplied" >&2
+	echo "            topology and identifies differences and omissions. Limits analysis" >&2
+	echo "            to links external to systems." >&2
 	echo "      verifyniclinks - Compares fabric (or snapshot) links to supplied topology" >&2
 	echo "            and identify differences and omissions. Limits analysis to links to" >&2
 	echo "            NICs." >&2
 	echo "      verifyislinks - Compares fabric (or snapshot) links to supplied topology" >&2
 	echo "            and identify differences and omissions. Limits analysis to" >&2
 	echo "            interswitch links." >&2
-	echo "      verifyextislinks - Compares fabric (or snapshot) links to supplied topology" >&2
-	echo "            and identify differences and omissions. Limits analysis to" >&2
+	echo "      verifyextislinks - Compares fabric (or snapshot) links to supplied" >&2
+	echo "            topology and identify differences and omissions. Limits analysis to" >&2
 	echo "            interswitch links external to systems." >&2
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
 	echo "Produces a CSV file listing all or some of the links in the fabric." >&2
 	echo "${cmd} is a front end to the ethreport tool that generates a" >&2
-	echo "report listing all or some of the links that are present in the supplied topology" >&2
-	echo "file, but are missing in the fabric. The output from this tool can be imported into" >&2
-	echo "a spreadsheet or parsed by other scripts." >&2
+	echo "report listing all or some of the links that are present in the supplied" >&2
+	echo "topology file, but are missing in the fabric. The output" >&2
+	echo "from this tool can be imported into a spreadsheet or parsed by other scripts." >&2
 	echo >&2
 	echo "for example:" >&2
 	echo "   List all the missing links in the fabric:" >&2
@@ -100,7 +100,8 @@ Usage()
 	echo "   --help - Produces full help text." >&2
 	echo "   -T     - Specifies the topology file to verify against." >&2
 	echo "   -o     - Specifies the report type for output." >&2
-	echo "      verifylinks, verifyextlinks, verifyniclinks, verifyislinks, verifyextislinks" >&2
+	echo "      verifylinks, verifyextlinks, verifyniclinks, verifyislinks," >&2
+	echo "      verifyextislinks" >&2
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
 }

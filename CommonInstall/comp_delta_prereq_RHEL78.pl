@@ -53,6 +53,7 @@ my @psm3_prereq = (
     "numactl-libs",
     "libuuid",
     "rdma-core",
+    "hwloc-libs",
 );
 $comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;
 

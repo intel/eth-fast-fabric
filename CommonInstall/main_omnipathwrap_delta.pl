@@ -943,6 +943,7 @@ sub process_args
 	my $setcurosver = 0;
 	my $setfwmode = 0;
 	my $patch_ofed=0;
+	my $mofed_path="";
 
 	if (scalar @ARGV >= 1) {
 		foreach $arg (@ARGV) {
@@ -1112,9 +1113,36 @@ sub process_args
 				} elsif (defined $ENV{'INTEL_GPU_DIRECT'} && "$ENV{'INTEL_GPU_DIRECT'}" eq "CURRENT_KERNEL" ) {
 					$GPU_Dir = $ENV{'INTEL_GPU_DIRECT'};
 					$GPU_Install="INTEL_GPU";
-				} else {
-					printf STDERR "GPU Direct requested, but neither NVIDIA_GPU_DIRECT or INTEL_GPU_DIRECT set\n";
-					printf STDERR "or <path>/Module.symvers is missing or not equal to 'CURRENT_KERNEL'\n";
+				}
+
+				# GPU direct not set by user, attempt to set automatically
+				# check for intel gpu: if oneapi-ze in package, check for oneapi installed
+				if (("$GPU_Install" eq "NONE") && (0 == find_dir("ONEAPI-ZE"))) {
+					# call get_kernel_module_for_intel_gpu which will set GPU_Install and GPU_Dir if valid
+					if (get_kernel_module_for_intel_gpu($CUR_OS_VER, $GPU_Install, $GPU_Dir) == 1) {
+						setup_env("INTEL_GPU_DIRECT", $GPU_Dir);
+						printf STDERR "Using INTEL_GPU_DIRECT=$GPU_Dir\n";
+					}
+				}
+				# check for nvidia gpu: if cuda in package, check for cuda installed
+				if (("$GPU_Install" eq "NONE") && (0 == find_dir("CUDA"))) {
+					# call get_kernel_module_for_nv_gpu which will set GPU_Install and GPU_Dir if valid
+					if (get_kernel_module_for_nv_gpu($CUR_OS_VER, $GPU_Install, $GPU_Dir) == 1) {
+						setup_env("NVIDIA_GPU_DIRECT", $GPU_Dir);
+						$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
+						$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
+						printf STDERR "Using NVIDIA_GPU_DIRECT=$GPU_Dir\n";
+					}
+				}
+				if ("$GPU_Install" eq "NONE") {
+					printf STDERR "GPU Direct requested, and:\n";
+					printf STDERR "  - Neither NVIDIA_GPU_DIRECT nor INTEL_GPU_DIRECT set\n";
+					printf STDERR "                   -or-\n";
+					printf STDERR "  - GPU support not automatically detected in OS installation\n";
+					printf STDERR "                   -or-\n";
+					printf STDERR "  - GPU support automatically detected but user rejected using it\n";
+					printf STDERR "                   -or-\n";
+					printf STDERR "  - GPU software not included in this package\n";
 					Usage;
 				}
 			} elsif ( "$arg" eq "-C" ) {
@@ -1224,6 +1252,18 @@ sub process_args
 	if ( ($Default_Build || $OFED_force_rebuild ) && ! $allow_install) {
 		printf STDERR "Build options not permitted in this mode\n";
 		Usage;
+	}
+	if ($Default_Build || $OFED_force_rebuild) {
+		# try to set MOFED_PATH if not set
+		if (!defined $ENV{'MOFED_PATH'}) {
+			if ( -d "/usr/src/ofa_kernel/x86_64/$CUR_OS_VER") {
+				if (GetYesNo("Mofed installation discovered - set MOFED_PATH?", "y") == 1) {
+					$mofed_path = `echo /usr/src/ofa_kernel/x86_64/$CUR_OS_VER)`;
+					setup_env("MOFED_PATH", $mofed_path);
+					printf STDERR "Using MOFED_PATH=$mofed_path\n";
+				}
+			}
+		}
 	}
 }
 

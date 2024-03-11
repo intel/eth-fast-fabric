@@ -131,7 +131,15 @@ static FSTATUS ParseMgmtIfAddrPoint(FabricData_t *fabricp, char *arg, Point *pPo
 /* Parse a :port:# suffix, this will limit the Point to the list of ports
  * with the given number
  */
-static FSTATUS ParsePointPort(FabricData_t *fabricp, char *arg, boolean is_portnunm, Point *pPoint, uint8 find_flag, PointPortElinkCompareCallback_t *callback, void *nodecmp, char **pp)
+static FSTATUS ParsePointPort(
+	FabricData_t *fabricp _UNUSED_,
+	char *arg,
+	boolean is_portnunm,
+	Point *pPoint,
+	uint8 find_flag,
+	PointPortElinkCompareCallback_t *callback,
+	void *nodecmp,
+	char **pp)
 {
 	uint16 portnum = 0;
 	char portid[TINY_STR_ARRAY_SIZE+1] = "";
@@ -753,7 +761,7 @@ static FSTATUS ParseNodeNamePatPoint(FabricData_t *fabricp, char *arg, Point *pP
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(Pattern)-1) {
+		if ((size_t)(p - arg) > sizeof(Pattern)-1) {
 			fprintf(stderr, "%s: Node name pattern too long: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;
@@ -796,7 +804,7 @@ static FSTATUS ParseNodeDetPatPoint(FabricData_t *fabricp, char *arg, Point *pPo
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(Pattern)-1) {
+		if ((size_t)(p - arg) > sizeof(Pattern)-1) {
 			fprintf(stderr, "%s: Node Details pattern too long: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;
@@ -911,7 +919,7 @@ static FSTATUS ParseRatePoint(FabricData_t *fabricp, char *arg, Point *pPoint, u
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(Rate)-1) {
+		if ((size_t)(p - arg) > sizeof(Rate)-1) {
 			fprintf(stderr, "%s: Invalid Rate: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;
@@ -973,7 +981,7 @@ static FSTATUS ParsePortStatePoint(FabricData_t *fabricp, char *arg, Point *pPoi
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(State)-1) {
+		if ((size_t)(p - arg) > sizeof(State)-1) {
 			fprintf(stderr, "%s: Invalid Port State: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;
@@ -1034,7 +1042,7 @@ static FSTATUS ParsePortPhysStatePoint(FabricData_t *fabricp, char *arg, Point *
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(PhysState)-1) {
+		if ((size_t)(p - arg) > sizeof(PhysState)-1) {
 			fprintf(stderr, "%s: Invalid Port Phys State: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;
@@ -1107,7 +1115,7 @@ static FSTATUS ParseLinkDetailsPatPoint(FabricData_t *fabricp, char *arg, Point 
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(Pattern)-1) {
+		if ((size_t)(p - arg) > sizeof(Pattern)-1) {
 			fprintf(stderr, "%s: Link Details pattern too long: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;
@@ -1139,7 +1147,7 @@ static FSTATUS ParsePortDetailsPatPoint(FabricData_t *fabricp, char *arg, Point 
 							g_Top_cmdname, arg);
 			return FINVALID_PARAMETER;
 		}
-		if (p - arg > sizeof(Pattern)-1) {
+		if ((size_t)(p - arg) > sizeof(Pattern)-1) {
 			fprintf(stderr, "%s: Port Details pattern too long: %.*s\n",
 							g_Top_cmdname, (int)(p-arg), arg);
 			return FINVALID_PARAMETER;

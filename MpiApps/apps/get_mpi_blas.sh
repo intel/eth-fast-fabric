@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 # 
-# Copyright (c) 2015-2023, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 # 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -54,10 +54,14 @@ if [[ -z "${BLAS_TYPE}" ]]; then
 		# By default, IMPI uses gcc, make that explicit.
 		cc=${I_MPI_CC:-${MPICH_CC:-gcc}}
 
-		if [[ -n "${MKLROOT}" && "${cc}" == "icc" ]]; then 
-			export BLAS_TYPE="MKL-icc"
-		elif [[ -n "${MKLROOT}" && "${cc}" == "gcc" ]]; then 
-			export BLAS_TYPE="MKL-gcc"
+		if [[ -z "${MKLROOT}" && -e /opt/intel/oneapi/mkl/latest/lib ]]; then
+			# HPL makefile will default MKLROOT
+			export BLAS_TYPE="MKL-${cc}"
+		elif [[ -z "${MKLROOT}" && -e /opt/intel/mkl/lib ]]; then
+			# HPL makefile will default MKLROOT
+			export BLAS_TYPE="MKL-${cc}"
+		elif [[ -n "${MKLROOT}" ]]; then
+			export BLAS_TYPE="MKL-${cc}"
 		elif [[ -n "${openblasrpm}" ]]; then
 			export BLAS_TYPE="OPENBLAS"
 		else

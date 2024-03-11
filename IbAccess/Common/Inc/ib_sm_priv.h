@@ -484,7 +484,7 @@ BSWAP_SMP_HEADER(
 
 static __inline void
 BSWAP_NODE_DESCRIPTION(
-	NODE_DESCRIPTION			*Dest
+	NODE_DESCRIPTION			*Dest _UNUSED_
 	)
 {
 	/* pure text field, nothing to swap */
@@ -591,7 +591,7 @@ BSWAP_GUID_INFO(
 
 static __inline void
 BSWAP_VLARBTABLE(
-	VLARBTABLE			*Dest
+	VLARBTABLE			*Dest _UNUSED_
 	)
 {
 	/* we laid this out in network byte order for intel compilers */
@@ -599,7 +599,7 @@ BSWAP_VLARBTABLE(
 
 static __inline void
 BSWAP_LINEAR_FWD_TABLE(
-    FORWARDING_TABLE            *Dest
+    FORWARDING_TABLE            *Dest _UNUSED_
     )
 {
 #if CPU_LE
@@ -669,14 +669,14 @@ BSWAP_VENDOR_DIAG(
 
 static __inline void
 BSWAP_PORT_GROUP_TABLE(
-	PORT_GROUP_TABLE	*Dest
+	PORT_GROUP_TABLE	*Dest _UNUSED_
 	)
 {
 }
 
 static __inline void
 BSWAP_ADAPTIVE_ROUTING_LIDMASK(
-	ADAPTIVE_ROUTING_LIDMASK	*Dest
+	ADAPTIVE_ROUTING_LIDMASK	*Dest _UNUSED_
 	)
 {
 }

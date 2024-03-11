@@ -1,18 +1,18 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethextracterror 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH ethextracterror 8 "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethextracterror
 
 
 .PP
-Produces a CSV file listing all or some of the errors in the current fabric. ethextracterror is a front end to the ethreport tool. The output from this tool can be imported into a spreadsheet or parsed by other scripts.
+Produces a CSV file listing all or some of the per port errors in the current fabric. ethextracterror is a front end to the ethreport tool. The output from this tool can be imported into a spreadsheet or parsed by other scripts. This script can be used as a sample for creating custom per port reports.
 .SH Syntax
 ethextracterror [ethreport  \fIoptions\fR]
 .SH Options

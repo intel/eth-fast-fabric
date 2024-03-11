@@ -1,22 +1,22 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethcapture 1 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH ethcapture 1 "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethcapture
 
 
 .PP
-Captures critical system information into a zipped tar file. The resulting tar file should be sent to Customer Support along with any Intel(R) Ethernet Fabric problem report regarding this system.
+Captures critical system information into a zipped tar file. The resulting tar file should be sent to Intel Customer Support along with any Intel(R) Ethernet Fabric problem reports regarding this system.
 .PP
 
 .B NOTE:
-The resulting host capture file can require significant amounts of space on the host. The actual size varies, but sizes can be multiple megabytes. Intel recommends ensuring that adequate disk space is available on the host system.
+The resulting host capture file can require significant amounts of space on the host. While the actual size varies, sizes can be multiple megabytes. Intel recommends ensuring that adequate disk space is available on the host system.
 
 .SH Syntax
 ethcapture [-d  \fIdetail\fR]  \fIoutput\(ultgz\(ulfile\fR
@@ -45,7 +45,7 @@ Obtains local information from host. This is the default if no options are enter
 
 .sp
 2 (Fabric)
-In addition to \fILocal\fR, also obtains basic fabric information using \fBethreport\fR.
+In addition to \fILocal\fR, obtains basic fabric information using \fBethreport\fR.
 
 .RE
 
@@ -54,7 +54,7 @@ In addition to \fILocal\fR, also obtains basic fabric information using \fBethre
 
 .sp
 3 (Analysis)
-In addition to \fIFabric\fR, also obtains ethallanalysis results. If ethallanalysis has not yet been run, it is run as part of the capture.
+In addition to \fIFabric\fR, obtains ethallanalysis results. If ethallanalysis has not yet been run, it is run as part of the capture.
 
 .RE
 
@@ -69,7 +69,7 @@ In addition to \fIFabric\fR, also obtains ethallanalysis results. If ethallanaly
 .RS
 
 .IP \(bu
-Detail levels 2 - 3 can be used when fabric operational problems occur. If the problem is node-specific, detail level 1 should be sufficient. Detail levels 2 - 3 require an operational Fabric. Typically your support representative requests a given detail level. If a given detail level takes excessively long or fails to be gathered, try a lower detail level.
+Detail levels 2 - 3 can be used when fabric operational problems occur. If the problem is node-specific, detail level 1 should be sufficient. Detail levels 2 - 3 require an operational Fabric. Typically, your support representative requests a given detail level. If a given detail level takes excessively long or fails to be gathered, try a lower detail level.
 .IP \(bu
 For detail levels 2 - 3, the additional information is only available on a node with Intel(R) Ethernet Fabric Suite FastFabric Toolset installed.
 

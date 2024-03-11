@@ -299,7 +299,9 @@ then
 				for port in \$ports; do
 					slot=\$(ls -l /sys/class/net | grep \"\$port \" | awk '{print \$11}' | cut -d '/' -f 6)
 					[ -z \$slot ] && continue
-					irdma_dev=\$(ls \"\$(find /sys/devices/ -path */\$slot/infiniband)\" 2> /dev/null)
+					irdma_dev_fpath=\$(find /sys/devices/ -path */\$slot/infiniband 2> /dev/null)
+					[ -z \$irdma_dev_fpath ] && continue
+					irdma_dev=\$(ls \$irdma_dev_fpath 2> /dev/null)
 					[ -z \$irdma_dev ] && continue
 					ibv_devinfo -d \$irdma_dev | grep '^\s*transport:\s*InfiniBand' > /dev/null 2>&1 || exit 1
 					ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 && exit 0
@@ -312,7 +314,9 @@ then
 				for port in $ports; do
 					slot=\$(ls -l /sys/class/net | grep \"\$port \" | awk '{print \$11}' | cut -d '/' -f 6)
 					[ -z \$slot ] && exit 1
-					irdma_dev=\$(ls \"\$(find /sys/devices/ -path */\$slot/infiniband)\" 2> /dev/null)
+					irdma_dev_fpath=\$(find /sys/devices/ -path */\$slot/infiniband 2> /dev/null)
+					[ -z \$irdma_dev_fpath ] && exit 1
+					irdma_dev=\$(ls \$irdma_dev_fpath 2>/dev/null)
 					[ -z \$irdma_dev ] && exit 1
 					ibv_devinfo -d \$irdma_dev | grep '^\s*transport:\s*InfiniBand' > /dev/null 2>&1 || exit 1
 					ibv_devinfo -d \$irdma_dev | grep '^\s*state:\s*PORT_ACTIVE' > /dev/null 2>&1 || exit 1

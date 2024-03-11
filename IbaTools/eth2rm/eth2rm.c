@@ -226,7 +226,7 @@ void ShowExpectedLinksReport(/*Point *focus,*/ int indent, int detail)
 }
 
 // output brief summary of an expected IB Node
-void ShowExpectedNodeBriefSummary(ExpectedNode *enodep, int indent, int detail)
+void ShowExpectedNodeBriefSummary(ExpectedNode *enodep, int indent, int detail _UNUSED_)
 {
 	fprintf(stderr, "%*s", indent, "");
 	if (enodep->NodeGUID)
@@ -1035,7 +1035,7 @@ void ShowFastFabricHosts(name_mode_t node_name_mode)
 	cl_qmap_t host_list;
 	cl_map_item_t	*q;
 	char myhostname[NODE_DESCRIPTION_ARRAY_SIZE];
-	int i;
+	size_t i;
 
 	ASSERT(node_name_mode != NAME_MODE_GUID);
 

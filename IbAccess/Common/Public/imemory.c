@@ -396,7 +396,7 @@ out:
 // MAC Address of form %02x:%02x:%02x:%02x:%02x:%02x
 // values must be base16, 0x prefix is optional
 FSTATUS StringToMAC(uint8_t *MAC,const char *str, char **endptr,
-					boolean skip_trail_whitespace)
+					boolean skip_trail_whitespace _UNUSED_)
 {
 	FSTATUS status;
 	char *end = NULL;
@@ -663,7 +663,7 @@ FSTATUS StringToDateTime(uint32 *value, const char* str){
 // comparator must be one of "GT", "LT", "GE", "LE".
 // argument may be any 64-bit value
 // string inputs are case insensitive.
-FSTATUS StringToTuple(uint32 *select, uint8 *comparator, uint64 *argument, char* str, char **endptr)
+FSTATUS StringToTuple(uint32 *select, uint8 *comparator, uint64 *argument, char* str, char **endptr _UNUSED_)
 {
 	FSTATUS status = FSUCCESS;
 	char *end;
@@ -951,9 +951,9 @@ MemoryTrackerUnlink(
 // Display memory usage.
 //
 void
+#if defined(MEM_TRACK_ON)
 MemoryDisplayUsage( int method, uint32 minSize, uint32 minTick )
 {
-#if defined(MEM_TRACK_ON)
 	uint32 allocated = 0;
 	uint32 allocations = 0;
 	MEM_ALLOC_HDR	*pHdr;
@@ -1023,6 +1023,9 @@ MemoryDisplayUsage( int method, uint32 minSize, uint32 minTick )
 	last_reported_allocations = total_allocations;
 	MsgOut("IbAccess current allocations=%u bytes=%u max allocations=%u bytes=%u p/s=%d\n",
 			allocations, allocated, max_allocations, max_allocated, allocations_per_sec);
+#else
+MemoryDisplayUsage( int method _UNUSED_, uint32 minSize _UNUSED_, uint32 minTick _UNUSED_ )
+{
 #endif	// MEM_TRACK_ON
 }
 
@@ -1364,8 +1367,8 @@ MemoryAllocatePhysContRel(
 #else	// !MEM_TRACK_ON
 void*
 MemoryAllocateDbg(
-	IN const char *pFileName, 
-	IN int32 nLine, 
+	IN const char *pFileName _UNUSED_, 
+	IN int32 nLine _UNUSED_, 
 	IN uint32 Bytes, 
 	IN boolean IsPageable, 
 	IN uint32 Tag )
@@ -1377,8 +1380,8 @@ MemoryAllocateDbg(
 
 void*
 MemoryAllocate2Dbg(
-	IN const char *pFileName, 
-	IN int32 nLine, 
+	IN const char *pFileName _UNUSED_, 
+	IN int32 nLine _UNUSED_, 
 	IN uint32 Bytes, 
 	IN uint32 flags,
 	IN uint32 Tag )
@@ -1477,8 +1480,8 @@ MemoryAllocate2AndClearRel(
 #else	// !MEM_TRACK_ON
 void*
 MemoryAllocateAndClearDbg( 
-	IN const char *pFileName, 
-	IN int32 nLine,
+	IN const char *pFileName _UNUSED_, 
+	IN int32 nLine _UNUSED_,
 	IN uint32 Bytes, 
 	IN boolean IsPageable, 
 	IN uint32 Tag )
@@ -1490,8 +1493,8 @@ MemoryAllocateAndClearDbg(
 
 void*
 MemoryAllocate2AndClearDbg( 
-	IN const char *pFileName, 
-	IN int32 nLine,
+	IN const char *pFileName _UNUSED_, 
+	IN int32 nLine _UNUSED_,
 	IN uint32 Bytes, 
 	IN uint32 flags, 
 	IN uint32 Tag )
@@ -1601,8 +1604,8 @@ MemoryAllocateObjectArrayDbg(
 #else	// !MEM_TRACK_ON
 void*
 MemoryAllocateObjectArrayDbg(
-	IN const char *pFileName, 
-	int32 nLine,
+	IN const char *pFileName _UNUSED_, 
+	int32 nLine _UNUSED_,
 	IN uint32 ObjectCount, 
 	IN OUT uint32 *pObjectSize,  
 	IN uint32 ByteAlignment, 

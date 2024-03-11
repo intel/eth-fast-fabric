@@ -136,7 +136,7 @@ void IXmlOutputPrintIndent(IXmlOutputState_t *state, const char *format, ...)
 	va_end(args);
 }
 
-void IXmlOutputNoop(IXmlOutputState_t *state, const char *tag, void *data)
+void IXmlOutputNoop(IXmlOutputState_t *state _UNUSED_, const char *tag _UNUSED_, void *data _UNUSED_)
 {
 }
 
@@ -658,6 +658,7 @@ void IXmlOutputStruct(IXmlOutputState_t *state, const char *tag, void *data,
 			case 'P':
 				ASSERT(*(const char**)p);
 				IXmlOutputStrLen(state, fields->tag, *(const char**)p, fields->size);
+				_FALLTHRU_;
 			case 'p':
 				// skip output of NULL string
 				if (*(const char**)p) {
@@ -946,7 +947,7 @@ void IXmlParserTrimWhitespace(IXmlParserState_t *state)
 /* start_func for a simple structure.  Allocates and zeros the structure using
  * size specified in XML_FIELD
  */
-void *IXmlParserStartStruct(IXmlParserState_t *state, void *parent, const char **attr)
+void *IXmlParserStartStruct(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	void *p = MemoryAllocate2AndClear(state->current.field->size, IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 	if (! p) {
@@ -959,10 +960,10 @@ void *IXmlParserStartStruct(IXmlParserState_t *state, void *parent, const char *
 /* end tag function which is a noop.  Use this with start_func=NULL
  * to define XML_FIELDs which are output only
  */
-void IXmlParserEndNoop(struct IXmlParserState *state, 
-				const IXML_FIELD *field,
-				void *object, void *parent, XML_Char *content, unsigned len,
-				boolean valid)
+void IXmlParserEndNoop(struct IXmlParserState *state _UNUSED_, 
+				const IXML_FIELD *field _UNUSED_,
+				void *object _UNUSED_, void *parent _UNUSED_, XML_Char *content _UNUSED_, unsigned len _UNUSED_,
+				boolean valid _UNUSED_)
 {
 }
 
@@ -1166,24 +1167,24 @@ static void IXmlParseField(IXmlParserState_t *state)
 		//	IXmlParserPrintError(state, "Empty contents");
 		//	return;
 		//}
-		if (state->len > field->size-1) {
+		if (state->len > (unsigned int)field->size-1) {
 			IXmlParserPrintWarning(state, "String too long, truncated");
 		}
 		if (state->len)
-			MemoryCopy((char*)p, state->content, MIN(field->size, state->len+1));
+			MemoryCopy((char*)p, state->content, MIN((unsigned int)field->size, state->len+1));
 		else
 			*(char*)p = '\0';
 		((char*)p)[field->size-1] = '\0';
 		break;
 	case 'p':
 		{
-			int len = MIN(field->size, state->len);
+			int len = MIN((unsigned int)field->size, state->len);
 			// Presently empty s, p and c formats are allowed.  To make an error:
 			//if (! state->len) {
 			//	IXmlParserPrintError(state, "Empty contents");
 			//	return;
 			//}
-			if (state->len > field->size) {
+			if (state->len > (unsigned int)field->size) {
 				IXmlParserPrintWarning(state, "String too long, truncated");
 			}
 			*(char**)p = MemoryAllocate2(len+1, IBA_MEM_FLAG_PREMPTABLE, MYTAG);
@@ -1202,11 +1203,11 @@ static void IXmlParseField(IXmlParserState_t *state)
 		//	IXmlParserPrintError(state, "Empty contents");
 		//	return;
 		//}
-		if (state->len > field->size) {
+		if (state->len > (unsigned int)field->size) {
 			IXmlParserPrintWarning(state, "String too long, truncated");
 		}
 		if (state->len)
-			MemoryCopy((char*)p, state->content, MIN(field->size, state->len));
+			MemoryCopy((char*)p, state->content, MIN((unsigned int)field->size, state->len));
 		else
 			*(char*)p = '\0';
 		break;
@@ -1223,7 +1224,7 @@ static void IXmlParseField(IXmlParserState_t *state)
 }
 
 static void XMLCALL
-IXmlParserStartTag(void *data, const char *el, const char **attr)
+IXmlParserStartTag(void *data, const char *el _UNUSED_, const char **attr)
 {
 	IXmlParserState_t *state = (IXmlParserState_t *) data;
 
@@ -1311,7 +1312,7 @@ IXmlParserCheckSubfields(IXmlParserState_t *state,
 }
 
 static void XMLCALL
-IXmlParserEndTag(void *data, const char *el)
+IXmlParserEndTag(void *data, const char *el _UNUSED_)
 {
 	IXmlParserState_t *state = (IXmlParserState_t *) data;
 
@@ -1477,10 +1478,10 @@ IXmlParserRawCharHandler(void *data, const XML_Char *buf, int len)
 
 static void
 DoctypeStopper(void *userData,
-               const XML_Char *doctypeName,
-               const XML_Char *sysid,
-               const XML_Char *pubid,
-               int has_internal_subset)
+               const XML_Char *doctypeName _UNUSED_,
+               const XML_Char *sysid _UNUSED_,
+               const XML_Char *pubid _UNUSED_,
+               int has_internal_subset _UNUSED_)
 {
 	IXmlParserState_t *state = (IXmlParserState_t *) userData;
 	IXmlParserPrintError(state, "DOCTYPE not supported!");
@@ -1488,14 +1489,14 @@ DoctypeStopper(void *userData,
 
 static void
 EntityStopper(void *userData,
-              const XML_Char *entityName,
-              int is_parameter_entity,
-              const XML_Char *value,
-              int value_length,
-              const XML_Char *base,
-              const XML_Char *systemId,
-              const XML_Char *publicId,
-              const XML_Char *notationName)
+              const XML_Char *entityName _UNUSED_,
+              int is_parameter_entity _UNUSED_,
+              const XML_Char *value _UNUSED_,
+              int value_length _UNUSED_,
+              const XML_Char *base _UNUSED_,
+              const XML_Char *systemId _UNUSED_,
+              const XML_Char *publicId _UNUSED_,
+              const XML_Char *notationName _UNUSED_)
 {
 	IXmlParserState_t *state = (IXmlParserState_t *) userData;
 	IXmlParserPrintError(state, "ENTITY not supported!");

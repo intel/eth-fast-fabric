@@ -73,7 +73,7 @@ static void FieldXmlFormatAttr(IXmlOutputState_t *output_state, void *data)
 	}
 }
 
-static void *FieldXmlParserStart(IXmlParserState_t *input_state, void *parent, const char **attr)
+static void *FieldXmlParserStart(IXmlParserState_t *input_state, void *parent _UNUSED_, const char **attr)
 {
 	IXmlOutputState_t *output_state = (IXmlOutputState_t*)IXmlParserGetContext(input_state);
 
@@ -85,7 +85,7 @@ static void *FieldXmlParserStart(IXmlParserState_t *input_state, void *parent, c
 	return NULL;	// pointer returned here will be passed as object to ParserEnd function below
 }
 
-static void FieldXmlParserEnd(IXmlParserState_t *input_state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void FieldXmlParserEnd(IXmlParserState_t *input_state, const IXML_FIELD *field _UNUSED_, void *object _UNUSED_, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid)
 {
 	IXmlOutputState_t *output_state = (IXmlOutputState_t*)IXmlParserGetContext(input_state);
 
@@ -162,6 +162,7 @@ int main(int argc, char **argv)
 		switch (c) {
 			case '$':
 				Usage(0);
+				_FALLTHRU_;
 			case 't':
 				// TrimmedFields treats empty list as tag with no content
 				//fields = TrimmedFields;

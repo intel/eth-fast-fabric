@@ -1,18 +1,18 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH ethextractperf2 8 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH ethextractperf2 8 "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 ethextractperf2
 
 
 .PP
-Provides a report of all performance counters in a CSV format suitable for importing into a spreadsheet or parsed by other scripts for further analysis. It generates a detailed ethreport component summary report and pipes the result to ethxmlextract, extracting element values for NodeDesc, IfAddr, PortNum, neighbor NodeDesc, neighbor IfAddr, neighbor PortNum and all the performance counters.
+Provides a report of all per link performance counters in a CSV format suitable for importing into a spreadsheet or parsed by other scripts for further analysis. It does this by generating a detailed ethreport component summary report and piping the result to ethxmlextract, extracting element values for NodeDesc, IfAddr, PortNum, neighbor NodeDesc, neighbor IfAddr, neighbor PortNum and all the performance counters. This script can be used as a sample for creating custom per link reports.
 .SH Syntax
 ethextractperf2 [ethreport  \fIoptions\fR]
 .SH Options

@@ -106,8 +106,8 @@ HPL_PRESSURE=0.3
 # pcicfg pcispeed initscripts memsize vtd pstates_on pstates_off
 # driver_on driver_off governor cpu_pinned cpu_unpinned pmodules_off
 # cpu cpu_consist hton htoff turbo cstates vtd snmp srp
-# nic_settings stream hpl rping pfc
-TESTS="pcicfg pcispeed initscripts memsize cpu hton turbo cstates vtd snmp srp nic_settings stream rping pfc"
+# nic_settings stream hpl rping udaddy pfc
+TESTS="pcicfg pcispeed initscripts memsize cpu hton turbo cstates snmp srp nic_settings stream rping udaddy pfc"
 
 Usage()
 {
@@ -157,7 +157,9 @@ Usage()
 	echo "  srp - verify srp daemon is not running" >&2
 	echo "  stream - verify memory bandwidth" >&2
 	echo "  nic_settings - verify Ethernet NIC settings are configured as expected" >&2
-	echo "  rping - verify RDMA NICs can establish a lookback RDMA connection."
+	echo "  rping - verify RDMA NICs can establish a reliable loopback RDMA connection." >&2
+	echo "  udaddy - verify RDMA NICs can establish a unreliable loopback RDMA datagram" >&2
+	echo "            communication path." >&2
 	echo "  default - run all tests selected in TESTS" >&2
 	echo >&2
 	echo "Detailed output is written to stdout and appended to" >&2
@@ -948,7 +950,7 @@ test_nic_settings()
 		irdma_ver="$(modinfo -F version irdma)"
 		if [[ -z "$irdma_ver" ]]; then
 			{ fail_msg "irdma module has no version information. Expect $IRDMA_VER"; failure=1; }
-		elif [[ "$irdma_ver" != "$IRDMAE_VER" ]]; then
+		elif [[ "$irdma_ver" != "$IRDMA_VER" ]]; then
 			{ fail_msg "Incorrect irdma module version. Expect $IRDMA_VER, got $irdma_ver"; failure=1; }
 		fi
 	fi
@@ -1022,6 +1024,50 @@ test_rping()
 	pass
 }
 
+test_udaddy()
+{
+	TEST="udaddy"
+	echo "udaddy..."
+	date
+
+	check_tool udaddy
+
+	set -x
+
+	failure=0
+	for DEV in $ROCE_IFS
+	do
+		LINK4=($(ip addr show ${DEV} up | grep -Go 'inet [0-9.]\+' | cut -f2 -d\ ))
+
+		if [[ -z "${LINK4}" ]]; then
+			fail_msg "${DEV} Link down or no IPv4 address."
+			failure=1
+		else
+			for L in ${LINK4[*]}
+			do
+				pkill -f "udaddy -b ${L} -C 2"
+
+				udaddy -b ${L} -C 2 >/dev/null 2>&1 &
+				sleep 2
+				udaddy -s ${L} -b ${L} -C 2 >/dev/null 2>&1
+
+				if [[ $? -eq 0 ]]; then
+					pass_msg " ${DEV}/${L}"
+				else
+					fail_msg "${DEV}/${L} udaddy failed."
+					failure=1
+				fi
+
+				pkill -f "udaddy -b ${L} -C 2"
+			done
+		fi
+	done
+
+	[ $failure -ne 0 ] && exit 1
+
+	pass
+}
+
 check_nic_settings()
 {
 	dev=$1
@@ -1055,7 +1101,9 @@ check_nic_settings()
 		{ fail_msg "Incorrect MTU on $dev. Expect $MTU, got $act_mtu"; failure=1; }
 
 	# get Intel Ethernet NIC information
-	irdma_dev="$(ls $(find /sys/devices/ -name $slot)/infiniband)"
+	irdma_dev_fpath="$(find /sys/devices/ -path */$slot/infiniband 2>/dev/null)"
+	[ -n "$irdma_dev_fpath" ] || fail "Cannot find infiniband device for $slot"
+	irdma_dev="$(ls $irdma_dev_fpath 2>/dev/null)"
 	[ -n "$irdma_dev" ] || fail "Cannot find irdma device for $dev"
 
 	# confirm RoCE

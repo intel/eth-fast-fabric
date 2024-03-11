@@ -76,7 +76,14 @@ void PortStatusDataXmlOutputOptional(IXmlOutputState_t *state, const char *tag, 
 	IXmlOutputOptionalStruct(state, tag, (STL_PORT_COUNTERS_DATA *)data, NULL, PortStatusDataFields);
 }
 
-static void PortStatusDataXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortStatusDataXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid _UNUSED_)
 {
 	STL_PORT_COUNTERS_DATA *pPortCountersData = (STL_PORT_COUNTERS_DATA *)object;
 	PortData *portp = (PortData*)parent;
@@ -119,7 +126,14 @@ static void PortDataXmlOutputPortId(IXmlOutputState_t *state, const char *tag, v
 	IXmlOutputStr(state, tag, (char *)data);
 }
 
-static void PortDataXmlParserEndEndPortLID(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndEndPortLID(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint32 value;
 	
@@ -133,7 +147,14 @@ static void PortDataXmlOutputEthPortState(IXmlOutputState_t *state, const char *
 	IXmlOutputEthPortStateValue(state, tag, ((PortData *)data)->PortInfo.PortStates.s.PortState);
 }
 
-static void PortDataXmlParserEndPortState(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndPortState(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -147,7 +168,14 @@ static void PortDataXmlOutputInitReason(IXmlOutputState_t *state, const char *ta
 	IXmlOutputInitReasonValue(state, tag, ((PortData *)data)->PortInfo.s3.LinkInitReason);
 }
 
-static void PortDataXmlParserEndInitReason(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndInitReason(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -168,7 +196,14 @@ static void PortDataXmlOutputPortPhysConfig(IXmlOutputState_t *state, const char
 	IXmlOutputStr(state, tag, StlPortTypeToText(pt));
 }
 
-static void PortDataXmlParserEndPhysState(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndPhysState(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -182,7 +217,14 @@ static void PortDataXmlOutputLinkSpeedSupported(IXmlOutputState_t *state, const 
 	IXmlOutputLinkSpeedValue( state, tag, ((PortData*)data)->PortInfo.LinkSpeed.Supported);
 }
 
-static void PortDataXmlParserEndLinkSpeedSupported(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndLinkSpeedSupported(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint16 value;
 	
@@ -196,7 +238,14 @@ static void PortDataXmlOutputLinkSpeedActive(IXmlOutputState_t *state, const cha
 	IXmlOutputLinkSpeedValue( state, tag, ((PortData*)data)->PortInfo.LinkSpeed.Active);
 }
 
-static void PortDataXmlParserEndLinkSpeedActive(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndLinkSpeedActive(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint16 value;
 	
@@ -210,7 +259,7 @@ static void PortDataXmlOutputLinkModeSupported(IXmlOutputState_t *state, const c
 	if (len) {
 		char buffer[len*3+1];
 		char *p = buffer;
-		int i = 0;
+		size_t i = 0;
 		for (; i<len; i++) {
 			sprintf(p, "%02x ", ((PortData*)data)->PortInfo.LinkModeSupported[i]);
 			p += 3;
@@ -221,9 +270,16 @@ static void PortDataXmlOutputLinkModeSupported(IXmlOutputState_t *state, const c
 	}
 }
 
-static void PortDataXmlParserEndLinkModeSupported(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndLinkModeSupported(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
-	int i = 0;
+	unsigned i = 0;
 	char *start = content;
 	char *end;
 	uint32 temp;
@@ -250,7 +306,14 @@ static void PortDataXmlOutputMTUSupported(IXmlOutputState_t *state, const char *
 		((PortData*)data)->PortInfo.MTU2);
 }
 
-static void PortDataXmlParserEndMTUSupported(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndMTUSupported(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint16 value;
 	
@@ -265,7 +328,14 @@ static void PortDataXmlOutputRespTimeout(IXmlOutputState_t *state, const char *t
 		((PortData*)data)->PortInfo.Resp.TimeValue);
 }
 
-static void PortDataXmlParserEndRespTimeout(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndRespTimeout(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -273,7 +343,7 @@ static void PortDataXmlParserEndRespTimeout(IXmlParserState_t *state, const IXML
 		((PortData*)object)->PortInfo.Resp.TimeValue = value;
 }
 
-static void PortDataXmlOutputPortStatusData(IXmlOutputState_t *state, const char *tag, void *data)
+static void PortDataXmlOutputPortStatusData(IXmlOutputState_t *state, const char *tag _UNUSED_, void *data)
 {
 	PortData *portp = (PortData*)data;
 
@@ -284,7 +354,14 @@ static void PortDataXmlOutputDownReason(IXmlOutputState_t *state, const char *ta
 {
 	IXmlOutputDownReasonValue(state, tag, ((STL_LINKDOWN_REASON *)data)->LinkDownReason);
 }
-static void PortDataXmlParserEndDownReason(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndDownReason(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 
@@ -295,7 +372,14 @@ static void PortDataXmlOutputNeighborDownReason(IXmlOutputState_t *state, const 
 {
 	IXmlOutputDownReasonValue(state, tag, ((STL_LINKDOWN_REASON *)data)->NeighborLinkDownReason);
 }
-static void PortDataXmlParserEndNeighborDownReason(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEndNeighborDownReason(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 
@@ -366,7 +450,14 @@ static void *LDRLogXmlParserStart(IXmlParserState_t *state, void *parent, const 
 	IXmlParserPrintError(state, "Failed to parse idx Attribute: %d", idx);
 	return NULL;
 }
-static void LDRLogXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void LDRLogXmlParserEnd(
+	IXmlParserState_t *state _UNUSED_,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid _UNUSED_)
 {
 	return;
 }
@@ -423,7 +514,7 @@ static void PortDataXmlOutput(IXmlOutputState_t *state, const char *tag, void *d
 	IXmlOutputStruct(state, tag, (PortData*)data, PortDataXmlFormatAttr, PortDataFields);
 }
 
-static void *PortDataXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *PortDataXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr _UNUSED_)
 {
 	PortData *portp = (PortData*)MemoryAllocate2AndClear(sizeof(PortData), IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 
@@ -530,7 +621,7 @@ failinsert2:
 	return FERROR;
 }
 
-static void PortDataXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void PortDataXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field _UNUSED_, void *object, void *parent, XML_Char *content _UNUSED_, unsigned len _UNUSED_, boolean valid)
 {
 	PortData *portp = (PortData*)object;
 	FabricData_t *fabricp = IXmlParserGetContext(state);
@@ -577,7 +668,7 @@ void Snapshot_PortDataFree(PortData * portp, FabricData_t * fabricp)
 /****************************************************************************/
 /* NodeData Input/Output functions */
 
-static void NodeDataXmlOutputPorts(IXmlOutputState_t *state, const char *tag, void *data)
+static void NodeDataXmlOutputPorts(IXmlOutputState_t *state, const char *tag _UNUSED_, void *data)
 {
 	NodeData *nodep = (NodeData*)data;
 	cl_map_item_t *p;
@@ -593,7 +684,14 @@ static void NodeDataXmlOutputVendorID(IXmlOutputState_t *state, const char *tag,
 	IXmlOutputUint(state, tag, ((NodeData *)data)->NodeInfo.u1.s.VendorID);
 }
 
-static void NodeDataXmlParserEndVendorID(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void NodeDataXmlParserEndVendorID(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint32 value;
 	
@@ -627,7 +725,7 @@ static void NodeDataXmlOutput(IXmlOutputState_t *state, const char *tag, void *d
 	IXmlOutputStruct(state, tag, (NodeData*)data, NodeDataXmlFormatAttr, NodeDataFields);
 }
 
-static void *NodeDataXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *NodeDataXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	NodeData *nodep = (NodeData*)MemoryAllocate2AndClear(sizeof(NodeData), IBA_MEM_FLAG_PREMPTABLE, MYTAG);
 
@@ -646,7 +744,14 @@ static void *NodeDataXmlParserStart(IXmlParserState_t *state, void *parent, cons
 	return nodep;
 }
 
-static void NodeDataXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void NodeDataXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	cl_map_item_t *mi;
 	NodeData *nodep = (NodeData*)object;
@@ -741,12 +846,12 @@ static IXML_FIELD TempLinkDataToFields[] = {
 	{ NULL }
 };
 
-static void *LinkFromXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *LinkFromXmlParserStart(IXmlParserState_t *state _UNUSED_, void *parent, const char **attr _UNUSED_)
 {
 	return parent;
 }
 
-static void *LinkToXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *LinkToXmlParserStart(IXmlParserState_t *state _UNUSED_, void *parent, const char **attr _UNUSED_)
 {
 	return parent;
 }
@@ -772,7 +877,7 @@ static void LinkXmlOutput(IXmlOutputState_t *state, const char *tag, void *data)
 }
 
 
-static void *LinkXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *LinkXmlParserStart(IXmlParserState_t *state _UNUSED_, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	/* since links don't nest, we can get away with a single static */
 	/* if we ever use this multi-threaded, will need to allocate */
@@ -782,7 +887,14 @@ static void *LinkXmlParserStart(IXmlParserState_t *state, void *parent, const ch
 	return &link;
 }
 
-static void LinkXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void LinkXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	TempLinkData_t *link = (TempLinkData_t*)object;
 	PortData *p1, *p2;
@@ -865,7 +977,7 @@ static IXML_FIELD SnapshotFields[] = {
 	{ NULL }
 };
 
-static void *SnapshotXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *SnapshotXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr)
 {
 	int i;
 	boolean gottime = FALSE;
@@ -927,7 +1039,14 @@ static void *SnapshotXmlParserStart(IXmlParserState_t *state, void *parent, cons
 	return NULL;
 }
 
-static void SnapshotXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SnapshotXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content _UNUSED_,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	FabricData_t *fabricp = IXmlParserGetContext(state);
 
@@ -950,7 +1069,7 @@ static IXML_FIELD TopLevelFields[] = {
 };
 #endif
 
-static void SnapshotInfoXmlFormatAttr(IXmlOutputState_t *state, void *data)
+static void SnapshotInfoXmlFormatAttr(IXmlOutputState_t *state, void *data _UNUSED_)
 {
 	SnapshotOutputInfo_t *info = (SnapshotOutputInfo_t *)IXmlOutputGetContext(state);
 	char datestr[80] = "";
@@ -966,7 +1085,7 @@ static void SnapshotInfoXmlFormatAttr(IXmlOutputState_t *state, void *data)
 	IXmlOutputPrint(state, "\"");
 }
 
-static void Xml2PrintAll(IXmlOutputState_t *state, const char *tag, void *data)
+static void Xml2PrintAll(IXmlOutputState_t *state, const char *tag, void *data _UNUSED_)
 {
 	SnapshotOutputInfo_t *info = (SnapshotOutputInfo_t *)IXmlOutputGetContext(state);
 	FabricData_t *fabricp = info->fabricp;

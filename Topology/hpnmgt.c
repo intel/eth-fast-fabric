@@ -128,7 +128,7 @@ const char* hmgt_service_state_totext(int service_state)
 /** =========================================================================
  * Init sub libraries like umad here
  * */
-static int init_sub_lib(struct hmgt_port *port)
+static int init_sub_lib(struct hmgt_port *port _UNUSED_)
 {
 	static int done = 0;
 
@@ -306,7 +306,7 @@ static int parse_nodes_file(FabricData_t *fabricp, const char* filename, const c
 	}
 }
 
-static HMGT_STATUS_T open_port_internal(struct hmgt_port *port, char *hfi_name, uint8_t port_num)
+static HMGT_STATUS_T open_port_internal(struct hmgt_port *port, char *hfi_name _UNUSED_, uint8_t port_num _UNUSED_)
 {
 	HMGT_STATUS_T err = HMGT_STATUS_SUCCESS;
 
@@ -325,7 +325,7 @@ free_port:
 
 
 /** ========================================================================= */
-HMGT_STATUS_T hmgt_open_port_by_guid(struct hmgt_port **port, uint64_t port_guid, struct hmgt_params *session_params)
+HMGT_STATUS_T hmgt_open_port_by_guid(struct hmgt_port **port, uint64_t port_guid _UNUSED_, struct hmgt_params *session_params)
 {
 	HMGT_STATUS_T status = HMGT_STATUS_SUCCESS;
 	char name[HMGT_SHORT_STRING_SIZE];
@@ -523,7 +523,7 @@ static IXML_FIELD snmpConfigFields[] = {
 	{ NULL }
 };
 
-static void *hmgtConfXmlCommonParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *hmgtConfXmlCommonParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
         mgt_conf_t *mgt_conf = IXmlParserGetContext(state);
 
@@ -535,8 +535,8 @@ static void *hmgtConfXmlCommonParserStart(IXmlParserState_t *state, void *parent
         return &mgt_conf->common;
 }
 
-static void hmgtConfXmlCommonParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object,
-                                       void *parent, XML_Char *content, unsigned len, boolean valid)
+static void hmgtConfXmlCommonParserEnd(IXmlParserState_t *state, const IXML_FIELD *field _UNUSED_, void *object _UNUSED_,
+                                       void *parent _UNUSED_, XML_Char *content _UNUSED_, unsigned len _UNUSED_, boolean valid)
 {
         mgt_conf_t *mgt_conf = IXmlParserGetContext(state);
 
@@ -547,7 +547,7 @@ static void hmgtConfXmlCommonParserEnd(IXmlParserState_t *state, const IXML_FIEL
         mgt_conf->common_processed = TRUE;
 }
 
-static void *hmgtConfXmlFabricParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *hmgtConfXmlFabricParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
         mgt_conf_t *mgt_conf = IXmlParserGetContext(state);
 
@@ -571,8 +571,8 @@ static void *hmgtConfXmlFabricParserStart(IXmlParserState_t *state, void *parent
         return fabric_conf;
 }
 
-static void hmgtConfXmlFabricParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object,
-                                       void *parent, XML_Char *content, unsigned len, boolean valid)
+static void hmgtConfXmlFabricParserEnd(IXmlParserState_t *state, const IXML_FIELD *field _UNUSED_, void *object,
+                                       void *parent _UNUSED_, XML_Char *content _UNUSED_, unsigned len _UNUSED_, boolean valid)
 {
         mgt_conf_t *mgt_conf = IXmlParserGetContext(state);
         fabric_config_t *fabric_conf = (fabric_config_t *)object;
@@ -674,13 +674,13 @@ static IXML_FIELD hmgtConfigMgtFields[] = {
 	{ NULL }
 };
 
-static void *hmgtConfXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *hmgtConfXmlParserStart(IXmlParserState_t *state _UNUSED_, void *parent _UNUSED_, const char **attr _UNUSED_)
 {
 	return NULL;
 }
 
-static void hmgtConfXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object,
-                                 void *parent, XML_Char *content, unsigned len, boolean valid)
+static void hmgtConfXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field _UNUSED_, void *object _UNUSED_,
+                                 void *parent _UNUSED_, XML_Char *content _UNUSED_, unsigned len _UNUSED_, boolean valid)
 {
 	mgt_conf_t *mgt_conf = IXmlParserGetContext(state);
 

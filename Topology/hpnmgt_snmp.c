@@ -173,7 +173,7 @@ boolean is_oid(const SNMPResult* res, const SNMPOid* oid) {
  * @return int	the value of desired oid segment
  */
 int get_oid_num(SNMPResult* res, int offset) {
-	if (offset > res->oidLen) {
+	if ((size_t)offset > res->oidLen) {
 		fprintf(stderr,
 				"ERROR - OID index overflow. OID len is %ld, fetch offset=%d.\n",
 				res->oidLen, offset);
@@ -191,7 +191,7 @@ int get_oid_num(SNMPResult* res, int offset) {
  * @return uint32 of the speeds that is >= 100Gb
  */
 uint16 get_link_speed_supported(u_char* bytes, size_t len) {
-	int i = 0;
+	size_t i = 0;
 	int j = 0;
 	uint16 base = 0;
 	uint8  mask = 0;
@@ -217,7 +217,7 @@ uint16 get_link_speed_supported(u_char* bytes, size_t len) {
 }
 
 boolean is_all_zeros(u_char* bytes, size_t len) {
-	int i = 0;
+	size_t i = 0;
 	for(; i<len; i++) {
 		if (bytes[i]) {
 			return FALSE;
@@ -267,7 +267,7 @@ uint8 get_node_type(u_char* cap, size_t len) {
  */
 uint32 get_capability(u_char* cap, size_t len) {
 	uint32 res = 0;
-	int i = 0;
+	size_t i = 0;
 	for (; i < len; i++) {
 		res = (res << 8) + cap[len - i - 1];
 	}
@@ -282,7 +282,7 @@ uint32 get_capability(u_char* cap, size_t len) {
  */
 uint64 get_hash(u_char* str, size_t len) {
 	uint64 res = 5381;
-	int i = 0;
+	size_t i = 0;
 	for (; str[i] && i < len; i++) {
 		res = ((res << 5) + res) + str[i];
 	}
@@ -312,7 +312,7 @@ uint64 get_guid(u_char* bytes, size_t len) {
 	uint64 res = 0;
 
 	boolean hex = FALSE;
-	int i = 0;
+	size_t i = 0;
 	for (; i < len; i++) {
 		if (!isprint(bytes[i]) && !isspace(bytes[i])) {
 			hex = TRUE;
@@ -331,7 +331,7 @@ uint64 get_guid(u_char* bytes, size_t len) {
 			pos += 2;
 		}
 		// try to be aggresive to tolerant string in any possible format
-		for (i = 0; i < 16 && (pos - bytes) < len && *pos; pos++) {
+		for (i = 0; i < 16 && (size_t)(pos - bytes) < len && *pos; pos++) {
 			char val = get_hex(*pos);
 			if (val != -1) {
 				res = (res<<4) + val;
@@ -356,7 +356,7 @@ void copy_snmp_string(SNMPResult* res, char* dest, size_t maxLen, boolean hex_on
 	}
 	// figure out whether the value is bit string or not
 	boolean hex = FALSE;
-	int i = 0;
+	size_t i = 0;
 	u_char *sPos = res->val.string;
 	for (; i < res->valLen; i++, sPos++) {
 		if (!isprint(*sPos) && !isspace(*sPos)) {
@@ -377,7 +377,7 @@ void copy_snmp_string(SNMPResult* res, char* dest, size_t maxLen, boolean hex_on
 			// skip "0x" or "0X"
 			sPos += 2;
 		}
-		for (i=0; i < maxLen-1 && (sPos - res->val.string) < res->valLen && *sPos; sPos++) {
+		for (i=0; i < maxLen-1 && (size_t)(sPos - res->val.string) < res->valLen && *sPos; sPos++) {
 			if (isxdigit(*sPos)) {
 				dest[i] = *sPos;
 				i++;
@@ -698,7 +698,7 @@ void free_node_item(LIST_ITEM *item) {
 }
 
 STL_NODE_RECORD *get_node_record(LIST_ITEM **array, size_t size, int portNum) {
-	if (portNum >= size) {
+	if ((size_t)portNum >= size) {
 		return NULL;
 	}
 
@@ -738,7 +738,7 @@ STL_PORT_COUNTERS_DATA *get_port_counters(cl_qmap_t *map, SNMPResult *res,
 	return NULL;
 }
 
-HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
+HMGT_STATUS_T populate_switch_node_record(SNMPHost *host _UNUSED_, SNMPResult *res,
 		QUICK_LIST *nodeList) {
 	LIST_ITEM *item = create_node_item();
 	if (item == NULL) {
@@ -753,7 +753,7 @@ HMGT_STATUS_T populate_switch_node_record(SNMPHost *host, SNMPResult *res,
 	HMGT_STATUS_T fstatus = HMGT_STATUS_SUCCESS;
 	char buf[1024];
 	SNMPResult *rp = res;
-	int i = 0;
+	size_t i = 0;
 	boolean manAddrProcessed = FALSE;
 	int modulePhyId = -1;
 	while (rp && rp->oidLen) {
@@ -894,7 +894,7 @@ HMGT_STATUS_T populate_host_node_record(SNMPHost *host, SNMPResult *res,
 	SNMPResult *rp = res;
 	char buf[1024];
 	uint64 systemImgGuid = 0;
-	int i = 0;
+	size_t i = 0;
 	SNMPResult *sysNameRes = NULL;
 	cl_qmap_t nodeMap;
 	cl_qmap_init(&nodeMap, NULL);
@@ -1044,7 +1044,7 @@ HMGT_STATUS_T populate_switch_node_port_records(SNMPResult *res,
 
 	SNMPResult *rp = res;
 	char buf[1024];
-	int i = 0;
+	size_t i = 0;
 	boolean manAddrProcessed = FALSE;
 	cl_qmap_t portNumMap;
 	cl_qmap_init(&portNumMap, NULL);
@@ -1400,7 +1400,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 	HMGT_STATUS_T fstatus = HMGT_STATUS_SUCCESS;
 	SNMPResult *rp = res;
 	char buf[1024];
-	int i = 0;
+	size_t i = 0;
 	cl_qmap_t portIdMap;
 	cl_qmap_init(&portIdMap, NULL);
 	uint32 capSupported = 0x39;
@@ -1568,7 +1568,7 @@ HMGT_STATUS_T populate_host_node_port_records(SNMPResult *res,
 				mItem = cl_qmap_next(mItem)) {
 			STL_PORTINFO_RECORD *port = cl_qmap_obj(
 					PARENT_STRUCT(mItem, cl_map_obj_t, item));
-			if (port->PortInfo.LID == rawNode->ifIndex) {
+			if (port->PortInfo.LID == (STL_LID)rawNode->ifIndex) {
 				LIST_ITEM *pItem = MemoryAllocate2AndClear(sizeof(LIST_ITEM), IBA_MEM_FLAG_PREMPTABLE, SNMPTAG);
 				if (pItem == NULL) {
 					fprintf(stderr,
@@ -1592,7 +1592,7 @@ HMGT_STATUS_T populate_port_counters(SNMPResult *res,
 	HMGT_STATUS_T fstatus = HMGT_STATUS_SUCCESS;
 	SNMPResult *rp = res;
 	char buf[1024];
-	int i = 0;
+	size_t i = 0;
 	while (rp && rp->oidLen) {
 		if (TRACE) {
 			snprint_objid(buf, sizeof(buf), rp->oid, rp->oidLen);
@@ -1994,7 +1994,7 @@ struct snmp_pdu * prepare_snmp_query(struct context_s *context) {
 /*
  * response handler
  */
-int asynch_mixed_response(int operation, struct snmp_session *sp, int reqid,
+int asynch_mixed_response(int operation, struct snmp_session *sp, int reqid _UNUSED_,
 		struct snmp_pdu *pdu, void *magic) {
 	struct context_s *context = (struct context_s *) magic;
 	struct snmp_pdu *req = NULL;
@@ -2759,11 +2759,12 @@ HMGT_STATUS_T process_fab_data(QUICK_LIST **allNodes, int numHosts,
 	return fstatus;
 }
 
-void cleanup_dev_data(QUICK_LIST *nodeList) {
+HMGT_STATUS_T cleanup_dev_data(QUICK_LIST *nodeList) {
 	free_node_list(nodeList);
+	return HMGT_STATUS_SUCCESS;
 }
 
-HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port,
+HMGT_STATUS_T hmgt_snmp_get_fabric_data(struct hmgt_port *port _UNUSED_,
 		HMGT_QUERY *pQuery, struct _HQUERY_RESULT_VALUES **ppQR)
 {
 	HMGT_STATUS_T status = HMGT_STATUS_SUCCESS;

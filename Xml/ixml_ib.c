@@ -128,7 +128,7 @@ void IXmlOutputOptionalNodeType(IXmlOutputState_t *state, const char *tag, void 
 }
 
 // parse NodeType string into a uint8 field and validate value
-void IXmlParserEndNodeType(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndNodeType(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -147,7 +147,7 @@ fail:
 }
 
 // parse NodeType_Int into a uint8 field and validate value
-void IXmlParserEndNodeType_Int(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndNodeType_Int(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -386,7 +386,7 @@ boolean IXmlParseRateMult_Str(IXmlParserState_t *state, XML_Char *content, uint8
 }
 
 // parse Rate string into a uint8 field and validate value
-void IXmlParserEndRate(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndRate(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -424,7 +424,7 @@ fail:
 }
 
 // parse Rate_Int into a uint8 field and validate value
-void IXmlParserEndRate_Int(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndRate_Int(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -465,7 +465,7 @@ void IXmlOutputOptionalEthRate(IXmlOutputState_t *state, const char *tag, void *
 	IXmlOutputOptionalEthRateValue(state, tag, *(uint8 *)data);
 }
 
-void IXmlParserEndEthRate(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndEthRate(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -515,7 +515,7 @@ fail:
 	return;
 }
 
-void IXmlParserEndEthRate_Int(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndEthRate_Int(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -623,7 +623,7 @@ void IXmlOutputOptionalEthMtu(IXmlOutputState_t *state, const char* tag, void *d
 }
 
 // parse Mtu field, validate value and store as an IB_MTU
-void IXmlParserEndMtu(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndMtu(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid _UNUSED_)
 {
 	uint16 value;
 	
@@ -639,7 +639,7 @@ void IXmlParserEndMtu(IXmlParserState_t *state, const IXML_FIELD *field, void *o
 }
 
 // parse Mtu field, validate value and store as an Ethernet MTU
-void IXmlParserEndEthMtu(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndEthMtu(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid _UNUSED_)
 {
 	uint16 value;
 	
@@ -748,7 +748,7 @@ void IXmlOutputIPAddrIPV4(IXmlOutputState_t *state, const char *tag, void *data)
 	IXmlOutputEndTag(state, tag);
 }
 
-void IXmlParserEndIPAddrIPV6(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndIPAddrIPV6(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	int i, ret;
 	for (i = 0; i < 16; ++i){//read in hexadecimal address 2 digits at a time
@@ -760,7 +760,7 @@ void IXmlParserEndIPAddrIPV6(IXmlParserState_t *state, const IXML_FIELD *field, 
 	}
 }
 
-void IXmlParserEndIPAddrIPV4(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndIPAddrIPV4(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len _UNUSED_, boolean valid _UNUSED_)
 {
 	int i, ret;
 	for (i = 0; i < 4; ++i){ //read in hexadecimal address 2 digits at a time
@@ -849,7 +849,7 @@ fail:
 
 // parse TimeoutMult string into a uint8 field and validate value
 // does not handle "infinite".  Returns value between 0 and 31 inclusive
-void IXmlParserEndTimeoutMult_Str(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndTimeoutMult_Str(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -863,7 +863,7 @@ fail:
 
 // parse TimeoutMult string into a uint32 field and validate value
 // does not handle "infinite".  Returns value between 0 and 31 inclusive
-void IXmlParserEndTimeoutMult32_Str(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+void IXmlParserEndTimeoutMult32_Str(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content, unsigned len, boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -913,8 +913,8 @@ fail:
 }
 
 void IXmlParserEndHoqTimeout_Str(IXmlParserState_t *state,
-	const IXML_FIELD *field, void *object, void *parent, XML_Char *content,
-	unsigned int len, boolean valid)
+	const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content,
+	unsigned int len, boolean valid _UNUSED_)
 {
 	uint8_t value;
 	if (!IXmlParseTimeoutMultInf_Str(state, content, len, &value)) {
@@ -935,8 +935,8 @@ void IXmlParserEndHoqTimeout_Str(IXmlParserState_t *state,
 }
 
 void IXmlParserEndHoqTimeout_Int(IXmlParserState_t *state,
-	const IXML_FIELD *field, void *object, void *parent, XML_Char *content,
-	unsigned int len, boolean valid)
+	const IXML_FIELD *field, void *object, void *parent _UNUSED_, XML_Char *content,
+	unsigned int len, boolean valid _UNUSED_)
 {
 	uint32_t value;
 	if (!IXmlParseUint32(state, content, len, &value)) {
@@ -1073,7 +1073,14 @@ static void SwitchInfoXmlOutputLID(IXmlOutputState_t *state, const char *tag, vo
 	IXmlOutputLIDValue(state, tag, ((STL_SWITCHINFO_RECORD *)data)->RID.LID);
 }
 
-static void SwitchInfoXmlParserEndLID(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SwitchInfoXmlParserEndLID(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint32 value;
 	
@@ -1081,7 +1088,14 @@ static void SwitchInfoXmlParserEndLID(IXmlParserState_t *state, const IXML_FIELD
 		((STL_SWITCHINFO_RECORD *)object)->RID.LID = value;
 }
 
-static void IXmlParserEndMulticastFDBTop(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void IXmlParserEndMulticastFDBTop(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
         uint32 value;
 
@@ -1102,7 +1116,14 @@ static void SwitchInfoXmlOutputLifeTimeValue(IXmlOutputState_t *state, const cha
 		((STL_SWITCHINFO_RECORD*)data)->SwitchInfoData.u1.s.LifeTimeValue);
 }
 
-static void SwitchInfoXmlParserEndLifeTimeValue(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SwitchInfoXmlParserEndLifeTimeValue(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -1116,7 +1137,14 @@ static void SwitchInfoXmlOutputPortStateChange(IXmlOutputState_t *state, const c
 	IXmlOutputUint(state, tag, ((STL_SWITCHINFO_RECORD *)data)->SwitchInfoData.u1.s.PortStateChange);
 }
 
-static void SwitchInfoXmlParserEndPortStateChange(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SwitchInfoXmlParserEndPortStateChange(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 	
@@ -1130,7 +1158,14 @@ static void SwitchInfoXmlOutputMulticastMask(IXmlOutputState_t *state, const cha
 	IXmlOutputHex(state, tag, ((STL_SWITCHINFO_RECORD *)data)->SwitchInfoData.MultiCollectMask.MulticastMask);
 }
 
-static void SwitchInfoXmlParserEndMulticastMask(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SwitchInfoXmlParserEndMulticastMask(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 
@@ -1144,7 +1179,14 @@ static void SwitchInfoXmlOutputCollectiveMask(IXmlOutputState_t *state, const ch
 	IXmlOutputHex(state, tag, ((STL_SWITCHINFO_RECORD *)data)->SwitchInfoData.MultiCollectMask.CollectiveMask);
 }
 
-static void SwitchInfoXmlParserEndCollectiveMask(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void SwitchInfoXmlParserEndCollectiveMask(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len,
+	boolean valid _UNUSED_)
 {
 	uint8 value;
 

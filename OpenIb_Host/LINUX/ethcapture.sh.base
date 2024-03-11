@@ -1,7 +1,7 @@
 #!/bin/bash
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@ readonly BASENAME="$(basename $0)"
 
 # Usage: ethcapture output_file_name
 # captures system information for product problem reporting
-
+MAX_FILE_SIZE=${MAX_FILE_SIZE:-10485760} # 10 MB
 Usage_full()
 {
 	echo "Usage: $BASENAME [-d detail] output_tgz_file" >&2
@@ -59,6 +59,63 @@ Usage_full()
 	echo "report regarding this system." >&2
 }
 
+_copy() {
+	local src="$1"
+	local dst="$2"
+	if [ ! -e "$src" ]; then
+		echo "Error - $src does not exist"
+		return 1
+	fi
+
+	# handle special case when we copy a single file
+	if [ -f "${src}" ]; then
+		if [ -d "${dst}" ]; then
+			cp --preserve=mode,ownership,timestamps "${src}" "${dst}"
+		else
+			local dir="$(dirname "$dst")"
+			mkdir -p "${dir}"
+			cp --preserve=mode,ownership,timestamps "${src}" "${dst}"
+		fi
+		return 0
+	fi
+
+	# copy empty dirs as the structure itself is important
+	# printf "%P\n" returns the path relative to "$src"
+	find "${src}" -depth -type d -empty -printf "%P\n" \
+	| while read -r dir
+	do
+		mkdir -p "${dst}/${dir}"
+	done
+
+	# copy all files less than MAX_FILE_SIZE bytes
+	find "${src}" -type f -size -${MAX_FILE_SIZE}c -printf "%P\n" \
+	| while read file
+	do
+		local dir="$(dirname "$file")"
+		mkdir -p "${dst}/${dir}"
+		cp --preserve=mode,ownership,timestamps "${src}/${file}" "${dst}/${dir}"
+	done
+
+	# log all files skipped because of size
+	find "${src}" -type f -not -size -${MAX_FILE_SIZE}c -printf "%P\n" \
+	| while read file
+	do
+		local size=$(stat -c "%s" "${src}/${file}")
+		local dir="$(dirname "$file")"
+		mkdir -p "${dst}/${dir}"
+		echo "Large content (${size} bytes) skipped" > "${dst}/${file}"
+	done
+
+	# copy symlinks as the structure itself is important
+	find "${src}" -type l -printf "%P\n" \
+	| while read link
+	do
+		local dir="$(dirname "$link")"
+		mkdir -p "${dst}/${dir}"
+		cp --no-dereference "${src}/${link}" "${dst}/${link}"
+	done
+}
+
 Usage()
 {
 	Usage_full
@@ -81,7 +138,7 @@ else
 fi
 
 if [ $ff_available = "y" ]
-then	
+then
 	if [ -f $CONFIG_DIR/$FF_PRD_NAME/ethfastfabric.conf  ]
 	then
 		. $CONFIG_DIR/$FF_PRD_NAME/ethfastfabric.conf
@@ -95,8 +152,8 @@ detail=1
 while getopts d: param
 do
 	case $param in
-        d)
-                detail="$OPTARG";;
+	d)
+		detail="$OPTARG";;
 	?)
 		Usage;;
 	esac
@@ -213,7 +270,7 @@ fi
 echo "Obtaining present process and module list ..."
 lsmod > /$dir/lsmod 2>&1
 depmod -a 2>&1
-cp -p /lib/modules/`uname -r`/modules.dep /$dir/modules.dep
+_copy /lib/modules/`uname -r`/modules.dep /$dir/modules.dep
 ps -welf > /$dir/ps 2>&1
 
 echo "Obtaining module info for ice ..."
@@ -287,7 +344,7 @@ for proc_file in cmdline cpuinfo ksyms meminfo mtrr modules net/arp net/dev net/
 do
 	if [ -e /proc/$proc_file ]
 	then
-		cp -p -r /proc/$proc_file /$dir/proc
+		_copy /proc/$proc_file /$dir/proc
 	fi
 done
 for proc_file in `ps -eo pid`
@@ -295,7 +352,7 @@ do
 	if [ -e /proc/$proc_file/stack ]
 	then
 		mkdir -p /$dir/proc/$proc_file
-		cp -p -r /proc/$proc_file/stack /$dir/proc/$proc_file
+		_copy /proc/$proc_file/stack /$dir/proc/$proc_file
 	fi
 done
 
@@ -313,7 +370,7 @@ if [ -d ${ICE_DEBUGDIR} ]
 then
 	mkdir -p /${dir}${ICE_DEBUGDIR}
 	echo "Copying kernel debug information from ${ICE_DEBUGDIR}..."
-	cp -p -r ${ICE_DEBUGDIR}/* /${dir}/${ICE_DEBUGDIR} 2>/dev/null
+	_copy ${ICE_DEBUGDIR}/* /${dir}/${ICE_DEBUGDIR} 2>/dev/null
 fi
 
 # Check if irdma driver debug data dir) is present; log only if present
@@ -322,7 +379,7 @@ if [ -d ${IRDMA_DEBUGDIR} ]
 then
 	mkdir -p /${dir}${IRDMA_DEBUGDIR}
 	echo "Copying kernel debug information from ${IRDMA_DEBUGDIR}..."
-	cp -p -r ${IRDMA_DEBUGDIR}/* /${dir}/${IRDMA_DEBUGDIR} 2>/dev/null
+	_copy ${IRDMA_DEBUGDIR}/* /${dir}/${IRDMA_DEBUGDIR} 2>/dev/null
 fi
 
 # Check if rv debug data dir) is present; log only if present
@@ -331,7 +388,7 @@ if [ -d ${RV_DEBUGDIR} ]
 then
 	mkdir -p /${dir}${RV_DEBUGDIR}
 	echo "Copying kernel debug information from ${RV_DEBUGDIR}..."
-	cp -p -r ${RV_DEBUGDIR}/* /${dir}/${RV_DEBUGDIR} 2>/dev/null
+	_copy ${RV_DEBUGDIR}/* /${dir}/${RV_DEBUGDIR} 2>/dev/null
 fi
 
 # Check if side channel security issue mitigation information files are
@@ -342,7 +399,7 @@ then
 	echo "Obtaining side channel security issue mitigation information from ${SIDE_CHANNEL_MITIGATION_INFO}"
 	mkdir -p /${dir}${SIDE_CHANNEL_MITIGATION_INFO}
 	echo "Copying side channel security issue mitigation information from ${SIDE_CHANNEL_MITIGATION_INFO}..."
-	cp -r ${SIDE_CHANNEL_MITIGATION_INFO}/* /${dir}${SIDE_CHANNEL_MITIGATION_INFO} 2>/dev/null
+	_copy ${SIDE_CHANNEL_MITIGATION_INFO}/* /${dir}${SIDE_CHANNEL_MITIGATION_INFO} 2>/dev/null
 fi
 
 # Check if side channel security issue mitigation kernel configuration files are
@@ -359,7 +416,7 @@ do
 			mkdir -p /${dir}${KERNEL_CONFIG_LOC}
 		fi
 		echo "Copying kernel configuration file ${KERNEL_CONFIG_LOC}/${fname}..."
-		cp ${KERNEL_CONFIG_LOC}/${fname} /${dir}${KERNEL_CONFIG_LOC} 2>/dev/null
+		_copy ${KERNEL_CONFIG_LOC}/${fname} /${dir}${KERNEL_CONFIG_LOC} 2>/dev/null
 	fi
 done
 
@@ -367,20 +424,20 @@ mkdir -p /$dir/sys/class
 if [ -e /sys/class/infiniband ]
 then
 	echo "Copying configuration and statistics for irdma from /sys ..."
-	cp -p -r /sys/class/*infiniband* /$dir/sys/class 2>/dev/null
+	_copy /sys/class/*infiniband* /$dir/sys/class 2>/dev/null
 	mkdir -p /$dir/sys/class/infiniband
 	for f in /sys/class/infiniband/*
 	do
 		if [ -h $f ]
 		then
 			rm -f /$dir/$f
-			cp -p -r $f/ /$dir/sys/class/infiniband/ 2>/dev/null
+			_copy $f/ /$dir/sys/class/infiniband/ 2>/dev/null
 			if [ -h $f/device ]
 			then
 				iface=`basename $f`
 				rm -f /$dir/$f/device
 				mkdir -p /$dir/sys/class/infiniband/$iface/ 2>/dev/null
-				cp -r $f/device/ /$dir/sys/class/infiniband/$iface/ 2>/dev/null
+				_copy $f/device/ /$dir/sys/class/infiniband/$iface/ 2>/dev/null
 			fi
 		fi
 	done
@@ -388,30 +445,30 @@ fi
 
 if [ -e /sys/class/scsi_host ]
 then
-	cp -p -r /sys/class/scsi_host /$dir/sys/class 2>/dev/null
+	_copy /sys/class/scsi_host /$dir/sys/class 2>/dev/null
 fi
 if [ -e /sys/class/scsi_device ]
 then
-	cp -p -r /sys/class/scsi_device /$dir/sys/class 2>/dev/null
+	_copy /sys/class/scsi_device /$dir/sys/class 2>/dev/null
 fi
 
 if [ -e /sys/class/net/ ]
 then
 	echo "Copying network interface information"
 	mkdir -p /$dir/sys/class/net
-	cp -r /sys/class/net/ /$dir/sys/class 2>/dev/null
+	_copy /sys/class/net/ /$dir/sys/class 2>/dev/null
 	for f in /sys/class/net/*
 	do
 		if [ -h $f ]
 		then
 			rm -f /$dir/$f
-			cp -r $f/ /$dir/sys/class/net/ 2>/dev/null
+			_copy $f/ /$dir/sys/class/net/ 2>/dev/null
 			if [ -h $f/device ]
 			then
 				iface=`basename $f`
 				rm -f /$dir/$f/device
 				mkdir -p /$dir/sys/class/net/$iface/ 2>/dev/null
-				cp -r $f/device/ /$dir/sys/class/net/$iface/ 2>/dev/null
+				_copy $f/device/ /$dir/sys/class/net/$iface/ 2>/dev/null
 			fi
 		fi
 	done
@@ -420,7 +477,7 @@ fi
 if [ -e /sys/module ]
 then
 	echo "Copying configuration and statistics data from /sys/module ..."
-	cp -p -r /sys/module /$dir/sys 2>/dev/null 
+	_copy /sys/module /$dir/sys 2>/dev/null
 fi
 
 if [ -e /sys/class/pci_bus ]
@@ -432,7 +489,7 @@ then
 		if [ -h $f ]
 		then
 			rm -f /$dir/$f
-			cp -p -r $f/ /$dir/sys/class/pci_bus/ 2>/dev/null
+			_copy $f/ /$dir/sys/class/pci_bus/ 2>/dev/null
 		fi
 	done
 fi
@@ -440,49 +497,49 @@ fi
 if [ -e /sys/devices ]
 then
 	echo "Copying device information from /sys/devices ..."
-	cp -p -r /sys/devices /$dir/sys/ 2>/dev/null 
+	_copy /sys/devices /$dir/sys/ 2>/dev/null
 fi
 
 if [ $detail -ge 2 ]
 then
-    mkdir -p /$dir/fabric
-    cd /$dir/fabric/
-    PORTS='0:0'
-    if [ "$ff_available" != y ]
-    then
-        echo "Warning: $BASENAME detail=$detail but FastFabric not available"
-    fi
+	mkdir -p /$dir/fabric
+	cd /$dir/fabric/
+	PORTS='0:0'
+	if [ "$ff_available" != y ]
+	then
+		echo "Warning: $BASENAME detail=$detail but FastFabric not available"
+	fi
 
-    if [ $detail -ge 2 -a "$ff_available" = y ]
-    then
-        echo "Gathering Fabric-Level Information ..."
-    fi
+	if [ $detail -ge 2 -a "$ff_available" = y ]
+	then
+		echo "Gathering Fabric-Level Information ..."
+	fi
 
-    #TODO: change to iterate fabrics when we support multiple fabrics
-    for hfi_port in $PORTS
-    do
-        hfi=$(expr $hfi_port : '\([0-9]*\):[0-9]*')
-        port=$(expr $hfi_port : '[0-9]*:\([0-9]*\)')
-        if [ "$hfi" = "" -o "$port" = "" ]
-        then
-            echo "$BASENAME: Error: Invalid port specification: $hfi_port" >&2
-            continue
+	#TODO: change to iterate fabrics when we support multiple fabrics
+	for hfi_port in $PORTS
+	do
+		hfi=$(expr $hfi_port : '\([0-9]*\):[0-9]*')
+		port=$(expr $hfi_port : '[0-9]*:\([0-9]*\)')
+		if [ "$hfi" = "" -o "$port" = "" ]
+		then
+			echo "$BASENAME: Error: Invalid port specification: $hfi_port" >&2
+			continue
 		fi
 		## fixup name so winzip won't complain
 		hfi_port_dir=${hfi}_${port}
 
-        # make hfi_port directory
-        mkdir $hfi_port_dir
+		# make hfi_port directory
+		mkdir $hfi_port_dir
 
-        if [ "$ff_available" = y ]
-        then
-	        /usr/sbin/ethfabricinfo > $hfi_port_dir/ethfabricinfo 2>&1
-            /usr/sbin/ethreport -o snapshot > $hfi_port_dir/snapshot.xml 2> $hfi_port_dir/snapshot.xml.err
-            /usr/sbin/ethreport -o links -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_links 2>&1
-            /usr/sbin/ethreport -o comps -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_comps 2>&1
-            /usr/sbin/ethreport -o errors -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_errors 2>&1
-            /usr/sbin/ethreport -o extlinks -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_extlinks 2>&1
-            /usr/sbin/ethreport -o slowlinks -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_slowlinks 2>&1
+		if [ "$ff_available" = y ]
+		then
+			/usr/sbin/ethfabricinfo > $hfi_port_dir/ethfabricinfo 2>&1
+			/usr/sbin/ethreport -o snapshot > $hfi_port_dir/snapshot.xml 2> $hfi_port_dir/snapshot.xml.err
+			/usr/sbin/ethreport -o links -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_links 2>&1
+			/usr/sbin/ethreport -o comps -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_comps 2>&1
+			/usr/sbin/ethreport -o errors -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_errors 2>&1
+			/usr/sbin/ethreport -o extlinks -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_extlinks 2>&1
+			/usr/sbin/ethreport -o slowlinks -X $hfi_port_dir/snapshot.xml > $hfi_port_dir/fabric_slowlinks 2>&1
 
  #           if [ $detail -gt 2 ]
  #           then
@@ -498,14 +555,14 @@ then
  #                   /usr/sbin/ethreport -h $hfi -p $port -o cablehealth 2>/dev/null>${FF_CABLE_HEALTH_REPORT_DIR_WITH_HFI_PORT}/cablehealth$(date "+%Y%m%d%H%M%S").csv
  #               fi
  #           fi
-        fi
-    done
+		fi
+	done
 fi
 
 if [ $ff_available = "y" ] && [ -e "${FF_CABLE_HEALTH_REPORT_DIR}" ]
 then
-        echo "Copying all Cable Health Reports"
-        cp -p -r ${FF_CABLE_HEALTH_REPORT_DIR} /$dir/ 2>/dev/null
+		echo "Copying all Cable Health Reports"
+		_copy ${FF_CABLE_HEALTH_REPORT_DIR} /$dir/ 2>/dev/null
 fi
 
 cd /

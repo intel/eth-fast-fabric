@@ -433,7 +433,7 @@ void printElement(FILE *f, ELEMENT_TABLE_ENTRY *pElement, int verbose)
  * Outputs:
  *	none
  */
-void dispHeaderRecord(int argc, char ** argv)
+void dispHeaderRecord(int argc _UNUSED_, char ** argv _UNUSED_)
 {
 	int		ix;							// Loop index
 
@@ -952,7 +952,7 @@ void getRecu_opt( int argc, char ** argv, const char *pOptShort,
 					}
 
 					if ( (argv_recu[ix] - bfParam + strlen(argv_recu[ix]) + 1) ==
-							ctCharParam )
+							(long unsigned int)ctCharParam )
 						break;
 				}
 
@@ -1144,7 +1144,7 @@ void ProcessMatchedElement( ELEMENT_TABLE_ENTRY *pElement, char *pValue,
  * Outputs:
  *	none
  */
-void *procElementBeg(IXmlParserState_t *pParserState, void *pParent, const char **ppAttrib)
+void *procElementBeg(IXmlParserState_t *pParserState, void *pParent _UNUSED_, const char **ppAttrib)
 {
 	int		ix;
 	char	*pNameFull;
@@ -1260,9 +1260,9 @@ void *procElementBeg(IXmlParserState_t *pParserState, void *pParent, const char 
  * Outputs:
  *	none
  */
-void procElementEnd( IXmlParserState_t *pParserState, const IXML_FIELD *pField,
-	void *pObject, void *pParent, XML_Char *pValue, unsigned length,
-	boolean flValid )
+void procElementEnd( IXmlParserState_t *pParserState _UNUSED_, const IXML_FIELD *pField _UNUSED_,
+	void *pObject, void *pParent _UNUSED_, XML_Char *pValue, unsigned length,
+	boolean flValid _UNUSED_ )
 {
 	int		ix;
 	ELEMENT_TABLE_ENTRY *pElement = NULL;

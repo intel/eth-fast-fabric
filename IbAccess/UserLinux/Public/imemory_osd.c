@@ -62,7 +62,7 @@ MemoryLockUnprepareMlock(uintn start, uintn length);
 #endif /* IB_STACK_IBACCESS */
 
 void*
-MemoryAllocatePriv( IN uint32 Bytes, IN uint32 flags, IN uint32 Tag )
+MemoryAllocatePriv( IN uint32 Bytes, IN uint32 flags _UNUSED_, IN uint32 Tag _UNUSED_ )
 {
     return malloc( Bytes );
 }

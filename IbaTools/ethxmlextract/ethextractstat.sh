@@ -71,19 +71,22 @@ Usage_full()
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
 	echo "Performs an error analysis of a fabric and provides augmented information from a" >&2
-	echo "topology_file. The report provides cable information as well as symbol error" >&2
-	echo "counts." >&2
+	echo "topology_file. The report provides cable information.">&2
+#	echo "topology_file. The report provides cable information as well as per link symbol" >&2
+#	echo "error counts." >&2
 	echo >&2
-	echo "${cmd} generates a detailed ethreport errors report that also has a" >&2
+	echo "It does this by generating a detailed ethreport errors report that also has a" >&2
 	echo "topology file (see ethreport for more information about topology files)." >&2
 	echo "The report is piped to ethxmlextract, which extracts values for Link, Cable and" >&2
 	echo "Port. (The port element names are context-sensitive.) Note that ethxmlextract" >&2
 	echo "generates two extraction records for each link (one for each port on the link);" >&2
-	echo "therefore, ethextractstat merges the two records into a single record and removes" >&2
-	echo "redundant link and cable information." >&2
+	echo "therefore, ethextractstat merges the two records into a single record and" >&2
+	echo "removes redundant link and cable information." >&2
+	echo "This script can be used as a sample for creating custom reports." >&2
+
 	echo >&2
-	echo "${cmd} contains a while read loop that reads the CSV line-by-line, uses" >&2
-	echo "cut to remove redundant information, and outputs the data on a common line." >&2
+	echo "${cmd} contains a while read loop that reads the CSV line-by-line," >&2
+	echo "uses cut to remove redundant information, and outputs the data on a common line." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "	${cmd} topology_file"

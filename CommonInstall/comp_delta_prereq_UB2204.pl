@@ -51,6 +51,8 @@
 	],
 	'psm3_prereq' => [
 		"rdma-core",
+		"libhwloc15",
+		"libatomic1",
 		"libibverbs-dev",
 		"librdmacm-dev"
 	],

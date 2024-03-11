@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Initialize a spinlock before its use.
 //-------------------------------------------------------------
 void
-SpinLockInitState( IN SPIN_LOCK *pSpinLock )  
+SpinLockInitState( IN SPIN_LOCK *pSpinLock _UNUSED_ )  
 {
 	// ****************************************************
 	// ************ DO NOTHING FOR NOW !!! ***************
@@ -110,7 +110,7 @@ SpinLockFastRelease( SPIN_LOCK *pSpinLock )
 // Initialize a spinrwlock before its use.
 //-------------------------------------------------------------
 void
-SpinRwLockInitState( IN SPIN_RW_LOCK *pSpinRwLock )  
+SpinRwLockInitState( IN SPIN_RW_LOCK *pSpinRwLock _UNUSED_ )  
 {
 	// ****************************************************
 	// ************ DO NOTHING FOR NOW !!! ***************

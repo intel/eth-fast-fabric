@@ -96,6 +96,16 @@ sub check_dir($)
 	}
 }
 
+sub find_dir($)
+{
+	my($dir) = shift();
+	my $retval;
+
+	$retval = system("find . -print | grep -q -F /$dir/");
+
+	return $retval;
+}
+
 sub copy_file($$$$$)
 {
 	my($src) = shift();

@@ -255,7 +255,7 @@ unsigned long get_counter(struct sysclass_counter_s *cntr)
 		exit(1);
 	}
 	r = fread(value, 1, sizeof(value), f);
-	if (r <= 0 || r >= sizeof(value)) {
+	if (r <= 0 || (size_t)r >= sizeof(value)) {
 		fprintf(stderr, CMD ": Unable to read value of %s\n", cntr->filename);
 		exit(1);
 	}
@@ -376,6 +376,12 @@ void Usage(int exit_code)
 	fprintf(stderr, "    -d/--duration seconds     - duration to monitor for.  Default is 'infinite'\n");
 	fprintf(stderr, "Where each nic specified is an RDMA nic name\n");
 	fprintf(stderr, "If no nics are specified, all RDMA nics will be monitored\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "The bandwidth reported for each interval is in units of MB (1,000,000 bytes)\n");
+	fprintf(stderr, "over the interval. The transmit bandwidth (xmt) is shown in red if any\n");
+	fprintf(stderr, "retransmits occured during the interval. The receive bandwidth (rcv)\n");
+	fprintf(stderr, "is shown in red if any input packet discards occurred over the interval. These\n");
+	fprintf(stderr, "each represent potential inefficiencies due to packet loss and retransmit.\n");
 	fprintf(stderr, "\nfor example:\n");
 	fprintf(stderr, "   ethbw\n");
 	fprintf(stderr, "   ethbw irdma1 irdma3\n");

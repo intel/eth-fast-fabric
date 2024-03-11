@@ -261,7 +261,7 @@ void DisplaySeparator(void)
 }
 
 // header used before a series of links
-void ShowLinkBriefSummaryHeader(Format_t format, int indent, int detail)
+void ShowLinkBriefSummaryHeader(Format_t format, int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -374,7 +374,7 @@ void ShowLinkPortSummary(PortData *portp, const char *prefix,
 
 // show cable information for a link in brief summary format
 void ShowExpectedLinkBriefSummary(ExpectedLink *elinkp,
-			Format_t format, int indent, int detail)
+			Format_t format, int indent, int detail _UNUSED_)
 {
 	if (! elinkp)
 		return;
@@ -397,7 +397,7 @@ void ShowExpectedLinkBriefSummary(ExpectedLink *elinkp,
 
 // show cable information for a link in multi-line format with field headings
 void ShowExpectedLinkSummary(ExpectedLink *elinkp,
-			Format_t format, int indent, int detail)
+			Format_t format, int indent, int detail _UNUSED_)
 {
 	if (! elinkp)
 		return;
@@ -464,7 +464,7 @@ void ShowLinkBriefSummary(PortData *portp1, const char* toprefix, Format_t forma
 	ShowLinkToBriefSummary(portp1->neighbor, toprefix, TRUE, 0, NULL, format, indent, detail);
 }
 
-void ShowPointNodeBriefSummary(const char* prefix, NodeData *nodep, Format_t format, int indent, int detail)
+void ShowPointNodeBriefSummary(const char* prefix, NodeData *nodep, Format_t format, int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -496,7 +496,7 @@ void ShowPointNodeBriefSummary(const char* prefix, NodeData *nodep, Format_t for
 	}
 }
 
-void ShowPointPortBriefSummary(const char* prefix, PortData *portp, Format_t format, int indent, int detail)
+void ShowPointPortBriefSummary(const char* prefix, PortData *portp, Format_t format, int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -1917,7 +1917,7 @@ void PopulateFabricinfo(STL_FABRICINFO_RECORD* rec)
 }
 
 
-void ShowFabricinfoReport(int indent, int detail)
+void ShowFabricinfoReport(int indent, int detail _UNUSED_)
 {
 	STL_FABRICINFO_RECORD		myFI = { 0 };
 
@@ -1943,7 +1943,7 @@ void ShowFabricinfoReport(int indent, int detail)
 			myFI.NumOmittedHFILinks, myFI.NumOmittedISLs);
 }
 
-void ShowOtherPortSummaryHeader(Format_t format, int indent, int detail)
+void ShowOtherPortSummaryHeader(Format_t format, int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -1958,7 +1958,7 @@ void ShowOtherPortSummaryHeader(Format_t format, int indent, int detail)
 
 // show a non-connected port in a node
 void ShowOtherPortSummary(NodeData *nodep, uint16 portNum,
-			Format_t format, int indent, int detail)
+			Format_t format, int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -1995,7 +1995,7 @@ void ShowOtherPortSummary(NodeData *nodep, uint16 portNum,
 
 // show a non-connected port in a node
 void ShowNodeOtherPortSummary(NodeData *nodep,
-			Format_t format, int indent, int detail)
+			Format_t format, int indent, int detail _UNUSED_)
 {
 	cl_map_item_t *p;
 	uint16 port;
@@ -2183,7 +2183,7 @@ void ShowSizesReport(void)
 }
 
 // output brief summary of a IB Port
-void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int detail)
+void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int detail _UNUSED_)
 {
 	char buf1[SHOW_BUF_SIZE];
 
@@ -2235,7 +2235,7 @@ void ShowPortBriefSummary(PortData *portp, Format_t format, int indent, int deta
 	}
 }
 
-void ShowPortBriefSummaryHeadings(Format_t format, int indent, int detail)
+void ShowPortBriefSummaryHeadings(Format_t format, int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -2260,7 +2260,7 @@ static void PrintXmlNodeSummaryBrief(NodeData *nodep, int indent)
 }
 
 static void PrintBriefNodePorts(NodeData *nodep, Point *focus, Format_t format,
-				int indent, int detail)
+				int indent, int detail _UNUSED_)
 {
 	cl_map_item_t *p;
 
@@ -2312,7 +2312,7 @@ void ShowTopologyNodeBriefSummary(NodeData *nodep, Point *focus, int indent, int
 // output brief summary of an expected IB Node
 void ShowExpectedNodeBriefSummary(const char *prefix, ExpectedNode *enodep,
 				const char *xml_tag, boolean close_node, Format_t format,
-				int indent, int detail)
+				int indent, int detail _UNUSED_)
 {
 	switch (format) {
 	case FORMAT_TEXT:
@@ -2676,7 +2676,7 @@ static boolean PortCountersExceedThreshold(PortData *portp)
 #undef EXCEEDS_THRESHOLD_NLD
 }
 
-void ShowPortCounterBelowThreshold(const char* field, uint32 value, uint32 threshold, Format_t format, int indent, int detail)
+void ShowPortCounterBelowThreshold(const char* field, uint32 value, uint32 threshold, Format_t format, int indent, int detail _UNUSED_)
 {
 	if (PortCounterBelowThreshold(value, threshold))
 	{
@@ -2701,7 +2701,7 @@ void ShowPortCounterBelowThreshold(const char* field, uint32 value, uint32 thres
 	}
 }
 
-void ShowPortCounterExceedingThreshold(const char* field, uint32 value, uint32 threshold, Format_t format, int indent, int detail)
+void ShowPortCounterExceedingThreshold(const char* field, uint32 value, uint32 threshold, Format_t format, int indent, int detail _UNUSED_)
 {
 	if (PortCounterExceedsThreshold(value, threshold))
 	{
@@ -2726,7 +2726,7 @@ void ShowPortCounterExceedingThreshold(const char* field, uint32 value, uint32 t
 	}
 }
 
-void ShowPortCounterExceedingThreshold64(const char* field, uint64 value, uint64 threshold, Format_t format, int indent, int detail)
+void ShowPortCounterExceedingThreshold64(const char* field, uint64 value, uint64 threshold, Format_t format, int indent, int detail _UNUSED_)
 {
 	if (PortCounterExceedsThreshold64(value, threshold))
 	{
@@ -2751,7 +2751,7 @@ void ShowPortCounterExceedingThreshold64(const char* field, uint64 value, uint64
 	}
 }
 
-void ShowPortCounterExceedingMbThreshold64(const char* field, uint64 value, uint64 threshold, Format_t format, int indent, int detail)
+void ShowPortCounterExceedingMbThreshold64(const char* field, uint64 value, uint64 threshold, Format_t format, int indent, int detail _UNUSED_)
 {
 	if (PortCounterExceedsThreshold(value, threshold))
 	{
@@ -2776,7 +2776,7 @@ void ShowPortCounterExceedingMbThreshold64(const char* field, uint64 value, uint
 	}
 }
 
-void ShowLinkPortErrorSummary(PortData *portp, Format_t format, int indent, int detail)
+void ShowLinkPortErrorSummary(PortData *portp, Format_t format, int indent, int detail _UNUSED_)
 {
 	STL_PORT_COUNTERS_DATA *pPortCounters = portp->pPortCounters;
 
@@ -2830,7 +2830,7 @@ void ShowLinkPortErrorSummary(PortData *portp, Format_t format, int indent, int 
 }
 
 // returns TRUE if thresholds are configured
-boolean ShowThresholds(Format_t format, int indent, int detail)
+boolean ShowThresholds(Format_t format, int indent, int detail _UNUSED_)
 {
 	boolean didoutput = FALSE;
 	switch (format) {
@@ -2921,7 +2921,7 @@ boolean ShowThresholds(Format_t format, int indent, int detail)
 	return didoutput;
 }
 
-void ShowSlowLinkPortSummaryHeader(LinkReport_t report, Format_t format, int indent, int detail)
+void ShowSlowLinkPortSummaryHeader(LinkReport_t report, Format_t format, int indent, int detail _UNUSED_)
 {
 	ShowLinkBriefSummaryHeader(format, indent, detail);
 	if (detail) {
@@ -2951,7 +2951,7 @@ void ShowSlowLinkPortSummaryHeader(LinkReport_t report, Format_t format, int ind
 	}
 }
 
-void ShowSlowLinkReasonSummary(LinkReport_t report, PortData *portp, Format_t format, int indent, int detail)
+void ShowSlowLinkReasonSummary(LinkReport_t report, PortData *portp, Format_t format, int indent, int detail _UNUSED_)
 {
 	char buf1[SHOW_BUF_SIZE], buf2[SHOW_BUF_SIZE];
 
@@ -2994,7 +2994,7 @@ void ShowSlowLinkReasonSummary(LinkReport_t report, PortData *portp, Format_t fo
 }
 
 void ShowSlowLinkReasonSummaryCallback(uint64 context, PortData *portp,
-									Format_t format, int indent, int detail)
+									Format_t format, int indent, int detail _UNUSED_)
 {
 	ShowSlowLinkReasonSummary((LinkReport_t)context, portp, format, indent, detail);
 }
@@ -3009,8 +3009,8 @@ void ShowSlowLinkSummary(LinkReport_t report, PortData *portp1, Format_t format,
 					format, indent, detail);
 }
 
-void ShowLinkPortErrorSummaryCallback(uint64 context, PortData *portp,
-									Format_t format, int indent, int detail)
+void ShowLinkPortErrorSummaryCallback(uint64 context _UNUSED_, PortData *portp,
+									Format_t format, int indent, int detail _UNUSED_)
 {
 	ShowLinkPortErrorSummary(portp, format, indent, detail);
 }
@@ -3034,6 +3034,7 @@ void ShowLinksReport(Point *focus, report_t report, Format_t format, int indent,
 	switch (report) {
 	default:	// should not happen, but just in case
 		ASSERT(0);
+		_FALLTHRU_;
 	case REPORT_LINKS:
 		xml_prefix = "";
 		prefix = "";

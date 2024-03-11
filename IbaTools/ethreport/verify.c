@@ -51,7 +51,7 @@ void ShowProblem(Format_t format, int indent, int detail, const char* pformat, .
 			break;
 		case FORMAT_XML:
 			cnt = vsnprintf(buffer, sizeof(buffer), pformat, args);
-			ASSERT(cnt <= sizeof(buffer)-1);	/* make sure message fits */
+			ASSERT((cnt >= 0) && ((size_t)cnt <= sizeof(buffer)-1));	/* make sure message fits */
 			XmlPrintStr("Problem", buffer, indent);
 			break;
 		default:
@@ -251,7 +251,7 @@ LinkVerifyResult_t ExpectedLinkVerify(ExpectedLink *elinkp, uint8 side, Format_t
 	return ret;
 }
 
-void ShowLinkPortVerifySummaryCallback(uint64 context, PortData *portp,
+void ShowLinkPortVerifySummaryCallback(uint64 context _UNUSED_, PortData *portp,
 									Format_t format, int indent, int detail)
 {
 	if (portp->elinkp && portp->neighbor->elinkp) {
@@ -361,6 +361,7 @@ void ShowVerifyLinksReport(Point *focus, report_t report, Format_t format, int i
 	switch (report) {
 	default:	// should not happen, but just in case
 		ASSERT(0);
+		_FALLTHRU_;
 	case REPORT_VERIFYLINKS:
 		report_name = "verifylinks";
 		xml_prefix = "";

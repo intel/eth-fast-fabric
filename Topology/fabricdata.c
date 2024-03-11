@@ -452,7 +452,7 @@ boolean isVFMember(PortData *portp, VFData_t *pVFData)
 }
 
 // count the number of armed/active links in the node
-uint32 CountInitializedPorts(FabricData_t *fabricp, NodeData *nodep)
+uint32 CountInitializedPorts(FabricData_t *fabricp _UNUSED_, NodeData *nodep _UNUSED_)
 {
 	cl_map_item_t *p;
 	uint32 count = 0;
@@ -465,7 +465,7 @@ uint32 CountInitializedPorts(FabricData_t *fabricp, NodeData *nodep)
 	return count;
 }
 
-void PortDataFreeQOSData(FabricData_t *fabricp, PortData *portp)
+void PortDataFreeQOSData(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	if (portp->pQOS) {
 		QOSData *pQOS = portp->pQOS;
@@ -493,7 +493,7 @@ void PortDataFreeQOSData(FabricData_t *fabricp, PortData *portp)
 	portp->pQOS = NULL;
 }
 
-void PortDataFreeBufCtrlTable(FabricData_t *fabricp, PortData *portp)
+void PortDataFreeBufCtrlTable(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	if (portp->pBufCtrlTable) {
 		MemoryDeallocate(portp->pBufCtrlTable);
@@ -501,7 +501,7 @@ void PortDataFreeBufCtrlTable(FabricData_t *fabricp, PortData *portp)
 	portp->pBufCtrlTable = NULL;
 }
 
-void PortDataFreePartitionTable(FabricData_t *fabricp, PortData *portp)
+void PortDataFreePartitionTable(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	if (portp->pPartitionTable) {
 		MemoryDeallocate(portp->pPartitionTable);
@@ -510,7 +510,7 @@ void PortDataFreePartitionTable(FabricData_t *fabricp, PortData *portp)
 }
 
 
-void PortDataFreeCableInfoData(FabricData_t *fabricp, PortData *portp)
+void PortDataFreeCableInfoData(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	if (portp->pCableInfoData) {
 		MemoryDeallocate(portp->pCableInfoData);
@@ -518,7 +518,7 @@ void PortDataFreeCableInfoData(FabricData_t *fabricp, PortData *portp)
 	portp->pCableInfoData = NULL;
 }
 
-void PortDataFreeCongestionControlTableEntries(FabricData_t *fabricp, PortData *portp)
+void PortDataFreeCongestionControlTableEntries(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	if (portp->pCongestionControlTableEntries) {
 		MemoryDeallocate(portp->pCongestionControlTableEntries);
@@ -839,7 +839,7 @@ FSTATUS PortDataAllocateAllQOSData(FabricData_t *fabricp)
 	return status;
 }
 
-FSTATUS PortDataAllocateBufCtrlTable(FabricData_t *fabricp, PortData *portp)
+FSTATUS PortDataAllocateBufCtrlTable(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	ASSERT(! portp->pBufCtrlTable);	// or could free if present
 	portp->pBufCtrlTable = MemoryAllocate2AndClear(sizeof(STL_BUFFER_CONTROL_TABLE), IBA_MEM_FLAG_PREMPTABLE, MYTAG);
@@ -887,7 +887,7 @@ uint16 PortPartitionTableSize(PortData *portp)
 	}
 }
 
-FSTATUS PortDataAllocatePartitionTable(FabricData_t *fabricp, PortData *portp)
+FSTATUS PortDataAllocatePartitionTable(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	uint16 size;
 
@@ -962,7 +962,7 @@ FSTATUS PortDataAllocateAllCableInfo(FabricData_t *fabricp)
 	return status;
 }
 
-FSTATUS PortDataAllocateCongestionControlTableEntries(FabricData_t *fabricp, PortData *portp)
+FSTATUS PortDataAllocateCongestionControlTableEntries(FabricData_t *fabricp _UNUSED_, PortData *portp)
 {
 	ASSERT(! portp->pCongestionControlTableEntries);	// or could free if present
 	if (! portp->nodep->CongestionInfo.ControlTableCap)
@@ -1378,7 +1378,7 @@ void NodeDataFreePorts(FabricData_t *fabricp, NodeData *nodep)
 	}
 }
 
-void NodeDataFreeSwitchData(FabricData_t *fabricp, NodeData *nodep)
+void NodeDataFreeSwitchData(FabricData_t *fabricp _UNUSED_, NodeData *nodep)
 {
 	uint8_t i;
 
@@ -1400,7 +1400,7 @@ void NodeDataFreeSwitchData(FabricData_t *fabricp, NodeData *nodep)
 	nodep->switchp = NULL;
 }
 
-FSTATUS NodeDataAllocateFDB(FabricData_t *fabricp, NodeData *nodep,
+FSTATUS NodeDataAllocateFDB(FabricData_t *fabricp _UNUSED_, NodeData *nodep,
 							uint32 LinearFDBSize) {
 
 	if (NodeDataSwitchResizeLinearFDB(nodep, LinearFDBSize) != FSUCCESS) {
@@ -1810,7 +1810,7 @@ void DestroyFabricData(FabricData_t *fabricp)
 
 static uint64_t convertNodeName2Guid(char* idStr, size_t len) {
 	int hash = 0;
-	int i = 0;
+	size_t i = 0;
 	for (; i < len; i++) {
 		hash = hash * 31 + idStr[i];
 	}

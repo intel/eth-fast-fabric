@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 
 static int
-Qlgc_fork_Cmd(ClientData cdata, Tcl_Interp *interp, int objc,  Tcl_Obj * CONST objv[])
+Qlgc_fork_Cmd(ClientData cdata _UNUSED_, Tcl_Interp *interp, int objc _UNUSED_,  Tcl_Obj * CONST objv[] _UNUSED_)
 {
 	pid_t pid;
 	char result[20];
@@ -60,7 +60,7 @@ Qlgc_fork_Cmd(ClientData cdata, Tcl_Interp *interp, int objc,  Tcl_Obj * CONST o
 }
 
 static int
-Qlgc_wait_Cmd(ClientData cdata, Tcl_Interp *interp, int objc,  Tcl_Obj * CONST objv[])
+Qlgc_wait_Cmd(ClientData cdata _UNUSED_, Tcl_Interp *interp, int objc _UNUSED_,  Tcl_Obj * CONST objv[] _UNUSED_)
 {
 	pid_t pid;
 	int status;
@@ -110,7 +110,7 @@ Qlgc_exit_Cmd(ClientData cdata, Tcl_Interp *interp, int objc,  Tcl_Obj * CONST o
  *  such that stderr can be redirected to the same file used for stdout
  */
 static int
-Qlgc_dup_Cmd(ClientData cdata, Tcl_Interp *interp, int objc,  Tcl_Obj * CONST objv[])
+Qlgc_dup_Cmd(ClientData cdata _UNUSED_, Tcl_Interp *interp, int objc _UNUSED_,  Tcl_Obj * CONST objv[] _UNUSED_)
 {
 	char *file;
 	Tcl_Channel channel;

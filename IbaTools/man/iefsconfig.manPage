@@ -1,12 +1,12 @@
 .\" .\" *********************************************************************
 .\" .\" *                                                                   *
-.\" .\" *             Copyright 2020-2023, Intel Corporation                *
+.\" .\" *             Copyright 2020-2024, Intel Corporation                *
 .\" .\" *                                                                   *
 .\" .\" *                       All Rights Reserved.                        *
 .\" .\" *                                                                   *
 .\" .\" *********************************************************************
 
-.TH iefsconfig 1 "Intel Corporation" "Copyright(C) 2020\-2023" "EFSFFCLIRG (Man Page)"
+.TH iefsconfig 1 "Intel Corporation" "Copyright(C) 2020\-2024" "EFSFFCLIRG (Man Page)"
 .SH NAME
 iefsconfig
 
@@ -41,7 +41,7 @@ Produces full help text.
 .TP 10
 -G
 
-Installs GPU Direct components (must have GPU drivers installed), either NVIDIA\(ulGPU\(ulDIRECT=<DIR> or INTEL\(ulGPU\(ulDIRECT=<DIR> must be in env
+Installs GPU Direct components (must have GPU drivers installed), either NVIDIA\(ulGPU\(ulDIRECT=<DIR> or INTEL\(ulGPU\(ulDIRECT=<DIR> must be in env.
 
 .TP 10
 -v

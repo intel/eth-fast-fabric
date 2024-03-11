@@ -70,10 +70,12 @@ Usage_full()
 	echo "   --help - Produces full help text." >&2
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
-	echo "Performs an error analysis of a fabric and provides augmented information from a" >&2
-	echo "topology_file including all error counters. The output is in a CSV format suitable" >&2
-	echo "for importing into a spreadsheet or parsed by other scripts. ${cmd} is a" >&2
-	echo "front end to the ethreport and ethxmlextract tools." >&2
+	echo "Performs a per link error analysis of a fabric and provides augmented" >&2
+	echo "information from a topology_file including all error counters. The output is" >&2
+	echo "in a CSV format suitable for importing into a spreadsheet or parsed by other" >&2
+	echo "scripts." >&2
+	echo "${cmd} is a front end to the ethreport and ethxmlextract tools." >&2
+	echo "This script can be used as a sample for creating custom reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "	${cmd} topology_file" >&2

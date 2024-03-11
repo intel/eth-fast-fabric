@@ -2701,7 +2701,7 @@ EthMauMediaAvailableToText( uint8_t state )
 static __inline const char*
 EthSupportedLinkModeToText(uint8 *modes, size_t modeLen, char *str,
 		size_t len) {
-	int i = 0;
+	size_t i = 0;
 	int j = 0;
 	uint32 base = 0;
 	uint8 mask = 0;

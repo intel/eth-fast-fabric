@@ -45,11 +45,14 @@ Usage_full()
 	echo "   --help - Produces full help text." >&2
 	echo "   ethreport options - Options passed to ethreport." >&2
 	echo >&2
-	echo "Provides a report of all performance counters in a CSV format suitable for" >&2
-	echo "importing into a spreadsheet or parsed by other scripts for further analysis. It" >&2
-	echo "generates a detailed ethreport component summary report and pipes the result to" >&2
-	echo "ethxmlextract, extracting element values for NodeDesc, IfAddr, PortNum, neighbor" >&2
-	echo "NodeDesc, neighbor IfAddr, neighbor PortNum and all the performance counters." >&2
+	echo "Provides a report of all per link performance counters in a CSV format" >&2
+	echo "suitable for importing into a spreadsheet or parsed by other scripts for" >&2
+	echo "further analysis." >&2
+	echo "It does this by generating a detailed ethreport component summary report and" >&2
+	echo "piping the result to ethxmlextract, extracting element values for NodeDesc," >&2
+	echo "IfAddr, PortNum, neighbor NodeDesc, neighbor IfAddr, neighbor PortNum and all" >&2
+	echo "the performance counters." >&2
+	echo "This script can be used as a sample for creating custom per link reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "   ${cmd}" >&2

@@ -57,7 +57,7 @@ static IXML_FIELD OtherField =
 	{ tag:"*", format:'k', start_func:FieldXmlParserStart, end_func:FieldXmlParserEnd }; // trim leading/trailing whitespace
 
 
-static void *FieldXmlParserStart(IXmlParserState_t *state, void *parent, const char **attr)
+static void *FieldXmlParserStart(IXmlParserState_t *state, void *parent _UNUSED_, const char **attr)
 {
 	int i;
 	const char *tag=IXmlParserGetCurrentTag(state);
@@ -90,7 +90,14 @@ static void *FieldXmlParserStart(IXmlParserState_t *state, void *parent, const c
 	return NULL;	// pointer returned here will be passed as object to ParserEnd function below
 }
 
-static void FieldXmlParserEnd(IXmlParserState_t *state, const IXML_FIELD *field, void *object, void *parent, XML_Char *content, unsigned len, boolean valid)
+static void FieldXmlParserEnd(
+	IXmlParserState_t *state,
+	const IXML_FIELD *field _UNUSED_,
+	void *object _UNUSED_,
+	void *parent _UNUSED_,
+	XML_Char *content,
+	unsigned len _UNUSED_,
+	boolean valid)
 {
 	const char *full_tag = IXmlParserGetCurrentFullTag(state);
 	if (! valid) {

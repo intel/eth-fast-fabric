@@ -47,8 +47,9 @@ Usage_full()
 	echo "   [ethreport options] - Options passed to ethreport." >&2
 	echo >&2
 	echo "Produces a CSV file listing all or some of the links in the fabric." >&2
-	echo "${cmd} is a front end to the ethreport tool. The output from this tool" >&2
-	echo "can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "${cmd} is a front end to the ethreport tool. The output" >&2
+	echo "from this tool can be imported into a spreadsheet or parsed by other scripts." >&2
+	echo "This script can be used as a sample for creating custom per link reports." >&2
 	echo >&2
 	echo "Examples:" >&2
 	echo "   List all the links in the fabric:" >&2

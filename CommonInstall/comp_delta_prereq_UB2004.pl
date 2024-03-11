@@ -51,6 +51,7 @@
 	],
 	'psm3_prereq' => [
 		"rdma-core",
+		"libhwloc5",
 		"libibverbs-dev",
 		"librdmacm-dev",
 	],

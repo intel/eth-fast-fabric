@@ -48,6 +48,8 @@ $comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
 my @psm3_prereq = (
     "bash",
     "glibc",
+    "hwloc-libs",
+    "libatomic",
     "libgcc",
     "libibverbs",
     "numactl-libs",
