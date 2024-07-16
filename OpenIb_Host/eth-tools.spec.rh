@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.7.0.0
-Release: 110%{?dist}
+Release: 111%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
@@ -89,6 +89,20 @@ BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_
 %config(noreplace) /usr/lib/eth-tools/osid_wrapper
 
 %changelog
+* Tue Jul 16 2024 Jijun Wang <jijun.wang@intel.com> - 11.7.0.0-110
+- Improved to support RHEL 9.4/8.10 and SLES 15.6
+- Merged duplicate OS prereq files for major OS versions where possible
+- Added ability to compile IMB-MPI1-GPU with cuda support
+
+* Tue Jul 16 2024 Jijun Wang <jijun.wang@intel.com> - 11.7.0.0-82
+- Cleaned up not needed files
+- Added config on unprivileged access to UserFaultFD
+- Added GPU auto-detection feature
+- Fixed permission and enumeration issues on dsa_setup
+- Improved ethudstress stability to handle unmatched client/server config
+- Improved MpiApps to allow concurrent mpi_apps runs with SLURM
+- Fixed FI_PROVIDER_PATH overrode issue on mpi_apps
+
 * Mon Mar 11 2024 Jijun Wang <jijun.wang@intel.com> - 11.6.0.0-223
 - Updated host verification to check UD QPs, and skip VT-d disabled
   check by default
