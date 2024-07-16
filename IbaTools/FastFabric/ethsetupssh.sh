@@ -593,8 +593,8 @@ then
 			connect_to_host $user localhost
 			connect_to_host $user $ihost
 		else
-			run_host_cmd $shellcmd -l $user localhost echo localhost connected.. 
-			run_host_cmd $shellcmd -l $user $ihost echo $ihost connected..
+			run_host_cmd $shellcmd -l $user localhost echo localhost: Connected
+			run_host_cmd $shellcmd -l $user $ihost echo $ihost: Connected
 		fi
 
 		stty $stty_settings

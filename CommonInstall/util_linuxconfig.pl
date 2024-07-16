@@ -178,6 +178,17 @@ sub config_arptbl_tunning()
 	prompt_iefs_conf_param("$ARPTBL_TUNING_NAME", "$ARPTBL_TUNING_DESC", "y", 'ETH_ARPTABLE_TUNING');
 }
 
+my $UFFD_NAME = "UFFD_Access";
+my $UFFD_DESC = "Unprivileged access to UserFaultFD for use with the optional user space MR caching feature in PSM3.";
+AddAnswerHelp("$UFFD_NAME", "$UFFD_DESC");
+
+sub config_uffd_access()
+{
+	if (system("sysctl -a | grep -q vm.unprivileged_userfaultfd") == 0) {
+		prompt_iefs_conf_param("$UFFD_NAME", "$UFFD_DESC", "y", 'ETH_UFFD_ACCESS');
+	}
+}
+
 my $ROCE_NAME="ROCE_ON";
 my $ROCE_DESC="RoCE RDMA transport.";
 AddAnswerHelp("$ROCE_NAME", "$ROCE_DESC");
