@@ -54,11 +54,10 @@ DIRS			= \
 				$(TL_DIR)/Xml \
 				$(TL_DIR)/Topology \
 				$(TL_DIR)/SrpTools \
-				$(TL_DIR)/InicTools \
 				$(TL_DIR)/Tests \
 				$(TL_DIR)/IbaTests \
 				$(TL_DIR)/MpiApps
-				
+
 				# DISABLED - MWHEINZ
 				#$(TL_DIR)/L8sim
 

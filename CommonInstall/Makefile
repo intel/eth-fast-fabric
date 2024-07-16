@@ -1,6 +1,6 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2023, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -96,11 +96,7 @@ CMD_TARGETS_MISC	=
 CLEAN_TARGETS_MISC	=  
 CLEAN_TARGETS		= $(OBJECTS) $(RSCOBJECTS) $(IDL_TARGETS) $(CLEAN_TARGETS_MISC)
 # other files to remove during clobber phase
-CLOBBER_TARGETS_MISC= comp_ff_of_prereq_RHEL87.pl comp_ff_of_prereq_RHEL88.pl \
-                      comp_ff_of_prereq_RHEL89.pl comp_ff_of_prereq_RHEL91.pl \
-                      comp_ff_of_prereq_RHEL92.pl comp_ff_of_prereq_RHEL93.pl \
-                      comp_ff_of_prereq_SLES153.pl comp_ff_of_prereq_SLES154.pl \
-					  comp_ff_of_prereq_SLES155.pl
+CLOBBER_TARGETS_MISC= 
 # sub-directory to install to within bin
 BIN_SUBDIR		= 
 # sub-directory to install to within include
@@ -125,12 +121,6 @@ INCLUDE_SUBDIR		=
 #LOCAL_LIB_DIRS	= User library directories for libpaths [Empty]
 
 LOCALDEPLIBS = 
-
-FF_FILES = comp_ff_of_prereq_RHEL87.pl comp_ff_of_prereq_RHEL88.pl \
-	comp_ff_of_prereq_RHEL89.pl comp_ff_of_prereq_RHEL91.pl \
-	comp_ff_of_prereq_RHEL92.pl comp_ff_of_prereq_RHEL93.pl \
-	comp_ff_of_prereq_SLES153.pl comp_ff_of_prereq_SLES154.pl \
-	comp_ff_of_prereq_SLES155.pl
 
 # Include Make Rules definitions and rules
 include $(TL_DIR)/$(PROJ_FILE_DIR)/Makerules.project

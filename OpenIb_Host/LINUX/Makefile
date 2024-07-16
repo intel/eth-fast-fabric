@@ -1,6 +1,6 @@
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2023, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -91,36 +91,17 @@ INSTALL_SOURCES= \
 				 $(TL_DIR)/CommonInstall/comp_fastfabric.pl \
 				 $(TL_DIR)/CommonInstall/overrides_ff.pl \
 				 $(TL_DIR)/CommonInstall/main_omnipathwrap_delta.pl
-
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES79"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL79.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES87"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL87.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES88"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL88.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES89"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL89.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES91"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL91.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES92"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL92.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES93"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL93.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES153"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES153.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES154"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES154.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES155"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES155.pl
+ifeq "$(BUILD_PLATFORM_OS_VENDOR)" "redhat"
+	MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION} | cut -c 3)
+	PREREQ_SOURCE = $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL$(MAJOR).pl
+else ifeq "$(BUILD_PLATFORM_OS_VENDOR)" "SuSE"
+	MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION} | cut -c 3-4)
+	PREREQ_SOURCE = $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES$(MAJOR).pl
+else ifeq "$(BUILD_PLATFORM_OS_VENDOR)" "ubuntu"
+	MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION} | cut -c 3-4)
+	PREREQ_SOURCE = $(TL_DIR)/CommonInstall/comp_ff_of_prereq_UBUNTU$(MAJOR).pl
+else
+	$(error BUILD_PLATFORM_OS_VENDOR not valid: $(BUILD_PLATFORM_OS_VENDOR))
 endif
 
 COMP_SOURCES= \

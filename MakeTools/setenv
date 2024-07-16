@@ -51,7 +51,8 @@ else
     if [ ${BUILD_TARGET_OS_VERSION:0:3} = '2.6' -o \
          ${BUILD_TARGET_OS_VERSION:0:2} = '3.' -o \
          ${BUILD_TARGET_OS_VERSION:0:2} = '4.' -o \
-         ${BUILD_TARGET_OS_VERSION:0:2} = '5.' ]
+         ${BUILD_TARGET_OS_VERSION:0:2} = '5.' -o \
+         ${BUILD_TARGET_OS_VERSION:0:2} = '6.' ]
     then
 	    export BUILD_26=1
     else
