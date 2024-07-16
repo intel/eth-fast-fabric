@@ -92,7 +92,6 @@ my %Components_by_distro = (
 	'redhat*ES91'   => \@EthAllComponents,
 	'redhat*ES92'   => \@EthAllComponents,
 	'redhat*ES93'   => \@EthAllComponents,
-	'ubuntu*UB2004' => \@EthUbuntuComponents,
 	'ubuntu*UB2204' => \@EthUbuntuComponents,
 );
 
@@ -530,7 +529,6 @@ my %Comp_info_by_distro = (
 	'redhat*ES92'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES93'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 
-	'ubuntu*UB2004' => { %ibacm_comp_info, %eth_module_debian_comp_info },
 	'ubuntu*UB2204' => { %ibacm_comp_info, %eth_module_debian_comp_info },
 );
 
@@ -688,6 +686,8 @@ sub install_iefsconfig
 	check_dir("/usr/lib/eth-tools");
 
 	config_arptbl_tunning();
+
+	config_uffd_access();
 
 	# New Install Code
 	my $pkg_dir = get_binary_pkg_dir($srcdir);
@@ -858,7 +858,9 @@ sub Usage
 	printf STDERR "            appear with -E or multiple times on a command line.\n";
 	printf STDERR "       -G - Installs GPU support components (must have GPU drivers).\n";
 	printf STDERR "            Also, either NVIDIA_GPU_DIRECT=<DIR> or INTEL_GPU_DIRECT=<DIR>\n";
-	printf STDERR "            must be in env.\n";
+	printf STDERR "            may be in env. If neither is set, INSTALL will automatically detect GPU\n";
+	printf STDERR "            drivers and software, and install the appropriate IEFS components for that\n";
+	printf STDERR "            type of GPU.\n";
 	printf STDERR "       -v - Provides verbose logging. Logs to the $LogFileDefault file.\n";
 	printf STDERR "       -vv - Provides very verbose debug logging. Logs to the $LogFileDefault file.\n";
 	printf STDERR "       -C - Shows the list of supported component names.\n";
@@ -944,6 +946,7 @@ sub process_args
 	my $setfwmode = 0;
 	my $patch_ofed=0;
 	my $mofed_path="";
+	my $auto_detect_gpu=0;
 
 	if (scalar @ARGV >= 1) {
 		foreach $arg (@ARGV) {
@@ -1115,35 +1118,9 @@ sub process_args
 					$GPU_Install="INTEL_GPU";
 				}
 
-				# GPU direct not set by user, attempt to set automatically
-				# check for intel gpu: if oneapi-ze in package, check for oneapi installed
-				if (("$GPU_Install" eq "NONE") && (0 == find_dir("ONEAPI-ZE"))) {
-					# call get_kernel_module_for_intel_gpu which will set GPU_Install and GPU_Dir if valid
-					if (get_kernel_module_for_intel_gpu($CUR_OS_VER, $GPU_Install, $GPU_Dir) == 1) {
-						setup_env("INTEL_GPU_DIRECT", $GPU_Dir);
-						printf STDERR "Using INTEL_GPU_DIRECT=$GPU_Dir\n";
-					}
-				}
-				# check for nvidia gpu: if cuda in package, check for cuda installed
-				if (("$GPU_Install" eq "NONE") && (0 == find_dir("CUDA"))) {
-					# call get_kernel_module_for_nv_gpu which will set GPU_Install and GPU_Dir if valid
-					if (get_kernel_module_for_nv_gpu($CUR_OS_VER, $GPU_Install, $GPU_Dir) == 1) {
-						setup_env("NVIDIA_GPU_DIRECT", $GPU_Dir);
-						$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
-						$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
-						printf STDERR "Using NVIDIA_GPU_DIRECT=$GPU_Dir\n";
-					}
-				}
+				# GPU direct not set by user, set flag to auto-detect after loop
 				if ("$GPU_Install" eq "NONE") {
-					printf STDERR "GPU Direct requested, and:\n";
-					printf STDERR "  - Neither NVIDIA_GPU_DIRECT nor INTEL_GPU_DIRECT set\n";
-					printf STDERR "                   -or-\n";
-					printf STDERR "  - GPU support not automatically detected in OS installation\n";
-					printf STDERR "                   -or-\n";
-					printf STDERR "  - GPU support automatically detected but user rejected using it\n";
-					printf STDERR "                   -or-\n";
-					printf STDERR "  - GPU software not included in this package\n";
-					Usage;
+					$auto_detect_gpu = 1;
 				}
 			} elsif ( "$arg" eq "-C" ) {
 				$To_Show_Comps = 1;
@@ -1235,6 +1212,38 @@ sub process_args
 		}
 	}
 
+	# GPU direct not set by user, attempt to set automatically
+	# check for intel gpu: if oneapi-ze in package, check for oneapi installed
+	if (1 == $auto_detect_gpu) {
+		if (0 == find_dir("ONEAPI-ZE")) {
+			# call get_kernel_module_for_intel_gpu which will set GPU_Install and GPU_Dir if valid
+			if (get_kernel_module_for_intel_gpu($CUR_OS_VER, $GPU_Install, $GPU_Dir) == 1) {
+				setup_env("INTEL_GPU_DIRECT", $GPU_Dir);
+				NormalPrint("Using INTEL_GPU_DIRECT=$GPU_Dir\n")
+			}
+		}
+		# check for nvidia gpu: if cuda in package, check for cuda installed
+		if (("$GPU_Install" eq "NONE") && (0 == find_dir("CUDA"))) {
+			# call get_kernel_module_for_nv_gpu which will set GPU_Install and GPU_Dir if valid
+			if (get_kernel_module_for_nv_gpu($CUR_OS_VER, $GPU_Install, $GPU_Dir) == 1) {
+				setup_env("NVIDIA_GPU_DIRECT", $GPU_Dir);
+				$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Hidden'} = 0;
+				$ComponentInfo{"openmpi_gcc_cuda_ofi"}{'Disabled'} = 0;
+				NormalPrint("Using NVIDIA_GPU_DIRECT=$GPU_Dir\n");
+			}
+		}
+		if ("$GPU_Install" eq "NONE") {
+			printf STDERR "GPU Direct requested, and:\n";
+			printf STDERR "  - Neither NVIDIA_GPU_DIRECT nor INTEL_GPU_DIRECT set\n";
+			printf STDERR "                   -or-\n";
+			printf STDERR "  - GPU support not automatically detected in OS installation\n";
+			printf STDERR "                   -or-\n";
+			printf STDERR "  - GPU support automatically detected but user rejected using it\n";
+			printf STDERR "                   -or-\n";
+			printf STDERR "  - GPU software not included in this package\n";
+			Usage;
+		}
+	}
 	if ($To_Show_Comps == 1) {
 		ShowComponents;
 		exit(0);

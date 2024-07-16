@@ -116,6 +116,12 @@ typedef struct {
 	long lost_rx_pkts;
 } perf;
 
+typedef struct {
+	int msg_size;
+	int msg_count;
+	int num_conns;
+} client_intentions;
+
 static char *dst_addr;
 static char *src_addr;
 static char *port = "15234";
@@ -251,12 +257,12 @@ static void clean_conns(connection* conns, int num_conns) {
 			continue;
 		}
 
-		if (conns[i].ah) {
-			ibv_destroy_ah(conns[i].ah);
-		}
-
 		if (conns[i].cma_id->qp) {
 			rdma_destroy_qp(conns[i].cma_id);
+		}
+
+		if (conns[i].ah) {
+			ibv_destroy_ah(conns[i].ah);
 		}
 
 		if (conns[i].cq) {
@@ -420,7 +426,10 @@ void *do_post_sends(void *arg) {
 	struct ibv_sge sge;
 	int i, ret = 0;
 	DBGPRINT("  id=%d connected=%d msg_count=%d\n", conn->id, conn->connected, param->msg_count);
-	if (!conn->connected || !msg_count) {
+	if (!conn->connected || !msg_count || !conn->ah) {
+		if (!conn->ah) {
+			PFWARN("AH is null, rx_pkts = %d\n", conn->rx_pkts);
+		}
 		param->ret = 0;
 		return NULL;
 	}
@@ -522,9 +531,19 @@ void *do_poll_cqs(void *arg) {
 			DBGPRINT("    create ah\n");
 			conn->ah = ibv_create_ah_from_wc(conn->pd, wc, conn->mem,
 							 conn->cma_id->port_num);
+			if (!conn->ah) {
+				PSERROR("failed to create AH from WC");
+				param->ret = errno;
+				goto out;
+			}
 			conn->remote_qpn = ntohl(wc->imm_data);
 
-			ibv_query_qp(conn->cma_id->qp, &attr, IBV_QP_QKEY, &init_attr);
+			ret = ibv_query_qp(conn->cma_id->qp, &attr, IBV_QP_QKEY, &init_attr);
+			if (ret) {
+				PFERROR("failed to query QP: ret=%d\n", ret);
+				param->ret = ret;
+				goto out;
+			}
 			conn->remote_qkey = attr.qkey;
 		}
 	}
@@ -557,6 +576,7 @@ int poll_cqs(job *the_job, int msg_count) {
         for (i = 0; i < num_conns; i++) {
         	if (params[i].ret) {
         		ret = params[i].ret;
+			PFERROR("poll_cqs exiting with status %d (%s)\n", ret, strerror(ret));
         		break;
         	}
         }
@@ -602,8 +622,9 @@ int on_route_event(job *the_job, struct rdma_cm_event *event) {
 	}
 
 	struct rdma_conn_param param = {0};
-	param.private_data = the_job->addr_info->ai_connect;
-	param.private_data_len = the_job->addr_info->ai_connect_len;
+	client_intentions intentions = {.msg_size = msg_size, .msg_count = msg_count, .num_conns = num_conns};
+	param.private_data = &intentions;
+	param.private_data_len = sizeof(intentions);
 	ret = rdma_connect(conn->cma_id, &param);
 	if (ret) {
 		PSERROR("failed to connect");
@@ -650,6 +671,19 @@ int on_connect_event(job *the_job, struct rdma_cm_event *event) {
 		PSERROR("failed to accept");
 		goto err2;
 	}
+	if (!event->param.conn.private_data || event->param.conn.private_data_len < sizeof(client_intentions)) {
+		PFERROR("client did not provide msg_size and msg_count, possibly mismatched client/server versions\n");
+		goto err2;
+	}
+
+	client_intentions* intentions = (client_intentions*)(event->param.conn.private_data);
+
+	if (intentions->msg_count != msg_count || intentions->msg_size != msg_size) {
+		PFERROR("client and server messages count and size mismatch, server:(%d, %d) vs client:(%d, %d)\n",
+			msg_count, msg_size, intentions->msg_count, intentions->msg_size);
+		goto err2;
+	}
+
 	next->connected = true;
 	the_job->conn_left -= 1;
 	FPRINT("Accept connection: id=%2d qp_num=%d\n", next->id, param.qp_num);
@@ -924,19 +958,22 @@ int main(int argc, char **argv) {
 		case 'c':
 			num_conns = atoi(optarg);
 			if (num_conns <= 0) {
-				num_conns = 1;
+				PFERROR("Invalid value for -c option: %s\n", optarg);
+				exit(1);
 			}
 			break;
 		case 'C':
 			msg_count = atoi(optarg);
-			if (msg_count < 0) {
-				msg_count = 0;
+			if (msg_count <= 0) {
+				PFERROR("Invalid value for -C option: %s\n", optarg);
+				exit(1);
 			}
 			break;
 		case 'S':
 			msg_size = atoi(optarg);
 			if (msg_size <= 0) {
-				msg_size = 1;
+				PFERROR("Invalid value for -S option: %s\n", optarg);
+				exit(1);
 			}
 			break;
 		case 't':

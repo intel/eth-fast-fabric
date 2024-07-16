@@ -34,8 +34,8 @@
 # 1. copy /usr/share/eth-tools/samples/dsa_setup to /usr/local/bin/dsa_setup
 # 2. edit /usr/local/bin/dsa_setup as needed to define the desired workload
 # 3. copy this file to /etc/systemd/system/dsa.service
-# 4. edit /etc/systemd/system/dsa.service to use the proper -w and -u options
-#    for the dsa_setup command below.  Make other edits as needed.
+# 4. edit /etc/systemd/system/dsa.service to use the proper -D, -w and -u
+#    options for the dsa_setup command below.  Make other edits as needed.
 # 5. run: systemctl --now enable dsa.service
 #    or run systemctl enable dsa.service and reboot
 #
@@ -49,7 +49,7 @@ After=network.target loadmodules.service local-fs.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/dsa_setup -T 10 -w ai -u :mygroup
+ExecStart=/usr/local/bin/dsa_setup -D 8 -T 10 -w ai -u :mygroup
 TimeoutSec=0
 
 [Install]

@@ -92,32 +92,8 @@ INSTALL_SOURCES= \
 				 $(TL_DIR)/CommonInstall/overrides_ff.pl \
 				 $(TL_DIR)/CommonInstall/main_omnipathwrap_delta.pl
 
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES78"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL78.pl
-endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES79"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL79.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES8"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL8.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES81"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL81.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES82"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL82.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES83"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL83.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES84"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL84.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES85"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL85.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES86"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL86.pl
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES87"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL87.pl
@@ -128,9 +104,6 @@ endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES89"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL89.pl
 endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES9"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL9.pl
-endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES91"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL91.pl
 endif
@@ -139,21 +112,6 @@ ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES92"
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES93"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL93.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES124"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES124.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES125"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES125.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES15"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES15.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES151"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES151.pl
-endif
-ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES152"
-        PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES152.pl
 endif
 ifeq "$(BUILD_TARGET_OS_VENDOR_VERSION)" "ES153"
         PREREQ_SOURCE= $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES153.pl

@@ -37,8 +37,8 @@
 #   MPICH_PREFIX  - path to MPICH tools
 #   MPI_HOSTS  - mpi_hosts file to use (default is $PWD/mpi_hosts)
 #                    if set to "slurm" or the 1st non-comment line in file is
-#					 slurm will get host list from SLURM env and put in
-#					 $PWD/mpi_hosts.slurm
+#                    slurm will get host list from SLURM env and put in
+#                    $PWD/mpi_hosts.slurm
 #                    example use: MPI_HOSTS=slurm sbatch -N2 ./run_imb 4
 #   MPI_TASKSET - arguments to /bin/taskset to control CPU selection
 #                    default is to not use /bin/taskset
@@ -65,6 +65,7 @@
 #   APP - application name for use a prefix to LOGFILE name
 #   LOGFILE - logfile to append results of run to, if "" this script will define
 #   LOGSUFFIX - suffix to append to logfile name defined by this script
+#   TITLE - Title for job to include in log
 # Output:
 #   MPI_RUN_CMD - MPI command to start job, actual program name and args can be suffixed
 #   LOGFILE - logfile to append results of run to
@@ -86,7 +87,11 @@ generate_hosts_from_slurm()
 		exit 1
 	fi
 
-	MPI_HOSTS=$PWD/mpi_hosts.slurm
+	if [ ! -d logs ]
+	then
+		mkdir -p logs
+	fi
+	MPI_HOSTS=$PWD/logs/mpi_hosts.slurm.$SLURM_JOB_ID
 	scontrol show hostname > $MPI_HOSTS
 	if [ $? != 0 -o ! -s $MPI_HOSTS ]
 	then
@@ -133,6 +138,10 @@ show_mpi_hosts()
 {
 	local lines
 
+	if [ ! -z "$TITLE" ]
+	then
+		echo "Run Title: $TITLE"
+	fi
 	echo "Using hosts list: $MPI_HOSTS"
 
 	if [ "${SHOW_MPI_HOSTS:-y}" = "y" ]
@@ -183,6 +192,12 @@ show_mpi_env()
 		echo "Using MPI and OFI provider env:"
 		env|grep -E '^I_MPI_|^OMPI_'|sort
 		env|grep -E '^FI_|^PSM3_|^UCX_'|sort
+		echo
+	fi
+	if [ "${SHOW_ENV:-y}" = "y" -a "$(env|grep -E '^GOMP_|^KMP_|^MP_|^OMP_'|wc -l)" -ne 0 ]
+	then
+		echo "Using OpenMP env:"
+		env|grep -E '^GOMP_|^KMP_|^MP_|^OMP_'|sort
 		echo
 	fi
 	if [ "${SHOW_ENV:-y}" = "y" -a "$(env|grep -E '^LD_'|wc -l)" -ne 0 ]
@@ -253,7 +268,12 @@ then
 	then
 		mkdir -p logs
 	fi
-	LOGFILE=$PWD/logs/$APP.$CURTIME$LOGSUFFIX
+	if [ $have_slurm = y -a ! -z "$SLURM_JOB_ID" ]
+	then
+		LOGFILE=$PWD/logs/$APP.$CURTIME.$SLURM_JOB_ID$LOGSUFFIX
+	else
+		LOGFILE=$PWD/logs/$APP.$CURTIME$LOGSUFFIX
+	fi
 	if [ $all_processes = y ]
 	then
 		echo " Running MPI tests with $NUM_PROCESSES times PROCS_PER_NODE processes"
@@ -305,6 +325,10 @@ if [ -e "$MPICH_PREFIX/bin/tune" ] || [ -e $MPICH_PREFIX/bin/impi_info ] #IntelM
 then
 	echo "IntelMPI Detected, running with mpirun." | tee -i -a $LOGFILE
 
+	# vars.sh overrides FI_PROVIDER_PATH, keep value the user has exported.
+	# We choose not to use "vars.sh -i_mpi_ofi_internal 0" because it also
+	# avoids using the libfabric.so included (and validated) with Intel MPI.
+	fi_provider_path="$FI_PROVIDER_PATH"
 	if [ -e $MPICH_PREFIX/env/vars.sh ]
 	then
 		#source $MPICH_PREFIX/env/vars.sh
@@ -313,6 +337,10 @@ then
 	then
 		#source $MPICH_PREFIX/bin/mpivars.sh
 		source_mpich_mpivars
+	fi
+	if [ ! -z "$fi_provider_path" ]
+	then
+		export FI_PROVIDER_PATH="$fi_provider_path"
 	fi
 
 	if [ -e ./psm3.params ]
@@ -376,6 +404,7 @@ then
 		. ./openmpi.params
 	fi
 	# for openmpi must put on command line
+	# however openmpi will automatically export linker LD_ parameters
 	compose_args "-x" '^OMPI_|^FI_|^PSM3_|^UCX_'
 	compute_num_processes
 

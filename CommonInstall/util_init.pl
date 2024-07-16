@@ -366,6 +366,7 @@ sub default_opascripts_env_vars()
 	setup_env("ETH_ARPTABLE_TUNING", 1);
 #	setup_env("ETH_IRQBALANCE", 1);
 	setup_env("ETH_ROCE_ON", 1);
+	setup_env("ETH_UFFD_ACCESS", 1);
 }
 
 sub has_ascfg_file()

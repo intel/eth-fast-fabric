@@ -1,11 +1,11 @@
 Name: eth-tools
-Version: 11.6.0.0
-Release: 233%{?dist}
+Version: 11.7.0.0
+Release: 82%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD
 Url: https://github.com/intel/eth-fast-fabric
-Source: %url/releases/download/v11.6.0.0/eth-fast-fabric-11.6.0.0.tar.gz
+Source: %url/releases/download/v%{version_no_tilde}/eth-fast-fabric-%{version_no_tilde}.tar.gz
 ExclusiveArch: x86_64
 # The Intel(R) Ethernet Fabric Suite product line is only available on x86_64 platforms at this time.
 
@@ -34,7 +34,7 @@ BuildRequires: perl-generators
 Contains tools for managing fabric on a management node.
 
 %prep
-%autosetup -cn eth-fast-fabric-11.6.0.0
+%autosetup -cn eth-fast-fabric-%{version_no_tilde}
 
 %build
 cd OpenIb_Host
@@ -105,7 +105,7 @@ BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_
 -- Improved script printout to include system env
 -- Moved MpiApps parameter settings mostly into env vs on MPI cmd line
 
-* Mon Mar 11 2024 Jijun Wang <jijun.wang@intel.com> - 11.6.0.0-190
+* Mon Mar 11 2024 Jijun Wang <jijun.wang@intel.com> - 11.6.0.0-189
 - Improved to support RHEL 8.9 and RHEL 9.3
 - Added dsa_setup man page
 
