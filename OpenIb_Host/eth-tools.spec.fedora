@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.7.0.0
-Release: 82%{?dist}
+Release: 110%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD

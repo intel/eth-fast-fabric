@@ -83,6 +83,11 @@ ifndef CUDA_DIR
 CUDA_DIR=/usr/local/cuda
 endif
 endif
+ifeq "$(MPI_APPS_ONEAPI)" "y"
+ifndef ZE_DIR
+ZE_DIR=/usr
+endif
+endif
 
 all:: INCLUDES LIBS CMDS
 .PHONY: all
@@ -174,7 +179,9 @@ OSU: SHOWMPI
 IMB: SHOWMPI
 	@echo "Building Intel Micro Benchmarks..."
 ifeq "$(MPI_APPS_ONEAPI)" "y"
-	cd imb; make CC=$(MPICC) CXX=$(MPICXX) CXXFLAGS=-Wno-register all IMB-MPI1-GPU
+	cd imb; make CC=$(MPICC) CXX=$(MPICXX) CXXFLAGS=-Wno-register ZE_INCLUDE_DIR=$(ZE_DIR)/include/level_zero all IMB-MPI1-GPU
+else ifeq "$(MPI_APPS_CUDA)" "y"
+	cd imb; make CC=$(MPICC) CXX=$(MPICXX) CXXFLAGS=-Wno-register CUDA_INCLUDE_DIR=$(CUDA_DIR)/include all IMB-MPI1-GPU
 else
 	cd imb; make CC=$(MPICC) CXX=$(MPICXX) CXXFLAGS=-Wno-register all
 endif

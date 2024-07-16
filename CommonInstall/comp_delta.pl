@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # BEGIN_ICS_COPYRIGHT8
 #
-# Copyright (c) 2015-2023, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -119,22 +119,16 @@ my %source_pkgs_by_distro = (
 	'SuSE*ES153'    => [ \%sles_srpm ],
 	'SuSE*ES154'    => [ \%sles_srpm ],
 	'SuSE*ES155'    => [ \%sles_srpm ],
-	'redhat*ES78'   => [ \%redhat_srpm ],
+	'SuSE*ES156'    => [ \%sles_srpm ],
 	'redhat*ES79'   => [ \%redhat_srpm ],
-	'redhat*ES8'    => [ \%redhat_srpm ],
-	'redhat*ES81'   => [ \%redhat_srpm ],
-	'redhat*ES82'   => [ \%redhat_srpm ],
-	'redhat*ES83'   => [ \%redhat_srpm ],
-	'redhat*ES84'   => [ \%redhat_srpm ],
-	'redhat*ES85'   => [ \%redhat_srpm ],
-	'redhat*ES86'   => [ \%redhat_srpm ],
 	'redhat*ES87'   => [ \%redhat_srpm ],
 	'redhat*ES88'   => [ \%redhat_srpm ],
 	'redhat*ES89'   => [ \%redhat_srpm ],
-	'redhat*ES9'    => [ \%redhat_srpm ],
+	'redhat*ES810'  => [ \%redhat_srpm ],
 	'redhat*ES91'   => [ \%redhat_srpm ],
 	'redhat*ES92'   => [ \%redhat_srpm ],
 	'redhat*ES93'   => [ \%redhat_srpm ],
+	'redhat*ES94'   => [ \%redhat_srpm ],
 	'ubuntu*UB2204' => [ \%debian_tarball ],
 );
 

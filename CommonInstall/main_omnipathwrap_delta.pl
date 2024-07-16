@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2023, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -68,30 +68,19 @@ my @EthUbuntuComponents = (
 );
 
 my %Components_by_distro = (
-	'SuSE*ES124'    => \@EthAllComponents,
-	'SuSE*ES125'    => \@EthAllComponents,
-	'SuSE*ES15'     => \@EthAllComponents,
-	'SuSE*ES151'    => \@EthAllComponents,
-	'SuSE*ES152'    => \@EthAllComponents,
 	'SuSE*ES153'    => \@EthAllComponents,
 	'SuSE*ES154'    => \@EthAllComponents,
 	'SuSE*ES155'    => \@EthAllComponents,
-	'redhat*ES78'   => \@EthAllComponents,
+	'SuSE*ES156'    => \@EthAllComponents,
 	'redhat*ES79'   => \@EthAllComponents,
-	'redhat*ES8'    => \@EthAllComponents,
-	'redhat*ES81'   => \@EthAllComponents,
-	'redhat*ES82'   => \@EthAllComponents,
-	'redhat*ES83'   => \@EthAllComponents,
-	'redhat*ES84'   => \@EthAllComponents,
-	'redhat*ES85'   => \@EthAllComponents,
-	'redhat*ES86'   => \@EthAllComponents,
 	'redhat*ES87'   => \@EthAllComponents,
 	'redhat*ES88'   => \@EthAllComponents,
 	'redhat*ES89'   => \@EthAllComponents,
-	'redhat*ES9'    => \@EthAllComponents,
+	'redhat*ES810'  => \@EthAllComponents,
 	'redhat*ES91'   => \@EthAllComponents,
 	'redhat*ES92'   => \@EthAllComponents,
 	'redhat*ES93'   => \@EthAllComponents,
+	'redhat*ES94'   => \@EthAllComponents,
 	'ubuntu*UB2204' => \@EthUbuntuComponents,
 );
 
@@ -503,31 +492,20 @@ my %eth_module_debian_comp_info = (
 );
 
 my %Comp_info_by_distro = (
-	'SuSE*ES124'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
-	'SuSE*ES125'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
-	'SuSE*ES15'     => { %ibacm_comp_info, %eth_module_sles_comp_info },
-	'SuSE*ES151'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
-	'SuSE*ES152'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES153'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES154'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES155'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES156'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 
-	'redhat*ES78'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES79'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES8'    => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES81'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES82'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES83'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES84'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES85'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES86'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES87'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES88'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES89'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
-	'redhat*ES9'    => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES810'  => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES91'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES92'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES93'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES94'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 
 	'ubuntu*UB2204' => { %ibacm_comp_info, %eth_module_debian_comp_info },
 );
