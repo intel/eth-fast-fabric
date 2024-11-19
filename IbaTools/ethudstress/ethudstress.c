@@ -493,7 +493,9 @@ void *do_poll_cqs(void *arg) {
 	struct ibv_wc wc[8];
 	struct ibv_qp_attr attr;
 	struct ibv_qp_init_attr init_attr;
-	int count = 0, ret;
+	int count = 0;
+	int ret;
+	int polled;
 	uint64_t progress_time = get_timestamp() + 1000000;
 
 	connection *conn = param->conn;
@@ -504,30 +506,29 @@ void *do_poll_cqs(void *arg) {
 		goto out;
 	}
 
-	for (count = 0; count < msg_count; count += ret) {
-		ret = ibv_poll_cq(conn->cq, msg_count >8 ? 8 : msg_count, wc);
+	for (count = 0; count < msg_count; count += polled) {
+		polled = ibv_poll_cq(conn->cq, msg_count > 8 ? 8 : msg_count, wc);
 		if (!dst_addr && get_timestamp() >= progress_time) {
 			// only print progress on receiver side
 			DBGPRINT("connection %2d - progress: qpn=%d expected msg_count=%d got=%d poll ret=%d\n",
-				conn->id, conn->cma_id->qp->qp_num, msg_count, count, ret);
+				conn->id, conn->cma_id->qp->qp_num, msg_count, count, polled);
 			progress_time += 1000000;
 		}
-		if (ret > 0 && (msg_count - count < 10)) {
-			DBGPRINT("    id=%d count=%d get=%d\n", conn->id, count, ret);
+		if (polled > 0 && (msg_count - count < 10)) {
+			DBGPRINT("    id=%d count=%d get=%d\n", conn->id, count, polled);
 		}
-		if (ret < 0) {
-			PFERROR("failed to poll CQ: ret=%d\n", ret);
-			param->ret = ret;
+		if (polled < 0) {
+			PFERROR("failed to poll CQ: ret=%d\n", polled);
+			param->ret = polled;
 			goto out;
 		}
-		if (!ret && get_timestamp() >= stop_time_us) {
+		if (!polled && get_timestamp() >= stop_time_us) {
 			PFWARN("connection %2d - timeout: qpn=%d expected msg_count=%d got=%d\n",
 				conn->id, conn->cma_id->qp->qp_num, msg_count, count);
 			param->ret = 0;
 			goto out;
 		}
-
-		if (ret && !conn->ah) {
+		if (polled && !conn->ah) {
 			DBGPRINT("    create ah\n");
 			conn->ah = ibv_create_ah_from_wc(conn->pd, wc, conn->mem,
 							 conn->cma_id->port_num);
