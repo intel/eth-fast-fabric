@@ -50,7 +50,7 @@ cd bin
 
 cd ../bin
 [ -n "$ff_tools_opt" ] && cp -t ${DESTDIR}/${prefix}/lib/eth-tools/ $ff_tools_opt
-[ -n "$opasnapconfig_bin" ] && cp -t ${DESTDIR}/${prefix}}/lib/eth-tools/ $opasnapconfig_bin
+[ -n "$opasnapconfig_bin" ] && cp -t ${DESTDIR}/${prefix}/lib/eth-tools/ $opasnapconfig_bin
 
 cd ../fastfabric
 [ -n "$ff_tools_sbin" ] && cp -t ${DESTDIR}/${sbindir} $ff_tools_sbin
