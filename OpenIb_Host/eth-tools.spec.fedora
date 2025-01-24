@@ -1,6 +1,6 @@
 Name: eth-tools
 Version: 11.7.0.2
-Release: 2%{?dist}
+Release: 4%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD-3-Clause
@@ -23,7 +23,7 @@ Requires: expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils
 BuildRequires: make
 BuildRequires: expat-devel
 BuildRequires: gcc-c++
-BuildRequires: tcl-devel
+BuildRequires: tcl-devel < 1:9
 BuildRequires: rdma-core-devel
 BuildRequires: net-snmp-devel
 
@@ -94,6 +94,12 @@ BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_
 %config(noreplace) /usr/lib/eth-tools/osid_wrapper
 
 %changelog
+* Wed Jan 22 2025 Jijun Wang <jijun.wang@intel.com> - 11.7.0.2-4
+- Limit tcl_dev package version to less than 9 as there is
+  no expect package available yet for Tcl 9.0
+- Improved build related script, ff_install.sh, to get install
+  directories from rpm macros
+
 * Mon Nov 18 2024 Jijun Wang <jijun.wang@intel.com> - 11.7.0.2-2
 - Fixed ethudstress cq poll regression issue
 
