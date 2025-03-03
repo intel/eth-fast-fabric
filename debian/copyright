@@ -5,7 +5,7 @@ Source: <http://www.intel.com>
 
 Files: *
 Copyright: 2021-2022	Intel Corporation
-License: GPL-2 or BSD
+License: GPL-2 or BSD-3-clause
  eth-tools is licensed under a choice of one of two licenses.  You may
  choose to be licensed under the terms of the GNU General Public
  License (GPL) Version 2, available from the file

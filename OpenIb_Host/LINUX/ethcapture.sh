@@ -59,61 +59,97 @@ Usage_full()
 	echo "report regarding this system." >&2
 }
 
-_copy() {
+_copy_file() {
 	local src="$1"
 	local dst="$2"
 	if [ ! -e "$src" ]; then
-		echo "Error - $src does not exist"
+		echo "$src does not exist"
 		return 1
 	fi
-
-	# handle special case when we copy a single file
-	if [ -f "${src}" ]; then
-		if [ -d "${dst}" ]; then
-			cp --preserve=mode,ownership,timestamps "${src}" "${dst}"
-		else
-			local dir="$(dirname "$dst")"
-			mkdir -p "${dir}"
-			cp --preserve=mode,ownership,timestamps "${src}" "${dst}"
-		fi
-		return 0
+	if [ ! -f "${src}" ]; then
+		echo "Error - $src is not a file"
+		return 1
 	fi
+	if [ -d "${dst}" ]; then
+		cp --preserve=mode,ownership,timestamps "${src}" "${dst}"
+	else
+		local dir="$(dirname "$dst")"
+		mkdir -p "${dir}"
+		cp --preserve=mode,ownership,timestamps "${src}" "${dst}"
+	fi
+	return 0
+}
 
-	# copy empty dirs as the structure itself is important
-	# printf "%P\n" returns the path relative to "$src"
-	find "${src}" -depth -type d -empty -printf "%P\n" \
-	| while read -r dir
-	do
-		mkdir -p "${dst}/${dir}"
-	done
+_tar() {
+	local src="$1"
+	local dst="$2"
+	if [ ! -e "$src" ]; then
+		echo "$src does not exist"
+		return 1
+	fi
+	mkdir -p ${dst}
+	# get list of all files that are not less than MAX_FILE_SIZE bytes
+	# i.e. Get a list of all large files we will not include. 
+	find "${src}" -type f -not -size -${MAX_FILE_SIZE}c -printf "%P\n" > ${dst}/too_big_files.txt
+	# note that --sparse parameter is crucial, without it all these procfs/sysfs "files"
+	# with reported 4k size and with less actual size will be padded to reported sizes
+	# with zeros, which is normal, but later by unpacking tar treats 2*512 blocks of zeros
+	# as a "tape end marker" and shows you only a part of archive (unless you pass in --ignore-zeros)
+	tar --create \
+	    --file=${dst}/content.tar \
+	    --exclude-from=${dst}/too_big_files.txt \
+	    --ignore-failed-read \
+	    --warning=no-file-shrank \
+	    --warning=no-failed-read \
+	    --sparse \
+	    --directory ${src} \
+	    .
+}
 
-	# copy all files less than MAX_FILE_SIZE bytes
-	find "${src}" -type f -size -${MAX_FILE_SIZE}c -printf "%P\n" \
-	| while read file
-	do
-		local dir="$(dirname "$file")"
-		mkdir -p "${dst}/${dir}"
-		cp --preserve=mode,ownership,timestamps "${src}/${file}" "${dst}/${dir}"
-	done
+_tar_w_tag() {
+	# from tar manpage:
+	#       --exclude-tag=FILE
+	#              Exclude contents of directories containing FILE, except for FILE itself.
+	# this means tar will copy only file `$tag` from all directories
+	# - /path/a/$tag
+	# - /path/b/$tag
+	# - /path/c/d/e/$tag
+	local src="$1"
+	local dst="$2"
+	local tag="$3"
+	if [ ! -e "$src" ]; then
+		echo "$src does not exist"
+		return 1
+	fi
+	mkdir -p ${dst}
+	tar --create \
+	    --file=${dst}/content.tar \
+	    --exclude-tag=${tag} \
+	    --ignore-failed-read \
+	    --warning=no-file-shrank \
+	    --warning=no-failed-read \
+	    --sparse \
+	    --directory ${src} \
+	    .
+}
 
-	# log all files skipped because of size
-	find "${src}" -type f -not -size -${MAX_FILE_SIZE}c -printf "%P\n" \
-	| while read file
-	do
-		local size=$(stat -c "%s" "${src}/${file}")
-		local dir="$(dirname "$file")"
-		mkdir -p "${dst}/${dir}"
-		echo "Large content (${size} bytes) skipped" > "${dst}/${file}"
-	done
-
-	# copy symlinks as the structure itself is important
-	find "${src}" -type l -printf "%P\n" \
-	| while read link
-	do
-		local dir="$(dirname "$link")"
-		mkdir -p "${dst}/${dir}"
-		cp --no-dereference "${src}/${link}" "${dst}/${link}"
-	done
+_tar_all() {
+	# copy all files into content.tar which is stored in dst.
+	local src="$1"
+	local dst="$2"
+	if [ ! -e "$src" ]; then
+		echo "$src does not exist"
+		return 1
+	fi
+	mkdir -p ${dst}
+	tar --create \
+	    --file=${dst}/content.tar \
+	    --ignore-failed-read \
+	    --warning=no-file-shrank \
+	    --warning=no-failed-read \
+	    --sparse \
+	    --directory ${src} \
+	    .
 }
 
 Usage()
@@ -127,7 +163,6 @@ then
 	Usage_full
 	exit 0
 fi
-
 
 if [ -f /usr/lib/eth-tools/ff_funcs ]
 then
@@ -269,8 +304,8 @@ fi
 
 echo "Obtaining present process and module list ..."
 lsmod > /$dir/lsmod 2>&1
-depmod -a 2>&1
-_copy /lib/modules/`uname -r`/modules.dep /$dir/modules.dep
+depmod -a > /$dir/depmod 2>&1
+_copy_file /lib/modules/`uname -r`/modules.dep /$dir/modules.dep
 ps -welf > /$dir/ps 2>&1
 
 echo "Obtaining module info for ice ..."
@@ -338,23 +373,8 @@ else
 	echo "Warning: Skipped because mpi-selector not found."
 fi
 
-mkdir /$dir/proc
 echo "Copying configuration and statistics from /proc ..."
-for proc_file in cmdline cpuinfo ksyms meminfo mtrr modules net/arp net/dev net/dev_mcast net/route net/rt_cache net/vlan pci interrupts devices filesystems iomem ioports slabinfo version uptime scsi irq acpi/processor
-do
-	if [ -e /proc/$proc_file ]
-	then
-		_copy /proc/$proc_file /$dir/proc
-	fi
-done
-for proc_file in `ps -eo pid`
-do
-	if [ -e /proc/$proc_file/stack ]
-	then
-		mkdir -p /$dir/proc/$proc_file
-		_copy /proc/$proc_file/stack /$dir/proc/$proc_file
-	fi
-done
+_tar_w_tag /proc /${dir}/proc "stack"
 
 echo "Obtaining additional CPU info..."
 if type cpupower >/dev/null 2>&1
@@ -366,41 +386,18 @@ fi
 
 # Check if ice driver debug data dir) is present; log only if present
 ICE_DEBUGDIR="/sys/kernel/debug/ice"
-if [ -d ${ICE_DEBUGDIR} ]
-then
-	mkdir -p /${dir}${ICE_DEBUGDIR}
-	echo "Copying kernel debug information from ${ICE_DEBUGDIR}..."
-	_copy ${ICE_DEBUGDIR}/* /${dir}/${ICE_DEBUGDIR} 2>/dev/null
-fi
+echo "Copying kernel debug information from ${ICE_DEBUGDIR}..."
+_tar_all ${ICE_DEBUGDIR}/ /${dir}/${ICE_DEBUGDIR} 2>/dev/null
 
 # Check if irdma driver debug data dir) is present; log only if present
 IRDMA_DEBUGDIR="/sys/kernel/debug/irdma"
-if [ -d ${IRDMA_DEBUGDIR} ]
-then
-	mkdir -p /${dir}${IRDMA_DEBUGDIR}
-	echo "Copying kernel debug information from ${IRDMA_DEBUGDIR}..."
-	_copy ${IRDMA_DEBUGDIR}/* /${dir}/${IRDMA_DEBUGDIR} 2>/dev/null
-fi
+echo "Copying kernel debug information from ${IRDMA_DEBUGDIR}..."
+_tar_all ${IRDMA_DEBUGDIR}/ /${dir}/${IRDMA_DEBUGDIR} 2>/dev/null
 
 # Check if rv debug data dir) is present; log only if present
 RV_DEBUGDIR="/sys/kernel/debug/rv"
-if [ -d ${RV_DEBUGDIR} ]
-then
-	mkdir -p /${dir}${RV_DEBUGDIR}
-	echo "Copying kernel debug information from ${RV_DEBUGDIR}..."
-	_copy ${RV_DEBUGDIR}/* /${dir}/${RV_DEBUGDIR} 2>/dev/null
-fi
-
-# Check if side channel security issue mitigation information files are
-# present; log if present
-SIDE_CHANNEL_MITIGATION_INFO="/sys/devices/system/cpu/vulnerabilities"
-if [ -d ${SIDE_CHANNEL_MITIGATION_INFO} ]
-then
-	echo "Obtaining side channel security issue mitigation information from ${SIDE_CHANNEL_MITIGATION_INFO}"
-	mkdir -p /${dir}${SIDE_CHANNEL_MITIGATION_INFO}
-	echo "Copying side channel security issue mitigation information from ${SIDE_CHANNEL_MITIGATION_INFO}..."
-	_copy ${SIDE_CHANNEL_MITIGATION_INFO}/* /${dir}${SIDE_CHANNEL_MITIGATION_INFO} 2>/dev/null
-fi
+echo "Copying kernel debug information from ${RV_DEBUGDIR}..."
+_tar_all ${RV_DEBUGDIR}/ /${dir}/${RV_DEBUGDIR} 2>/dev/null
 
 # Check if side channel security issue mitigation kernel configuration files are
 # present; log if present
@@ -411,94 +408,20 @@ do
 	if [ -e ${KERNEL_CONFIG_LOC}/${fname} ]
 	then
 		echo "Obtaining kernel configuration file ${KERNEL_CONFIG_LOC}/${fname}"
-		if [ ! -d /${dir}${KERNEL_CONFIG_LOC} ]
-		then
-			mkdir -p /${dir}${KERNEL_CONFIG_LOC}
-		fi
+		mkdir -p /${dir}${KERNEL_CONFIG_LOC}
 		echo "Copying kernel configuration file ${KERNEL_CONFIG_LOC}/${fname}..."
-		_copy ${KERNEL_CONFIG_LOC}/${fname} /${dir}${KERNEL_CONFIG_LOC} 2>/dev/null
+		_copy_file ${KERNEL_CONFIG_LOC}/${fname} /${dir}${KERNEL_CONFIG_LOC} 2>/dev/null
 	fi
 done
 
-mkdir -p /$dir/sys/class
-if [ -e /sys/class/infiniband ]
-then
-	echo "Copying configuration and statistics for irdma from /sys ..."
-	_copy /sys/class/*infiniband* /$dir/sys/class 2>/dev/null
-	mkdir -p /$dir/sys/class/infiniband
-	for f in /sys/class/infiniband/*
-	do
-		if [ -h $f ]
-		then
-			rm -f /$dir/$f
-			_copy $f/ /$dir/sys/class/infiniband/ 2>/dev/null
-			if [ -h $f/device ]
-			then
-				iface=`basename $f`
-				rm -f /$dir/$f/device
-				mkdir -p /$dir/sys/class/infiniband/$iface/ 2>/dev/null
-				_copy $f/device/ /$dir/sys/class/infiniband/$iface/ 2>/dev/null
-			fi
-		fi
-	done
-fi
+echo "Copying configuration from /sys/class ..."
+_tar /sys/class/ /$dir/sys/class
 
-if [ -e /sys/class/scsi_host ]
-then
-	_copy /sys/class/scsi_host /$dir/sys/class 2>/dev/null
-fi
-if [ -e /sys/class/scsi_device ]
-then
-	_copy /sys/class/scsi_device /$dir/sys/class 2>/dev/null
-fi
+echo "Copying configuration and statistics data from /sys/module ..."
+_tar /sys/module /$dir/sys/module 2>/dev/null
 
-if [ -e /sys/class/net/ ]
-then
-	echo "Copying network interface information"
-	mkdir -p /$dir/sys/class/net
-	_copy /sys/class/net/ /$dir/sys/class 2>/dev/null
-	for f in /sys/class/net/*
-	do
-		if [ -h $f ]
-		then
-			rm -f /$dir/$f
-			_copy $f/ /$dir/sys/class/net/ 2>/dev/null
-			if [ -h $f/device ]
-			then
-				iface=`basename $f`
-				rm -f /$dir/$f/device
-				mkdir -p /$dir/sys/class/net/$iface/ 2>/dev/null
-				_copy $f/device/ /$dir/sys/class/net/$iface/ 2>/dev/null
-			fi
-		fi
-	done
-fi
-
-if [ -e /sys/module ]
-then
-	echo "Copying configuration and statistics data from /sys/module ..."
-	_copy /sys/module /$dir/sys 2>/dev/null
-fi
-
-if [ -e /sys/class/pci_bus ]
-then
-	echo "Copying device information from /sys/class/pci_bus ..."
-	mkdir -p /$dir/sys/class
-	for f in /sys/class/pci_bus/*
-	do
-		if [ -h $f ]
-		then
-			rm -f /$dir/$f
-			_copy $f/ /$dir/sys/class/pci_bus/ 2>/dev/null
-		fi
-	done
-fi
-
-if [ -e /sys/devices ]
-then
-	echo "Copying device information from /sys/devices ..."
-	_copy /sys/devices /$dir/sys/ 2>/dev/null
-fi
+echo "Copying device information from /sys/devices ..."
+_tar /sys/devices /$dir/sys/devices 2>/dev/null
 
 if [ $detail -ge 2 ]
 then
@@ -562,7 +485,7 @@ fi
 if [ $ff_available = "y" ] && [ -e "${FF_CABLE_HEALTH_REPORT_DIR}" ]
 then
 		echo "Copying all Cable Health Reports"
-		_copy ${FF_CABLE_HEALTH_REPORT_DIR} /$dir/ 2>/dev/null
+		_tar_all ${FF_CABLE_HEALTH_REPORT_DIR} /$dir/ 2>/dev/null
 fi
 
 cd /

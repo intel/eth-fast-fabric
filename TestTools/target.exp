@@ -1531,9 +1531,9 @@ proc host_send_unix_cmd { host cmd { separator "\n"} } {
 	global spawn_id expect_out spawn_out timeout
 	global env
 
-	exp_send "ssh -q -o ForwardX11=no -P root@$host $cmd$separator"
+	exp_send "ssh -q -o ForwardX11=no root@$host $cmd$separator"
 	# possible workaround if command line editor gets involved
-	#exp_send [ longcmd "ssh -q -o ForwardX11=no -P root@$host $cmd$separator" ]
+	#exp_send [ longcmd "ssh -q -o ForwardX11=no root@$host $cmd$separator" ]
 }
 
 proc ethcmdall_stop_child { spawn_id } {
@@ -1624,7 +1624,7 @@ proc host_run_cmd { host user cmd {quiet 0} {timelimit -1} {prefix ""} } {
 	}
 
 	if { $timelimit == -1 &&  [string equal "$prefix" "" ] } {
-		if { [ catch { exec ssh -q -o ForwardX11=no -P "$user@$host" "$cmd" >@ stdout 2>@ stderr } res ] != 0 } {
+		if { [ catch { exec ssh -q -o ForwardX11=no "$user@$host" "$cmd" >@ stdout 2>@ stderr } res ] != 0 } {
 			set exit_status [concat $errorCode]
 			if { [ lindex $exit_status 0 ] == "CHILDSTATUS" } {
 				set res "child exit code: [lindex $exit_status 2]"
@@ -1640,9 +1640,9 @@ proc host_run_cmd { host user cmd {quiet 0} {timelimit -1} {prefix ""} } {
 		# disable normal output so we can insert prefix
 		set save_log_user [log_user -info]
 		if { [ catch { 
-				log_user 0
-    			spawn -noecho ssh -q -o ForwardX11=no -P "$user@$host" "$cmd"
-				# do not use TEST_TIMEOUT_MULT
+			log_user 0
+			spawn -noecho ssh -q -o ForwardX11=no "$user@$host" "$cmd"
+			# do not use TEST_TIMEOUT_MULT
     			set timeout $timelimit
     			expect {
 					\n		{puts -nonewline "$prefix$expect_out(buffer)"; exp_continue -continue_timer}
