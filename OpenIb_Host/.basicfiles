@@ -3,7 +3,7 @@ Version: __RPM_VERSION
 Release: __RPM_RELEASE
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
-License: BSD
+License: BSD-3-Clause
 Url: https://github.com/intel/eth-fast-fabric
 Source: %url/releases/download/v%{version_no_tilde}/eth-fast-fabric-%{version_no_tilde}.tar.gz
 ExclusiveArch: x86_64

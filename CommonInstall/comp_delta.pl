@@ -111,24 +111,17 @@ my %debian_tarball = (
 # all kernel srpms
 # these are in the order we must build/process them to meet basic dependencies
 my %source_pkgs_by_distro = (
-	'SuSE*ES124'    => [ \%sles_srpm ],
-	'SuSE*ES125'    => [ \%sles_srpm ],
-	'SuSE*ES15'     => [ \%sles_srpm ],
-	'SuSE*ES151'    => [ \%sles_srpm ],
-	'SuSE*ES152'    => [ \%sles_srpm ],
 	'SuSE*ES153'    => [ \%sles_srpm ],
 	'SuSE*ES154'    => [ \%sles_srpm ],
 	'SuSE*ES155'    => [ \%sles_srpm ],
 	'SuSE*ES156'    => [ \%sles_srpm ],
-	'redhat*ES79'   => [ \%redhat_srpm ],
-	'redhat*ES87'   => [ \%redhat_srpm ],
 	'redhat*ES88'   => [ \%redhat_srpm ],
 	'redhat*ES89'   => [ \%redhat_srpm ],
 	'redhat*ES810'  => [ \%redhat_srpm ],
-	'redhat*ES91'   => [ \%redhat_srpm ],
 	'redhat*ES92'   => [ \%redhat_srpm ],
 	'redhat*ES93'   => [ \%redhat_srpm ],
 	'redhat*ES94'   => [ \%redhat_srpm ],
+	'redhat*ES95'   => [ \%redhat_srpm ],
 	'ubuntu*UB2204' => [ \%debian_tarball ],
 );
 

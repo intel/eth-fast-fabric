@@ -104,8 +104,9 @@ else
 	$(error BUILD_PLATFORM_OS_VENDOR not valid: $(BUILD_PLATFORM_OS_VENDOR))
 endif
 
-# ignore prereq for unknown version. This is mainly for Fedora that we
-# treat it as redhat, but it has totally different version number.
+# ignore prereq if the file specified in PREREQ_SOURCE doesn't exist.
+# This is mainly for Fedora that we treat it as redhat, but it has
+# totally different version number.
 # TBD, find a better solution for this case. Maybe we shall get rid of
 # prereq files.
 ifeq (,$(wildcard ${PREREQ_SOURCE}))
