@@ -163,7 +163,11 @@ $(TL_DIR)/%: %
 # index for autoloading Tcl procedures, remove first in case a symlink
 tclIndex: $(TCL_SOURCES)
 	rm -f tclIndex
-	echo auto_mkindex . $^|tclsh
+	if command -v tclsh8 > /dev/null 2>&1; then \
+		echo auto_mkindex . $^|tclsh8; \
+	else \
+		echo auto_mkindex . $^|tclsh; \
+	fi
 	echo '# [ICS VERSION STRING: unknown]' >> tclIndex
 	cat qlgc_fork.pkgIndex >> tclIndex
 

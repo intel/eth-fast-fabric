@@ -141,6 +141,9 @@ include $(TL_DIR)/Makerules/Maketargets.install
 %: %.tcl
 	$(CP) $< $@
 	$(CHMOD) 755 $@
+	if command -v tclsh8 > /dev/null 2>&1; then \
+		sed '1s:^#!/usr/bin/tclsh$$:#!/usr/bin/tclsh8:' -i $@; \
+	fi
 
 # install for stage phase
 #include $(TL_DIR)/Makerules/Maketargets.stage
