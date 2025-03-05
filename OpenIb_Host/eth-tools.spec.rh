@@ -19,7 +19,7 @@ Summary: Management level tools and scripts
 
 Requires: rdma bc
 
-Requires: expect%{?_isa}, tcl%{?_isa}, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}
+Requires: expect%{?_isa}, tcl%{?_isa} < 1:9, libibverbs-utils%{?_isa}, librdmacm-utils%{?_isa}, net-snmp%{?_isa}, net-snmp-utils%{?_isa}
 BuildRequires: make, expat-devel, gcc-c++, tcl-devel < 1:9, rdma-core-devel, net-snmp-devel
 
 
@@ -89,6 +89,16 @@ BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_
 %config(noreplace) /usr/lib/eth-tools/osid_wrapper
 
 %changelog
+* Tue Mar 4 2025 Jijun Wang <jijun.wang@intel.com> - 12.0.0.0-37
+- Changed to use tclsh8 when possible
+- Changed rpm spec to require tcl < 1:9
+
+* Mon Mar 3 2025 Jijun Wang <jijun.wang@intel.com> - 12.0.0.0-36
+- Improved to support RHEL 9.5
+- Updated pkg spec License to use SPDX standard name
+- Improved ethcapture to capture device information more efficiently
+- Removed old ssh arg from tcl scripts
+
 * Wed Jan 22 2025 Jijun Wang <jijun.wang@intel.com> - 11.7.0.2-4
 - Limit tcl_dev package version to less than 9 as there is
   no expect package available yet for Tcl 9.0
