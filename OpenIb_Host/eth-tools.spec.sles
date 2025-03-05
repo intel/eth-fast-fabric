@@ -19,7 +19,7 @@ Summary: Management level tools and scripts
 
 Requires: rdma bc
 
-Requires: libibverbs-utils, librdmacm-utils, expect, tcl < 1:9, net-snmp
+Requires: libibverbs-utils, librdmacm-utils, expect, (tcl8 or tcl < 1:9), net-snmp
 BuildRequires: make, libexpat-devel, gcc-c++, tcl-devel < 1:9, rdma-core-devel, net-snmp-devel
 
 
