@@ -740,6 +740,7 @@ function os_vendor()
         [fedora]="redhat"
         [rocky]="redhat"
         [almalinux]="redhat"
+        [navix]="redhat"
         [circle]="redhat"
         [ol]="redhat"
         [opencloudos]="opencloudos"

@@ -42,7 +42,7 @@ echo "Packages version [$pkgversion] release [$pkgrelease], args [$BUILD_ARGS]"
 build_deb="no"
 spec_mpi="UNDEFINED"
 spec_ff="UNDEFINED"
-if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" -o "$id" = "almalinux" -o "$id" = "circle" -o "$id" = "ol" ]; then
+if [ "$id" = "rhel" -o "$id" = "centos" -o "$id" = "rocky" -o "$id" = "almalinux" -o "$id" = "navix" -o "$id" = "circle" -o "$id" = "ol" ]; then
 	GE_8_0=$(echo "$versionid >= 8.0" | bc)
 	if [ $GE_8_0 = 1 ]; then
 		spec_mpi="mpi-apps.spec.rh8+"

@@ -3,7 +3,7 @@
 read id versionid <<< $(OpenIb_Host/get_id_and_versionid.sh)
 
 case $id in
-	rhel|centos|rocky|almalinux|circle|ol)
+	rhel|centos|rocky|almalinux|navix|circle|ol)
 		spec_ff="OpenIb_Host/eth-tools.spec.rh"	;;
 	fedora)
 		spec_ff="OpenIb_Host/eth-tools.spec.fedora" ;;

@@ -13,6 +13,7 @@ declare -A vendor_map=(
     [centos]="rhel"
     [rocky]="rhel"
     [almalinux]="rhel"
+    [navix]="rhel"
     [circle]="rhel"
     [ol]="ol"
     [opencloudos]="ocs"
