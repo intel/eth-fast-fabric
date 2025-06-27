@@ -509,8 +509,10 @@ function settarget()
     
     export BUILD_PLATFORM_OS_VENDOR=`os_vendor`
     export BUILD_PLATFORM_OS_VENDOR_VERSION=`os_vendor_version $BUILD_PLATFORM_OS_VENDOR`    
+    export BUILD_PLATFORM_OS_VENDOR_VERSION_MAJOR=`os_vendor_version_major $BUILD_PLATFORM_OS_VENDOR`
     export BUILD_TARGET_OS_VENDOR=$BUILD_PLATFORM_OS_VENDOR
     export BUILD_TARGET_OS_VENDOR_VERSION=$BUILD_PLATFORM_OS_VENDOR_VERSION
+    export BUILD_TARGET_OS_VENDOR_VERSION_MAJOR=$BUILD_PLATFORM_OS_VENDOR_VERSION_MAJOR
    
     if   [ `getBuildPlatform` == "CYGWIN" ]; then
 
@@ -787,6 +789,30 @@ function os_vendor_version()
 # NOTE: This function is changed whenever we add different platform or
 #       target support.
 #---------------------------------------------------------------------------
+# Function:     os_version_major
+# In Script:    funcs-ext.sh
+# Arguments:    N/A
+# Description:  determine the os vendor release level based on build system
+#---------------------------------------------------------------------------
+function os_vendor_version_major()
+{
+    local os_file=$(os_release_file)
+    if [ "${os_file}" ]; then
+        . ${os_file}
+        # - use VERSION_ID - it has a common format among distros
+        # - mimic old way and drop $minor
+        if [ "$1" = "ubuntu" ]; then
+            rval=UB$(echo $VERSION_ID | sed -e 's/\..*//')
+        else
+            rval=ES$(echo $VERSION_ID | sed -e 's/\..*//')
+        fi
+    fi
+    echo $rval
+}
+
+# NOTE: This function is changed whenever we add different platform or
+#       target support.
+#---------------------------------------------------------------------------
 # Function:	os_identifier
 # In Script:	funcs-ext.sh
 # Arguments:	None
@@ -834,8 +860,10 @@ function target()
     
     export BUILD_PLATFORM_OS_VENDOR=`os_vendor`    
     export BUILD_PLATFORM_OS_VENDOR_VERSION=`os_vendor_version $BUILD_PLATFORM_OS_VENDOR`    
+    export BUILD_PLATFORM_OS_VENDOR_VERSION_MAJOR=`os_vendor_version_major $BUILD_PLATFORM_OS_VENDOR`
     export BUILD_TARGET_OS_VENDOR=$BUILD_PLATFORM_OS_VENDOR
     export BUILD_TARGET_OS_VENDOR_VERSION=$BUILD_PLATFORM_OS_VENDOR_VERSION
+    export BUILD_TARGET_OS_VENDOR_VERSION_MAJOR=$BUILD_PLATFORM_OS_VENDOR_VERSION_MAJOR
 
     #  Allows us to override functions that change often.
     if [[ "$TL_DIR" != "" && -e "$TL_DIR/MakeTools/funcs-ext.sh" ]]; then

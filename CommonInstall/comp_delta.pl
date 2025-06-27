@@ -115,6 +115,7 @@ my %source_pkgs_by_distro = (
 	'SuSE*ES154'    => [ \%sles_srpm ],
 	'SuSE*ES155'    => [ \%sles_srpm ],
 	'SuSE*ES156'    => [ \%sles_srpm ],
+	'SuSE*ES157'    => [ \%sles_srpm ],
 	'redhat*ES88'   => [ \%redhat_srpm ],
 	'redhat*ES89'   => [ \%redhat_srpm ],
 	'redhat*ES810'  => [ \%redhat_srpm ],
@@ -122,6 +123,8 @@ my %source_pkgs_by_distro = (
 	'redhat*ES93'   => [ \%redhat_srpm ],
 	'redhat*ES94'   => [ \%redhat_srpm ],
 	'redhat*ES95'   => [ \%redhat_srpm ],
+	'redhat*ES96'   => [ \%redhat_srpm ],
+	'redhat*ES10'   => [ \%redhat_srpm ],
 	'ubuntu*UB2204' => [ \%debian_tarball ],
 );
 

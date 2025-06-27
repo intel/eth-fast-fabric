@@ -91,14 +91,13 @@ INSTALL_SOURCES= \
 				 $(TL_DIR)/CommonInstall/comp_fastfabric.pl \
 				 $(TL_DIR)/CommonInstall/overrides_ff.pl \
 				 $(TL_DIR)/CommonInstall/main_omnipathwrap_delta.pl
+
+MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION_MAJOR} | cut -c 3-)
 ifeq "$(BUILD_PLATFORM_OS_VENDOR)" "redhat"
-	MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION} | cut -c 3)
 	PREREQ_SOURCE = $(TL_DIR)/CommonInstall/comp_ff_of_prereq_RHEL$(MAJOR).pl
 else ifeq "$(BUILD_PLATFORM_OS_VENDOR)" "SuSE"
-	MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION} | cut -c 3-4)
 	PREREQ_SOURCE = $(TL_DIR)/CommonInstall/comp_ff_of_prereq_SLES$(MAJOR).pl
 else ifeq "$(BUILD_PLATFORM_OS_VENDOR)" "ubuntu"
-	MAJOR = $(shell echo ${BUILD_PLATFORM_OS_VENDOR_VERSION} | cut -c 3-4)
 	PREREQ_SOURCE = $(TL_DIR)/CommonInstall/comp_ff_of_prereq_UBUNTU$(MAJOR).pl
 else
 	$(error BUILD_PLATFORM_OS_VENDOR not valid: $(BUILD_PLATFORM_OS_VENDOR))

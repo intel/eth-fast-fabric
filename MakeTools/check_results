@@ -48,13 +48,13 @@
 ## Arguments:
 ##	-r - generate a report on success/failure of a build and
 ##		exit with a status of 1 for failure, 0 for success
-##	-e add_error - additional egrep patterns for identifying errors
+##	-e add_error - additional grep -E patterns for identifying errors
 ##		must start with |
-##	-E add_error_filter - additional egrep patterns to filter out of errors
+##	-E add_error_filter - additional grep -E patterns to filter out of errors
 ##		must start with |
-##	-w add_warn - additional egrep patterns for identifying warnings
+##	-w add_warn - additional grep -E patterns for identifying warnings
 ##		must start with |
-##	-W add_warn_filter - additional egrep patterns to filter out of warnings
+##	-W add_warn_filter - additional grep -E patterns to filter out of warnings
 ##		must start with |
 ##	results_file - input file containing results from a weeklybuild
 ##		could be a full or partial (limited OS/build_config/build_smp combos)
@@ -83,13 +83,13 @@ Usage()
 	echo "                     results_file errors_file warn_file">&2
 	echo "    -r - generate a report on success/failure of a build and">&2
 	echo "         exit with a status of 1 for failure, 0 for success">&2
-	echo "    -e add_error - additional egrep patterns for identifying errors">&2
+	echo "    -e add_error - additional grep -E patterns for identifying errors">&2
 	echo "         must start with |">&2
-	echo "    -E add_error_filter - additional egrep patterns to filter out of errors">&2
+	echo "    -E add_error_filter - additional grep -E patterns to filter out of errors">&2
 	echo "         must start with |">&2
-	echo "    -w add_warn - additional egrep patterns for identifying warnings">&2
+	echo "    -w add_warn - additional grep -E patterns for identifying warnings">&2
 	echo "         must start with |">&2
-	echo "    -W add_warn_filter - additional egrep patterns to filter out of warnings">&2
+	echo "    -W add_warn_filter - additional grep -E patterns to filter out of warnings">&2
 	echo "         must start with |">&2
 	echo "    results_file - input file containing results from a weeklybuild">&2
 	echo "         could be a full or partial (limited OS/build_config/build_smp combos)">&2
@@ -149,7 +149,7 @@ warn_file=$3
 # sort out duplicated messages from multiple build runs
 sort -u expected.err > .expected.err
 # future: add back in check for "No such file"
-grep -E " Error |ERROR|^Bad | Bad |failed|FAILED|unifdef:| Stop|No space left on device$add_error" $results_file |egrep -v "_ERROR|_failed|failed_"| sort -u|filter .expected.err > $errors_file
+grep -E " Error |ERROR|^Bad | Bad |failed|FAILED|unifdef:| Stop|No space left on device$add_error" $results_file |grep -E -v "_ERROR|_failed|failed_"| sort -u|filter .expected.err > $errors_file
 
 sort -u expected.warn > .expected.warn
 grep -E -i "warning:$add_warn" $results_file |grep -E -v "Warnings$add_warn_filter" | sort -u |filter .expected.warn > $warn_file

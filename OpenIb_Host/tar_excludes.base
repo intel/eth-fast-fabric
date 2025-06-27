@@ -81,9 +81,6 @@ OpenIb_Host/TESTSresults
 OpenIb_Host/opa_feature_settings*
 OpenIb_Host/debian.template
 OpenIb_Host/*.in
-opasadb/lib/libopasadb.map.base
-opasadb/path_tools/load/opasadb.xml.base
-opasadb/lib/path/op_path_rec.conf.base
 Topology/mad.c
 Topology/mad_info.c
 */opasnapconfig*

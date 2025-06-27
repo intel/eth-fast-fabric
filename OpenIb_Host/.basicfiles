@@ -43,7 +43,7 @@ cd OpenIb_Host
 __RPM_FS ./ff_build.sh %{_builddir}
 
 %install
-BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_libdir} OpenIb_Host/ff_install.sh
+BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib OpenIb_Host/ff_install.sh
 
 %files basic
 %dir %{_sysconfdir}/eth-tools/

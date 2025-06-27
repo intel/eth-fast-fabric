@@ -74,6 +74,7 @@ fi
 
 PREREQ=( )
 MPI_DIR="/usr/src/eth/MPI"
+PERL=${PERL:-$(which perl)}
 
 CheckPreReqs()
 {
@@ -365,21 +366,33 @@ fi
 	DESTDIR="$MPI_DIR"
 	if [ "$iflag" = n ]
 	then
-		openmpi_srpm=$MPI_DIR/openmpi-*.src.rpm
+		openmpi_srpm=$(ls -v $MPI_DIR/openmpi-*.src.rpm | tail -1)
 	else
-		openmpi_srpm=./SRPMS/openmpi-*.src.rpm
+		openmpi_srpm=$(ls -v ./SRPMS/openmpi-*.src.rpm | tail -1)
 	fi
-	openmpi_version=$(ls $openmpi_srpm 2>/dev/null|head -1|cut -f2 -d-)
+	openmpi_version=$(ls -v $openmpi_srpm 2>/dev/null|tail -1|cut -f2 -d-)
 
 	# For RHEL7x: %{?dist} resolves to '.el7'. For SLES, an empty string
 	# E.g. on rhel7.x: openmpi_gcc_ofi-2.1.2-11.el7.x86_64.rpm; on SLES openmpi_gcc_ofi-2.1.2-11.x86_64.rpm
-	openmpi_fullversion=$(ls $openmpi_srpm 2>/dev/null|head -1|cut -f2- -d-|sed -e 's/.src.rpm//')$(rpm --eval %{?dist})
+	openmpi_fullversion=$(rpm -q --queryformat '%{VERSION}-%{RELEASE}' $openmpi_srpm)
 	MPICH_PREFIX=${MPICH_PREFIX:-$STACK_PREFIX/mpi/$compiler/openmpi-$openmpi_version$openmpi_path_suffix}
 	CONFIG_OPTIONS=${CONFIG_OPTIONS:-""}
 
 	if [ x"$openmpi_version" = x"" ]
 	then
 		echo "Error $openmpi_srpm: Not Found"
+		exit 1
+	fi
+
+	enable_cxx_bindings=1
+	if [ "${openmpi_version//.*/}" -ge 5 ]; then
+		echo "Disable CXX Bindings (removed in 5.0)"
+		# The MPI C++ bindings were removed from Open MPI v5.0.0 in 2022.
+		enable_cxx_bindings=0
+	fi
+
+	if [ ! -f $PERL ]; then
+		echo "Error: perl is required to build Open MPI: set PERL env or add to PATH"
 		exit 1
 	fi
 
@@ -433,11 +446,13 @@ fi
 	case "$compiler" in
 	gcc)
 		openmpi_comp_env="$openmpi_comp_env CC=gcc CFLAGS=\"-O3 -fPIC\""
-		if have_comp g++
-		then
-			openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=g++"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+		if (( enable_cxx_bindings == 1 )); then
+			if have_comp g++
+			then
+				openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=g++"
+			else
+				openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+			fi
 		fi
 		if have_comp gfortran
 		then
@@ -447,13 +462,21 @@ fi
 		fi;;
 
 	intel)
+		if ! have_comp icx; then
+			echo "ERROR - Requested intel compiler, but icx was not found in the path." >&2
+			exit 1
+		fi
 		disable_auto_requires="--define 'disable_auto_requires 1'"
-		openmpi_comp_env="$openmpi_comp_env CC=icx CFLAGS=\"-O3 -fPIC\""
-		if have_comp icpx
-		then
-			openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=icpx CXXFLAGS="
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+		openmpi_comp_env="$openmpi_comp_env CC=icx CXX=icpx CFLAGS=\"-O3 -fPIC\""
+		varsfile=$(ls -v /opt/intel/oneapi/compiler/[0-9]*/env/vars.sh | tail -1)
+		source $varsfile intel64
+		if (( enable_cxx_bindings == 1 )); then
+			if have_comp icpx
+			then
+				openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=icpx CXXFLAGS="
+			else
+				openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+			fi
 		fi
 		if have_comp ifx
 		then
@@ -465,11 +488,13 @@ fi
 	intellegacy)
 		disable_auto_requires="--define 'disable_auto_requires 1'"
 		openmpi_comp_env="$openmpi_comp_env CC=icc"
-		if have_comp icpc
-		then
-			openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=icpc"
-		else
-			openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+		if (( enable_cxx_bindings == 1 )); then
+			if have_comp icpc
+			then
+				openmpi_comp_env="$openmpi_comp_env --enable-mpi-cxx CXX=icpc"
+			else
+				openmpi_comp_env="$openmpi_comp_env --disable-mpi-cxx"
+			fi
 		fi
 		if have_comp ifort
 		then
@@ -484,7 +509,7 @@ fi
 	esac
 
 	openmpi_comp_env="$openmpi_comp_env --enable-mpirun-prefix-by-default"
-	if [ x"$openmpi_wrapper_cxx_flags" != x ]
+	if [ "$openmpi_wrapper_cxx_flags" ]
 	then
 		openmpi_comp_env="$openmpi_comp_env --with-wrapper-cxxflags=\"$openmpi_wrapper_cxx_flags\""
 	fi
@@ -515,12 +540,14 @@ fi
 				--define 'install_shell_scripts 1' \
 				--define 'shell_scripts_basename mpivars' \
 				--define '_usr $STACK_PREFIX' \
+				--define '__perl $PERL' \
 				--define 'ofed 0' \
 				--define '_prefix $MPICH_PREFIX' \
 				--define '_defaultdocdir $MPICH_PREFIX/doc/..' \
 				--define '_mandir %{_prefix}/share/man' \
 				--define 'mflags -j 4' \
-				--define 'configure_options $CONFIG_OPTIONS $openmpi_ldflags $openmpi_comp_env $openmpi_conf_psm --with-devel-headers --disable-oshmem $openmpi_verbs' \
+				--define 'all_external_3rd_party 0' \
+				--define 'configure_options $CONFIG_OPTIONS $openmpi_ldflags $openmpi_comp_env $openmpi_conf_psm --with-devel-headers --disable-oshmem $openmpi_verbs --with-libevent=external' \
 				--define 'use_default_rpm_opt_flags $use_default_rpm_opt_flags' \
 				$disable_auto_requires"
 	cmd="$cmd \
