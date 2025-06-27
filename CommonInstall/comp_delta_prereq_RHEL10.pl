@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ## BEGIN_ICS_COPYRIGHT8 ****************************************
 #
-# Copyright (c) 2015-2020, Intel Corporation
+# Copyright (c) 2015-2024, Intel Corporation
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,44 +37,67 @@
 #
 ## ==========================================================================
 #
-#Installation Prequisites array for fast fabric
-#and of tools component
-my @eth_tools_prereq = (
+#Installation Prequisites array for delta components
+my @iefsconfig_prereq = (
     "bash",
-    "bc",
-    "expat",
-    "expect",
-    "glibc",
-    "libgomp",
-    "libibumad",
-    "libibverbs-utils",
-    "librdmacm-utils",
-    "net-snmp",
-    "net-snmp-utils",
-    "openssl",
-    "openssl-libs",
-    "perl",
-    "rdma-core",
-    "tcl",
+    "iproute",
+    "lldpad",
 );
-$comp_prereq_hash{'eth_tools_prereq'} = \@eth_tools_prereq;
+$comp_prereq_hash{'iefsconfig_prereq'} = \@iefsconfig_prereq;
 
-my @fastfabric_prereq = (
+my @eth_module_prereq = (
     "bash",
-    "cronie",
-    "expat",
-    "expect",
+    "kernel-core",
+    "kmod",
+);
+$comp_prereq_hash{'eth_module_prereq'} = \@eth_module_prereq;
+
+my @psm3_prereq = (
+    "bash",
+    "glibc",
+    "hwloc-libs",
+    "libatomic",
+    "libgcc",
+    "libibverbs",
+    "numactl-libs",
+    "libuuid",
+    "rdma-core",
+);
+$comp_prereq_hash{'psm3_prereq'} = \@psm3_prereq;
+
+my @openmpi_prereq = (
+    "bash",
     "glibc",
     "libgcc",
-    "libibumad",
+    "libgfortran",
+    "gcc-gfortran",
+    "libgomp",
     "libibverbs",
+    "libquadmath",
     "librdmacm",
     "libstdc++",
-    "ncurses-libs",
-    "net-snmp-libs",
-    "openssl-libs",
-    "perl",
-    "tcl",
-    "zlib",
+    "libstdc++-devel",
+    "opensm-libs",
+    "pkgconf",
+    "zlib-ng-compat",
 );
-$comp_prereq_hash{'fastfabric_prereq'} = \@fastfabric_prereq;
+$comp_prereq_hash{'openmpi_prereq'} = \@openmpi_prereq;
+
+my @openmpi_gcc_ofi_prereq = (
+    "bash",
+    "glibc",
+    "libfabric",
+    "libgcc",
+    "libgfortran",
+    "libnl3",
+    "libquadmath",
+    "perl",
+    "pkgconf-pkg-config",
+    "zlib-ng-compat",
+);
+$comp_prereq_hash{'openmpi_gcc_ofi_prereq'} = \@openmpi_gcc_ofi_prereq;
+
+my @openmpi_intel_ofi_prereq = (
+    "bash",
+);
+$comp_prereq_hash{'openmpi_intel_ofi_prereq'} = \@openmpi_intel_ofi_prereq;

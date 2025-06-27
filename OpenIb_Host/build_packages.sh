@@ -102,8 +102,8 @@ else
 	(
 		set -e
 		cd $RPMDIR
-		rpmbuild -ba --define "_topdir $RPMDIR" SPECS/eth-tools.spec
-		rpmbuild -ba --define "_topdir $RPMDIR" SPECS/mpi-apps.spec
+		rpmbuild -ba --noclean --define "_topdir $RPMDIR" SPECS/eth-tools.spec
+		rpmbuild -ba --noclean --define "_topdir $RPMDIR" SPECS/mpi-apps.spec
 	) || exit 1
 fi
 

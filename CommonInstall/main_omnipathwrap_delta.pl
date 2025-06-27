@@ -72,6 +72,7 @@ my %Components_by_distro = (
 	'SuSE*ES154'    => \@EthAllComponents,
 	'SuSE*ES155'    => \@EthAllComponents,
 	'SuSE*ES156'    => \@EthAllComponents,
+	'SuSE*ES157'    => \@EthAllComponents,
 	'redhat*ES88'   => \@EthAllComponents,
 	'redhat*ES89'   => \@EthAllComponents,
 	'redhat*ES810'  => \@EthAllComponents,
@@ -79,6 +80,8 @@ my %Components_by_distro = (
 	'redhat*ES93'   => \@EthAllComponents,
 	'redhat*ES94'   => \@EthAllComponents,
 	'redhat*ES95'   => \@EthAllComponents,
+	'redhat*ES96'   => \@EthAllComponents,
+	'redhat*ES10'   => \@EthAllComponents,
 	'ubuntu*UB2204' => \@EthUbuntuComponents,
 );
 
@@ -494,6 +497,7 @@ my %Comp_info_by_distro = (
 	'SuSE*ES154'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES155'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 	'SuSE*ES156'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
+	'SuSE*ES157'    => { %ibacm_comp_info, %eth_module_sles_comp_info },
 
 	'redhat*ES88'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES89'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
@@ -502,6 +506,8 @@ my %Comp_info_by_distro = (
 	'redhat*ES93'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES94'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 	'redhat*ES95'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES96'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
+	'redhat*ES10'   => { %ibacm_comp_info, %eth_module_rhel_comp_info },
 
 	'ubuntu*UB2204' => { %ibacm_comp_info, %eth_module_debian_comp_info },
 );
