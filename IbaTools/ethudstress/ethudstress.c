@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <arpa/inet.h>
 
 #include <rdma/rdma_cma.h>
 
@@ -117,10 +118,9 @@ typedef struct {
 } perf;
 
 typedef struct {
-	int msg_size;
-	int msg_count;
-	int num_conns;
-} client_intentions;
+	int32_t msg_size;
+	int32_t msg_count;
+} __attribute__((packed)) client_intentions;
 
 static char *dst_addr;
 static char *src_addr;
@@ -129,8 +129,8 @@ static bool set_tos = false;
 static uint8_t tos;
 static bool srv_reply = false;
 static int num_conns = 1;
-static int msg_size = 100;
-static int msg_count = 10;
+static int32_t msg_size = 100;
+static int32_t msg_count = 10;
 static int timeout_s = 30;
 static uint64_t stop_time_us;
 static uint64_t start_us;
@@ -623,7 +623,7 @@ int on_route_event(job *the_job, struct rdma_cm_event *event) {
 	}
 
 	struct rdma_conn_param param = {0};
-	client_intentions intentions = {.msg_size = msg_size, .msg_count = msg_count, .num_conns = num_conns};
+	client_intentions intentions = {.msg_size = msg_size, .msg_count = msg_count};
 	param.private_data = &intentions;
 	param.private_data_len = sizeof(intentions);
 	ret = rdma_connect(conn->cma_id, &param);
@@ -770,6 +770,56 @@ int process_events(job* the_job) {
 	return ret;
 }
 
+int print_rdma_src_address(struct rdma_addrinfo* addr, char* buffer, size_t buffer_len)
+{
+	int res;
+	int len = 0;
+	switch (addr->ai_family) {
+		case RAI_FAMILY:
+			res = snprintf(buffer, buffer_len, "RDMA:");
+			break;
+		case AF_INET:
+			res = snprintf(buffer, buffer_len, "IPv4: ");
+			break;
+		case AF_INET6:
+			res = snprintf(buffer, buffer_len, "IPv6: ");
+			break;
+		default:
+			res = snprintf(buffer, buffer_len, "0x%02X: ", addr->ai_family);
+	}
+	if (res < 0) {
+		return res;
+	}
+	len = res;
+	struct rdma_addrinfo* current = addr;
+	while (current) {
+#define ADDR_LEN_LIMIT 256
+		char addr_buf[ADDR_LEN_LIMIT];
+		const char* ntop_res;
+		struct sockaddr* src_addr = current->ai_src_addr;
+		struct sockaddr_in* v4_addr = (struct sockaddr_in*)src_addr;
+		struct sockaddr_in6* v6_addr = (struct sockaddr_in6*)src_addr;
+		switch (src_addr->sa_family) {
+			case AF_INET:
+				ntop_res = inet_ntop(src_addr->sa_family, &v4_addr->sin_addr, addr_buf, sizeof(addr_buf));
+				res = snprintf(buffer + len, buffer_len - len, "%s:%d ", ntop_res, htons(v4_addr->sin_port));
+				break;
+			case AF_INET6:
+				ntop_res = inet_ntop(src_addr->sa_family, &v6_addr->sin6_addr, addr_buf, sizeof(addr_buf));
+				res = snprintf(buffer + len, buffer_len - len, "%s:%d ", ntop_res, htons(v6_addr->sin6_port));
+				break;
+			default:
+				res = snprintf(buffer + len, buffer_len - len, "Address family %d unknown ", src_addr->sa_family);
+		}
+		if (res < 0) {
+			return res;
+		}
+		len += res;
+		current = current->ai_next;
+	}
+	return len;
+}
+
 int launch_server(job* the_job)
 {
 	struct rdma_cm_id *listen_id;
@@ -798,6 +848,13 @@ int launch_server(job* the_job)
 	if (ret) {
 		PSERROR("failed listen to incoming connections");
 		goto out;
+	}
+
+	char src_addr_string[1024];
+	if (print_rdma_src_address(the_job->addr_info, src_addr_string, 1024) > 0) {
+		FPRINT("Server listens at %s\n", src_addr_string);
+	} else {
+		FPRINT("Server listens (address formatting error)\n");
 	}
 
 	ret = process_events(the_job);
@@ -964,14 +1021,14 @@ int main(int argc, char **argv) {
 			}
 			break;
 		case 'C':
-			msg_count = atoi(optarg);
+			msg_count = (int32_t)atoi(optarg);
 			if (msg_count <= 0) {
 				PFERROR("Invalid value for -C option: %s\n", optarg);
 				exit(1);
 			}
 			break;
 		case 'S':
-			msg_size = atoi(optarg);
+			msg_size = (int32_t)atoi(optarg);
 			if (msg_size <= 0) {
 				PFERROR("Invalid value for -S option: %s\n", optarg);
 				exit(1);

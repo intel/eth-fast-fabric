@@ -76,7 +76,6 @@ cd ..
 
 cd ../man/man1
 [ -n "$basic_mans" ] && cp -t ${DESTDIR}/${mandir}/man1 $basic_mans
-[ -n "$opasadb_mans" ] && cp -t ${DESTDIR}/${mandir}/man1 $opasadb_mans
 cd ../man8
 [ -n "$ff_mans" ] && cp -t ${DESTDIR}/${mandir}/man8 $ff_mans
 cd ..

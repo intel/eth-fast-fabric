@@ -1,6 +1,6 @@
 Name: eth-mpi-apps
-Version: 12.0.0.0
-Release: 36%{?dist}
+Version: 12.1.0.0
+Release: 149%{?dist}
 Summary: Intel MPI benchmarks and Applications used by eth-fast-fabric
 Group: System Environment/Libraries
 License: BSD-3-Clause AND BSD-4-Clause

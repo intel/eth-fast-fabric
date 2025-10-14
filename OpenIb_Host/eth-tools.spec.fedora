@@ -1,6 +1,6 @@
 Name: eth-tools
-Version: 12.0.0.0
-Release: 38%{?dist}
+Version: 12.1.0.0
+Release: 150%{?dist}
 Summary: Intel Ethernet Fabric Suite basic tools and libraries for fabric management
 
 License: BSD-3-Clause
@@ -48,7 +48,7 @@ cd OpenIb_Host
 OPA_FEATURE_SET=opa10 CLOCAL='%build_cflags' CCLOCAL='%build_cxxflags' LDLOCAL='%build_ldflags' ./ff_build.sh %{_builddir}
 
 %install
-BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_libdir} OpenIb_Host/ff_install.sh
+BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib OpenIb_Host/ff_install.sh
 
 %files basic
 %dir %{_sysconfdir}/eth-tools/
@@ -94,6 +94,12 @@ BUILDDIR=%{_builddir} DESTDIR=%{buildroot} LIBDIR=%{_prefix}/lib DSAP_LIBDIR=%{_
 %config(noreplace) /usr/lib/eth-tools/osid_wrapper
 
 %changelog
+* Thu Jun 26 2025 Jijun Wang <jijun.wang@intel.com> - 12.1.0.0-149
+- Improved to support RHEL 9.6, 10.0 and SLES 15.7
+- Improved stability and print of ethudstress
+- Removed unused code
+- Replaced egrep with grep -E
+
 * Wed Mar 5 2025 Jijun Wang <jijun.wang@intel.com> - 12.0.0.0-38
 - Changed rpm spec to require tcl8 or tcl < 1:9
 
