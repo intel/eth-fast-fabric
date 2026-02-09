@@ -176,6 +176,12 @@
 #define STREAM_TYPE double
 #endif
 
+#if defined(_OPENMP) && _OPENMP >= 202011
+#define OMP_MASKED masked
+#else
+#define OMP_MASKED master
+#endif
+
 static STREAM_TYPE	a[STREAM_ARRAY_SIZE+OFFSET],
 			b[STREAM_ARRAY_SIZE+OFFSET],
 			c[STREAM_ARRAY_SIZE+OFFSET];
@@ -247,7 +253,7 @@ main()
     printf(HLINE);
 #pragma omp parallel 
     {
-#pragma omp masked
+#pragma omp OMP_MASKED
 	{
 	    k = omp_get_num_threads();
 	    printf ("Number of Threads requested = %i\n",k);
